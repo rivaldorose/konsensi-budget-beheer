@@ -198,12 +198,31 @@ export default function Dashboard() {
     setError(null);
     try {
       const currentUser = await User.me();
+      if (!currentUser || !currentUser.id) {
+        throw new Error('User not authenticated');
+      }
       setUser(currentUser);
-      const userFilter = { created_by: currentUser.email };
+      
+      // Try user_id first, fallback to created_by
+      const userFilter = { user_id: currentUser.id };
+      const userFilterFallback = { created_by: currentUser.id };
 
       const now = new Date();
 
-      const [
+      // Helper to filter with fallback
+      const filterWithFallback = async (Entity, filter) => {
+        try {
+          return await Entity.filter(filter);
+        } catch {
+          try {
+            return await Entity.filter(userFilterFallback);
+          } catch {
+            return [];
+          }
+        }
+      };
+
+      let [
         allIncomes,
         allMonthlyCosts,
         allDebts,
@@ -212,14 +231,29 @@ export default function Dashboard() {
         activeStrategies,
         allTransactions,
       ] = await Promise.all([
-        Income.filter(userFilter),
-        MonthlyCost.filter(userFilter),
-        Debt.filter(userFilter),
-        DebtPayment.filter(userFilter, '-payment_date'),
-        Pot.filter(userFilter),
-        DebtStrategy.filter({ ...userFilter, is_active: true }),
-        Transaction.filter(userFilter, '-date', 200),
+        filterWithFallback(Income, userFilter),
+        filterWithFallback(MonthlyCost, userFilter),
+        filterWithFallback(Debt, userFilter),
+        filterWithFallback(DebtPayment, userFilter),
+        filterWithFallback(Pot, userFilter),
+        filterWithFallback(DebtStrategy, { ...userFilter, is_active: true }),
+        filterWithFallback(Transaction, userFilter),
       ]);
+
+      // Sort payments by date descending
+      allPayments.sort((a, b) => {
+        const dateA = new Date(a.payment_date || a.created_at);
+        const dateB = new Date(b.payment_date || b.created_at);
+        return dateB - dateA;
+      });
+
+      // Sort transactions by date descending and limit to 200
+      allTransactions.sort((a, b) => {
+        const dateA = new Date(a.date || a.created_at);
+        const dateB = new Date(b.date || b.created_at);
+        return dateB - dateA;
+      });
+      allTransactions = allTransactions.slice(0, 200);
 
       const incomeData = incomeService.processIncomeData(allIncomes, now);
       const monthlyCostsResult = monthlyCostService.processMonthlyCostsData(allMonthlyCosts);

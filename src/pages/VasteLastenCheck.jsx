@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { User, MonthlyCheck, MonthlyCost, Debt, PaymentStatus } from "@/api/entities";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle, Clock, AlertTriangle, Calendar, PartyPopper, ChevronRight } from "lucide-react";
@@ -71,35 +71,64 @@ export default function VasteLastenCheck() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
+    queryFn: () => User.me(),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: existingCheck, isLoading: checkLoading } = useQuery({
-    queryKey: ['monthlyCheck', currentMonth, user?.email],
-    queryFn: () => base44.entities.MonthlyCheck.filter({ created_by: user.email, month: currentMonth }),
+    queryKey: ['monthlyCheck', currentMonth, user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      // Try user_id first, then created_by as fallback
+      try {
+        return await MonthlyCheck.filter({ user_id: user.id, month: currentMonth });
+      } catch {
+        return await MonthlyCheck.filter({ created_by: user.id, month: currentMonth });
+      }
+    },
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: costs = [], isLoading: costsLoading } = useQuery({
-    queryKey: ['monthlyCosts', user?.email],
-    queryFn: () => base44.entities.MonthlyCost.filter({ created_by: user.email, status: 'actief' }),
-    enabled: !!user,
+    queryKey: ['monthlyCosts', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      try {
+        return await MonthlyCost.filter({ user_id: user.id, status: 'actief' });
+      } catch {
+        return await MonthlyCost.filter({ created_by: user.id, status: 'actief' });
+      }
+    },
+    enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: debts = [], isLoading: debtsLoading } = useQuery({
-    queryKey: ['debts', user?.email],
-    queryFn: () => base44.entities.Debt.filter({ created_by: user.email, status: 'betalingsregeling' }),
-    enabled: !!user,
+    queryKey: ['debts', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      try {
+        return await Debt.filter({ user_id: user.id, status: 'betalingsregeling' });
+      } catch {
+        return await Debt.filter({ created_by: user.id, status: 'betalingsregeling' });
+      }
+    },
+    enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: paymentStatuses = [], isLoading: statusesLoading } = useQuery({
-    queryKey: ['paymentStatuses', currentMonth, user?.email],
-    queryFn: () => base44.entities.PaymentStatus.filter({ created_by: user.email, month: currentMonth }),
-    enabled: !!user,
+    queryKey: ['paymentStatuses', currentMonth, user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      try {
+        return await PaymentStatus.filter({ user_id: user.id, month: currentMonth });
+      } catch {
+        return await PaymentStatus.filter({ created_by: user.id, month: currentMonth });
+      }
+    },
+    enabled: !!user?.id,
     staleTime: 1 * 60 * 1000,
   });
 
@@ -132,20 +161,20 @@ export default function VasteLastenCheck() {
       const existingStatus = paymentStatuses.find(s => s.cost_id === item.id && s.month === currentMonth);
 
       if (existingStatus) {
-        return await base44.entities.PaymentStatus.update(existingStatus.id, {
+        return await PaymentStatus.update(existingStatus.id, {
           is_paid: isPaid,
           postponed_to_date: isPaid ? null : existingStatus.postponed_to_date,
           updated_at: new Date().toISOString()
         });
       } else {
-        return await base44.entities.PaymentStatus.create({
+        return await PaymentStatus.create({
           cost_id: item.id,
           cost_name: item.name || item.creditor_name,
           cost_amount: item.amount || item.monthly_payment,
           month: currentMonth,
           is_paid: isPaid,
           due_date: dueDate,
-          created_by: user.email,
+          user_id: user.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
@@ -173,11 +202,11 @@ export default function VasteLastenCheck() {
         paymentStatuses.some(s => s.cost_id === item.id && s.month === currentMonth && s.is_paid)
       );
 
-      return await base44.entities.MonthlyCheck.create({
+      return await MonthlyCheck.create({
         month: currentMonth,
         check_date: new Date().toISOString(),
         all_paid: allTrulyPaid,
-        created_by: user.email,
+        user_id: user.id,
       });
     },
     onSuccess: () => {

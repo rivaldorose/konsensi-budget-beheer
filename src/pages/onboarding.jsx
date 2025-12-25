@@ -52,6 +52,12 @@ function OnboardingContent() {
     try {
       const user = await User.me();
       
+      if (!user) {
+        // User not logged in, stay on onboarding
+        setLoading(false);
+        return;
+      }
+      
       if (user.onboarding_completed) {
         window.location.href = createPageUrl('Dashboard');
         return;
@@ -70,7 +76,7 @@ function OnboardingContent() {
 
   const saveProgress = async (currentStep) => {
     try {
-      await User.updateMyUserData({
+      await User.updateMe({
         onboarding_step: currentStep
       });
     } catch (error) {
@@ -108,7 +114,7 @@ function OnboardingContent() {
     try {
       const balance = (parseFloat(userData.monthly_income) || 0) - (parseFloat(userData.monthly_expenses) || 0);
       
-      await User.updateMyUserData({
+      await User.updateMe({
         ...userData,
         monthly_balance: balance,
         onboarding_completed: true,
@@ -145,7 +151,7 @@ function OnboardingContent() {
 
     setSaving(true);
     try {
-      await User.updateMyUserData({
+      await User.updateMe({
         voornaam: userData.voornaam,
         age: parseInt(userData.age)
       });
@@ -176,7 +182,7 @@ function OnboardingContent() {
 
     setSaving(true);
     try {
-      await User.updateMyUserData({
+      await User.updateMe({
         monthly_income: parseFloat(userData.monthly_income),
         income_source: userData.income_source
       });
@@ -209,7 +215,7 @@ function OnboardingContent() {
     try {
       const balance = (parseFloat(userData.monthly_income) || 0) - parseFloat(userData.monthly_expenses);
       
-      await User.updateMyUserData({
+      await User.updateMe({
         monthly_expenses: parseFloat(userData.monthly_expenses),
         monthly_balance: balance
       });
@@ -233,7 +239,7 @@ function OnboardingContent() {
     
     setSaving(true);
     try {
-      await User.updateMyUserData({
+      await User.updateMe({
         has_debts: answer
       });
 
@@ -267,7 +273,7 @@ function OnboardingContent() {
 
     setSaving(true);
     try {
-      await User.updateMyUserData({
+      await User.updateMe({
         total_debt_amount: parseFloat(userData.total_debt_amount),
         debt_count_range: userData.debt_count_range
       });

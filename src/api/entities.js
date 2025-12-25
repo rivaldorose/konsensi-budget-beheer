@@ -71,19 +71,63 @@ export const NotificationRule = createEntityWrapper('notification_rules')
 // Auth wrapper - use supabase.auth directly
 export const User = {
   me: async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return null
-    const { data: profile } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-    return { ...user, ...profile }
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        console.log('No authenticated user:', authError?.message || 'User not found')
+        return null
+      }
+      
+      // Try to get user profile from users table
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+      
+      // If profile doesn't exist, create it
+      if (profileError && profileError.code === 'PGRST116') {
+        // Profile doesn't exist, create it
+        const { data: newProfile, error: createError } = await supabase
+          .from('users')
+          .insert({
+            id: user.id,
+            email: user.email,
+            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
+          })
+          .select()
+          .single()
+        
+        if (createError) {
+          console.error('Error creating user profile:', createError)
+          // Return user without profile if creation fails
+          return { ...user, email: user.email, id: user.id }
+        }
+        
+        return { ...user, ...newProfile }
+      }
+      
+      if (profileError) {
+        console.error('Error fetching user profile:', profileError)
+        // Return user without profile if fetch fails
+        return { ...user, email: user.email, id: user.id }
+      }
+      
+      return { ...user, ...profile, email: user.email || profile?.email }
+    } catch (error) {
+      console.error('Error in User.me():', error)
+      return null
+    }
   },
   updateMe: async (data) => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Not authenticated')
     return await supabaseService.update('users', user.id, data)
+  },
+  logout: async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+    return true
   }
 }
 

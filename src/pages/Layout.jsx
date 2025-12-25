@@ -232,7 +232,7 @@ function LayoutWithProvider({ children, currentPageName }) {
         if (!userData.onboarding_completed && userData.monthly_income && userData.monthly_income > 0) {
           console.log('🔧 Detected completed onboarding without flag - fixing now...');
           try {
-            await User.updateMyUserData({ onboarding_completed: true });
+            await User.updateMe({ onboarding_completed: true });
             userData.onboarding_completed = true;
             console.log('✅ Onboarding flag set to true');
           } catch (error) {
@@ -911,7 +911,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                       key={lang.code} 
                       onSelect={async () => {
                         try {
-                          await User.updateMyUserData({ language_preference: lang.code });
+                          await User.updateMe({ language_preference: lang.code });
                           changeLanguage(lang.code);
                           window.location.reload();
                         } catch (error) {
@@ -1121,7 +1121,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                         key={lang.code} 
                         onSelect={async () => {
                           try {
-                            await User.updateMyUserData({ language_preference: lang.code });
+                            await User.updateMe({ language_preference: lang.code });
                             changeLanguage(lang.code);
                             window.location.reload();
                           } catch (error) {
@@ -1303,7 +1303,7 @@ function LayoutWithProvider({ children, currentPageName }) {
           onClose={() => setShowScanDebtModal(false)}
           onDebtScanned={async (debtData) => {
             try {
-              await base44.entities.Debt.create(debtData);
+              await Debt.create(debtData);
               toast({ 
                 title: "✅ Schuld toegevoegd!",
                 description: "Je kunt nu de volgende brief scannen"
@@ -1347,44 +1347,28 @@ function LayoutWithProvider({ children, currentPageName }) {
                       try {
                         toast({ title: '📸 Bon wordt verwerkt...' });
                         
+                        // Upload file to Supabase Storage
                         const uploadResult = await base44.integrations.Core.UploadFile({ file });
                         
-                        const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
-                          file_url: uploadResult.file_url,
-                          json_schema: {
-                            type: "object",
-                            properties: {
-                              merchant: { type: "string", description: "Naam van de winkel" },
-                              date: { type: "string", description: "Datum van aankoop (YYYY-MM-DD)" },
-                              total: { type: "number", description: "Totaalbedrag" },
-                              category: { type: "string", description: "Categorie (bv. boodschappen, kleding, etc.)" }
-                            }
-                          }
+                        // TODO: Implement ExtractDataFromUploadedFile with Supabase Edge Function
+                        // For now, show manual input form
+                        setScannedData({
+                          merchant: 'Gescande bon',
+                          date: new Date().toISOString().split('T')[0],
+                          amount: 0,
+                          category: 'overig'
                         });
+                        setShowScanBonModal(false);
+                        setShowConfirmModal(true);
                         
-                        if (extractResult.status === 'success' && extractResult.output) {
-                          const data = extractResult.output;
-                          
-                          setScannedData({
-                            merchant: data.merchant || 'Gescande bon',
-                            date: data.date || new Date().toISOString().split('T')[0],
-                            amount: data.total || 0,
-                            category: data.category || 'overig'
-                          });
-                          setShowScanBonModal(false);
-                          setShowConfirmModal(true);
-                          
-                          toast({ 
-                            title: '✅ Bon gescand!', 
-                            description: 'Controleer de gegevens en kies een potje' 
-                          });
-                        } else {
-                          throw new Error(extractResult.details || 'Kon bon niet lezen');
-                        }
+                        toast({ 
+                          title: '✅ Foto geüpload!', 
+                          description: 'Vul de gegevens handmatig in' 
+                        });
                       } catch (error) {
                         console.error('Scan error:', error);
                         toast({ 
-                          title: '❌ Fout bij scannen', 
+                          title: '❌ Fout bij uploaden', 
                           description: error.message,
                           variant: 'destructive' 
                         });
