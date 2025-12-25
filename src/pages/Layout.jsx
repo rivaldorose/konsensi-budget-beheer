@@ -229,7 +229,20 @@ function LayoutWithProvider({ children, currentPageName }) {
       try {
         const userData = await User.me();
         
-        if (!userData.onboarding_completed && userData.monthly_income && userData.monthly_income > 0) {
+        if (!userData) {
+          console.log('No authenticated user: Auth session missing!');
+          // Redirect to login if not logged in
+          const currentPath = window.location.pathname;
+          if (currentPath !== '/login' && currentPath !== '/onboarding' && !currentPath.includes('login') && !currentPath.includes('onboarding')) {
+            window.location.href = '/login';
+            return;
+          }
+          setUser(null);
+          setCheckingOnboarding(false);
+          return;
+        }
+        
+        if (userData && !userData.onboarding_completed && userData.monthly_income && userData.monthly_income > 0) {
           console.log('🔧 Detected completed onboarding without flag - fixing now...');
           try {
             await User.updateMe({ onboarding_completed: true });
@@ -244,6 +257,11 @@ function LayoutWithProvider({ children, currentPageName }) {
       } catch (error) {
         console.error("Error loading user:", error);
         setUser(null);
+        // Redirect to login on error
+        const currentPath = window.location.pathname;
+        if (currentPath !== '/login' && currentPath !== '/onboarding' && !currentPath.includes('login') && !currentPath.includes('onboarding')) {
+          window.location.href = '/login';
+        }
       } finally {
         setCheckingOnboarding(false);
       }

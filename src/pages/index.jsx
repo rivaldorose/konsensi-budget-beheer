@@ -62,6 +62,8 @@ import Wishlist from "./Wishlist";
 
 import Feedback from "./Feedback";
 
+import Login from "./Login";
+
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
@@ -150,10 +152,10 @@ function PagesContent() {
     
     return (
         <Layout currentPageName={currentPage}>
-            <Routes>            
+            <Routes>
+                <Route path="/login" element={<Login />} />
                 
-                    <Route path="/" element={<Expenses />} />
-                
+                <Route path="/" element={<Expenses />} />
                 
                 <Route path="/Expenses" element={<Expenses />} />
                 
