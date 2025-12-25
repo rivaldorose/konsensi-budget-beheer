@@ -1,0 +1,231 @@
+import Layout from "./Layout.jsx";
+
+import Expenses from "./Expenses";
+
+import debts from "./debts";
+
+import CentVoorCent from "./CentVoorCent";
+
+import VTLBCalculator from "./VTLBCalculator";
+
+import onboarding from "./onboarding";
+
+import Dashboard from "./Dashboard";
+
+import Settings from "./Settings";
+
+import GetHelp from "./GetHelp";
+
+import AdminFAQ from "./AdminFAQ";
+
+import BankConnections from "./BankConnections";
+
+import bank-connected from "./bank-connected";
+
+import Adempauze from "./Adempauze";
+
+import AdempauzeCalculator from "./AdempauzeCalculator";
+
+import Potjes from "./Potjes";
+
+import VasteLastenCheck from "./VasteLastenCheck";
+
+import FAQ from "./FAQ";
+
+import LanguageSettings from "./LanguageSettings";
+
+import NotificationSettings from "./NotificationSettings";
+
+import SecuritySettings from "./SecuritySettings";
+
+import DisplaySettings from "./DisplaySettings";
+
+import AdminNewsletter from "./AdminNewsletter";
+
+import AflossingsOverzicht from "./AflossingsOverzicht";
+
+import VTLBSettings from "./VTLBSettings";
+
+import AdminSupport from "./AdminSupport";
+
+import AdminResearch from "./AdminResearch";
+
+import WorkSchedule from "./WorkSchedule";
+
+import BudgetPlan from "./BudgetPlan";
+
+import Income from "./Income";
+
+import MaandelijkseLasten from "./MaandelijkseLasten";
+
+import Wishlist from "./Wishlist";
+
+import Feedback from "./Feedback";
+
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+
+const PAGES = {
+    
+    Expenses: Expenses,
+    
+    debts: debts,
+    
+    CentVoorCent: CentVoorCent,
+    
+    VTLBCalculator: VTLBCalculator,
+    
+    onboarding: onboarding,
+    
+    Dashboard: Dashboard,
+    
+    Settings: Settings,
+    
+    GetHelp: GetHelp,
+    
+    AdminFAQ: AdminFAQ,
+    
+    BankConnections: BankConnections,
+    
+    bank-connected: bank-connected,
+    
+    Adempauze: Adempauze,
+    
+    AdempauzeCalculator: AdempauzeCalculator,
+    
+    Potjes: Potjes,
+    
+    VasteLastenCheck: VasteLastenCheck,
+    
+    FAQ: FAQ,
+    
+    LanguageSettings: LanguageSettings,
+    
+    NotificationSettings: NotificationSettings,
+    
+    SecuritySettings: SecuritySettings,
+    
+    DisplaySettings: DisplaySettings,
+    
+    AdminNewsletter: AdminNewsletter,
+    
+    AflossingsOverzicht: AflossingsOverzicht,
+    
+    VTLBSettings: VTLBSettings,
+    
+    AdminSupport: AdminSupport,
+    
+    AdminResearch: AdminResearch,
+    
+    WorkSchedule: WorkSchedule,
+    
+    BudgetPlan: BudgetPlan,
+    
+    Income: Income,
+    
+    MaandelijkseLasten: MaandelijkseLasten,
+    
+    Wishlist: Wishlist,
+    
+    Feedback: Feedback,
+    
+}
+
+function _getCurrentPage(url) {
+    if (url.endsWith('/')) {
+        url = url.slice(0, -1);
+    }
+    let urlLastPart = url.split('/').pop();
+    if (urlLastPart.includes('?')) {
+        urlLastPart = urlLastPart.split('?')[0];
+    }
+
+    const pageName = Object.keys(PAGES).find(page => page.toLowerCase() === urlLastPart.toLowerCase());
+    return pageName || Object.keys(PAGES)[0];
+}
+
+// Create a wrapper component that uses useLocation inside the Router context
+function PagesContent() {
+    const location = useLocation();
+    const currentPage = _getCurrentPage(location.pathname);
+    
+    return (
+        <Layout currentPageName={currentPage}>
+            <Routes>            
+                
+                    <Route path="/" element={<Expenses />} />
+                
+                
+                <Route path="/Expenses" element={<Expenses />} />
+                
+                <Route path="/debts" element={<debts />} />
+                
+                <Route path="/CentVoorCent" element={<CentVoorCent />} />
+                
+                <Route path="/VTLBCalculator" element={<VTLBCalculator />} />
+                
+                <Route path="/onboarding" element={<onboarding />} />
+                
+                <Route path="/Dashboard" element={<Dashboard />} />
+                
+                <Route path="/Settings" element={<Settings />} />
+                
+                <Route path="/GetHelp" element={<GetHelp />} />
+                
+                <Route path="/AdminFAQ" element={<AdminFAQ />} />
+                
+                <Route path="/BankConnections" element={<BankConnections />} />
+                
+                <Route path="/bank-connected" element={<bank-connected />} />
+                
+                <Route path="/Adempauze" element={<Adempauze />} />
+                
+                <Route path="/AdempauzeCalculator" element={<AdempauzeCalculator />} />
+                
+                <Route path="/Potjes" element={<Potjes />} />
+                
+                <Route path="/VasteLastenCheck" element={<VasteLastenCheck />} />
+                
+                <Route path="/FAQ" element={<FAQ />} />
+                
+                <Route path="/LanguageSettings" element={<LanguageSettings />} />
+                
+                <Route path="/NotificationSettings" element={<NotificationSettings />} />
+                
+                <Route path="/SecuritySettings" element={<SecuritySettings />} />
+                
+                <Route path="/DisplaySettings" element={<DisplaySettings />} />
+                
+                <Route path="/AdminNewsletter" element={<AdminNewsletter />} />
+                
+                <Route path="/AflossingsOverzicht" element={<AflossingsOverzicht />} />
+                
+                <Route path="/VTLBSettings" element={<VTLBSettings />} />
+                
+                <Route path="/AdminSupport" element={<AdminSupport />} />
+                
+                <Route path="/AdminResearch" element={<AdminResearch />} />
+                
+                <Route path="/WorkSchedule" element={<WorkSchedule />} />
+                
+                <Route path="/BudgetPlan" element={<BudgetPlan />} />
+                
+                <Route path="/Income" element={<Income />} />
+                
+                <Route path="/MaandelijkseLasten" element={<MaandelijkseLasten />} />
+                
+                <Route path="/Wishlist" element={<Wishlist />} />
+                
+                <Route path="/Feedback" element={<Feedback />} />
+                
+            </Routes>
+        </Layout>
+    );
+}
+
+export default function Pages() {
+    return (
+        <Router>
+            <PagesContent />
+        </Router>
+    );
+}
