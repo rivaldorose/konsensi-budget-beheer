@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MonthlyCost } from '.@/api/entities/MonthlyCost';
-import { User } from '.@/api/entities/User';
+import { MonthlyCost, User } from '@/api/entities';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Receipt, Calendar, Edit2, Trash2, TrendingUp, AlertCircle, HelpCircle } from 'lucide-react';

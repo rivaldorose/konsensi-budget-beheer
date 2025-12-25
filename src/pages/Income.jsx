@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Income } from '.@/api/entities/Income';
-import { VariableIncomeEntry } from '.@/api/entities/VariableIncomeEntry';
-import { User } from '.@/api/entities/User';
+import { Income, VariableIncomeEntry, User } from '@/api/entities';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
