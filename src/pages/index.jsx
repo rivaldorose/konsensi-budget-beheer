@@ -20,7 +20,7 @@ import AdminFAQ from "./AdminFAQ";
 
 import BankConnections from "./BankConnections";
 
-import bank-connected from "./bank-connected";
+import BankConnected from "./bank-connected";
 
 import Adempauze from "./Adempauze";
 
@@ -86,7 +86,7 @@ const PAGES = {
     
     BankConnections: BankConnections,
     
-    bank-connected: bank-connected,
+    "bank-connected": BankConnected,
     
     Adempauze: Adempauze,
     
@@ -175,7 +175,7 @@ function PagesContent() {
                 
                 <Route path="/BankConnections" element={<BankConnections />} />
                 
-                <Route path="/bank-connected" element={<bank-connected />} />
+                <Route path="/bank-connected" element={<BankConnected />} />
                 
                 <Route path="/Adempauze" element={<Adempauze />} />
                 
