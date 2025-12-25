@@ -70,13 +70,47 @@ export default function Expenses() {
 
   const loadExpenses = useCallback(async () => {
     try {
+      setLoading(true);
       const user = await User.me();
-      const data = await Expense.filter({ created_by: user.email }, '-date');
+      if (!user || !user.id) {
+        console.error("User not authenticated");
+        setExpenses([]);
+        setLoading(false);
+        return;
+      }
+      
+      // Try user_id first, then created_by as fallback
+      let data = [];
+      try {
+        data = await Expense.filter({ user_id: user.id });
+      } catch (err) {
+        // Fallback to created_by if user_id doesn't work
+        try {
+          data = await Expense.filter({ created_by: user.id });
+        } catch (err2) {
+          // Last fallback: try with email if that's what the table uses
+          if (user.email) {
+            data = await Expense.filter({ created_by: user.email });
+          }
+        }
+      }
+      
+      // Sort by date descending
+      data.sort((a, b) => {
+        const dateA = new Date(a.date || a.created_at);
+        const dateB = new Date(b.date || b.created_at);
+        return dateB - dateA;
+      });
+      
       setExpenses(data);
       setLoading(false);
     } catch (error) {
       console.error("Error loading expenses:", error);
-      toast.error(t('expenses.errorLoading'));
+      toast({
+        title: t('expenses.errorLoading') || 'Error loading expenses',
+        variant: 'destructive'
+      });
+      setExpenses([]);
       setLoading(false);
     }
   }, [toast, t]);
