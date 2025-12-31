@@ -276,11 +276,15 @@ export default function Login() {
 
         <div className="relative z-10 flex flex-col items-center max-w-[480px]">
           {/* Image */}
-          <div className="mb-12 relative">
+          <div className="mb-12 relative z-20">
             <img
               alt="Konsensi Financial Illustration"
-              className="h-auto w-full max-w-[400px] drop-shadow-2xl rounded-2xl object-contain"
+              className="h-auto w-full max-w-[450px] drop-shadow-2xl rounded-2xl object-contain bg-transparent"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKU8ojJdUefYP9ZGYgNyFzApPlfgxguGrGWsHgxNl_eqzsgcSjbdc0LxVjRX0ZoQspG9GZB6-x0R5C6FkCB3CmpGb68zSxRYfKKfU4WAGSCv7OxlarK5k0r8w0Mjj90W9mUUEZ8uLyLWcgvYliMzuzt-sUDbmhSZFH8ZWFa5zdf0TsHUbhJJwbuhDUCTlFV8HFaPy_Nqa8z-T1jeNMnuAnMIoXKZ51_y35oolrPjuWTnxX5oV-1mG1su2iPhcFPW7eipy9Sxc916A"
+              onError={(e) => {
+                console.error('Image failed to load', e);
+              }}
+              style={{ display: 'block' }}
             />
           </div>
 
