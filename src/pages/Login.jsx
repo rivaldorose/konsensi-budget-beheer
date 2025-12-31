@@ -279,7 +279,7 @@ export default function Login() {
           <div className="mb-12 relative">
             <img
               alt="Konsensi Financial Illustration"
-              className="h-auto w-full max-w-[320px] drop-shadow-2xl rounded-2xl object-cover aspect-square"
+              className="h-auto w-full max-w-[400px] drop-shadow-2xl rounded-2xl object-contain"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKU8ojJdUefYP9ZGYgNyFzApPlfgxguGrGWsHgxNl_eqzsgcSjbdc0LxVjRX0ZoQspG9GZB6-x0R5C6FkCB3CmpGb68zSxRYfKKfU4WAGSCv7OxlarK5k0r8w0Mjj90W9mUUEZ8uLyLWcgvYliMzuzt-sUDbmhSZFH8ZWFa5zdf0TsHUbhJJwbuhDUCTlFV8HFaPy_Nqa8z-T1jeNMnuAnMIoXKZ51_y35oolrPjuWTnxX5oV-1mG1su2iPhcFPW7eipy9Sxc916A"
             />
           </div>
