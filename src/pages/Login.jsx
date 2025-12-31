@@ -33,6 +33,11 @@ export default function Login() {
   }, [darkMode]);
 
   useEffect(() => {
+    // #region agent log
+    const imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuAKU8ojJdUefYP9ZGYgNyFzApPlfgxguGrGWsHgxNl_eqzsgcSjbdc0LxVjRX0ZoQspG9GZB6-x0R5C6FkCB3CmpGb68zSxRYfKKfU4WAGSCv7OxlarK5k0r8w0Mjj90W9mUUEZ8uLyLWcgvYliMzuzt-sUDbmhSZFH8ZWFa5zdf0TsHUbhJJwbuhDUCTlFV8HFaPy_Nqa8z-T1jeNMnuAnMIoXKZ51_y35oolrPjuWTnxX5oV-1mG1su2iPhcFPW7eipy9Sxc916A";
+    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:35',message:'Login component mounted - image URL in code',data:{imageUrlPrefix:imageUrl.substring(0,80)+'...',urlLength:imageUrl.length,pathname:window.location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    
     // Check if user is already logged in
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
