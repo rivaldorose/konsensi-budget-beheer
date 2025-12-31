@@ -5,11 +5,35 @@ module.exports = {
   theme: {
   	extend: {
   		borderRadius: {
-  			lg: 'var(--radius)',
+  			DEFAULT: '0.5rem',
+  			lg: '1rem',
+  			xl: '12px',
+  			'2xl': '16px',
+  			'3xl': '24px',
+  			full: '9999px',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+  			primary: '#3D6456',
+  			secondary: '#B2FF78',
+  			success: '#10B981',
+  			info: '#60A5FA',
+  			warning: '#F59E0B',
+  			'konsensi-dark': '#3D6456',
+  			'primary-dark': '#3D6456',
+  			'konsensi-bg': '#F8F8F8',
+  			'background-page': '#F8F8F8',
+  			'background-light': '#F8F8F8',
+  			'background-dark': '#18230f',
+  			'accent-blue': '#60A5FA',
+  			'accent-orange': '#F59E0B',
+  			'accent-purple': '#8B5CF6',
+  			'purple-badge': '#8B5CF6',
+  			'surface-white': '#FFFFFF',
+  			'text-main': '#3D6456',
+  			'gray-text': '#4B5563',
+  			'gray-sub': '#9CA3AF',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -19,10 +43,6 @@ module.exports = {
   			popover: {
   				DEFAULT: 'hsl(var(--popover))',
   				foreground: 'hsl(var(--popover-foreground))'
-  			},
-  			primary: {
-  				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
   			},
   			secondary: {
   				DEFAULT: 'hsl(var(--secondary))',
@@ -60,6 +80,20 @@ module.exports = {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			}
+  		},
+  		fontFamily: {
+  			display: ['Montserrat', 'Inter', 'sans-serif'],
+  			header: ['Montserrat', 'Inter', 'sans-serif'],
+  			body: ['Lato', 'Inter', 'sans-serif'],
+  			montserrat: ['Montserrat', 'sans-serif'],
+  			lato: ['Lato', 'sans-serif'],
+  			sans: ['Inter', 'sans-serif']
+  		},
+  		boxShadow: {
+  			soft: '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+  			card: '0 2px 8px rgba(0,0,0,0.04)',
+  			nav: '0 2px 4px rgba(0,0,0,0.1)',
+  			hover: '0 4px 12px rgba(0,0,0,0.1)'
   		},
   		keyframes: {
   			'accordion-down': {

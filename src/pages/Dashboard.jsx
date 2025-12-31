@@ -12,41 +12,23 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useTranslation } from "@/components/utils/LanguageContext";
 import { motion } from "framer-motion";
-import FinancialBreakdown from "../components/dashboard/FinancialBreakdown";
 import { formatCurrency } from "@/components/utils/formatters";
-import {
-  DollarSign,
-  CheckCircle2,
-  FileText,
-  Eye,
-  EyeOff,
-  Calendar,
-  CreditCard,
-  XCircle,
-  Clock,
-  Euro,
-  Tag,
-  ChevronRight,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from "recharts";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { XCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import StartgidsWidget from "../components/dashboard/StartgidsWidget";
-import GamificationWidget from "@/components/gamification/GamificationWidget";
 import AchievementsModal from "@/components/gamification/AchievementsModal";
-
-
 import PersonalizedAdviceWidget from "@/components/dashboard/PersonalizedAdviceWidget";
 import { Transaction } from "@/api/entities";
+import WelcomeCard from "@/components/dashboard/WelcomeCard";
+import StatCards from "@/components/dashboard/StatCards";
+import DebtJourneyChart from "@/components/dashboard/DebtJourneyChart";
+import FinancialOverview from "@/components/dashboard/FinancialOverview";
+import UpcomingPayments from "@/components/dashboard/UpcomingPayments";
+import DashboardAlerts from "@/components/dashboard/DashboardAlerts";
+import GamificationStats from "@/components/dashboard/GamificationStats";
+import DashboardFooter from "@/components/dashboard/DashboardFooter";
+import { gamificationService } from "@/services/gamificationService";
+import { dashboardService } from "@/services/dashboardService";
 
 const createPageUrl = (pageName) => `/${pageName.toLowerCase()}`;
 
@@ -146,8 +128,14 @@ const dashboardTranslations = {
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
-  const [isDebtVisible, setIsDebtVisible] = useState(true);
-  const [graphView, setGraphView] = useState('month');
+  const [gamificationData, setGamificationData] = useState({
+    level: 9,
+    currentXP: 2025,
+    totalXP: 2562,
+    badges: [],
+    dailyMotivation: "Kleine stappen leiden tot grote resultaten.",
+    weekGoalPercentage: 89,
+  });
   const [dashboardData, setDashboardData] = useState({
     userName: '',
     totalIncome: 0,
@@ -416,6 +404,7 @@ export default function Dashboard() {
         allIncomes: allIncomes,
         allMonthlyCosts: allMonthlyCosts,
         allTransactions: allTransactions,
+        allPayments: allPayments,
       }));
 
     } catch (err) {
@@ -430,6 +419,36 @@ export default function Dashboard() {
   useEffect(() => {
     loadDashboardData();
   }, [loadDashboardData]);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadGamificationData();
+    }
+  }, [user, loadGamificationData]);
+
+  const loadGamificationData = useCallback(async () => {
+    if (!user?.id) return;
+    
+    try {
+      const [levelData, badges, motivation, weekGoal] = await Promise.all([
+        gamificationService.getUserLevel(user.id),
+        gamificationService.getUserBadges(user.id),
+        gamificationService.getDailyMotivation(language || 'nl'),
+        gamificationService.getWeekGoal(user.id),
+      ]);
+
+      setGamificationData({
+        level: levelData.level || 9,
+        currentXP: levelData.current_xp || 2025,
+        totalXP: levelData.xp_to_next_level || 2562,
+        badges: badges.map(b => b.badge_type),
+        dailyMotivation: motivation.quote || "Kleine stappen leiden tot grote resultaten.",
+        weekGoalPercentage: weekGoal?.percentage || 89,
+      });
+    } catch (error) {
+      console.error("Error loading gamification data:", error);
+    }
+  }, [language]);
 
   const today = new Date();
   const formattedDate = (() => {
@@ -485,6 +504,7 @@ export default function Dashboard() {
     debts = [],
     pots = [],
     allTransactions = [],
+    allPayments = [],
   } = dashboardData;
 
   const chartData = graphView === 'week' ? weeklyGraphData : monthlyGraphData;
@@ -497,37 +517,150 @@ export default function Dashboard() {
     }
   })();
 
+  // Prepare data for new components
+  const monthlyChartData = useMemo(() => {
+    const last6Months = Array.from({ length: 6 }, (_, i) => {
+      const monthDate = subMonths(new Date(), 5 - i);
+      const monthEnd = getEndOfMonth(monthDate);
+      const monthStart = getStartOfMonth(monthDate);
+      
+      const monthlyTotal = dashboardData.allPayments
+        ?.filter(p => {
+          const pDate = new Date(p.payment_date || p.created_at);
+          return pDate >= monthStart && pDate <= monthEnd;
+        })
+        .reduce((sum, p) => sum + (Number(p.amount) || 0), 0) || 0;
+      
+      return {
+        month: new Intl.DateTimeFormat("nl-NL", { month: "short" }).format(monthDate),
+        amount: monthlyTotal,
+      };
+    });
+    return last6Months;
+  }, [dashboardData.allPayments]);
+
+  const upcomingPaymentsData = useMemo(() => {
+    const payments = [];
+    if (nextCost) {
+      payments.push({
+        type: "fixed_cost",
+        name: nextCost.name,
+        amount: nextCost.amount,
+        date: nextCost.date,
+      });
+    }
+    if (nextPayment) {
+      payments.push({
+        type: "debt",
+        name: nextPayment.name,
+        amount: nextPayment.amount,
+        date: nextPayment.date,
+      });
+    }
+    return payments;
+  }, [nextCost, nextPayment]);
+
+  const financialBreakdownData = useMemo(() => {
+    return {
+      totalIncome: totalIncome,
+      fixedCosts: totalExpenses,
+      paymentPlans: dashboardData.activeDebtPaymentsSum || 0,
+      pots: dashboardData.totalPotjesBudget || 0,
+    };
+  }, [totalIncome, totalExpenses, dashboardData]);
+
   return (
-    <motion.div
-      className="space-y-6"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 capitalize">
-              {t('dashboard.welcomeBack', { name: userName })} 👋
-            </h1>
-            <p className="text-sm md:text-base text-gray-500 capitalize">{formattedDate}</p>
-          </div>
-        </div>
+    <div className="flex-grow max-w-[1440px] mx-auto w-full p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+      {/* Left Column */}
+      <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
+        {/* Welcome Card */}
+        <WelcomeCard
+          user={user}
+          level={gamificationData.level}
+          currentXP={gamificationData.currentXP}
+          totalXP={gamificationData.totalXP}
+          badges={gamificationData.badges}
+        />
+
+        {/* Stat Cards */}
+        <StatCards
+          totalIncome={totalIncome}
+          totalExpenses={totalExpenses}
+          totalPaidThisMonth={totalPaidThisMonth}
+          currentMonth={new Date()}
+        />
+
+        {/* Startgids Widget for new users */}
+        {user && !user.onboarding_completed && 
+         allIncomes.length === 0 && allMonthlyCosts.length === 0 && debts.length === 0 && pots.length === 0 && (
+          <StartgidsWidget 
+            allIncomes={allIncomes}
+            allMonthlyCosts={allMonthlyCosts}
+            allDebts={debts}
+            allPots={pots}
+            user={user}
+            onRefresh={loadDashboardData}
+          />
+        )}
+
+        {/* Debt Journey Chart */}
+        <DebtJourneyChart
+          monthlyData={monthlyChartData}
+          totalPaid={totalPaidAllTime}
+          progressPercentage={progressPercentage}
+        />
       </div>
 
-      {user && !user.onboarding_completed && 
-       allIncomes.length === 0 && allMonthlyCosts.length === 0 && debts.length === 0 && pots.length === 0 && (
-        <StartgidsWidget 
-          allIncomes={allIncomes}
-          allMonthlyCosts={allMonthlyCosts}
-          allDebts={debts}
-          allPots={pots}
-          user={user}
-          onRefresh={loadDashboardData}
-        />
-      )}
+      {/* Right Column */}
+      <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
+        {/* Total Remaining Debt Card */}
+        <div className="bg-konsensi-dark text-white rounded-[2rem] p-6 shadow-soft relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-10">
+            <span className="material-symbols-outlined text-[120px]">description</span>
+          </div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="p-2 bg-white/10 rounded-full">
+                <span className="material-symbols-outlined text-primary">account_balance_wallet</span>
+              </div>
+              <p className="text-primary font-bold text-sm">Totale Restschuld</p>
+            </div>
+            <p className="font-header text-4xl font-extrabold mb-2">
+              {formatCurrency(remainingDebt || 0, { decimals: 0 })}
+            </p>
+            <p className="text-sm text-white/70">Geen paniek, we komen er samen uit.</p>
+          </div>
+        </div>
 
-      <GamificationWidget compact={false} onViewAll={() => setShowAchievementsModal(true)} />
+        {/* Financial Overview */}
+        <FinancialOverview {...financialBreakdownData} />
+
+        {/* Gamification Stats */}
+        <GamificationStats daysOnTrack={7} savingsPotAmount={12.5} />
+
+        {/* Upcoming Payments */}
+        <UpcomingPayments payments={upcomingPaymentsData} />
+
+        {/* Dashboard Alerts */}
+        <DashboardAlerts alerts={[]} />
+      </div>
+
+      {/* Footer */}
+      <div className="lg:col-span-12">
+        <DashboardFooter
+          dailyMotivation={gamificationData.dailyMotivation}
+          weekGoalPercentage={gamificationData.weekGoalPercentage}
+          onNextAction={() => window.location.href = createPageUrl("VasteLastenCheck")}
+        />
+      </div>
+
+      {/* Achievements Modal */}
+      <AchievementsModal 
+        isOpen={showAchievementsModal} 
+        onClose={() => setShowAchievementsModal(false)} 
+      />
+    </div>
+  );
 
 
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Income, VariableIncomeEntry, User } from '@/api/entities';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,9 +6,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, TrendingUp, Calendar, Clock, FileText, Sparkles, Plus, Edit2, Trash2, RefreshCw, HelpCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { createPageUrl } from '@/utils';
 import { useToast } from '@/components/ui/toast';
 import { useTranslation } from '@/components/utils/LanguageContext';
 import IncomeFormModal from '@/components/income/IncomeFormModal';
@@ -18,6 +15,8 @@ import WorkStatusModal from '@/components/income/WorkStatusModal';
 import IncomeInfoModal from '@/components/income/IncomeInfoModal';
 import { formatCurrency } from '@/components/utils/formatters';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
 export default function IncomePage() {
     const { t } = useTranslation();
@@ -28,7 +27,7 @@ export default function IncomePage() {
     const [showFormModal, setShowFormModal] = useState(false);
     const [showScanModal, setShowScanModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
-        const [showWorkStatusModal, setShowWorkStatusModal] = useState(false);
+    const [showWorkStatusModal, setShowWorkStatusModal] = useState(false);
     const [editingIncome, setEditingIncome] = useState(null);
     const [selectedMonth, setSelectedMonth] = useState(() => {
         const now = new Date();
@@ -40,6 +39,7 @@ export default function IncomePage() {
     const [updatingIncome, setUpdatingIncome] = useState(null);
     const [updateAmount, setUpdateAmount] = useState('');
     const [showInfoModal, setShowInfoModal] = useState(false);
+    const [incomeType, setIncomeType] = useState('vast'); // For modal
 
     const months = [
         { value: '2025-01', label: 'januari 2025' },
@@ -67,11 +67,15 @@ export default function IncomePage() {
             const userData = await User.me();
             setUser(userData);
             
-            const incomeData = await Income.filter({ created_by: userData.email }, '-created_date', 100);
+            const userFilter = { user_id: userData.id };
+            const incomeData = await Income.filter(userFilter).catch(() => 
+                Income.filter({ created_by: userData.email }, '-created_date', 100)
+            );
             setIncomes(incomeData);
             
-            // Laad variabele inkomen entries
-            const variableData = await VariableIncomeEntry.filter({ created_by: userData.email }, '-created_date', 500);
+            const variableData = await VariableIncomeEntry.filter(userFilter).catch(() =>
+                VariableIncomeEntry.filter({ created_by: userData.email }, '-created_date', 500)
+            );
             setVariableEntries(variableData);
         } catch (error) {
             console.error('Error loading data:', error);
@@ -88,54 +92,60 @@ export default function IncomePage() {
     // Calculate totals for selected month
     const currentMonth = new Date().toISOString().substring(0, 7);
 
-              const fixedIncomeThisMonth = incomes.filter(i => {
-                  if (i.income_type !== 'vast') return false;
-
-                  // Werkrooster inkomen alleen tonen in huidige maand
-                  if (i.is_from_work_schedule) {
-                      return selectedMonth === currentMonth;
-                  }
-
-                  // Check of inkomen actief is in de geselecteerde maand
-                  if (i.start_date) {
-                      const startMonth = i.start_date.substring(0, 7);
-                      if (startMonth > selectedMonth) return false;
-                  }
-                  if (i.end_date) {
-                      const endMonth = i.end_date.substring(0, 7);
-                      if (endMonth < selectedMonth) return false;
-                  }
-                  if (i.is_active === false) return false;
-                  return true;
-              });
-    
-    const extraIncomeThisMonth = incomes.filter(i => {
-        if (i.income_type !== 'extra') return false;
-        if (!i.date) return false;
-        const incomeMonth = i.date.substring(0, 7);
-        return incomeMonth === selectedMonth;
-    });
-    
-    // Alle vaste inkomsten (voor jaaroverzicht)
-    const allFixedIncome = incomes.filter(i => i.income_type === 'vast');
-
-    const totalFixed = fixedIncomeThisMonth.reduce((sum, i) => {
-        // Voor variabel inkomen: check of er een entry is voor de geselecteerde maand
-        if (i.is_variable) {
-            const variableEntry = variableEntries.find(
-                v => v.income_id === i.id && v.month === selectedMonth
-            );
-            if (variableEntry) {
-                return sum + variableEntry.amount;
+    const fixedIncomeThisMonth = useMemo(() => {
+        return incomes.filter(i => {
+            if (i.income_type !== 'vast') return false;
+            if (i.is_from_work_schedule) {
+                return selectedMonth === currentMonth;
             }
-        }
-        return sum + (i.monthly_equivalent || i.amount || 0);
-    }, 0);
-    const totalExtra = extraIncomeThisMonth.reduce((sum, i) => sum + (i.amount || 0), 0);
+            if (i.start_date) {
+                const startMonth = i.start_date.substring(0, 7);
+                if (startMonth > selectedMonth) return false;
+            }
+            if (i.end_date) {
+                const endMonth = i.end_date.substring(0, 7);
+                if (endMonth < selectedMonth) return false;
+            }
+            if (i.is_active === false) return false;
+            return true;
+        });
+    }, [incomes, selectedMonth, currentMonth]);
+    
+    const extraIncomeThisMonth = useMemo(() => {
+        return incomes.filter(i => {
+            if (i.income_type !== 'extra') return false;
+            if (!i.date) return false;
+            const incomeMonth = i.date.substring(0, 7);
+            return incomeMonth === selectedMonth;
+        });
+    }, [incomes, selectedMonth]);
+    
+    const allFixedIncome = useMemo(() => {
+        return incomes.filter(i => i.income_type === 'vast');
+    }, [incomes]);
+
+    const totalFixed = useMemo(() => {
+        return fixedIncomeThisMonth.reduce((sum, i) => {
+            if (i.is_variable) {
+                const variableEntry = variableEntries.find(
+                    v => v.income_id === i.id && v.month === selectedMonth
+                );
+                if (variableEntry) {
+                    return sum + variableEntry.amount;
+                }
+            }
+            return sum + (i.monthly_equivalent || i.amount || 0);
+        }, 0);
+    }, [fixedIncomeThisMonth, variableEntries, selectedMonth]);
+
+    const totalExtra = useMemo(() => {
+        return extraIncomeThisMonth.reduce((sum, i) => sum + (i.amount || 0), 0);
+    }, [extraIncomeThisMonth]);
+
     const totalMonth = totalFixed + totalExtra;
 
     // Calculate year statistics
-    const calculateYearStats = () => {
+    const yearStats = useMemo(() => {
         const currentYear = new Date().getFullYear();
         let monthlyData = [];
         let totalYearFixed = 0;
@@ -146,16 +156,12 @@ export default function IncomePage() {
             const monthStr = `${currentYear}-${String(month).padStart(2, '0')}`;
             const monthNames = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
             
-            // Fixed income for this month
             const currentMonthStr = new Date().toISOString().substring(0, 7);
             const fixedForMonth = allFixedIncome.reduce((sum, i) => {
-                // Werkrooster inkomen alleen in huidige maand
                 if (i.is_from_work_schedule) {
                     if (monthStr !== currentMonthStr) return sum;
                     return sum + (i.monthly_equivalent || i.amount || 0);
                 }
-
-                // Check if income was active during this month
                 if (i.start_date) {
                     const startMonth = i.start_date.substring(0, 7);
                     if (startMonth > monthStr) return sum;
@@ -164,8 +170,6 @@ export default function IncomePage() {
                     const endMonth = i.end_date.substring(0, 7);
                     if (endMonth < monthStr) return sum;
                 }
-                
-                // Voor variabel inkomen: check of er een entry is voor deze maand
                 if (i.is_variable) {
                     const variableEntry = variableEntries.find(
                         v => v.income_id === i.id && v.month === monthStr
@@ -173,14 +177,11 @@ export default function IncomePage() {
                     if (variableEntry) {
                         return sum + variableEntry.amount;
                     }
-                    // Geen entry voor deze maand? Gebruik standaard bedrag
                     return sum + (i.monthly_equivalent || i.amount || 0);
                 }
-                
                 return sum + (i.monthly_equivalent || i.amount || 0);
             }, 0);
 
-            // Extra income for this month
             const extraForMonth = incomes
                 .filter(i => i.income_type === 'extra' && i.date?.substring(0, 7) === monthStr)
                 .reduce((sum, i) => sum + (i.amount || 0), 0);
@@ -207,9 +208,7 @@ export default function IncomePage() {
         const totalYear = totalYearFixed + totalYearExtra;
 
         return { monthlyData, avgFixed, avgExtra, avgTotal, totalYear };
-    };
-
-    const yearStats = calculateYearStats();
+    }, [allFixedIncome, incomes, variableEntries]);
 
     if (loading) {
         return (
@@ -219,394 +218,455 @@ export default function IncomePage() {
         );
     }
 
-    return (
-        <div className="max-w-5xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold text-gray-900">💰 Inkomen</h1>
-                    <button
-                        onClick={() => setShowInfoModal(true)}
-                        className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-                        title="Uitleg"
-                    >
-                        <HelpCircle className="w-5 h-5" />
-                    </button>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                    <Link to={createPageUrl('WorkSchedule')}>
-                        <Button variant="outline" className="gap-2">
-                            <Calendar className="w-4 h-4" />
-                            Werkschema
-                        </Button>
-                    </Link>
-                    <Button variant="outline" className="gap-2" onClick={() => setShowScanModal(true)}>
-                        <Sparkles className="w-4 h-4" />
-                        Scan Afschrift
-                    </Button>
+    const handleAddIncome = (type) => {
+        setIncomeType(type);
+        setEditingIncome(null);
+        setShowFormModal(true);
+    };
 
-                    <Button variant="outline" className="gap-2" onClick={() => setShowWorkStatusModal(true)}>
-                                                <Clock className="w-4 h-4" />
-                                                Werk/Inkomen Status
-                                            </Button>
-                    <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                        <SelectTrigger className="w-[160px] bg-white border-gray-300">
-                            <SelectValue>{currentMonthLabel}</SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                            {months.map(month => (
-                                <SelectItem key={month.value} value={month.value}>
-                                    {month.label}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+    return (
+        <main className="flex-1 flex justify-center w-full px-4 py-8">
+            <div className="w-full max-w-[1400px] flex flex-col gap-8">
+                {/* Page Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-[#3D6456] text-3xl font-extrabold tracking-tight">Inkomen</h1>
+                        <button 
+                            onClick={() => setShowInfoModal(true)}
+                            className="text-[#3D6456]/60 hover:text-[#3D6456] transition-colors"
+                        >
+                            <span className="material-symbols-outlined">help</span>
+                        </button>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <Link to={createPageUrl('WorkSchedule')}>
+                            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 transition-all text-sm font-medium bg-white">
+                                <span className="material-symbols-outlined text-[18px]">calendar_month</span>
+                                <span>Werkschema</span>
+                            </button>
+                        </Link>
+                        <button 
+                            onClick={() => setShowScanModal(true)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 transition-all text-sm font-medium bg-white"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">photo_camera</span>
+                            <span>Scan Afschrift</span>
+                        </button>
+                        <button 
+                            onClick={() => setShowWorkStatusModal(true)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 transition-all text-sm font-medium bg-white"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">work</span>
+                            <span>Status</span>
+                        </button>
+                        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                            <SelectTrigger className="flex items-center gap-2 pl-4 pr-3 py-2 rounded-full bg-white border border-gray-200 text-[#3D6456] hover:border-[#b4ff7a] transition-all text-sm font-bold shadow-sm w-auto min-w-[180px]">
+                                <span className="material-symbols-outlined text-[#b4ff7a]">calendar_month</span>
+                                <SelectValue>{currentMonthLabel}</SelectValue>
+                                <span className="material-symbols-outlined text-[20px]">arrow_drop_down</span>
+                            </SelectTrigger>
+                            <SelectContent>
+                                {months.map(month => (
+                                    <SelectItem key={month.value} value={month.value}>
+                                        {month.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                {/* Content Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Left Column (65% on Desktop) */}
+                    <div className="lg:col-span-8 flex flex-col gap-6">
+                        {/* 1. SUMMARY CARD */}
+                        <div className="gradient-card rounded-xl p-6 shadow-soft relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #b4ff7a 0%, #ecf4e6 100%)' }}>
+                            <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/20 rounded-full blur-3xl pointer-events-none"></div>
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 gap-6">
+                                {/* Left Section */}
+                                <div className="flex flex-col gap-4 flex-1">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <div className="p-1 rounded-full bg-[#3D6456]/10">
+                                                <span className="material-symbols-outlined text-[#3D6456] text-[16px]">bolt</span>
+                                            </div>
+                                            <span className="text-sm font-medium text-[#3D6456]/80">Vast inkomen (per maand)</span>
+                                        </div>
+                                        <span className="text-3xl font-extrabold text-[#3D6456]">{formatCurrency(totalFixed)}</span>
+                                    </div>
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <div className="p-1 rounded-full bg-[#3D6456]/10">
+                                                <span className="material-symbols-outlined text-[#3D6456] text-[16px]">redeem</span>
+                                            </div>
+                                            <span className="text-sm font-medium text-[#3D6456]/80">Extra inkomen deze maand</span>
+                                        </div>
+                                        <span className="text-xl font-bold text-[#3D6456]/70">{formatCurrency(totalExtra)}</span>
+                                    </div>
+                                </div>
+                                {/* Right Section (Total) */}
+                                <div className="flex flex-col items-end">
+                                    <span className="text-xs font-bold tracking-wider text-[#3D6456] uppercase mb-1 opacity-70">
+                                        Totaal {currentMonthLabel}
+                                    </span>
+                                    <span className="text-5xl font-extrabold text-[#3D6456] tracking-tight">{formatCurrency(totalMonth)}</span>
+                                </div>
+                            </div>
+                            {/* Info Banner */}
+                            <div className="mt-6 bg-[#3D6456]/5 rounded-lg p-4 flex items-start gap-3 border border-[#3D6456]/10 relative z-10">
+                                <span className="material-symbols-outlined text-[#3D6456]">lightbulb</span>
+                                <div>
+                                    <h4 className="font-bold text-[#3D6456] text-sm">Je vaste maandinkomen: {formatCurrency(totalFixed)}</h4>
+                                    <p className="text-xs text-[#3D6456]/80 mt-1 leading-relaxed">
+                                        Dit is het bedrag dat je maandelijks ontvangt op basis van je huidige instellingen. Wijzigingen in je werkschema worden hier automatisch verwerkt.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 2. JAAROVERZICHT CARD */}
+                        <div className="bg-white rounded-xl p-6 shadow-card border border-gray-100" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                            <div className="flex justify-between items-center mb-6">
+                                <div className="flex items-center gap-2">
+                                    <div className="bg-[#b4ff7a] p-1.5 rounded-lg">
+                                        <span className="material-symbols-outlined text-[#3D6456] text-[20px]">target</span>
+                                    </div>
+                                    <h3 className="text-lg font-bold text-[#3D6456]">Jaaroverzicht Inkomsten</h3>
+                                </div>
+                                <button 
+                                    onClick={() => setShowYearOverview(!showYearOverview)}
+                                    className="text-gray-400 hover:text-[#3D6456]"
+                                >
+                                    <span className="material-symbols-outlined">{showYearOverview ? 'expand_less' : 'expand_more'}</span>
+                                </button>
+                            </div>
+                            
+                            {showYearOverview && (
+                                <>
+                                    {/* Stats Row */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                        <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
+                                            <span className="text-xs font-medium text-blue-600 block mb-1">Gem. Vast</span>
+                                            <span className="text-lg font-bold text-[#3D6456]">{formatCurrency(yearStats.avgFixed)}</span>
+                                        </div>
+                                        <div className="p-3 bg-green-50 rounded-xl border border-green-100">
+                                            <span className="text-xs font-medium text-green-600 block mb-1">Gem. Extra</span>
+                                            <span className="text-lg font-bold text-[#3D6456]">{formatCurrency(yearStats.avgExtra)}</span>
+                                        </div>
+                                        <div className="p-3 bg-purple-50 rounded-xl border border-purple-100">
+                                            <span className="text-xs font-medium text-purple-600 block mb-1">Gem. Totaal</span>
+                                            <span className="text-lg font-bold text-[#3D6456]">{formatCurrency(yearStats.avgTotal)}</span>
+                                        </div>
+                                        <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                            <span className="text-xs font-medium text-gray-500 block mb-1">Totaal Jaar</span>
+                                            <span className="text-lg font-bold text-[#3D6456]">{formatCurrency(yearStats.totalYear)}</span>
+                                        </div>
+                                    </div>
+                                    {/* Chart Area */}
+                                    <div className="relative h-64 w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={yearStats.monthlyData}>
+                                                <defs>
+                                                    <linearGradient id="colorVast" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#3D6456" stopOpacity={0.6}/>
+                                                        <stop offset="95%" stopColor="#3D6456" stopOpacity={0}/>
+                                                    </linearGradient>
+                                                    <linearGradient id="colorExtra" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#60A5FA" stopOpacity={0.4}/>
+                                                        <stop offset="95%" stopColor="#60A5FA" stopOpacity={0}/>
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                                <XAxis 
+                                                    dataKey="name" 
+                                                    tick={{ fontSize: 12, fill: '#9ca3af' }}
+                                                    axisLine={{ stroke: '#e5e7eb' }}
+                                                />
+                                                <YAxis 
+                                                    tick={{ fontSize: 12, fill: '#9ca3af' }}
+                                                    axisLine={{ stroke: '#e5e7eb' }}
+                                                    tickFormatter={(value) => `€${(value / 1000).toFixed(1)}k`}
+                                                />
+                                                <Tooltip 
+                                                    formatter={(value) => formatCurrency(value)}
+                                                    contentStyle={{ 
+                                                        backgroundColor: 'white', 
+                                                        border: '1px solid #e5e7eb',
+                                                        borderRadius: '8px'
+                                                    }}
+                                                />
+                                                <Area 
+                                                    type="monotone" 
+                                                    dataKey="vast" 
+                                                    stackId="1"
+                                                    stroke="#3D6456" 
+                                                    fill="url(#colorVast)"
+                                                    name="Vast inkomen"
+                                                />
+                                                <Area 
+                                                    type="monotone" 
+                                                    dataKey="extra" 
+                                                    stackId="1"
+                                                    stroke="#60A5FA" 
+                                                    fill="url(#colorExtra)"
+                                                    name="Extra inkomen"
+                                                />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {/* 3. VAST INKOMEN LIST CARD */}
+                        <div className="bg-white rounded-xl p-6 shadow-card border border-gray-100" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                            <div className="flex justify-between items-center mb-6">
+                                <div>
+                                    <h3 className="text-lg font-bold text-[#3D6456] flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-[#b4ff7a]">bolt</span>
+                                        Vast Inkomen
+                                    </h3>
+                                    <p className="text-sm text-gray-400 font-medium mt-1">Terugkerend inkomen zoals salaris of uitkering</p>
+                                </div>
+                                <button 
+                                    onClick={() => handleAddIncome('vast')}
+                                    className="bg-[#ecf4e6] hover:bg-[#b4ff7a] text-[#3D6456] text-sm font-bold px-4 py-2 rounded-full transition-colors flex items-center gap-1"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">add</span>
+                                    Nieuw Inkomen
+                                </button>
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                {fixedIncomeThisMonth.length === 0 ? (
+                                    <p className="text-gray-500 text-center py-6">Nog geen vast inkomen toegevoegd</p>
+                                ) : (
+                                    fixedIncomeThisMonth.map((income) => {
+                                        const displayAmount = income.is_variable 
+                                            ? (variableEntries.find(v => v.income_id === income.id && v.month === selectedMonth)?.amount 
+                                                || income.monthly_equivalent 
+                                                || income.amount)
+                                            : (income.monthly_equivalent || income.amount);
+                                        
+                                        return (
+                                            <div 
+                                                key={income.id} 
+                                                className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-[#b4ff7a] hover:bg-[#fafcf8] transition-all group"
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-full bg-[#ecf4e6] flex items-center justify-center text-[#3D6456]">
+                                                        <span className="material-symbols-outlined">
+                                                            {income.is_from_work_schedule ? 'work' : 'trending_up'}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-bold text-[#3D6456]">{income.description || 'Werk / Salaris'}</h4>
+                                                        <p className="text-xs text-gray-500">
+                                                            {income.day_of_month ? `Maandelijks op de ${income.day_of_month}e` : 'Maandelijks'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-6">
+                                                    <span className="text-lg font-bold text-[#3D6456]">
+                                                        {income.is_from_work_schedule && '~'}
+                                                        {formatCurrency(displayAmount)}
+                                                    </span>
+                                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button 
+                                                            onClick={() => {
+                                                                setEditingIncome(income);
+                                                                setShowFormModal(true);
+                                                            }}
+                                                            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-blue-100 hover:text-blue-600 transition-colors"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[16px]">edit</span>
+                                                        </button>
+                                                        <button 
+                                                            onClick={async () => {
+                                                                if (window.confirm('Weet je zeker dat je dit inkomen wilt verwijderen?')) {
+                                                                    await Income.delete(income.id);
+                                                                    loadData();
+                                                                }
+                                                            }}
+                                                            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600 transition-colors"
+                                                        >
+                                                            <span className="material-symbols-outlined text-[16px]">delete</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+                        </div>
+
+                        {/* 4. EXTRA INKOMEN CARD */}
+                        <div className="bg-white rounded-xl p-6 shadow-card border border-gray-100" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                            <div className="mb-6">
+                                <h3 className="text-lg font-bold text-[#3D6456] flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[#b4ff7a]">redeem</span>
+                                    Extra Inkomen
+                                </h3>
+                                <p className="text-sm text-gray-400 font-medium mt-1">Eenmalige inkomsten in {currentMonthLabel}</p>
+                            </div>
+                            {extraIncomeThisMonth.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/50">
+                                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                                        <span className="material-symbols-outlined text-gray-300 text-3xl">savings</span>
+                                    </div>
+                                    <p className="text-gray-400 italic font-medium">Geen extra inkomsten deze maand</p>
+                                    <button 
+                                        onClick={() => handleAddIncome('extra')}
+                                        className="mt-4 text-[#3D6456] text-sm font-bold hover:underline"
+                                    >
+                                        + Voeg extra inkomen toe
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-3">
+                                    {extraIncomeThisMonth.map((income) => (
+                                        <div 
+                                            key={income.id} 
+                                            className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-[#b4ff7a] hover:bg-[#fafcf8] transition-all group"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-full bg-[#ecf4e6] flex items-center justify-center text-[#3D6456]">
+                                                    <span className="material-symbols-outlined">redeem</span>
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-[#3D6456]">{income.description}</h4>
+                                                    <p className="text-xs text-gray-500">
+                                                        {income.date && new Date(income.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-6">
+                                                <span className="text-lg font-bold text-[#3D6456]">{formatCurrency(income.amount)}</span>
+                                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button 
+                                                        onClick={() => {
+                                                            setEditingIncome(income);
+                                                            setShowFormModal(true);
+                                                        }}
+                                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-blue-100 hover:text-blue-600 transition-colors"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[16px]">edit</span>
+                                                    </button>
+                                                    <button 
+                                                        onClick={async () => {
+                                                            if (window.confirm('Weet je zeker dat je dit inkomen wilt verwijderen?')) {
+                                                                await Income.delete(income.id);
+                                                                loadData();
+                                                            }
+                                                        }}
+                                                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600 transition-colors"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[16px]">delete</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Column (35% on Desktop) */}
+                    <div className="lg:col-span-4 flex flex-col gap-6">
+                        {/* 1. Quick Stats / Calendar */}
+                        <div className="bg-white rounded-xl p-6 shadow-card border border-gray-100 flex flex-col gap-4" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Selecteer periode</h3>
+                            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                                <SelectTrigger className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-[#fafcf8] border border-gray-200 text-[#3D6456] font-bold shadow-sm hover:border-[#b4ff7a] transition-all">
+                                    <div className="flex items-center gap-3">
+                                        <span className="material-symbols-outlined text-[#b4ff7a]">calendar_month</span>
+                                        <SelectValue>{currentMonthLabel}</SelectValue>
+                                    </div>
+                                    <span className="material-symbols-outlined">expand_more</span>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {months.map(month => (
+                                        <SelectItem key={month.value} value={month.value}>
+                                            {month.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                                <button 
+                                    onClick={() => {
+                                        const [year, month] = selectedMonth.split('-');
+                                        const prevMonth = new Date(parseInt(year), parseInt(month) - 2, 1);
+                                        setSelectedMonth(`${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`);
+                                    }}
+                                    className="p-2 text-xs font-bold text-center rounded-lg bg-gray-50 hover:bg-[#ecf4e6] text-gray-500 hover:text-[#3D6456] transition-colors"
+                                >
+                                    Vorige Maand
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        const [year, month] = selectedMonth.split('-');
+                                        const nextMonth = new Date(parseInt(year), parseInt(month), 1);
+                                        setSelectedMonth(`${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`);
+                                    }}
+                                    className="p-2 text-xs font-bold text-center rounded-lg bg-gray-50 hover:bg-[#ecf4e6] text-gray-500 hover:text-[#3D6456] transition-colors"
+                                >
+                                    Volgende Maand
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* 2. Scan Action Card */}
+                        <div className="bg-[#fafcf8] rounded-xl p-6 shadow-card border border-gray-200 flex flex-col items-center text-center" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                            <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 text-[#3D6456]">
+                                <span className="material-symbols-outlined text-3xl">document_scanner</span>
+                            </div>
+                            <h3 className="font-bold text-[#3D6456] text-lg mb-2">Scan loonstrook</h3>
+                            <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+                                Heb je een fysieke of digitale loonstrook? Scan hem direct voor automatische verwerking.
+                            </p>
+                            <button 
+                                onClick={() => setShowScanModal(true)}
+                                className="w-full bg-[#b4ff7a] text-[#3D6456] font-bold py-3 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all shadow-sm"
+                            >
+                                Scan Nu
+                            </button>
+                        </div>
+
+                        {/* 3. Tips Card */}
+                        <div className="bg-blue-50 rounded-xl p-6 border border-blue-100 relative overflow-hidden">
+                            <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-9xl text-blue-100 opacity-50 rotate-12">lightbulb</span>
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="material-symbols-outlined text-blue-600">lightbulb</span>
+                                    <h3 className="font-bold text-blue-800">Tip van de maand</h3>
+                                </div>
+                                <p className="text-sm text-blue-900/80 leading-relaxed font-medium">
+                                    Vraag je werkgever om je salaris eerder uit te betalen als je grote uitgaven verwacht deze maand.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Status Summary Mini Card */}
+                        <div className="bg-white rounded-xl p-5 shadow-card border border-gray-100" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                            <h3 className="font-bold text-[#3D6456] mb-4 text-sm">Huidige Status</h3>
+                            <div className="flex items-center gap-3">
+                                <div className="bg-orange-100 text-orange-600 p-2 rounded-lg">
+                                    <span className="material-symbols-outlined">work_history</span>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-500 uppercase font-bold">Dienstverband</p>
+                                    <p className="text-sm font-bold text-[#3D6456]">
+                                        {user?.work_status === 'parttime' ? 'Parttime' : user?.work_status === 'fulltime' ? 'Fulltime' : user?.work_status === 'zzp' ? 'ZZP' : 'Niet ingesteld'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            {/* Income Summary Card */}
-            <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-                <CardContent className="p-6">
-                    <div className="space-y-4">
-                        {/* Vast inkomen */}
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <span className="text-yellow-500">⚡</span>
-                                <span className="text-gray-700">Vast inkomen (per maand)</span>
-                            </div>
-                            <span className="text-xl font-semibold text-gray-900">
-                                {formatCurrency(totalFixed)}
-                            </span>
-                        </div>
-
-                        {/* Extra inkomen */}
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <span className="text-green-500">⚡</span>
-                                <span className="text-gray-700">Extra inkomen deze maand</span>
-                            </div>
-                            <span className="text-xl font-semibold text-gray-900">
-                                {formatCurrency(totalExtra)}
-                            </span>
-                        </div>
-
-                        {/* Divider */}
-                        <div className="border-t border-gray-200 pt-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-blue-500">📊</span>
-                                    <span className="font-semibold text-gray-900">
-                                        TOTAAL {currentMonthLabel.toUpperCase()}
-                                    </span>
-                                </div>
-                                <span className="text-2xl font-bold text-green-600">
-                                    {formatCurrency(totalMonth)}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Info box */}
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-                            <div className="flex items-start gap-2">
-                                <span className="text-blue-500">💡</span>
-                                <div>
-                                    <p className="text-sm text-blue-800">
-                                        <strong>Je vaste maandinkomen: {formatCurrency(totalFixed)}</strong>
-                                    </p>
-                                    <p className="text-sm text-blue-700 mt-1">
-                                        Dit is het bedrag dat je elke maand kunt verwachten. Gebruik dit om je vaste lasten en potjes mee in te plannen. Extra inkomen kun je gebruiken voor eenmalige uitgaven of om schulden af te lossen.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Year Overview */}
-            <Card>
-                <CardHeader className="cursor-pointer" onClick={() => setShowYearOverview(!showYearOverview)}>
-                    <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2">
-                            <Sparkles className="w-5 h-5 text-purple-500" />
-                            Jaaroverzicht Inkomsten
-                        </CardTitle>
-                        <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform ${showYearOverview ? 'rotate-180' : ''}`} />
-                    </div>
-                </CardHeader>
-                
-                {showYearOverview && (
-                    <CardContent>
-                        {/* Stats Row */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-blue-50 rounded-lg p-4">
-                                <p className="text-xs text-blue-600 font-medium">Gem. Vast</p>
-                                <p className="text-xl font-bold text-blue-700">
-                                    {formatCurrency(yearStats.avgFixed)}
-                                </p>
-                            </div>
-                            <div className="bg-green-50 rounded-lg p-4">
-                                <p className="text-xs text-green-600 font-medium">Gem. Extra</p>
-                                <p className="text-xl font-bold text-green-700">
-                                    {formatCurrency(yearStats.avgExtra)}
-                                </p>
-                            </div>
-                            <div className="bg-purple-50 rounded-lg p-4">
-                                <p className="text-xs text-purple-600 font-medium">Gem. Totaal</p>
-                                <p className="text-xl font-bold text-purple-700">
-                                    {formatCurrency(yearStats.avgTotal)}
-                                </p>
-                            </div>
-                            <div className="bg-gray-50 rounded-lg p-4">
-                                <p className="text-xs text-gray-600 font-medium">Totaal Jaar</p>
-                                <p className="text-xl font-bold text-gray-900">
-                                    {formatCurrency(yearStats.totalYear)}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Chart */}
-                        <div className="h-64">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={yearStats.monthlyData}>
-                                    <defs>
-                                        <linearGradient id="colorVast" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                                        </linearGradient>
-                                        <linearGradient id="colorExtra" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                                    <XAxis 
-                                        dataKey="name" 
-                                        tick={{ fontSize: 12, fill: '#6b7280' }}
-                                        axisLine={{ stroke: '#e5e7eb' }}
-                                    />
-                                    <YAxis 
-                                        tick={{ fontSize: 12, fill: '#6b7280' }}
-                                        axisLine={{ stroke: '#e5e7eb' }}
-                                        tickFormatter={(value) => `€${(value / 1000).toFixed(1)}k`}
-                                    />
-                                    <Tooltip 
-                                        formatter={(value) => formatCurrency(value)}
-                                        contentStyle={{ 
-                                            backgroundColor: 'white', 
-                                            border: '1px solid #e5e7eb',
-                                            borderRadius: '8px',
-                                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                                        }}
-                                    />
-                                    <Area 
-                                        type="monotone" 
-                                        dataKey="vast" 
-                                        stackId="1"
-                                        stroke="#3b82f6" 
-                                        fill="url(#colorVast)"
-                                        name="Vast inkomen"
-                                    />
-                                    <Area 
-                                        type="monotone" 
-                                        dataKey="extra" 
-                                        stackId="1"
-                                        stroke="#10b981" 
-                                        fill="url(#colorExtra)"
-                                        name="Extra inkomen"
-                                    />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </CardContent>
-                )}
-            </Card>
-
-            {/* Vast Inkomen Section */}
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="flex items-center gap-2">
-                                <span className="text-yellow-500">⚡</span>
-                                Vast Inkomen
-                            </CardTitle>
-                            <p className="text-sm text-gray-500 mt-1">Terugkerend inkomen zoals salaris of uitkering</p>
-                        </div>
-                        <Button 
-                            data-tour="add-income"
-                            className="bg-green-500 hover:bg-green-600 text-white gap-2"
-                            onClick={() => {
-                                setEditingIncome(null);
-                                setShowFormModal(true);
-                            }}
-                        >
-                            <Plus className="w-4 h-4" />
-                            Nieuw Inkomen
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent data-tour="income-list">
-                    {fixedIncomeThisMonth.length === 0 ? (
-                        <p className="text-gray-500 text-center py-6">Nog geen vast inkomen toegevoegd</p>
-                    ) : (
-                        <div className="space-y-3">
-                            {fixedIncomeThisMonth.map((income) => (
-                                <div key={income.id} className={`flex items-center justify-between p-4 rounded-xl hover:bg-gray-100 transition-colors ${income.is_variable ? 'bg-amber-50 border border-amber-200' : 'bg-gray-50'}`}>
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${income.is_variable ? 'bg-amber-100' : 'bg-green-100'}`}>
-                                            {income.is_variable ? (
-                                                <RefreshCw className="w-5 h-5 text-amber-600" />
-                                            ) : (
-                                                <TrendingUp className="w-5 h-5 text-green-600" />
-                                            )}
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="font-semibold text-gray-900">{income.description}</h3>
-                                                {income.is_variable && (
-                                                    <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-full">
-                                                        Variabel
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <p className="text-sm text-gray-500">
-                                                {formatCurrency(income.amount)} {income.frequency === 'monthly' ? 'maandelijks' : income.frequency === 'weekly' ? 'wekelijks' : income.frequency === 'biweekly' ? 'tweewekelijks' : income.frequency === 'four_weekly' ? 'vierwekelijks' : ''}
-                                                {income.day_of_month && ` • Op de ${income.day_of_month}e`}
-                                                {income.is_variable && income.last_amount_update && (
-                                                    <span className="text-amber-600"> • Bijgewerkt: {new Date(income.last_amount_update).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}</span>
-                                                )}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-xl font-bold text-gray-900">
-                                            {income.is_from_work_schedule && '~'}
-                                            {income.is_variable ? (
-                                                formatCurrency(
-                                                    variableEntries.find(v => v.income_id === income.id && v.month === selectedMonth)?.amount 
-                                                    || income.monthly_equivalent 
-                                                    || income.amount
-                                                )
-                                            ) : (
-                                                formatCurrency(income.monthly_equivalent || income.amount)
-                                            )}
-                                        </span>
-                                        {income.is_variable && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => {
-                                                    setUpdatingIncome(income);
-                                                    // Zoek bestaande entry voor deze maand
-                                                    const existingEntry = variableEntries.find(
-                                                        v => v.income_id === income.id && v.month === selectedMonth
-                                                    );
-                                                    setUpdateAmount(existingEntry ? existingEntry.amount.toString() : income.amount.toString());
-                                                    setShowUpdateAmountModal(true);
-                                                }}
-                                                className="text-amber-600 border-amber-300 hover:bg-amber-50"
-                                            >
-                                                <RefreshCw className="w-3 h-3 mr-1" />
-                                                Update {currentMonthLabel}
-                                            </Button>
-                                        )}
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => {
-                                                setEditingIncome(income);
-                                                setShowFormModal(true);
-                                            }}
-                                            className="h-8 w-8 text-gray-400 hover:text-gray-600"
-                                        >
-                                            <Edit2 className="w-4 h-4" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={async () => {
-                                                if (window.confirm('Weet je zeker dat je dit inkomen wilt verwijderen?')) {
-                                                    await Income.delete(income.id);
-                                                    loadData();
-                                                }
-                                            }}
-                                            className="h-8 w-8 text-gray-400 hover:text-red-600"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* Extra Inkomen Section */}
-            <Card>
-                <CardHeader>
-                    <div>
-                        <CardTitle className="flex items-center gap-2">
-                            <span className="text-green-500">✨</span>
-                            Extra Inkomen
-                        </CardTitle>
-                        <p className="text-sm text-gray-500 mt-1">Eenmalige inkomsten in {currentMonthLabel}</p>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    {extraIncomeThisMonth.length === 0 ? (
-                        <p className="text-gray-500 text-center py-6">Geen extra inkomsten deze maand</p>
-                    ) : (
-                        <div className="space-y-3">
-                            {extraIncomeThisMonth.map((income) => (
-                                <div key={income.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                                            <Sparkles className="w-5 h-5 text-emerald-600" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-semibold text-gray-900">{income.description}</h3>
-                                            <p className="text-sm text-gray-500">
-                                                {income.date && new Date(income.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-xl font-bold text-gray-900">
-                                            {formatCurrency(income.amount)}
-                                        </span>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => {
-                                                setEditingIncome(income);
-                                                setShowFormModal(true);
-                                            }}
-                                            className="h-8 w-8 text-gray-400 hover:text-gray-600"
-                                        >
-                                            <Edit2 className="w-4 h-4" />
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={async () => {
-                                                if (window.confirm('Weet je zeker dat je dit inkomen wilt verwijderen?')) {
-                                                    await Income.delete(income.id);
-                                                    loadData();
-                                                }
-                                            }}
-                                            className="h-8 w-8 text-gray-400 hover:text-red-600"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
 
             {/* Modals */}
             <IncomeFormModal
@@ -616,10 +676,11 @@ export default function IncomePage() {
                     setEditingIncome(null);
                 }}
                 onSave={async (data) => {
+                    const finalData = { ...data, income_type: incomeType };
                     if (editingIncome) {
-                        await Income.update(editingIncome.id, data);
+                        await Income.update(editingIncome.id, finalData);
                     } else {
-                        await Income.create(data);
+                        await Income.create(finalData);
                     }
                     loadData();
                     setShowFormModal(false);
@@ -639,101 +700,24 @@ export default function IncomePage() {
             />
 
             <ImportStatementModal
-                                isOpen={showImportModal}
-                                onClose={() => setShowImportModal(false)}
-                                onSuccess={() => {
-                                    setShowImportModal(false);
-                                    loadData();
-                                }}
-                            />
+                isOpen={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onSuccess={() => {
+                    setShowImportModal(false);
+                    loadData();
+                }}
+            />
 
-                            <WorkStatusModal
-                                            isOpen={showWorkStatusModal}
-                                            onClose={() => setShowWorkStatusModal(false)}
-                                            onSave={() => loadData()}
-                                        />
+            <WorkStatusModal
+                isOpen={showWorkStatusModal}
+                onClose={() => setShowWorkStatusModal(false)}
+                onSave={() => loadData()}
+            />
 
-                                        {/* Update Amount Modal voor variabel inkomen */}
-                                        {showUpdateAmountModal && updatingIncome && (
-                                            <Dialog open={showUpdateAmountModal} onOpenChange={() => setShowUpdateAmountModal(false)}>
-                                                <DialogContent className="max-w-sm">
-                                                    <DialogHeader>
-                                                        <DialogTitle>💰 Bedrag bijwerken</DialogTitle>
-                                                    </DialogHeader>
-                                                    <div className="space-y-4 pt-4">
-                                                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                                                            <p className="text-sm text-amber-800">
-                                                                <strong>{updatingIncome.description}</strong>
-                                                            </p>
-                                                            <p className="text-xs text-amber-600">
-                                                                Vul het werkelijke bedrag in voor {currentMonthLabel}
-                                                            </p>
-                                                        </div>
-
-                                                        <div>
-                                                            <Label htmlFor="updateAmount">Bedrag voor {currentMonthLabel} (€)</Label>
-                                                            <Input
-                                                                id="updateAmount"
-                                                                type="number"
-                                                                step="0.01"
-                                                                min="0"
-                                                                value={updateAmount}
-                                                                onChange={(e) => setUpdateAmount(e.target.value)}
-                                                                placeholder="0.00"
-                                                                className="text-lg"
-                                                            />
-                                                        </div>
-
-                                                        <div className="flex gap-3">
-                                                            <Button 
-                                                                variant="outline" 
-                                                                onClick={() => setShowUpdateAmountModal(false)}
-                                                                className="flex-1"
-                                                            >
-                                                                Annuleren
-                                                            </Button>
-                                                            <Button 
-                                                                onClick={async () => {
-                                                                    const amount = parseFloat(updateAmount) || 0;
-
-                                                                    // Zoek bestaande entry
-                                                                    const existingEntry = variableEntries.find(
-                                                                        v => v.income_id === updatingIncome.id && v.month === selectedMonth
-                                                                    );
-
-                                                                    if (existingEntry) {
-                                                                        await VariableIncomeEntry.update(existingEntry.id, { amount });
-                                                                    } else {
-                                                                        await VariableIncomeEntry.create({
-                                                                            income_id: updatingIncome.id,
-                                                                            month: selectedMonth,
-                                                                            amount
-                                                                        });
-                                                                    }
-
-                                                                    toast({
-                                                                        title: '✅ Bedrag bijgewerkt',
-                                                                        description: `${updatingIncome.description}: ${formatCurrency(amount)} voor ${currentMonthLabel}`
-                                                                    });
-
-                                                                    setShowUpdateAmountModal(false);
-                                                                    setUpdatingIncome(null);
-                                                                    loadData();
-                                                                }}
-                                                                className="flex-1 bg-green-500 hover:bg-green-600"
-                                                            >
-                                                                Opslaan
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                </DialogContent>
-                                            </Dialog>
-                                        )}
-
-                                        <IncomeInfoModal
-                                            isOpen={showInfoModal}
-                                            onClose={() => setShowInfoModal(false)}
-                                        />
-                                    </div>
-                                );
-                            }
+            <IncomeInfoModal
+                isOpen={showInfoModal}
+                onClose={() => setShowInfoModal(false)}
+            />
+        </main>
+    );
+}

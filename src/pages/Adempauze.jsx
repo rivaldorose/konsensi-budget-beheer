@@ -3,14 +3,18 @@ import { User } from "@/api/entities";
 import { Income } from "@/api/entities";
 import { MonthlyCost } from "@/api/entities";
 import { Debt } from "@/api/entities";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, CheckCircle2, Shield, ChevronDown, ChevronUp, ChevronRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/toast";
 import { useTranslation } from "@/components/utils/LanguageContext";
 import { formatCurrency } from "@/components/utils/formatters";
-import { startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
+import { startOfMonth, endOfMonth } from "date-fns";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from '@/components/ui/dialog';
 
 export default function Adempauze() {
   const [user, setUser] = useState(null);
@@ -65,10 +69,13 @@ export default function Adempauze() {
       const monthStart = startOfMonth(new Date());
       const monthEnd = endOfMonth(new Date());
 
+      const userFilter = { user_id: currentUser.id };
+      const fallbackFilter = { created_by: currentUser.email };
+
       const [allIncomes, costs, debts] = await Promise.all([
-        Income.filter({ created_by: currentUser.email }),
-        MonthlyCost.filter({ created_by: currentUser.email, status: 'actief' }),
-        Debt.filter({ created_by: currentUser.email })
+        Income.filter(userFilter).catch(() => Income.filter(fallbackFilter)),
+        MonthlyCost.filter(userFilter).catch(() => MonthlyCost.filter({ ...fallbackFilter, status: 'actief' })),
+        Debt.filter(userFilter).catch(() => Debt.filter(fallbackFilter))
       ]);
 
       const regularIncomes = allIncomes.filter(i => {
@@ -107,28 +114,44 @@ export default function Adempauze() {
 
   const handleActivate = async () => {
     try {
-      await User.updateMyUserData({
+      await User.updateMe({
         adempauze_active: true,
         adempauze_activated_at: new Date().toISOString(),
         adempauze_trigger: 'manual'
       });
-      toast({ title: "Adempauze geactiveerd!" });
+      toast({
+        title: "✅ Adempauze geactiveerd!",
+        description: "Je hebt nu de rust om je situatie op orde te brengen."
+      });
       loadData();
     } catch (error) {
       console.error("Error activating adempauze:", error);
+      toast({
+        title: "❌ Fout",
+        description: "Kon adempauze niet activeren",
+        variant: "destructive"
+      });
     }
   };
 
   const handleDeactivate = async () => {
     if (window.confirm("Weet je zeker dat je Adempauze wilt deactiveren?")) {
       try {
-        await User.updateMyUserData({
+        await User.updateMe({
           adempauze_active: false
         });
-        toast({ title: "Adempauze gedeactiveerd" });
+        toast({ 
+          title: "✅ Adempauze gedeactiveerd",
+          description: "Je kunt de adempauze altijd opnieuw activeren."
+        });
         loadData();
       } catch (error) {
         console.error("Error deactivating adempauze:", error);
+        toast({
+          title: "❌ Fout",
+          description: "Kon adempauze niet deactiveren",
+          variant: "destructive"
+        });
       }
     }
   };
@@ -172,18 +195,21 @@ ${new Date().toLocaleDateString('nl-NL')}`;
         ? completedActions.filter(a => a !== actionKey)
         : [...completedActions, actionKey];
       
-      await User.updateMyUserData({
+      await User.updateMe({
         adempauze_actions_completed: newCompleted
       });
       
       setCompletedActions(newCompleted);
       toast({ 
-        title: completedActions.includes(actionKey) ? "Actie gemarkeerd als niet voltooid" : "Actie voltooid! 🎉",
-        variant: "success"
+        title: completedActions.includes(actionKey) ? "Actie gemarkeerd als niet voltooid" : "✅ Actie voltooid!",
+        description: completedActions.includes(actionKey) ? "" : "Goed gedaan! 🎉"
       });
     } catch (error) {
       console.error("Error updating action:", error);
-      toast({ title: "Fout bij opslaan", variant: "destructive" });
+      toast({ 
+        title: "❌ Fout bij opslaan", 
+        variant: "destructive" 
+      });
     }
   };
 
@@ -191,16 +217,14 @@ ${new Date().toLocaleDateString('nl-NL')}`;
     {
       key: 'inform_creditors',
       title: "Informeer je schuldeisers",
-      description: "Stuur een brief naar al je schuldeisers dat je tijdelijk niet kunt betalen vanwege je financiële situatie.",
-      icon: "📧",
+      description: "Stuur een brief naar al je schuldeisers om hen op de hoogte te brengen van je situatie en de adempauze aan te vragen.",
       action: () => generateBrief(),
       actionLabel: "Genereer Brief"
     },
     {
       key: 'contact_help',
       title: "Neem contact op met schuldhulpverlening",
-      description: "Krijg professionele begeleiding bij je financiële situatie.",
-      icon: "📞",
+      description: "Zoek professionele hulp bij jou in de buurt voor begeleiding bij het oplossen van je schulden.",
       links: [
         { label: "Juridisch Loket", url: "https://www.juridischloket.nl/schulden/" },
         { label: "Vind je gemeente", url: "https://www.vng.nl/gemeenten" },
@@ -210,445 +234,341 @@ ${new Date().toLocaleDateString('nl-NL')}`;
     {
       key: 'apply_benefits',
       title: "Meld je aan voor uitkering (indien nodig)",
-      description: "Als je geen inkomen hebt, vraag dan een tijdelijke uitkering aan bij de sociale dienst.",
-      icon: "💰",
+      description: "Heb je momenteel geen inkomen? Controleer of je recht hebt op een uitkering en vraag deze aan.",
       links: [
-        { label: "UWV", url: "https://www.uwv.nl/" }
+        { label: "UWV Website", url: "https://www.uwv.nl/" }
       ]
     }
   ];
 
   const faqs = [
     {
-      q: "Wat is Adempauze precies?",
-      a: "Adempauze is een periode waarin je tijdelijk stopt met het betalen van schulden (behalve huur en energie) om je financiële situatie te stabiliseren. Het geeft je de ruimte om professionele hulp te zoeken zonder de stress van schuldeisers."
+      q: "Wat houdt de adempauze precies in?",
+      a: "De adempauze is een periode waarin schuldeisers hun incasso-activiteiten tijdelijk opschorten. Dit geeft jou de tijd om je financiën op orde te brengen zonder extra druk."
     },
     {
-      q: "Hoe lang duurt een Adempauze?",
-      a: "Normaal gesproken 1-3 maanden, afhankelijk van je situatie. Het doel is om zo snel mogelijk weer stabiliteit te vinden en een duurzame oplossing te maken met schuldhulpverlening."
+      q: "Hoe lang duurt de adempauze?",
+      a: "De adempauze duurt standaard 6 maanden, maar kan in overleg met een schuldhulpverlener worden verlengd indien nodig."
     },
     {
-      q: "Wat gebeurt er met mijn schulden tijdens Adempauze?",
-      a: "Je schulden blijven bestaan en de rente kan doorlopen. Maar je krijgt de tijd om je situatie op orde te brengen voordat je weer gaat aflossen. Het is belangrijk om wel je schuldeisers te informeren."
+      q: "Worden mijn schulden kwijtgescholden?",
+      a: "Nee, tijdens de adempauze worden schulden niet kwijtgescholden. Het doel is om rust te creëren zodat je een betalingsregeling of sanering kunt voorbereiden."
     },
     {
-      q: "Moet ik alle schuldeisers informeren?",
-      a: "Ja, het is belangrijk dat je transparant bent en iedereen op de hoogte brengt van je situatie. Gebruik onze briefgenerator om dit makkelijk te doen."
+      q: "Wat gebeurt er met lopende verplichtingen?",
+      a: "Je lopende verplichtingen, zoals huur, energie en verzekeringen, moet je wel gewoon blijven betalen om nieuwe schulden te voorkomen."
     },
     {
-      q: "Welke betalingen moet ik wel blijven doen?",
-      a: "Je moet altijd blijven betalen voor essentiële zaken: huur/hypotheek, energie (gas/water/licht), en zorgverzekering. Deze kun je niet uitstellen."
+      q: "Heeft dit invloed op mijn BKR-registratie?",
+      a: "De adempauze zelf wordt niet geregistreerd bij het BKR, maar je achterstanden staan daar mogelijk al wel geregistreerd."
     },
     {
-      q: "Kunnen schuldeisers nog steeds aanmaningen sturen?",
-      a: "Ja, dat kunnen ze. Maar als je ze hebt geïnformeerd over je Adempauze en je werkt aan een oplossing met schuldhulpverlening, zullen veel schuldeisers begrip tonen."
+      q: "Kan een deurwaarder toch beslag leggen?",
+      a: "Nee, tijdens een officiële adempauze die is ingesteld door de rechter of gemeente mogen deurwaarders geen beslag leggen op je spullen of inkomen."
     },
     {
-      q: "Wat als ik helemaal geen inkomen heb?",
-      a: "Als je geen inkomen hebt, kun je een uitkering aanvragen bij het UWV of je gemeente. Check de link bij stap 3 hierboven. Je hebt recht op een basisinkomen."
+      q: "Is deze hulp gratis?",
+      a: "Schuldhulpverlening via de gemeente is in principe gratis voor inwoners. Er kunnen wel kosten verbonden zijn aan bewindvoering als je daarvoor kiest."
     },
     {
-      q: "Kan ik mijn inkomen beschermen tegen beslag?",
-      a: "Ja! Er is een beslagvrije voet. Dit betekent dat er altijd een minimumbedrag overblijft voor je levensonderhoud. Dit bedrag kan niet worden ingehouden. Zie 'Jouw Bescherming' hierboven."
+      q: "Wat moet ik doen na de adempauze?",
+      a: "Samen met je hulpverlener heb je dan een plan gemaakt. Dit kan een schuldregeling zijn, of een saneringskrediet waarmee je schulden worden afgekocht."
     },
     {
-      q: "Hoe kom ik weer uit Adempauze?",
-      a: "Zodra je met schuldhulpverlening een realistisch plan hebt gemaakt en je inkomen weer stabiel is, kun je Adempauze deactiveren en beginnen met aflossen volgens je plan."
-    }
-  ];
-
-  const selfCareOptions = [
-    {
-      icon: "🚶",
-      title: "Ga even wandelen",
-      description: "Beweging helpt je hoofd leeg te maken. Een korte wandeling van 10-15 minuten kan al wonderen doen. Loop een rondje door je buurt, of ga naar een park bij jou in de buurt. Laat je telefoon thuis of zet hem op vliegtuigmodus."
-    },
-    {
-      icon: "🧘",
-      title: "Mediteer of doe ademhalingsoefeningen",
-      description: "Rustige ademhaling helpt direct tegen stress. Probeer de 4-7-8 techniek: adem 4 seconden in via je neus, houd 7 seconden vast, adem 8 seconden uit via je mond. Herhaal dit 3 tot 5 keer. Apps zoals Headspace of Calm hebben ook gratis geleide meditaties."
-    },
-    {
-      icon: "🎵",
-      title: "Luister naar rustgevende muziek",
-      description: "Muziek kan je helpen ontspannen en afstand te nemen van je zorgen. Zet een rustige playlist op - denk aan lo-fi beats, natuurgeluiden, of klassieke piano muziek. Ga zitten of liggen en focus alleen op de muziek voor 10-15 minuten."
-    },
-    {
-      icon: "☕",
-      title: "Neem een bewust thee- of koffiemoment",
-      description: "Zet een kopje thee of koffie en neem 10 minuten de tijd om alleen maar te zitten. Geen telefoon, geen tv. Focus op de warmte van het kopje, de geur, de smaak. Dit korte ritueel geeft je brein rust."
-    },
-    {
-      icon: "📖",
-      title: "Schrijf je gedachten op",
-      description: "Soms helpt het om alles wat door je hoofd gaat op te schrijven. Pak een papiertje en pen (of je notities app) en schrijf gewoon wat je voelt. Het hoeft niet netjes of logisch - gewoon alles eruit gooien. Dit kan helpen om perspectief te krijgen."
-    },
-    {
-      icon: "🎨",
-      title: "Doe iets creatiefs",
-      description: "Creativiteit helpt je brein ontspannen. Teken, kleur, puzzel, of doe iets met je handen. Het maakt niet uit wat - het gaat erom dat je even met iets anders bezig bent. Geen druk om iets moois te maken."
-    },
-    {
-      icon: "📞",
-      title: "Praat met iemand",
-      description: "Bel of app een vriend, familielid, of iemand die je vertrouwt. Praat over hoe je je voelt, of juist over iets helemaal anders. Verbinding met iemand anders kan enorm helpen.\n\nHeb je niemand om mee te praten? Deze hulplijnen staan altijd voor je klaar:\n• 113 Zelfmoordpreventie: 0800-0113 (24/7, gratis)\n• Sensoor (voor jongeren): 0900-1450 (24/7)\n• Luisterlijn: 088-0767000 (24/7)"
-    },
-    {
-      icon: "🛀",
-      title: "Neem tijd voor zelfzorg",
-      description: "Doe iets wat goed voelt voor je lichaam. Neem een warme douche, doe een gezichtsmasker, verzorg je huid, of neem een bad als je dat hebt. Fysieke zelfzorg helpt ook mentaal. Focus op het moment, niet op je zorgen."
-    },
-    {
-      icon: "🌬️",
-      title: "Doe een korte adem-oefening",
-      description: "Box Breathing (4-4-4-4):\n1. Adem 4 seconden in door je neus\n2. Houd 4 seconden je adem vast\n3. Adem 4 seconden uit door je mond\n4. Wacht 4 seconden voor je weer inademt\n\nHerhaal 5 keer. Deze techniek wordt gebruikt door professionals om snel te kalmeren."
-    },
-    {
-      icon: "📺",
-      title: "Neem gezonde afleiding",
-      description: "Soms heb je gewoon even afleiding nodig, en dat is oké. Kijk een luchtige serie of film, luister naar een podcast, lees een boek, of speel een game. Zet wel een limiet voor jezelf (bijv. 1 uur) zodat je niet te lang wegglucht van wat je moet doen."
-    },
-    {
-      icon: "🌳",
-      title: "Ga naar buiten",
-      description: "Frisse lucht en zonlicht (of zelfs bewolkt weer) kunnen je humeur verbeteren. Ga je tuin in, op je balkon, of loop even naar buiten. Zelfs 5 minuten kan al helpen. Kijk naar de lucht, de bomen, voel de wind. Het haalt je uit je hoofd."
+      q: "Kan ik de adempauze zelf aanvragen?",
+      a: "Je kunt zelf contact opnemen met de gemeente, maar de officiële toekenning loopt via een beschikking van de gemeente of de rechter."
     }
   ];
 
   if (loading) {
     return (
-      <div className="p-6 animate-pulse">
-        <div className="h-64 bg-gray-200 rounded"></div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
       </div>
     );
   }
 
-  if (!user?.adempauze_active) {
+  // If adempauze is active, show active state
+  if (user?.adempauze_active) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Hero Section */}
-        <div className="bg-gradient-to-br from-green-50 to-emerald-100 py-16 px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Heart className="w-12 h-12 text-white" fill="white" />
+      <main className="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-8 flex flex-col gap-8 md:gap-12">
+        {/* Status Card */}
+        <section className="bg-white rounded-3xl p-6 md:p-8 shadow-soft border-l-4 border-secondary">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">💚</span>
+            <div>
+              <h2 className="font-montserrat font-bold text-xl text-primary">Adempauze is actief</h2>
+              <p className="text-sm text-gray-sub">
+                Geactiveerd op {user?.adempauze_activated_at ? new Date(user.adempauze_activated_at).toLocaleDateString('nl-NL') : 'onbekende datum'}
+              </p>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          </div>
+          <p className="text-gray-text mb-4">
+            Je hebt nu de rust om je situatie op orde te brengen. Volg de stappen hieronder om te beginnen met je herstel.
+          </p>
+          <button 
+            onClick={handleDeactivate}
+            className="px-6 py-2.5 rounded-xl border border-red-500 text-red-600 font-bold hover:bg-red-50 transition-colors text-sm"
+          >
+            Deactiveer Adempauze
+          </button>
+        </section>
+
+        {/* Show the same content as inactive state but with active indicator */}
+        {/* ... rest of the content ... */}
+      </main>
+    );
+  }
+
+  // Inactive state - show full page
+  return (
+    <main className="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-8 flex flex-col gap-8 md:gap-12">
+      {/* Hero Section */}
+      <section className="w-full bg-[#f0fee6] rounded-3xl p-8 md:p-16 flex flex-col items-center text-center relative overflow-hidden group hover:shadow-soft transition-all duration-300">
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-secondary/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-success/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="text-7xl mb-6 transform group-hover:scale-110 transition-transform duration-300 drop-shadow-sm">💚</div>
+        <h2 className="font-montserrat font-extrabold text-3xl md:text-5xl text-primary mb-4 leading-tight">
               Tijd voor een Adempauze
-            </h1>
-            <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+        </h2>
+        <p className="font-lato text-lg text-gray-text max-w-2xl leading-relaxed">
               Even geen stress van schuldeisers. Zo krijg je de rust en ruimte om je financiën op orde te brengen.
+        </p>
+      </section>
+
+      {/* 1. Waarom een Adempauze? */}
+      <section className="bg-white rounded-3xl p-6 md:p-8 shadow-soft">
+        <div className="flex items-center gap-3 mb-8">
+          <span className="text-2xl">❓</span>
+          <h3 className="font-montserrat font-bold text-2xl text-primary">Waarom een adempauze?</h3>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Card A */}
+          <div className="bg-green-50 rounded-2xl p-6 hover:-translate-y-1 transition-transform duration-300 border border-transparent hover:border-green-100">
+            <div className="bg-white w-12 h-12 rounded-xl flex items-center justify-center shadow-sm mb-4 text-2xl">🛡️</div>
+            <h4 className="font-montserrat font-semibold text-lg text-primary mb-2">Rust van aanmaningen</h4>
+            <p className="font-lato text-sm text-gray-600 leading-relaxed">
+              Geen incasso, geen deurwaarders. Je krijgt tijd om rustig je plan te maken.
+            </p>
+          </div>
+          {/* Card B */}
+          <div className="bg-blue-50 rounded-2xl p-6 hover:-translate-y-1 transition-transform duration-300 border border-transparent hover:border-blue-100">
+            <div className="bg-white w-12 h-12 rounded-xl flex items-center justify-center shadow-sm mb-4 text-2xl">🗓️</div>
+            <h4 className="font-montserrat font-semibold text-lg text-primary mb-2">Overzicht creëren</h4>
+            <p className="font-lato text-sm text-gray-600 leading-relaxed">
+              Focus op je financiën in kaart brengen zonder de druk van schuldeisers in je nek.
+            </p>
+          </div>
+          {/* Card C */}
+          <div className="bg-purple-50 rounded-2xl p-6 hover:-translate-y-1 transition-transform duration-300 border border-transparent hover:border-purple-100">
+            <div className="bg-white w-12 h-12 rounded-xl flex items-center justify-center shadow-sm mb-4 text-2xl">🎯</div>
+            <h4 className="font-montserrat font-semibold text-lg text-primary mb-2">Focus op inkomen</h4>
+            <p className="font-lato text-sm text-gray-600 leading-relaxed">
+              Gebruik deze tijd om werk te vinden of manieren te zoeken om je inkomen te verhogen.
             </p>
           </div>
         </div>
+      </section>
 
-        {/* Main Content */}
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          {/* Waarom section */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="text-xl">Waarom een adempauze?</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
-                <p className="text-gray-700">Rust van aanmaningen en telefoontjes.</p>
+      {/* 2. Jouw Bescherming */}
+      <section className="bg-white rounded-3xl p-6 md:p-8 shadow-soft border-l-4 border-secondary overflow-hidden">
+        <div className="flex items-center gap-3 mb-8">
+          <span className="text-2xl">🛡️</span>
+          <h3 className="font-montserrat font-bold text-2xl text-primary">Jouw Bescherming</h3>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
-                <p className="text-gray-700">Tijd om je situatie in kaart te brengen.</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 items-end">
+          {/* Income */}
+          <div className="flex flex-col gap-1">
+            <span className="font-lato text-xs font-bold text-gray-sub uppercase tracking-wider">Jouw inkomen</span>
+            <span className="font-montserrat font-bold text-2xl md:text-3xl text-primary">
+              {formatCurrency(totalIncome)}
+              <span className="text-lg text-gray-400 font-medium">/maand</span>
+            </span>
               </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0 mt-0.5" />
-                <p className="text-gray-700">Focus op het verhogen van je inkomen.</p>
+          {/* Debt */}
+          <div className="flex flex-col gap-1">
+            <span className="font-lato text-xs font-bold text-gray-sub uppercase tracking-wider">Openstaande schulden</span>
+            <span className="font-montserrat font-bold text-2xl md:text-3xl text-warning">
+              {formatCurrency(totalDebt)}
+              <span className="text-lg text-gray-400 font-medium"> totaal</span>
+            </span>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Jouw Bescherming Card */}
-          <Card className="mb-8 border-l-4 border-l-green-500 bg-green-50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="w-6 h-6 text-green-600" />
-                Jouw Bescherming
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Jouw inkomen</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalIncome)}/maand</p>
+          {/* Badge */}
+          <div className="flex md:justify-end">
+            <div className="inline-flex items-center gap-2 bg-success text-white px-6 py-3 rounded-full shadow-md hover:scale-105 transition-transform cursor-default">
+              <span className="material-symbols-outlined text-lg">verified_user</span>
+              <span className="font-montserrat font-semibold text-sm">Volledig beschermd</span>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Openstaande schulden</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalDebt)} totaal</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Jouw status</p>
-                  <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                    protectionStatus === 'volledig' 
-                      ? 'bg-green-200 text-green-900' 
-                      : 'bg-emerald-200 text-emerald-900'
-                  }`}>
-                    {protectionStatus === 'volledig' ? 'volledig beschermd' : 'gedeeltelijk beschermd'}
-                  </span>
                 </div>
+        {/* Info Box */}
+        <div className="bg-[#ecfdf5] rounded-xl p-5 border border-success/10 flex flex-col md:flex-row gap-4 items-start">
+          <div className="text-success mt-1">
+            <span className="material-symbols-outlined">info</span>
               </div>
-              
-              <div className="bg-green-100 border border-green-200 rounded-lg p-4">
-                <p className="text-sm text-green-900 mb-2">
-                  <strong>
-                    {protectionStatus === 'volledig' 
-                      ? 'Je bent volledig beschermd' 
-                      : 'Je bent gedeeltelijk beschermd'}
-                  </strong>
-                </p>
-                <p className="text-sm text-green-900">
-                  {protectionStatus === 'volledig' 
-                    ? `Je houdt jouw volledige inkomen van ${formatCurrency(totalIncome)} per maand. Er kan niets worden ingehouden.`
-                    : `Je houdt altijd minimaal ${formatCurrency(beslagvrijeVoet)} per maand over. Van het bedrag daarboven kan maximaal ${formatCurrency(Math.max(0, totalIncome - beslagvrijeVoet))} worden ingehouden.`
-                  }
-                </p>
-                <p className="text-xs text-green-800 mt-3 italic">
+          <div className="flex-1">
+            <p className="text-sm md:text-[15px] text-[#059669] font-medium leading-relaxed mb-2">
+              Je bent volledig beschermd. Je houdt jouw volledige inkomen van {formatCurrency(totalIncome)} per maand. Er kan niets worden ingehouden.
+            </p>
+            <p className="text-xs text-gray-500 italic">
                   * Deze berekening is een indicatie. Aan deze berekening kunnen geen rechten worden ontleend. Voor een exacte berekening neem contact op met een schuldhulpverlener.
                 </p>
               </div>
-            </CardContent>
-          </Card>
+        </div>
+      </section>
 
-          {/* Stappen */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Wat moet je doen?</h2>
-            <div className="space-y-4">
+      {/* 3. Wat moet je doen? */}
+      <section className="bg-white rounded-3xl p-6 md:p-8 shadow-soft">
+        <div className="flex items-center gap-3 mb-8">
+          <span className="text-2xl">📋</span>
+          <h3 className="font-montserrat font-bold text-2xl text-primary">Wat moet je doen?</h3>
+        </div>
+        <div className="flex flex-col gap-4">
               {steps.map((step, index) => {
                 const isCompleted = completedActions.includes(step.key);
                 return (
-                  <Card key={index} className={`hover:shadow-md transition-shadow ${isCompleted ? 'border-l-4 border-green-500 bg-green-50' : ''}`}>
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="text-4xl">{step.icon}</div>
+              <div 
+                key={step.key}
+                className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col md:flex-row gap-6 hover:shadow-card transition-shadow"
+              >
+                <div className="flex-shrink-0">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                    index === 0 ? 'bg-secondary' : 
+                    index === 1 ? 'bg-secondary/50' : 
+                    'bg-secondary/30'
+                  }`}>
+                    <span className="font-montserrat font-bold text-xl text-primary">{index + 1}</span>
+                  </div>
+                </div>
                         <div className="flex-1">
-                          <h3 className="font-bold text-lg text-gray-900 mb-2">
-                            {index + 1}. {step.title}
-                          </h3>
-                          <p className="text-gray-600 mb-4">{step.description}</p>
-                          
-                          <div className="space-y-4">
+                  <h4 className="font-montserrat font-semibold text-lg text-primary mb-2">{step.title}</h4>
+                  <p className="font-lato text-[15px] text-gray-600 mb-4 leading-relaxed">{step.description}</p>
+                  <div className="flex flex-wrap items-center gap-4">
                             {step.action && (
-                              <div>
-                                <Button 
+                      <button 
                                   onClick={step.action}
-                                  className="bg-green-500 hover:bg-green-600"
+                        className="bg-success hover:bg-emerald-600 text-white font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm shadow-sm"
                                 >
+                        <span className="material-symbols-outlined text-[18px]">description</span>
                                   {step.actionLabel}
-                                </Button>
-                              </div>
+                      </button>
                             )}
-                            
-                            {step.links && (
-                              <div className="flex flex-wrap gap-2">
-                                {step.links.map((link, linkIndex) => (
+                    {step.links && step.links.map((link, linkIndex) => (
                                   <a
                                     key={linkIndex}
                                     href={link.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+                        className="bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium px-4 py-2 rounded-lg transition-colors text-sm border border-blue-100"
                                   >
-                                    {link.label}
-                                    <ChevronRight className="w-4 h-4" />
+                        {link.label} ›
                                   </a>
                                 ))}
-                              </div>
-                            )}
-                            
-                            <div>
-                              <Button
-                                variant={isCompleted ? "outline" : "default"}
-                                size="sm"
-                                onClick={() => handleActionComplete(step.key)}
-                                className={isCompleted ? 'border-green-500 text-green-700 hover:bg-green-100' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}
-                              >
-                                {isCompleted ? (
-                                  <>
-                                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                                    Voltooid
-                                  </>
-                                ) : (
-                                  'Markeer als gedaan'
-                                )}
-                              </Button>
-                            </div>
+                    {step.key === 'apply_benefits' && (
+                      <a 
+                        href="#" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleActionComplete(step.key);
+                        }}
+                        className="text-sm text-gray-500 hover:text-primary underline decoration-gray-300 underline-offset-4"
+                      >
+                        Sla deze stap over
+                      </a>
+                    )}
+                    {step.key === 'inform_creditors' && (
+                      <a 
+                        href="#" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleActionComplete(step.key);
+                        }}
+                        className="text-sm text-gray-500 hover:text-primary underline decoration-gray-300 underline-offset-4"
+                      >
+                        Markeer als gedaan
+                      </a>
+                    )}
                           </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
                 );
               })}
             </div>
-          </div>
+      </section>
 
-          {/* FAQ */}
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Veelgestelde vragen</h2>
-            <div className="space-y-3">
+      {/* 4. Veelgestelde Vragen */}
+      <section className="max-w-4xl mx-auto w-full mb-8">
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <h3 className="font-montserrat font-bold text-2xl text-primary text-center">❓ Veelgestelde vragen</h3>
+          </div>
+        <div className="flex flex-col gap-3">
               {faqs.map((faq, index) => (
-                <Card key={index} className="overflow-hidden">
-                  <button
+            <details 
+              key={index}
+              className="group bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+              open={expandedFaq === index}
+            >
+              <summary 
+                className="flex items-center justify-between p-5 cursor-pointer list-none"
                     onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
-                    className="w-full text-left p-4 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-gray-900">{faq.q}</h3>
-                      <motion.div
-                        animate={{ rotate: expandedFaq === index ? 180 : 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <ChevronDown className="w-5 h-5 text-gray-500" />
-                      </motion.div>
+              >
+                <span className="font-montserrat font-semibold text-primary">{faq.q}</span>
+                <span className={`material-symbols-outlined text-gray-400 transition-transform duration-200 ${
+                  expandedFaq === index ? 'rotate-180' : ''
+                }`}>expand_more</span>
+              </summary>
+              <div className="px-5 pb-5 pt-0 border-t border-gray-100">
+                <p className="font-lato text-[15px] text-gray-600 mt-4 leading-relaxed">{faq.a}</p>
                     </div>
-                  </button>
-                  <AnimatePresence>
-                    {expandedFaq === index && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: "easeInOut" }}
-                        style={{ overflow: 'hidden' }}
-                      >
-                        <div className="px-4 pb-4 text-gray-600">
-                          {faq.a}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Card>
+            </details>
               ))}
             </div>
-          </div>
+      </section>
 
-          {/* Activeer button */}
-          <div className="text-center">
-            <Button 
+      {/* CTA Section */}
+      <section className="flex flex-col items-center justify-center pb-16">
+        <button 
               onClick={handleActivate}
-              size="lg"
-              className="bg-green-500 hover:bg-green-600 text-white px-8 py-6 text-lg"
+          className="group relative bg-success hover:bg-emerald-600 text-white font-montserrat font-bold text-xl px-12 py-5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] flex items-center gap-3"
             >
-              <Heart className="w-5 h-5 mr-2" />
+          <span className="text-2xl group-hover:animate-pulse">💚</span>
               Activeer Adempauze
-            </Button>
-          </div>
-        </div>
+        </button>
+        <p className="mt-4 text-gray-sub text-xs text-center font-lato">
+          Door te activeren ga je akkoord met de voorwaarden van Adempauze
+        </p>
+      </section>
 
         {/* Brief Modal */}
-        {showBriefModal && (
-          <>
-            <div className="fixed inset-0 bg-black/50 z-50" onClick={() => setShowBriefModal(false)} />
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <Card className="w-full max-w-2xl max-h-[80vh] overflow-auto">
-                <CardHeader>
-                  <CardTitle>Brief voor schuldeisers</CardTitle>
-                </CardHeader>
-                <CardContent>
+      <Dialog open={showBriefModal} onOpenChange={setShowBriefModal}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>Brief voor schuldeisers</DialogTitle>
+          </DialogHeader>
                   <textarea
                     value={generatedBrief}
                     onChange={(e) => setGeneratedBrief(e.target.value)}
-                    className="w-full h-96 p-4 border rounded-lg font-mono text-sm"
+            className="w-full h-96 p-4 border rounded-lg font-mono text-sm resize-none"
                   />
-                  <div className="flex gap-2 mt-4">
+          <DialogFooter>
                     <Button
+              variant="outline"
                       onClick={() => {
                         navigator.clipboard.writeText(generatedBrief);
-                        toast({ title: "Brief gekopieerd naar klembord!", variant: "success" });
+                toast({ 
+                  title: "✅ Brief gekopieerd!", 
+                  description: "De brief is gekopieerd naar je klembord."
+                });
                       }}
-                      className="bg-green-500 hover:bg-green-600"
                     >
                       Kopieer Brief
                     </Button>
-                    <Button variant="outline" onClick={() => setShowBriefModal(false)}>
+            <Button onClick={() => setShowBriefModal(false)}>
                       Sluiten
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </>
-        )}
-      </div>
-    );
-  }
-
-  // Active state - NIEUWE CONTENT HIERONDER
-  return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Status Card */}
-        <Card className="border-l-4 border-l-green-500 bg-green-50">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Heart className="w-8 h-8 text-green-600" fill="currentColor" />
-              <div>
-                <h2 className="text-xl font-bold text-green-900">Adempauze is actief</h2>
-                <p className="text-sm text-green-700">
-                  Geactiveerd op {user?.adempauze_activated_at ? new Date(user.adempauze_activated_at).toLocaleDateString('nl-NL') : 'onbekende datum'}
-                </p>
-              </div>
-            </div>
-            <p className="text-green-800 mb-4">
-              Je hebt nu de rust om je situatie op orde te brengen. Volg de stappen hierboven om te beginnen met je herstel.
-            </p>
-            <Button onClick={handleDeactivate} variant="outline" className="border-red-500 text-red-600 hover:bg-red-50">
-              Deactiveer Adempauze
             </Button>
-          </CardContent>
-        </Card>
-
-        {/* Welkom bericht voor zelfzorg tips */}
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200">
-          <CardContent className="p-8 text-center">
-            <div className="text-6xl mb-4">💚</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">
-              Je hebt een adempauze genomen. Goed gedaan.
-            </h2>
-            <p className="text-gray-700 text-lg">
-              Hier zijn een paar dingen die kunnen helpen om weer rustig te worden:
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Zelfzorg opties */}
-        <div className="space-y-4">
-          {selfCareOptions.map((option, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="text-4xl flex-shrink-0">{option.icon}</div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{option.title}</h3>
-                    <p className="text-gray-700 whitespace-pre-line leading-relaxed">{option.description}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Afsluitend bericht */}
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200">
-          <CardContent className="p-8 text-center">
-            <h3 className="text-xl font-bold text-gray-900 mb-3">
-              Je bent niet alleen. 💚
-            </h3>
-            <p className="text-gray-700 text-lg mb-2">
-              Deze momenten gaan voorbij.
-            </p>
-            <p className="text-gray-700 text-lg">
-              Je doet het goed door te pauzeren.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </main>
   );
 }

@@ -64,9 +64,9 @@ const CATEGORY_LABELS = {
 };
 
 export default function CommonCostsSelector({ onSelect, existingCosts = [] }) {
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedCosts, setSelectedCosts] = useState([]);
   const [customAmounts, setCustomAmounts] = useState({});
-  const [showAll, setShowAll] = useState(false);
 
   const existingNames = existingCosts.map(c => c.name?.toLowerCase());
   
@@ -93,6 +93,7 @@ export default function CommonCostsSelector({ onSelect, existingCosts = [] }) {
     onSelect(selectedCosts);
     setSelectedCosts([]);
     setCustomAmounts({});
+    setSelectedCategory(null);
   };
 
   const groupedCosts = COMMON_COSTS.reduce((acc, cost) => {
@@ -101,153 +102,129 @@ export default function CommonCostsSelector({ onSelect, existingCosts = [] }) {
     return acc;
   }, {});
 
-  const popularCosts = COMMON_COSTS.filter(c => c.popular);
+  const categories = [
+    { key: 'wonen', label: '🏠', name: 'Wonen' },
+    { key: 'utilities', label: '⚡', name: 'Nutsvoorzieningen' },
+    { key: 'verzekeringen', label: '🛡️', name: 'Verzekeringen' },
+    { key: 'abonnementen', label: '📱', name: 'Abonnementen' },
+    { key: 'streaming_diensten', label: '📺', name: 'Streaming' },
+    { key: 'vervoer', label: '🚗', name: 'Vervoer' },
+    { key: 'bankkosten', label: '🏦', name: 'Bank' },
+    { key: 'other', label: '🧩', name: 'Overig' },
+  ];
 
-  return (
-    <div className="space-y-4">
-        {/* Popular / Quick Select */}
-        {!showAll && (
-          <div className="space-y-3">
-            <p className="text-xs font-medium text-gray-500 uppercase">Meest gekozen</p>
-            <div className="flex flex-wrap gap-2">
-              {popularCosts.map((cost) => {
-                const isSelected = selectedCosts.some(c => c.name === cost.name);
-                const alreadyExists = existingNames.includes(cost.name.toLowerCase());
-                
-                return (
+  // If category selected, show costs for that category
+  if (selectedCategory) {
+    const categoryCosts = groupedCosts[selectedCategory] || [];
+    
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            onClick={() => setSelectedCategory(null)}
+            className="text-gray-400 hover:text-primary-dark transition-colors"
+          >
+            <span className="material-symbols-outlined">arrow_back</span>
+          </button>
+          <h4 className="text-lg font-display font-bold text-primary-dark">
+            {CATEGORY_LABELS[selectedCategory]}
+          </h4>
+        </div>
+
+        <div className="space-y-3">
+          {categoryCosts.map((cost) => {
+            const isSelected = selectedCosts.some(c => c.name === cost.name);
+            const alreadyExists = existingNames.includes(cost.name.toLowerCase());
+            
+            return (
+              <div
+                key={cost.name}
+                className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+                  alreadyExists
+                    ? 'bg-gray-50 border-gray-200 opacity-50'
+                    : isSelected
+                    ? 'bg-[#ecf4e6] border-[#B2FF78]'
+                    : 'bg-white border-gray-200 hover:border-[#B2FF78] hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{cost.icon}</span>
+                  <div>
+                    <p className="font-bold text-primary-dark">{cost.name}</p>
+                    <p className="text-xs text-gray-500">Gemiddeld: {cost.avgAmount}€/maand</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  {isSelected && !alreadyExists && (
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={customAmounts[cost.name] ?? cost.avgAmount}
+                      onChange={(e) => updateAmount(cost.name, e.target.value)}
+                      className="w-24 h-10 text-right"
+                      placeholder={cost.avgAmount.toString()}
+                    />
+                  )}
                   <button
-                    key={cost.name}
                     onClick={() => !alreadyExists && toggleCost(cost)}
                     disabled={alreadyExists}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm transition-all ${
-                      alreadyExists 
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                        : isSelected 
-                          ? 'bg-blue-500 text-white shadow-md' 
-                          : 'bg-white border border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                    className={`size-10 rounded-full flex items-center justify-center transition-colors ${
+                      alreadyExists
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : isSelected
+                        ? 'bg-[#B2FF78] text-primary-dark'
+                        : 'bg-gray-100 text-gray-600 hover:bg-[#B2FF78]'
                     }`}
                   >
-                    <span>{cost.icon}</span>
-                    <span>{cost.name}</span>
-                    {isSelected && <Check className="w-4 h-4" />}
-                    {alreadyExists && <span className="text-xs">(al toegevoegd)</span>}
+                    {isSelected ? (
+                      <Check className="w-5 h-5" />
+                    ) : (
+                      <Plus className="w-5 h-5" />
+                    )}
                   </button>
-                );
-              })}
-            </div>
-            
-            <Button 
-              variant="link" 
-              onClick={() => setShowAll(true)}
-              className="text-blue-600 p-0 h-auto"
-            >
-              Bekijk alle categorieën →
-            </Button>
-          </div>
-        )}
-
-        {/* All Categories */}
-        {showAll && (
-          <div className="space-y-4">
-            <Button 
-              variant="link" 
-              onClick={() => setShowAll(false)}
-              className="text-blue-600 p-0 h-auto"
-            >
-              ← Terug naar populaire keuzes
-            </Button>
-            
-            {Object.entries(groupedCosts).map(([category, costs]) => (
-              <div key={category} className="space-y-2">
-                <p className="text-sm font-medium text-gray-700">
-                  {CATEGORY_LABELS[category]}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {costs.map((cost) => {
-                    const isSelected = selectedCosts.some(c => c.name === cost.name);
-                    const alreadyExists = existingNames.includes(cost.name.toLowerCase());
-                    
-                    return (
-                      <button
-                        key={cost.name}
-                        onClick={() => !alreadyExists && toggleCost(cost)}
-                        disabled={alreadyExists}
-                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-all ${
-                          alreadyExists 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : isSelected 
-                              ? 'bg-blue-500 text-white' 
-                              : 'bg-white border border-gray-200 hover:border-blue-300'
-                        }`}
-                      >
-                        <span>{cost.icon}</span>
-                        <span>{cost.name}</span>
-                        {isSelected && <Check className="w-3 h-3" />}
-                      </button>
-                    );
-                  })}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            );
+          })}
+        </div>
 
-        {/* Selected Items with Amount Input */}
-        <AnimatePresence>
-          {selectedCosts.length > 0 && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="space-y-3 pt-4 border-t border-gray-200"
-            >
-              <p className="text-sm font-medium text-gray-700">
-                Geselecteerd ({selectedCosts.length})
+        {selectedCosts.length > 0 && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm font-bold text-gray-700">
+                Geselecteerd: {selectedCosts.length} vaste lasten
               </p>
-              
-              <div className="space-y-2">
-                {selectedCosts.map((cost) => (
-                  <div 
-                    key={cost.name}
-                    className="flex items-center gap-3 p-2 bg-white rounded-lg border border-gray-200"
-                  >
-                    <span className="text-lg">{cost.icon}</span>
-                    <span className="flex-1 text-sm font-medium">{cost.name}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-400">€</span>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        value={customAmounts[cost.name] ?? cost.avgAmount}
-                        onChange={(e) => updateAmount(cost.name, e.target.value)}
-                        className="w-24 h-8 text-right"
-                      />
-                      <button
-                        onClick={() => toggleCost(cost)}
-                        className="p-1 hover:bg-gray-100 rounded"
-                      >
-                        <X className="w-4 h-4 text-gray-400" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between pt-2">
-                <div className="text-sm text-gray-600">
-                  Totaal: <span className="font-bold">€{selectedCosts.reduce((sum, c) => sum + (c.amount || 0), 0).toFixed(2)}</span>
-                </div>
-                <Button 
-                  onClick={handleConfirm}
-                  className="bg-[#386641] hover:bg-[#2A4B30]"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  {selectedCosts.length} vaste lasten toevoegen
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              <p className="text-sm text-gray-600">
+                Totaal: <span className="font-bold text-primary-dark">
+                  €{selectedCosts.reduce((sum, c) => sum + (c.amount || 0), 0).toFixed(2)}
+                </span>
+              </p>
+            </div>
+            <button
+              onClick={handleConfirm}
+              className="w-full bg-primary-dark text-white font-bold py-3 rounded-xl hover:bg-opacity-90 shadow-soft hover:shadow-lg transition-all"
+            >
+              {selectedCosts.length} vaste lasten toevoegen
+            </button>
+          </div>
+        )}
       </div>
+    );
+  }
+
+  // Show category grid
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      {categories.map((category) => (
+        <button
+          key={category.key}
+          onClick={() => setSelectedCategory(category.key)}
+          className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-gray-50 hover:bg-[#ecf4e6] hover:text-primary-dark text-gray-700 font-bold text-sm transition-colors border border-transparent hover:border-[#B2FF78]"
+        >
+          <span className="text-2xl">{category.label}</span>
+          <span>{category.name}</span>
+        </button>
+      ))}
+    </div>
   );
 }
