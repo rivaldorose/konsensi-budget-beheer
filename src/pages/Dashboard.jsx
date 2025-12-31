@@ -591,17 +591,17 @@ export default function Dashboard() {
         />
 
         {/* Startgids Widget for new users */}
-        {user && !user.onboarding_completed && 
-         allIncomes.length === 0 && allMonthlyCosts.length === 0 && debts.length === 0 && pots.length === 0 && (
-          <StartgidsWidget 
-            allIncomes={allIncomes}
-            allMonthlyCosts={allMonthlyCosts}
-            allDebts={debts}
-            allPots={pots}
-            user={user}
-            onRefresh={loadDashboardData}
-          />
-        )}
+      {user && !user.onboarding_completed && 
+       allIncomes.length === 0 && allMonthlyCosts.length === 0 && debts.length === 0 && pots.length === 0 && (
+        <StartgidsWidget 
+          allIncomes={allIncomes}
+          allMonthlyCosts={allMonthlyCosts}
+          allDebts={debts}
+          allPots={pots}
+          user={user}
+          onRefresh={loadDashboardData}
+        />
+      )}
 
         {/* Debt Journey Chart */}
         <DebtJourneyChart
@@ -609,7 +609,7 @@ export default function Dashboard() {
           totalPaid={totalPaidAllTime}
           progressPercentage={progressPercentage}
         />
-      </div>
+                  </div>
 
       {/* Right Column */}
       <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
@@ -624,12 +624,12 @@ export default function Dashboard() {
                 <span className="material-symbols-outlined text-primary">account_balance_wallet</span>
               </div>
               <p className="text-primary font-bold text-sm">Totale Restschuld</p>
-            </div>
+                  </div>
             <p className="font-header text-4xl font-extrabold mb-2">
               {formatCurrency(remainingDebt || 0, { decimals: 0 })}
             </p>
             <p className="text-sm text-white/70">Geen paniek, we komen er samen uit.</p>
-          </div>
+              </div>
         </div>
 
         {/* Financial Overview */}
@@ -643,7 +643,7 @@ export default function Dashboard() {
 
         {/* Dashboard Alerts */}
         <DashboardAlerts alerts={[]} />
-      </div>
+                        </div>
 
       {/* Footer */}
       <div className="lg:col-span-12">
@@ -660,279 +660,5 @@ export default function Dashboard() {
         onClose={() => setShowAchievementsModal(false)} 
       />
     </div>
-  );
-
-
-
-
-
-      {/* Gepersonaliseerd Advies Widget */}
-      <PersonalizedAdviceWidget 
-        financialData={{
-          totalIncome,
-          totalFixedCosts: totalExpenses,
-          totalDebt: remainingDebt,
-          debtPaidThisMonth: totalPaidThisMonth,
-          monthlyDebtPayment: dashboardData.activeDebtPaymentsSum,
-          pots: pots,
-          transactions: allTransactions.filter(t => {
-            const tDate = new Date(t.date);
-            const monthStart = getStartOfMonth(new Date());
-            return tDate >= monthStart;
-          }),
-          previousMonthTransactions: allTransactions.filter(t => {
-            const tDate = new Date(t.date);
-            const prevMonthStart = getStartOfMonth(subMonths(new Date(), 1));
-            const prevMonthEnd = getEndOfMonth(subMonths(new Date(), 1));
-            return tDate >= prevMonthStart && tDate <= prevMonthEnd;
-          }),
-          monthlyCosts: allMonthlyCosts,
-          debts: debts,
-        }}
-        maxItems={3}
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            <Card data-tour="income-summary" className="bg-white shadow-sm rounded-xl border-none">
-              <CardContent className="p-5 flex flex-col justify-between h-full">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="w-9 h-9 bg-blue-100 flex items-center justify-center rounded-lg">
-                    <Calendar className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <p className="text-xs text-gray-500">{currentMonthFormatted}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mt-2">{t('dashboard.totalIncome')}</p>
-                  <p className="font-bold text-2xl text-gray-900">{formatCurrency(totalIncome || 0, { decimals: 0 })}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card data-tour="expenses-summary" className="bg-white shadow-sm rounded-xl border-none">
-              <CardContent className="p-5 flex flex-col justify-between h-full">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="w-9 h-9 bg-gray-100 flex items-center justify-center rounded-lg">
-                    <DollarSign className="w-5 h-5 text-gray-600" />
-                  </div>
-                  <p className="text-xs text-gray-500">{currentMonthFormatted}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mt-2">{t('dashboard.expenses')}</p>
-                  <p className="font-bold text-2xl text-gray-900">{formatCurrency(totalExpenses || 0, { decimals: 0 })}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card data-tour="debt-paid" className="bg-white shadow-sm rounded-xl border-2 border-emerald-300">
-              <CardContent className="p-5 flex flex-col justify-between h-full">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="w-9 h-9 bg-emerald-100 flex items-center justify-center rounded-lg">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                  </div>
-                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-none capitalize">
-                    {t('dashboard.proud')}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mt-2 capitalize">{t('dashboard.paidOff')}</p>
-                  <p className="font-bold text-2xl text-gray-900">{formatCurrency(totalPaidThisMonth || 0, { decimals: 0 })}</p>
-                  <p className="text-xs text-gray-500 capitalize">{t('dashboard.thisMonth')}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card data-tour="total-debt" className="bg-white shadow-sm rounded-xl border-none">
-              <CardContent className="p-5 flex flex-col justify-between h-full">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="w-9 h-9 bg-gray-100 flex items-center justify-center rounded-lg">
-                    <FileText className="w-5 h-5 text-gray-600" />
-                  </div>
-                  <Button variant="ghost" size="icon" className="w-8 h-8" onClick={() => setIsDebtVisible(!isDebtVisible)}>
-                    {isDebtVisible ? <EyeOff className="w-4 h-4 text-gray-500" /> : <Eye className="w-4 h-4 text-gray-500" />}
-                  </Button>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500 mt-2 capitalize">{t('dashboard.totalDebt')}</p>
-                  {isDebtVisible ? (
-                    <p className="font-bold text-2xl text-gray-900">{formatCurrency(remainingDebt || 0, { decimals: 0 })}</p>
-                  ) : (
-                    <p className="font-bold text-2xl text-gray-900">€ ****</p>
-                  )}
-                  <p className="text-xs text-gray-500">{t('dashboard.weWillGetThere')}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {showCheckIn && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-6"
-            >
-              <Card className="bg-gradient-to-r from-orange-50 to-red-50 border-orange-200 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => window.location.href = createPageUrl('VasteLastenCheck')}>
-                <CardContent className="p-4 md:p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">⏰</div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg text-orange-900 mb-1">
-                        {t('dashboard.checkInReminder')}
-                      </h3>
-                      <p className="text-orange-700 text-sm">
-                        {t('dashboard.checkInReminderText')}
-                      </p>
-                    </div>
-                    <ChevronRight className="w-6 h-6 text-orange-600" />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-
-          <Card className="bg-white shadow-sm rounded-xl border-none col-span-1 md:col-span-2">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg font-bold capitalize">{t('dashboard.debtJourney')}</CardTitle>
-                  <CardDescription className="text-sm text-gray-500 capitalize">{t('dashboard.yourProgress')}</CardDescription>
-                </div>
-                <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-                  <Button
-                    variant={graphView === 'month' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setGraphView('month')}
-                    className={`text-xs ${graphView === 'month' ? 'bg-green-500 text-white shadow-sm hover:bg-green-600' : ''}`}
-                  >
-                    Maand
-                  </Button>
-                  <Button
-                    variant={graphView === 'week' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setGraphView('week')}
-                    className={`text-xs ${graphView === 'week' ? 'bg-green-500 text-white shadow-sm hover:bg-green-600' : ''}`}
-                  >
-                    Week
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="px-5 pb-5">
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <p className="text-sm text-green-800 capitalize">{t('dashboard.totalPaidAllTime')}</p>
-                    <p className="text-2xl font-bold text-green-600">{formatCurrency(totalPaidAllTime || 0)}</p>
-                  </div>
-                  <div className="bg-purple-50 rounded-lg p-4">
-                    <p className="text-sm text-purple-800 capitalize">{t('dashboard.progress')}</p>
-                    <p className="text-2xl font-bold text-purple-600">{(Number(progressPercentage) || 0).toFixed(0)}%</p>
-                  </div>
-                </div>
-                <div>
-                  <ResponsiveContainer width="100%" height={200}>
-                    <AreaChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: -20 }}>
-                      <defs>
-                        <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#16a34a" stopOpacity={0.8} />
-                          <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                      <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => formatCurrency(value || 0, { decimals: 0 })} />
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                      <Tooltip contentStyle={{ borderRadius: '8px', borderColor: '#e5e7eb' }} formatter={(value) => formatCurrency(value || 0)} />
-                      <Area type="monotone" dataKey={t('dashboard.paidPerMonth')} stroke="#16a34a" fillOpacity={1} fill="url(#colorUv)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-                {monthsUntilDebtFree > 0 && (
-                  <div className="bg-green-500 text-white rounded-lg p-4 text-center">
-                    <p className="font-bold capitalize">{t('dashboard.onTheWayToFreedom')}</p>
-                    <p className="text-sm">{t('dashboard.monthsUntilFree', { amount: formatCurrency(monthlyPaymentRate || 0, { decimals: 0 }), months: monthsUntilDebtFree })}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="lg:col-span-1 space-y-6">
-          <FinancialBreakdown
-            breakdownData={breakdownData}
-            totalIncome={totalIncome}
-            t={t}
-          />
-
-          <Card className="bg-white shadow-sm rounded-xl border-none">
-            <CardHeader>
-              <CardTitle className="text-base font-medium capitalize flex items-center gap-2">
-                <Clock className="w-5 h-5 text-blue-500" />
-                <span>{t('dashboard.upcomingPayments')}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {(nextPayment || nextCost) ? (
-                <>
-                  {nextPayment && (
-                    <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-100 flex items-center justify-center rounded-full">
-                          <Tag className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900 text-sm capitalize">{t('dashboard.nextDebtPayment')}</p>
-                          <p className="text-xs text-gray-500">
-                            {(() => {
-                              try {
-                                const date = new Date(nextPayment.date);
-                                if (isNaN(date.getTime())) return 'Onbekend';
-                                return new Intl.DateTimeFormat(language || 'nl', { day: 'numeric', month: 'long' }).format(date);
-                              } catch (e) {
-                                return 'Onbekend';
-                              }
-                            })()} - {nextPayment.name}
-                          </p>
-                        </div>
-                      </div>
-                      <p className="font-bold text-blue-600">{formatCurrency(nextPayment.amount || 0)}</p>
-                    </div>
-                  )}
-                  {nextCost && (
-                    <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-orange-100 flex items-center justify-center rounded-full">
-                          <Euro className="w-4 h-4 text-orange-600" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-900 text-sm capitalize">{t('dashboard.nextFixedCost')}</p>
-                          <p className="text-xs text-gray-500">
-                            {(() => {
-                              try {
-                                const date = new Date(nextCost.date);
-                                if (isNaN(date.getTime())) return 'Onbekend';
-                                return new Intl.DateTimeFormat(language || 'nl', { day: 'numeric', month: 'long' }).format(date);
-                              } catch (e) {
-                                return 'Onbekend';
-                              }
-                            })()} - {nextCost.name}
-                          </p>
-                        </div>
-                      </div>
-                      <p className="font-bold text-orange-600">{formatCurrency(nextCost.amount || 0)}</p>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <p className="text-center text-gray-500 py-4 text-sm">{t('dashboard.noUpcomingPayments')}</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      <AchievementsModal 
-        isOpen={showAchievementsModal} 
-        onClose={() => setShowAchievementsModal(false)} 
-      />
-      </motion.div>
   );
 }
