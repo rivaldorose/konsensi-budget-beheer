@@ -281,8 +281,26 @@ export default function Login() {
               alt="Konsensi Financial Illustration"
               className="h-auto w-full max-w-[450px] drop-shadow-2xl rounded-2xl object-contain bg-transparent"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKU8ojJdUefYP9ZGYgNyFzApPlfgxguGrGWsHgxNl_eqzsgcSjbdc0LxVjRX0ZoQspG9GZB6-x0R5C6FkCB3CmpGb68zSxRYfKKfU4WAGSCv7OxlarK5k0r8w0Mjj90W9mUUEZ8uLyLWcgvYliMzuzt-sUDbmhSZFH8ZWFa5zdf0TsHUbhJJwbuhDUCTlFV8HFaPy_Nqa8z-T1jeNMnuAnMIoXKZ51_y35oolrPjuWTnxX5oV-1mG1su2iPhcFPW7eipy9Sxc916A"
+              onLoad={(e) => {
+                // #region agent log
+                fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:284',message:'Image loaded successfully',data:{src:e.target.src,width:e.target.naturalWidth,height:e.target.naturalHeight,computedDisplay:window.getComputedStyle(e.target).display,computedVisibility:window.getComputedStyle(e.target).visibility,computedOpacity:window.getComputedStyle(e.target).opacity},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+                // #endregion
+              }}
               onError={(e) => {
+                // #region agent log
+                fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:292',message:'Image failed to load',data:{src:e.target.src,error:'Image load error'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+                // #endregion
                 console.error('Image failed to load', e);
+              }}
+              ref={(img) => {
+                if (img) {
+                  // #region agent log
+                  setTimeout(() => {
+                    const styles = window.getComputedStyle(img);
+                    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:301',message:'Image ref - initial state',data:{src:img.src,srcUrl:img.currentSrc||img.src,complete:img.complete,naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,display:styles.display,visibility:styles.visibility,opacity:styles.opacity,width:styles.width,height:styles.height,parentDisplay:window.getComputedStyle(img.parentElement).display},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                  }, 100);
+                  // #endregion
+                }
               }}
               style={{ display: 'block' }}
             />
