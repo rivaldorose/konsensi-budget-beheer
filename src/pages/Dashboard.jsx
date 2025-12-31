@@ -591,17 +591,17 @@ export default function Dashboard() {
         />
 
         {/* Startgids Widget for new users */}
-      {user && !user.onboarding_completed && 
-       allIncomes.length === 0 && allMonthlyCosts.length === 0 && debts.length === 0 && pots.length === 0 && (
-        <StartgidsWidget 
-          allIncomes={allIncomes}
-          allMonthlyCosts={allMonthlyCosts}
-          allDebts={debts}
-          allPots={pots}
-          user={user}
-          onRefresh={loadDashboardData}
-        />
-      )}
+        {user && !user.onboarding_completed && 
+         allIncomes.length === 0 && allMonthlyCosts.length === 0 && debts.length === 0 && pots.length === 0 && (
+          <StartgidsWidget 
+            allIncomes={allIncomes}
+            allMonthlyCosts={allMonthlyCosts}
+            allDebts={debts}
+            allPots={pots}
+            user={user}
+            onRefresh={loadDashboardData}
+          />
+        )}
 
         {/* Debt Journey Chart */}
         <DebtJourneyChart
@@ -609,7 +609,7 @@ export default function Dashboard() {
           totalPaid={totalPaidAllTime}
           progressPercentage={progressPercentage}
         />
-                  </div>
+      </div>
 
       {/* Right Column */}
       <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
