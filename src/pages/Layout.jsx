@@ -86,6 +86,10 @@ function LayoutWithProvider({ children, currentPageName }) {
   const { toast } = useToast();
   const { startPageTour, startFullOnboarding } = useTour();
 
+  // Check if we're on login or onboarding page (case-insensitive, handle trailing slashes)
+  const currentPath = location.pathname.toLowerCase().replace(/\/$/, '');
+  const isAuthPage = currentPath === '/login' || currentPath === '/onboarding';
+
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(() => {
     try {
       const item = window.localStorage.getItem('sidebarCollapsed');
@@ -714,8 +718,15 @@ function LayoutWithProvider({ children, currentPageName }) {
       </div>
     );
   }
-  
 
+  // If on login/onboarding page, render without sidebar/header
+  if (isAuthPage) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {children}
+      </div>
+    );
+  }
 
   const isAnyModalOpen = showAddModal || showLoanModal || showScanBonModal || showConfirmModal;
   
