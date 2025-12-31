@@ -280,7 +280,7 @@ export default function Login() {
             <img
               alt="Konsensi Financial Illustration"
               className="h-auto w-full max-w-[450px] drop-shadow-2xl rounded-2xl object-contain bg-transparent"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZeKZgV15zBY8Hdko-SRWsy-DaMW6QgpEhp70TwjiWKIH4k6eQLCV8B5np6o-_kUVA9h2po7jELVbWid2sUjpLU9F2Y0gVpD25c4ItWrZBMrPxSPSB-lp5oYwrnUw-VXDHDlA0x_ge4Kd052I-padhP77b_oGonwzx0qXJgZburTji5RfUA-FQFYKvjXRxjxE1_Qi076Jj2MLk6yZLUUPKOaIsoMgnjmPkFvP4LehskmRvmUF6vJZsGChFd09PYbNPnZhQ2Xp-UQk"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKU8ojJdUefYP9ZGYgNyFzApPlfgxguGrGWsHgxNl_eqzsgcSjbdc0LxVjRX0ZoQspG9GZB6-x0R5C6FkCB3CmpGb68zSxRYfKKfU4WAGSCv7OxlarK5k0r8w0Mjj90W9mUUEZ8uLyLWcgvYliMzuzt-sUDbmhSZFH8ZWFa5zdf0TsHUbhJJwbuhDUCTlFV8HFaPy_Nqa8z-T1jeNMnuAnMIoXKZ51_y35oolrPjuWTnxX5oV-1mG1su2iPhcFPW7eipy9Sxc916A"
               onError={(e) => {
                 console.error('Image failed to load', e);
               }}
