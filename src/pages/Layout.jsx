@@ -90,24 +90,6 @@ function LayoutWithProvider({ children, currentPageName }) {
   const currentPath = location.pathname.toLowerCase().replace(/\/$/, '');
   const isAuthPage = currentPath === '/login' || currentPath === '/onboarding';
 
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(() => {
-    try {
-      const item = window.localStorage.getItem('sidebarCollapsed');
-      return item ? JSON.parse(item) : false;
-    } catch (error) {
-      console.warn("Could not parse sidebarCollapsed from localStorage", error);
-      return false;
-    }
-  });
-
-  React.useEffect(() => {
-    try {
-      window.localStorage.setItem('sidebarCollapsed', JSON.stringify(isSidebarCollapsed));
-    } catch (error) {
-      console.error("Could not save sidebarCollapsed to localStorage", error);
-    }
-  }, [isSidebarCollapsed]);
-
   const [fabPosition, setFabPosition] = React.useState({ x: null, y: null });
   const fabRef = React.useRef(null);
   const isDragging = React.useRef(false);
@@ -718,7 +700,7 @@ function LayoutWithProvider({ children, currentPageName }) {
       </div>
     );
   }
-
+  
   // If on login/onboarding page, render without sidebar/header
   if (isAuthPage) {
     return (
@@ -729,10 +711,6 @@ function LayoutWithProvider({ children, currentPageName }) {
   }
 
   const isAnyModalOpen = showAddModal || showLoanModal || showScanBonModal || showConfirmModal;
-  
-  const sidebarWidthClass = isSidebarCollapsed ? 'w-20' : 'w-72';
-  const mainContentMarginClass = isSidebarCollapsed ? 'md:ml-20' : 'md:ml-72';
-  const headerPaddingClass = isSidebarCollapsed ? 'md:pl-24' : 'md:pl-[308px]';
 
   return (
     <div className={`theme-light flex min-h-screen bg-gray-50 font-sans antialiased ${isAnyModalOpen ? 'overflow-hidden' : ''}`} dir={languages.find(l => l.code === language)?.rtl ? 'rtl' : 'ltr'}>
@@ -764,14 +742,9 @@ function LayoutWithProvider({ children, currentPageName }) {
           .mobile-bottom-nav, .mobile-header, .fab-button { display: none; }
           .mobile-content { padding-bottom: 0; min-height: auto; }
         }
-        @media (max-width: 767px) {
-          .desktop-sidebar, .desktop-header { display: none !important; }
-          .main-content-wrapper { width: 100%; overflow-x: hidden; }
-        }
         @media (min-width: 768px) {
-          .desktop-sidebar { display: flex !important; flex-direction: column; height: 100vh; position: fixed; top: 0; left: 0; z-index: 50; }
-          .desktop-header { display: flex !important; position: fixed; top: 0; left: 0; right: 0; z-index: 40; }
-          .main-content-wrapper { height: 100vh; overflow-y: auto; background-color: theme('colors.gray.50'); }
+          .desktop-header { display: flex !important; position: sticky; top: 0; z-index: 40; }
+          .main-content-wrapper { width: 100%; overflow-x: hidden; }
         }
         .add-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 2000; animation: fadeIn 0.2s ease; }
         .add-modal-content { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 24px 24px 0 0; padding: 24px 20px; padding-bottom: calc(24px + env(safe-area-inset-bottom)); animation: slideUp 0.3s ease; max-height: 80vh; overflow-y: auto; z-index: 2001; }
@@ -788,193 +761,9 @@ function LayoutWithProvider({ children, currentPageName }) {
         .add-option-text p { font-size: 13px; color: #6B7280; }
       `}</style>
 
-      {/* Desktop Sidebar */}
-                  <aside className={`desktop-sidebar bg-white border-r border-gray-200 flex-col transition-all duration-300 ${sidebarWidthClass}`}>
-                      <div className="p-4 flex items-center" style={{paddingLeft: isSidebarCollapsed ? '1.5rem' : '1.5rem'}}>
-                        <img
-                          src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68dab075b0ca9b98841bfa1b/61e2744e7_KonsensiBudgetbeheer_Primaire_Beeldmerk3.png"
-                          alt="Konsensi Logo"
-                          className="w-8 h-8 flex-shrink-0"
-                        />
-                        <span className={`font-bold text-xl text-[var(--konsensi-primary)] overflow-hidden transition-all duration-200 ${isSidebarCollapsed ? 'w-0 ml-0' : 'w-auto ml-3'}`}>
-                                            konsensi
-                                          </span>
-                                          {!isSidebarCollapsed && (
-                                            <span className="ml-2 px-1.5 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-700 rounded cursor-pointer hover:bg-amber-200 transition-colors" title="We werken dagelijks aan verbeteringen. Soms kunnen er fouten optreden.">
-                                              BETA
-                                            </span>
-                                          )}
-                                        </div>
-
-          <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto">
-            {navigationItems.filter(item => item.path === 'VasteLastenCheck' ? showCheckIn : true).map((item, index) => {
-              if (item.type === "link") {
-                const active = isActive(item.path);
-                return (
-                  <Link
-                    key={index}
-                    to={createPageUrl(item.path)}
-                    className={`flex items-center p-3 rounded-lg font-medium transition-colors group ${active ? 'bg-green-50 text-[var(--konsensi-primary)]' : 'hover:bg-gray-50 text-gray-700 hover:text-gray-900'}`}
-                  >
-                    <item.icon className={`w-6 h-6 flex-shrink-0 transition-colors ${active ? 'text-[var(--konsensi-primary)]' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${isSidebarCollapsed ? 'w-0 ml-0' : 'w-auto ml-4'}`}>
-                      {getNavTranslation(item.titleKey, language)}
-                    </span>
-                  </Link>
-                );
-              }
-
-              if (item.type === "dropdown") {
-                const hasActiveChild = isBalansActive();
-                return (
-                  <div key={index}>
-                    <button
-                      onClick={() => !isSidebarCollapsed && setBalansOpen(!balansOpen)}
-                      className={`w-full flex items-center justify-between p-3 rounded-lg font-medium transition-colors group ${hasActiveChild ? 'bg-green-50 text-[var(--konsensi-primary)]' : 'hover:bg-gray-50 text-gray-700 hover:text-gray-900'}`}
-                    >
-                      <div className="flex items-center">
-                        <item.icon className={`w-6 h-6 flex-shrink-0 transition-colors ${hasActiveChild ? 'text-[var(--konsensi-primary)]' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                         <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${isSidebarCollapsed ? 'w-0 ml-0' : 'w-auto ml-4'}`}>
-                           {getNavTranslation(item.titleKey, language)}
-                         </span>
-                      </div>
-                      {!isSidebarCollapsed && (
-                        <ChevronDown className={`w-5 h-5 transition-transform ${balansOpen ? 'rotate-180' : ''}`} />
-                      )}
-                    </button>
-
-                    {!isSidebarCollapsed && balansOpen && (
-                      <div className="mt-2 ml-5 pl-4 border-l-2 border-gray-200 space-y-1">
-                        {item.subItems.map((subItem, subIndex) => {
-                          const subActive = isActive(subItem.path);
-                          return (
-                            <Link
-                              key={subIndex}
-                              to={createPageUrl(subItem.path)}
-                              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${subActive ? 'text-[var(--konsensi-primary)] bg-green-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`}
-                            >
-                              <subItem.icon className="w-4 h-4" />
-                              {getNavTranslation(subItem.titleKey, language)}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              }
-              return null;
-            })}
-          </nav>
-
-          <div className="px-3 py-4 border-t border-gray-200 space-y-2">
-             {user && (user.is_admin || user.role === 'admin') && (
-                <>
-                  <div className={`text-xs font-semibold text-gray-400 uppercase tracking-wider ${isSidebarCollapsed ? 'text-center' : 'px-3'} mb-2`}>
-                    {!isSidebarCollapsed && 'Admin'}
-                  </div>
-                  <Link
-                    to={createPageUrl('AdminFAQ')}
-                    className={`flex items-center p-3 rounded-lg font-medium transition-colors group ${isActive('AdminFAQ') ? 'bg-purple-100 text-purple-800' : 'hover:bg-gray-50 text-gray-700 hover:text-gray-900'}`}
-                  >
-                    <Shield className={`w-6 h-6 flex-shrink-0 transition-colors ${isActive('AdminFAQ') ? 'text-purple-700' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${isSidebarCollapsed ? 'w-0 ml-0' : 'w-auto ml-4'}`}>
-                      FAQ Beheer
-                    </span>
-                  </Link>
-
-                  <Link
-                    to={createPageUrl('AdminSupport')}
-                    className={`flex items-center p-3 rounded-lg font-medium transition-colors group ${isActive('AdminSupport') ? 'bg-purple-100 text-purple-800' : 'hover:bg-gray-50 text-gray-700 hover:text-gray-900'}`}
-                  >
-                    <MessageCircle className={`w-6 h-6 flex-shrink-0 transition-colors ${isActive('AdminSupport') ? 'text-purple-700' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${isSidebarCollapsed ? 'w-0 ml-0' : 'w-auto ml-4'}`}>
-                      Support Berichten
-                    </span>
-                  </Link>
-                  <Link
-                    to={createPageUrl('AdminResearch')}
-                    className={`flex items-center p-3 rounded-lg font-medium transition-colors group ${isActive('AdminResearch') ? 'bg-purple-100 text-purple-800' : 'hover:bg-gray-50 text-gray-700 hover:text-gray-900'}`}
-                  >
-                    <BarChart3 className={`w-6 h-6 flex-shrink-0 transition-colors ${isActive('AdminResearch') ? 'text-purple-700' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${isSidebarCollapsed ? 'w-0 ml-0' : 'w-auto ml-4'}`}>
-                      Onderzoek
-                    </span>
-                  </Link>
-                  <div className="!my-4 border-t border-gray-200"></div>
-                </>
-             )}
-
-             {bottomNavigationItems.map((item, index) => {
-               const active = isActive(item.path);
-               return (
-                  <Link
-                    key={index}
-                    to={createPageUrl(item.path)}
-                    className={`flex items-center p-3 rounded-lg font-medium transition-colors group ${active ? 'bg-green-50 text-[var(--konsensi-primary)]' : 'hover:bg-gray-50 text-gray-700 hover:text-gray-900'}`}
-                  >
-                    <item.icon className={`w-6 h-6 flex-shrink-0 transition-colors ${active ? 'text-[var(--konsensi-primary)]' : 'text-gray-500 group-hover:text-gray-700'}`} />
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-200 ${isSidebarCollapsed ? 'w-0 ml-0' : 'w-auto ml-4'}`}>
-                      {getNavTranslation(item.titleKey, language)}
-                    </span>
-                  </Link>
-               )
-            })}
-            
-            {/* Taalselector in sidebar */}
-            <div className={`pt-3 ${isSidebarCollapsed ? 'px-2' : 'px-3'}`}>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className={`w-full ${isSidebarCollapsed ? 'justify-center' : 'justify-start'} text-gray-600 hover:text-gray-900 hover:bg-gray-50`}>
-                    <span className="text-lg flex-shrink-0">{languages.find(l => l.code === language)?.flag}</span>
-                    {!isSidebarCollapsed && (
-                      <span className="ml-3 text-sm">{languages.find(l => l.code === language)?.name}</span>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>{t('common.chooseLanguage')}</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {languages.map((lang) => (
-                    <DropdownMenuItem 
-                      key={lang.code} 
-                      onSelect={async () => {
-                        try {
-                          await User.updateMe({ language_preference: lang.code });
-                          changeLanguage(lang.code);
-                          window.location.reload();
-                        } catch (error) {
-                          console.error('Error saving language:', error);
-                        }
-                      }}
-                      className={language === lang.code ? 'bg-gray-100 font-semibold' : ''}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{lang.flag}</span>
-                        <span>{lang.name}</span>
-                        {language === lang.code && <Check className="ml-auto h-4 w-4 text-[var(--konsensi-primary)]" />}
-                      </div>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
-          <div className="p-3 border-t border-gray-200">
-            <Button
-              variant="ghost"
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="w-full justify-center h-12 text-gray-500 hover:bg-gray-50 hover:text-gray-700"
-            >
-              {isSidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
-            </Button>
-          </div>
-      </aside>
-
-      <div className="flex-grow flex flex-col">
+      <div className="flex-grow flex flex-col w-full">
         {/* Desktop Header */}
-        <header className={`desktop-header bg-white border-b border-gray-200 px-4 md:px-6 h-16 flex items-center justify-between gap-4 transition-all duration-300 ${headerPaddingClass}`}>
+        <header className="desktop-header bg-white border-b border-gray-200 px-4 md:px-6 h-16 flex items-center justify-between gap-4 transition-all duration-300">
           <div className="flex-1"></div>
 
           <div className="flex items-center gap-2 md:gap-4">
@@ -1381,19 +1170,19 @@ function LayoutWithProvider({ children, currentPageName }) {
                         
                         // TODO: Implement ExtractDataFromUploadedFile with Supabase Edge Function
                         // For now, show manual input form
-                        setScannedData({
+                          setScannedData({
                           merchant: 'Gescande bon',
                           date: new Date().toISOString().split('T')[0],
                           amount: 0,
                           category: 'overig'
-                        });
-                        setShowScanBonModal(false);
-                        setShowConfirmModal(true);
-                        
-                        toast({ 
+                          });
+                          setShowScanBonModal(false);
+                          setShowConfirmModal(true);
+                          
+                          toast({ 
                           title: '✅ Foto geüpload!', 
                           description: 'Vul de gegevens handmatig in' 
-                        });
+                          });
                       } catch (error) {
                         console.error('Scan error:', error);
                         toast({ 
