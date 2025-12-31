@@ -34,7 +34,7 @@ export default function Login() {
 
   useEffect(() => {
     // #region agent log
-    const imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuAKU8ojJdUefYP9ZGYgNyFzApPlfgxguGrGWsHgxNl_eqzsgcSjbdc0LxVjRX0ZoQspG9GZB6-x0R5C6FkCB3CmpGb68zSxRYfKKfU4WAGSCv7OxlarK5k0r8w0Mjj90W9mUUEZ8uLyLWcgvYliMzuzt-sUDbmhSZFH8ZWFa5zdf0TsHUbhJJwbuhDUCTlFV8HFaPy_Nqa8z-T1jeNMnuAnMIoXKZ51_y35oolrPjuWTnxX5oV-1mG1su2iPhcFPW7eipy9Sxc916A";
+    const imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuBZeKZgV15zBY8Hdko-SRWsy-DaMW6QgpEhp70TwjiWKIH4k6eQLCV8B5np6o-_kUVA9h2po7jELVbWid2sUjpLU9F2Y0gVpD25c4ItWrZBMrPxSPSB-lp5oYwrnUw-VXDHDlA0x_ge4Kd052I-padhP77b_oGonwzx0qXJgZburTji5RfUA-FQFYKvjXRxjxE1_Qi076Jj2MLk6yZLUUPKOaIsoMgnjmPkFvP4LehskmRvmUF6vJZsGChFd09PYbNPnZhQ2Xp-UQk";
     fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:35',message:'Login component mounted - image URL in code',data:{imageUrlPrefix:imageUrl.substring(0,80)+'...',urlLength:imageUrl.length,pathname:window.location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
     // #endregion
     
@@ -285,7 +285,7 @@ export default function Login() {
             <img
               alt="Konsensi Financial Illustration"
               className="h-auto w-full max-w-[450px] drop-shadow-2xl rounded-2xl object-contain bg-transparent"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKU8ojJdUefYP9ZGYgNyFzApPlfgxguGrGWsHgxNl_eqzsgcSjbdc0LxVjRX0ZoQspG9GZB6-x0R5C6FkCB3CmpGb68zSxRYfKKfU4WAGSCv7OxlarK5k0r8w0Mjj90W9mUUEZ8uLyLWcgvYliMzuzt-sUDbmhSZFH8ZWFa5zdf0TsHUbhJJwbuhDUCTlFV8HFaPy_Nqa8z-T1jeNMnuAnMIoXKZ51_y35oolrPjuWTnxX5oV-1mG1su2iPhcFPW7eipy9Sxc916A"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZeKZgV15zBY8Hdko-SRWsy-DaMW6QgpEhp70TwjiWKIH4k6eQLCV8B5np6o-_kUVA9h2po7jELVbWid2sUjpLU9F2Y0gVpD25c4ItWrZBMrPxSPSB-lp5oYwrnUw-VXDHDlA0x_ge4Kd052I-padhP77b_oGonwzx0qXJgZburTji5RfUA-FQFYKvjXRxjxE1_Qi076Jj2MLk6yZLUUPKOaIsoMgnjmPkFvP4LehskmRvmUF6vJZsGChFd09PYbNPnZhQ2Xp-UQk?v=2"
               onLoad={(e) => {
                 // #region agent log
                 fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:284',message:'Image loaded successfully',data:{src:e.target.src,width:e.target.naturalWidth,height:e.target.naturalHeight,computedDisplay:window.getComputedStyle(e.target).display,computedVisibility:window.getComputedStyle(e.target).visibility,computedOpacity:window.getComputedStyle(e.target).opacity},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
