@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '@/components/ui/toast';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
@@ -48,47 +47,19 @@ export default function Login() {
     setLoading(true);
 
     try {
-      if (isSignUp) {
-        // Sign up
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`
-          }
-        });
+      // Sign in
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        if (data.user && !data.session) {
-          // Email confirmation required
-          toast({
-            title: 'Check je email! 📧',
-            description: 'We hebben een bevestigingslink gestuurd naar je email.',
-          });
-        } else {
-          // Auto sign in after signup
-          toast({
-            title: 'Account aangemaakt! ✅',
-            description: 'Welkom bij Konsensi!',
-          });
-          navigate('/onboarding');
-        }
-      } else {
-        // Sign in
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) throw error;
-
-        toast({
-          title: 'Ingelogd! ✅',
-          description: 'Welkom terug!',
-        });
-        navigate('/dashboard');
-      }
+      toast({
+        title: 'Ingelogd! ✅',
+        description: 'Welkom terug!',
+      });
+      navigate('/dashboard');
     } catch (error) {
       console.error('Auth error:', error);
       toast({
@@ -254,13 +225,12 @@ export default function Login() {
             <div className="text-center">
               <p className="text-[15px] text-gray-500 dark:text-gray-400">
                 Nog geen account?{' '}
-                <button
-                  type="button"
+                <Link
+                  to="/signup"
                   className="font-semibold text-primary hover:text-primary-dark hover:underline transition-colors"
-                  onClick={() => setIsSignUp(!isSignUp)}
                 >
                   Registreer nu
-                </button>
+                </Link>
               </p>
             </div>
           </form>

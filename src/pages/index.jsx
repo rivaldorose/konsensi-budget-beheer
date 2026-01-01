@@ -64,6 +64,8 @@ import Feedback from "./Feedback";
 
 import Login from "./Login";
 
+import SignUp from "./SignUp";
+
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
@@ -154,6 +156,8 @@ function PagesContent() {
         <Layout currentPageName={currentPage}>
             <Routes>
                 <Route path="/login" element={<Login />} />
+                
+                <Route path="/signup" element={<SignUp />} />
                 
                 <Route path="/" element={<Expenses />} />
                 
