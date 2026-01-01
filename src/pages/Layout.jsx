@@ -996,7 +996,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                               </header>
         
         {/* Main Content */}
-        <div className={`main-content-wrapper mobile-content md:pt-16 transition-all duration-300 ${mainContentMarginClass}`}>
+        <div className="main-content-wrapper mobile-content md:pt-16 transition-all duration-300">
           <PostponedPaymentTracker />
           
           <main className="flex-1 px-4 pt-16 pb-6 md:p-6 lg:p-8">
