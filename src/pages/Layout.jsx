@@ -731,17 +731,6 @@ function LayoutWithProvider({ children, currentPageName }) {
     return groups;
   }, [notifications]);
 
-  if (checkingOnboarding) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
-          <p className="text-gray-600 text-sm mt-4">{t('common.pleaseWait')}</p>
-        </div>
-      </div>
-    );
-  }
-  
   // #region agent log
   React.useEffect(() => {
     if (isAuthPage) {
@@ -754,6 +743,17 @@ function LayoutWithProvider({ children, currentPageName }) {
     }
   }, [isAuthPage, currentPageName, location.pathname]);
   // #endregion
+
+  if (checkingOnboarding) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
+          <p className="text-gray-600 text-sm mt-4">{t('common.pleaseWait')}</p>
+        </div>
+      </div>
+    );
+  }
 
   // If on login/onboarding page, render without sidebar/header
   if (isAuthPage) {
