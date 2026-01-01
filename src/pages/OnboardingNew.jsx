@@ -229,24 +229,28 @@ export default function OnboardingNew() {
         <div className="flex flex-col mb-8">
           {/* Step Indicators */}
           <div className="flex items-center gap-3 mb-4">
-            {[1, 2, 3, 4, 5].map((stepNum) => (
-              <div
-                key={stepNum}
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-display font-bold text-base ${
-                  stepNum < step
-                    ? 'bg-primary text-black'
-                    : stepNum === step
-                    ? 'bg-primary text-black shadow-[0_0_10px_rgba(16,185,129,0.4)]'
-                    : 'bg-gray-200 dark:bg-[#2a2a2a] border border-gray-300 dark:border-[#3a3a3a] text-gray-400 dark:text-[#6b7280]'
-                }`}
-              >
-                {stepNum < step ? (
-                  <span className="material-symbols-outlined text-[20px]">check</span>
-                ) : (
-                  stepNum
-                )}
-              </div>
-            ))}
+            {[1, 2, 3, 4, 5].map((stepNum) => {
+              const isCompleted = stepNum < step || step === 6;
+              const isCurrent = stepNum === step && step !== 6;
+              return (
+                <div
+                  key={stepNum}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-display font-bold text-base ${
+                    isCompleted
+                      ? 'bg-primary text-black'
+                      : isCurrent
+                      ? 'bg-primary text-black shadow-[0_0_10px_rgba(16,185,129,0.4)]'
+                      : 'bg-gray-200 dark:bg-[#2a2a2a] border border-gray-300 dark:border-[#3a3a3a] text-gray-400 dark:text-[#6b7280]'
+                  }`}
+                >
+                  {isCompleted ? (
+                    <span className="material-symbols-outlined text-[20px]">check</span>
+                  ) : (
+                    stepNum
+                  )}
+                </div>
+              );
+            })}
           </div>
           {/* Progress Bar */}
           <div className="h-2 w-full bg-gray-200 dark:bg-[#2a2a2a] rounded-full overflow-hidden">
