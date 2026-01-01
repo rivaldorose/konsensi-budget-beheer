@@ -746,8 +746,13 @@ function LayoutWithProvider({ children, currentPageName }) {
   React.useEffect(() => {
     if (isAuthPage) {
       fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:725',message:'Rendering auth page',data:{isAuthPage,pathname:location.pathname,childrenType:children?.type?.name||'unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+    } else {
+      const renderStart = Date.now();
+      const prevRenderTime = sessionStorage.getItem('lastRenderTime');
+      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:737',message:'Rendering children',data:{currentPageName,pathname:location.pathname,childrenType:children?.type?.name||'unknown',timeSinceLastRender:prevRenderTime?renderStart-parseInt(prevRenderTime):null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+      sessionStorage.setItem('lastRenderTime', renderStart.toString());
     }
-  }, [isAuthPage, location.pathname]);
+  }, [isAuthPage, currentPageName, location.pathname]);
   // #endregion
 
   // If on login/onboarding page, render without sidebar/header
@@ -760,15 +765,6 @@ function LayoutWithProvider({ children, currentPageName }) {
   }
 
   const isAnyModalOpen = showAddModal || showLoanModal || showScanBonModal || showConfirmModal;
-
-  // #region agent log
-  React.useEffect(() => {
-    const renderStart = Date.now();
-    const prevRenderTime = sessionStorage.getItem('lastRenderTime');
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:737',message:'Rendering children',data:{currentPageName,pathname:location.pathname,childrenType:children?.type?.name||'unknown',timeSinceLastRender:prevRenderTime?renderStart-parseInt(prevRenderTime):null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-    sessionStorage.setItem('lastRenderTime', renderStart.toString());
-  }, [currentPageName, location.pathname]);
-  // #endregion
 
   return (
     <div className={`theme-light flex min-h-screen bg-gray-50 font-sans antialiased ${isAnyModalOpen ? 'overflow-hidden' : ''}`} dir={languages.find(l => l.code === language)?.rtl ? 'rtl' : 'ltr'}>
