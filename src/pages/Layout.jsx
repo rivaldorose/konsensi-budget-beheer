@@ -232,6 +232,27 @@ function LayoutWithProvider({ children, currentPageName }) {
   }, [showConfirmModal, user]);
 
   React.useEffect(() => {
+    // Handle root route redirect
+    if (location.pathname === '/') {
+      const handleRootRedirect = async () => {
+        try {
+          const userData = await User.me();
+          if (!userData) {
+            window.location.href = '/login';
+          } else if (!userData.onboarding_completed) {
+            window.location.href = '/onboarding';
+          } else {
+            window.location.href = '/Dashboard';
+          }
+        } catch (error) {
+          console.error('Error checking auth for root redirect:', error);
+          window.location.href = '/login';
+        }
+      };
+      handleRootRedirect();
+      return;
+    }
+
     // Skip auth check on auth pages (login, signup, onboarding)
     if (isAuthPage) {
       setCheckingOnboarding(false);
@@ -273,7 +294,7 @@ function LayoutWithProvider({ children, currentPageName }) {
       }
     };
     loadInitialUser();
-  }, []);
+  }, [location.pathname, isAuthPage]);
 
 
 

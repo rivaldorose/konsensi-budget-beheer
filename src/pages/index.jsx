@@ -131,33 +131,6 @@ function _getCurrentPage(url) {
     return pageName || Object.keys(PAGES)[0];
 }
 
-// Simple root redirect component using window.location to avoid React Router context issues
-function RootRedirect() {
-    React.useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const userData = await User.me();
-                if (!userData) {
-                    window.location.href = '/login';
-                } else if (!userData.onboarding_completed) {
-                    window.location.href = '/onboarding';
-                } else {
-                    window.location.href = '/Dashboard';
-                }
-            } catch (error) {
-                console.error('Error checking auth:', error);
-                window.location.href = '/login';
-            }
-        };
-        checkAuth();
-    }, []);
-    
-    return (
-        <div className="flex items-center justify-center min-h-screen">
-            <div className="text-lg">Laden...</div>
-        </div>
-    );
-}
 
 // Create a wrapper component that uses useLocation inside the Router context
 function PagesContent() {
@@ -191,7 +164,7 @@ function PagesContent() {
                 
                 <Route path="/password-saved" element={<PasswordSaved />} />
                 
-                <Route path="/" element={<RootRedirect />} />
+                <Route path="/" element={<Dashboard />} />
                 
                 <Route path="/debts" element={<debts />} />
                 
