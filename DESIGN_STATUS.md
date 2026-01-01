@@ -44,12 +44,13 @@
   - Nieuwe modals voor toevoegen/bewerken/quick add
 
 - ✅ **Adempauze.jsx** - Volledig nieuw design met:
-  - Hero section
-  - "Why a Breathing Space?" section
-  - "Your Protection" section
-  - "What to do?" section
-  - FAQ section
-  - CTA button
+  - Dark/light mode toggle
+  - Status banner wanneer adempauze actief is
+  - Welzijn check (5 emotie opties)
+  - Rust & Herstel activiteiten (6 tips)
+  - Aandachtspunten reminder
+  - Sidebar met status, volgende stappen, motivatie
+  - Deactiveer functionaliteit
 
 - ✅ **WorkSchedule.jsx** - Volledig nieuw design met:
   - Dark/light mode toggle
