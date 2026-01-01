@@ -1,19 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { Bell, BellRing, BellDot, Lightbulb, Mail, Smartphone } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { createPageUrl } from "@/utils";
-import { useLocation } from "react-router-dom";
-import NotificationRulesManager from "@/components/notifications/NotificationRulesManager";
+import React, { useState, useEffect } from 'react';
+import { Share2, Mail, FileText, ExternalLink } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { createPageUrl } from '@/utils';
+import { useLocation } from 'react-router-dom';
+import { User } from '@/api/entities';
 
-export default function NotificationSettings() {
+export default function Privacy() {
   const [darkMode, setDarkMode] = useState(false);
-  const [notifications, setNotifications] = useState({
-    budgetOverschreden: true,
-    schuldherinneringen: true,
-    potjeVol: false,
-    nieuwAdvies: true,
-    emailNotifications: true,
-    pushNotifications: true
+  const [privacySettings, setPrivacySettings] = useState({
+    dataSharing: true,
+    marketing: false
   });
   const location = useLocation();
   const { toast } = useToast();
@@ -45,15 +41,20 @@ export default function NotificationSettings() {
   };
 
   const handleToggle = (key) => {
-    setNotifications(prev => ({
+    setPrivacySettings(prev => ({
       ...prev,
       [key]: !prev[key]
     }));
   };
 
-  const handleSave = () => {
-    // TODO: Save to backend
-    toast({ title: 'Notificatie-instellingen opgeslagen!' });
+  const handleSave = async () => {
+    try {
+      await User.updateMyUserData({ privacy_settings: privacySettings });
+      toast({ title: 'Privacy-instellingen opgeslagen!' });
+    } catch (error) {
+      console.error('Error saving privacy settings:', error);
+      toast({ title: 'Fout bij opslaan', variant: 'destructive' });
+    }
   };
 
   const Toggle = ({ enabled, onToggle }) => (
@@ -165,10 +166,8 @@ export default function NotificationSettings() {
                   }`}
                   href={createPageUrl('NotificationSettings')}
                 >
-                  <span className={`material-symbols-outlined ${isActiveRoute('NotificationSettings') ? 'fill-1' : ''}`} style={isActiveRoute('NotificationSettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
-                    notifications
-                  </span>
-                  <span className={`text-sm ${isActiveRoute('NotificationSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Notificaties</span>
+                  <span className="material-symbols-outlined">notifications</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Notificaties</span>
                 </a>
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
@@ -189,8 +188,10 @@ export default function NotificationSettings() {
                   }`}
                   href={createPageUrl('Privacy')}
                 >
-                  <span className="material-symbols-outlined">lock</span>
-                  <span className="font-medium text-sm group-hover:font-semibold">Privacy</span>
+                  <span className={`material-symbols-outlined ${isActiveRoute('Privacy') ? 'fill-1' : ''}`} style={isActiveRoute('Privacy') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    lock
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('Privacy') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Privacy</span>
                 </a>
                 <div className="mt-4 pt-2 px-4 pb-1">
                   <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Hulp & Support</h3>
@@ -224,103 +225,77 @@ export default function NotificationSettings() {
             </aside>
 
             {/* Main Content */}
-            <section className="w-full lg:w-3/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-6 md:p-8">
-              <div className="flex flex-col mb-8">
-                <h2 className="text-konsensi-dark dark:text-white font-bold text-2xl">Notificaties</h2>
-                <p className="text-gray-600 dark:text-gray-400 text-[15px] mt-2">Kies welke notificaties je wilt ontvangen</p>
+            <section className="w-full lg:w-3/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-6 md:p-8 lg:p-8">
+              <div className="mb-8">
+                <h2 className="text-konsensi-dark dark:text-white font-bold text-2xl">Privacy</h2>
+                <p className="text-gray-600 dark:text-gray-400 text-[15px] mt-2">Beheer je privacy-instellingen</p>
               </div>
 
               <div className="flex flex-col gap-6">
-                {/* Budget overschreden */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-start gap-4">
+                {/* Data Sharing */}
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors">
+                  <div className="flex gap-4">
                     <div className="mt-1">
-                      <BellRing className="w-5 h-5 text-warning" />
+                      <Share2 className="w-5 h-5 text-konsensi-dark dark:text-white" />
                     </div>
-                    <div className="flex flex-col">
-                      <h3 className="text-gray-900 dark:text-white text-lg font-semibold">Budget overschreden</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Ontvang een melding als je je budget overschrijdt.</p>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-gray-900 dark:text-white font-semibold text-lg">Gegevens delen met derden</h3>
+                        <div className="group relative cursor-pointer">
+                          <span className="material-symbols-outlined text-[16px] text-gray-400 dark:text-gray-500">help</span>
+                          <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-opacity absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-2 bg-gray-800 dark:bg-gray-900 text-white text-xs rounded shadow-lg z-10 pointer-events-none">
+                            Geanonimiseerde gegevens kunnen niet naar jou worden herleid.
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm max-w-lg">Sta toe dat Konsensi geanonimiseerde gegevens deelt met partners voor analysedoeleinden.</p>
                     </div>
                   </div>
-                  <Toggle enabled={notifications.budgetOverschreden} onToggle={() => handleToggle('budgetOverschreden')} />
+                  <Toggle enabled={privacySettings.dataSharing} onToggle={() => handleToggle('dataSharing')} />
                 </div>
 
-                {/* Schuldherinneringen */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-start gap-4">
+                <div className="h-px w-full bg-gray-200 dark:bg-dark-border"></div>
+
+                {/* Marketing */}
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors">
+                  <div className="flex gap-4">
                     <div className="mt-1">
-                      <BellDot className="w-5 h-5 text-accent-red" />
+                      <Mail className="w-5 h-5 text-accent-blue" />
                     </div>
-                    <div className="flex flex-col">
-                      <h3 className="text-gray-900 dark:text-white text-lg font-semibold">Schuldherinneringen</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Herinneringen voor aankomende betalingen en achterstanden.</p>
+                    <div className="flex flex-col gap-1">
+                      <h3 className="text-gray-900 dark:text-white font-semibold text-lg">Marketingcommunicatie</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm max-w-lg">Ontvang updates, aanbiedingen en nieuws van Konsensi.</p>
                     </div>
                   </div>
-                  <Toggle enabled={notifications.schuldherinneringen} onToggle={() => handleToggle('schuldherinneringen')} />
+                  <Toggle enabled={privacySettings.marketing} onToggle={() => handleToggle('marketing')} />
                 </div>
 
-                {/* Potje vol */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-start gap-4">
+                <div className="h-px w-full bg-gray-200 dark:bg-dark-border"></div>
+
+                {/* Privacy Policy Link */}
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors">
+                  <div className="flex gap-4">
                     <div className="mt-1">
-                      <Bell className="w-5 h-5 text-konsensi-green" />
+                      <FileText className="w-5 h-5 text-konsensi-green" />
                     </div>
-                    <div className="flex flex-col">
-                      <h3 className="text-gray-900 dark:text-white text-lg font-semibold">Potje vol</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Ontvang een melding wanneer je een spaarpotje vol hebt.</p>
+                    <div className="flex flex-col gap-1">
+                      <h3 className="text-gray-900 dark:text-white font-semibold text-lg">Lees ons Privacybeleid</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm max-w-lg">Bekijk hoe wij omgaan met uw persoonsgegevens.</p>
+                      <a 
+                        className="text-konsensi-green text-sm mt-1 hover:underline inline-flex items-center gap-1"
+                        href={createPageUrl('PrivacyPolicy')}
+                      >
+                        Bekijk Privacybeleid
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
                     </div>
                   </div>
-                  <Toggle enabled={notifications.potjeVol} onToggle={() => handleToggle('potjeVol')} />
-                </div>
-
-                {/* Nieuw advies */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <div className="mt-1">
-                      <Lightbulb className="w-5 h-5 text-accent-blue" />
-                    </div>
-                    <div className="flex flex-col">
-                      <h3 className="text-gray-900 dark:text-white text-lg font-semibold">Nieuw advies</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Meldingen over gepersonaliseerd financieel advies en tips.</p>
-                    </div>
-                  </div>
-                  <Toggle enabled={notifications.nieuwAdvies} onToggle={() => handleToggle('nieuwAdvies')} />
-                </div>
-
-                <div className="w-full h-px bg-gray-200 dark:bg-dark-border my-4"></div>
-
-                {/* Email notifications */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <div className="mt-1">
-                      <Mail className="w-5 h-5 text-konsensi-dark dark:text-white" />
-                    </div>
-                    <div className="flex flex-col">
-                      <h3 className="text-gray-900 dark:text-white text-lg font-semibold">E-mail notificaties</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Ontvang alle meldingen via e-mail.</p>
-                    </div>
-                  </div>
-                  <Toggle enabled={notifications.emailNotifications} onToggle={() => handleToggle('emailNotifications')} />
-                </div>
-
-                {/* Push notifications */}
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <div className="mt-1">
-                      <Smartphone className="w-5 h-5 text-konsensi-dark dark:text-white" />
-                    </div>
-                    <div className="flex flex-col">
-                      <h3 className="text-gray-900 dark:text-white text-lg font-semibold">Push notificaties</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Ontvang meldingen direct op je mobiele apparaat of browser.</p>
-                    </div>
-                  </div>
-                  <Toggle enabled={notifications.pushNotifications} onToggle={() => handleToggle('pushNotifications')} />
                 </div>
               </div>
 
-              <div className="mt-8 flex justify-start">
+              <div className="mt-8 pt-6">
                 <button 
-                  className="bg-konsensi-green hover:bg-konsensi-green-light text-white px-8 py-4 rounded-xl font-bold transition-colors duration-200"
+                  className="w-full sm:w-auto px-8 py-4 bg-konsensi-green hover:bg-konsensi-green-light text-white rounded-xl font-bold shadow-md shadow-green-500/20 transition-all transform active:scale-95 text-center"
                   onClick={handleSave}
                 >
                   Wijzigingen opslaan
@@ -333,3 +308,4 @@ export default function NotificationSettings() {
     </div>
   );
 }
+

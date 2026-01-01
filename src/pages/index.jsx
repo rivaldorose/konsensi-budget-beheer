@@ -18,8 +18,6 @@ import Dashboard from "./Dashboard";
 
 import Settings from "./Settings";
 
-import GetHelp from "./GetHelp";
-
 import AdminFAQ from "./AdminFAQ";
 
 import BankConnections from "./BankConnections";
@@ -35,8 +33,6 @@ import Potjes from "./Potjes";
 import VasteLastenCheck from "./VasteLastenCheck";
 
 import FAQ from "./FAQ";
-
-import LanguageSettings from "./LanguageSettings";
 
 import NotificationSettings from "./NotificationSettings";
 
@@ -63,6 +59,10 @@ import MaandelijkseLasten from "./MaandelijkseLasten";
 import Wishlist from "./Wishlist";
 
 import Feedback from "./Feedback";
+
+import Privacy from "./Privacy";
+
+import HelpSupport from "./HelpSupport";
 
 import Login from "./Login";
 
@@ -92,8 +92,6 @@ const PAGES = {
     
     Settings: Settings,
     
-    GetHelp: GetHelp,
-    
     AdminFAQ: AdminFAQ,
     
     BankConnections: BankConnections,
@@ -109,8 +107,6 @@ const PAGES = {
     VasteLastenCheck: VasteLastenCheck,
     
     FAQ: FAQ,
-    
-    LanguageSettings: LanguageSettings,
     
     NotificationSettings: NotificationSettings,
     
@@ -137,6 +133,10 @@ const PAGES = {
     Wishlist: Wishlist,
     
     Feedback: Feedback,
+    
+    Privacy: Privacy,
+    
+    HelpSupport: HelpSupport,
     
 }
 
@@ -193,8 +193,6 @@ function PagesContent() {
                 
                 <Route path="/Settings" element={<Settings />} />
                 
-                <Route path="/GetHelp" element={<GetHelp />} />
-                
                 <Route path="/AdminFAQ" element={<AdminFAQ />} />
                 
                 <Route path="/BankConnections" element={<BankConnections />} />
@@ -210,8 +208,6 @@ function PagesContent() {
                 <Route path="/VasteLastenCheck" element={<VasteLastenCheck />} />
                 
                 <Route path="/FAQ" element={<FAQ />} />
-                
-                <Route path="/LanguageSettings" element={<LanguageSettings />} />
                 
                 <Route path="/NotificationSettings" element={<NotificationSettings />} />
                 
@@ -238,6 +234,10 @@ function PagesContent() {
                 <Route path="/Wishlist" element={<Wishlist />} />
                 
                 <Route path="/Feedback" element={<Feedback />} />
+                
+                <Route path="/Privacy" element={<Privacy />} />
+                
+                <Route path="/HelpSupport" element={<HelpSupport />} />
                 
             </Routes>
         </Layout>

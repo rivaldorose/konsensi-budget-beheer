@@ -523,7 +523,7 @@ function LayoutWithProvider({ children, currentPageName }) {
     },
     {
       titleKey: "nav.help",
-      path: "GetHelp",
+      path: "HelpSupport",
       icon: HelpCircle,
       type: "link"
     }

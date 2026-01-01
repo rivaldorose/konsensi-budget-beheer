@@ -1,20 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, Palette, Sun, Moon, Monitor, Type, Smartphone, Check, Loader2 } from 'lucide-react';
 import { User } from '@/api/entities';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 import { createPageUrl } from '@/utils';
+import { useLocation } from 'react-router-dom';
+import { useTranslation } from '@/components/utils/LanguageContext';
 
 export default function DisplaySettings() {
   const [theme, setTheme] = useState('light');
   const [fontSize, setFontSize] = useState('medium');
-  const [compactMode, setCompactMode] = useState(false);
-  const [animationsEnabled, setAnimationsEnabled] = useState(true);
-  const [accentColor, setAccentColor] = useState('emerald');
+  const [currency, setCurrency] = useState('EUR');
+  const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const location = useLocation();
   const { toast } = useToast();
+  const { language, changeLanguage } = useTranslation();
 
   useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const isDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    setDarkMode(isDark);
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      setTheme('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      setTheme('light');
+    }
+    
     const loadSettings = async () => {
       try {
         const user = await User.me();
@@ -24,9 +37,10 @@ export default function DisplaySettings() {
             : user.display_settings;
           setTheme(settings.theme || 'light');
           setFontSize(settings.fontSize || 'medium');
-          setCompactMode(settings.compactMode || false);
-          setAnimationsEnabled(settings.animationsEnabled ?? true);
-          setAccentColor(settings.accentColor || 'emerald');
+          setCurrency(settings.currency || 'EUR');
+        }
+        if (user.language_preference) {
+          changeLanguage(user.language_preference);
         }
       } catch (error) {
         console.error('Error loading display settings:', error);
@@ -37,8 +51,21 @@ export default function DisplaySettings() {
     loadSettings();
   }, []);
 
-  const handleBack = () => {
-    window.location.href = createPageUrl('Settings');
+  const toggleTheme = () => {
+    const newTheme = !darkMode;
+    setDarkMode(newTheme);
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+    if (newTheme) {
+      document.documentElement.classList.add('dark');
+      setTheme('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      setTheme('light');
+    }
+  };
+
+  const isActiveRoute = (path) => {
+    return location.pathname === createPageUrl(path);
   };
 
   const handleSave = async () => {
@@ -47,15 +74,10 @@ export default function DisplaySettings() {
       const settings = {
         theme,
         fontSize,
-        compactMode,
-        animationsEnabled,
-        accentColor
+        currency
       };
       await User.updateMyUserData({ display_settings: settings });
-      toast({ title: 'Weergave instellingen opgeslagen', variant: 'success' });
-      setTimeout(() => {
-        window.location.href = createPageUrl('Settings');
-      }, 500);
+      toast({ title: 'App voorkeuren opgeslagen', variant: 'success' });
     } catch (error) {
       console.error('Error saving display settings:', error);
       toast({ title: 'Fout bij opslaan', variant: 'destructive' });
@@ -64,240 +86,345 @@ export default function DisplaySettings() {
     }
   };
 
-  const Toggle = ({ enabled, onToggle }) => (
-    <button
-      onClick={onToggle}
-      className={`relative w-12 h-6 rounded-full transition-colors ${
-        enabled ? 'bg-emerald-500' : 'bg-gray-300'
-      }`}
-    >
-      <span
-        className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
-          enabled ? 'translate-x-6' : 'translate-x-0'
-        }`}
-      />
-    </button>
-  );
-
-  const themes = [
-    {
-      id: 'light',
-      name: 'Licht',
-      icon: Sun,
-      description: 'Klassieke lichte interface',
-      preview: 'bg-gradient-to-br from-white to-gray-100'
-    },
-    {
-      id: 'dark',
-      name: 'Donker',
-      icon: Moon,
-      description: 'Oogvriendelijk voor \'s avonds',
-      preview: 'bg-gradient-to-br from-gray-800 to-gray-900'
-    },
-    {
-      id: 'auto',
-      name: 'Automatisch',
-      icon: Monitor,
-      description: 'Volgt je systeeminstellingen',
-      preview: 'bg-gradient-to-br from-blue-100 to-purple-100'
-    }
+  const languages = [
+    { code: 'nl', name: 'Nederlands' },
+    { code: 'en', name: 'English' },
+    { code: 'es', name: 'Español' },
+    { code: 'pl', name: 'Polski' },
+    { code: 'de', name: 'Deutsch' },
+    { code: 'fr', name: 'Français' },
+    { code: 'tr', name: 'Türkçe' },
+    { code: 'ar', name: 'العربية' }
   ];
 
-  const fontSizes = [
-    { id: 'small', label: 'Klein', size: 'text-sm' },
-    { id: 'medium', label: 'Normaal', size: 'text-base' },
-    { id: 'large', label: 'Groot', size: 'text-lg' }
-  ];
-
-  const colors = [
-    { name: 'Groen', id: 'emerald', color: 'bg-emerald-500' },
-    { name: 'Blauw', id: 'blue', color: 'bg-blue-500' },
-    { name: 'Paars', id: 'purple', color: 'bg-purple-500' },
-    { name: 'Roze', id: 'pink', color: 'bg-pink-500' },
-    { name: 'Oranje', id: 'orange', color: 'bg-orange-500' }
+  const currencies = [
+    { code: 'EUR', symbol: '€', name: 'Euro' },
+    { code: 'USD', symbol: '$', name: 'Dollar' }
   ];
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-12 h-12 animate-spin text-gray-400" />
+      <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mt-4">Laden...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5" />
-            <span className="font-medium">Terug</span>
-          </button>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Palette className="w-5 h-5" />
-            Weergave
-          </h1>
-          <div className="w-20"></div>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
-        
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="p-4 border-b border-gray-200">
-            <h2 className="font-semibold text-gray-900">Thema</h2>
-            <p className="text-sm text-gray-500 mt-1">Kies hoe de app eruitziet</p>
-          </div>
-          <div className="p-4 grid gap-3">
-            {themes.map((themeOption) => {
-              const Icon = themeOption.icon;
-              return (
-                <button
-                  key={themeOption.id}
-                  onClick={() => setTheme(themeOption.id)}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    theme === themeOption.id
-                      ? 'border-emerald-500 bg-emerald-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-16 h-16 rounded-lg ${themeOption.preview} flex items-center justify-center`}>
-                      <Icon className={`w-6 h-6 ${theme === themeOption.id ? 'text-emerald-600' : 'text-gray-600'}`} />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <h3 className={`font-semibold ${theme === themeOption.id ? 'text-emerald-700' : 'text-gray-900'}`}>
-                        {themeOption.name}
-                      </h3>
-                      <p className="text-sm text-gray-500">{themeOption.description}</p>
-                    </div>
-                    {theme === themeOption.id && (
-                      <Check className="w-5 h-5 text-emerald-600" />
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="p-4 border-b border-gray-200">
-            <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-              <Type className="w-5 h-5" />
-              Tekstgrootte
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">Pas de grootte van tekst aan</p>
-          </div>
-          <div className="p-4">
-            <div className="flex gap-3">
-              {fontSizes.map((size) => (
-                <button
-                  key={size.id}
-                  onClick={() => setFontSize(size.id)}
-                  className={`flex-1 p-4 rounded-lg border-2 transition-all ${
-                    fontSize === size.id
-                      ? 'border-emerald-500 bg-emerald-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className={`font-semibold mb-2 ${size.size} ${fontSize === size.id ? 'text-emerald-700' : 'text-gray-900'}`}>
-                    Aa
-                  </div>
-                  <div className={`text-sm ${fontSize === size.id ? 'text-emerald-600' : 'text-gray-600'}`}>
-                    {size.label}
-                  </div>
-                </button>
-              ))}
+    <div className="min-h-screen bg-background-light dark:bg-background-dark">
+      {/* Header */}
+      <header className="bg-konsensi-dark shadow-md w-full h-16 flex items-center justify-center px-4 md:px-8 z-50 sticky top-0">
+        <div className="w-full max-w-[1400px] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="size-8 flex items-center justify-center text-white">
+              <span className="material-symbols-outlined text-3xl">forest</span>
             </div>
-            
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <p className={`${fontSizes.find(s => s.id === fontSize)?.size} text-gray-700`}>
-                Dit is een voorbeeld van hoe tekst eruitziet in de app met de geselecteerde grootte.
-              </p>
-            </div>
+            <h2 className="text-white text-lg font-bold tracking-tight">KONSENSI Budgetbeheer</h2>
           </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="p-4 border-b border-gray-200">
-            <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-              <Smartphone className="w-5 h-5" />
-              Weergave opties
-            </h2>
-          </div>
-          <div className="divide-y divide-gray-200">
-            <div className="p-4 flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="font-medium text-gray-900 mb-1">Compacte modus</h3>
-                <p className="text-sm text-gray-500">
-                  Toon meer informatie op het scherm met kleinere marges
-                </p>
-              </div>
-              <Toggle
-                enabled={compactMode}
-                onToggle={() => setCompactMode(!compactMode)}
+          <nav className="hidden md:flex items-center gap-2">
+            <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('Dashboard')}>Dashboard</a>
+            <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('BudgetPlan')}>Balans</a>
+            <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('Debts')}>Schulden</a>
+            <a className="px-5 py-2 bg-secondary text-konsensi-dark rounded-full text-sm font-bold shadow-sm" href={createPageUrl('Settings')}>Instellingen</a>
+          </nav>
+          <div className="flex items-center gap-4">
+            <label className="relative inline-flex items-center cursor-pointer mr-2">
+              <input 
+                className="sr-only peer" 
+                type="checkbox" 
+                checked={darkMode}
+                onChange={toggleTheme}
               />
-            </div>
-            
-            <div className="p-4 flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="font-medium text-gray-900 mb-1">Animaties</h3>
-                <p className="text-sm text-gray-500">
-                  Schakel overgangen en animaties in of uit
-                </p>
+              <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-white/20 flex items-center justify-between px-1.5">
+                <span className="material-symbols-outlined text-[16px] text-yellow-300 z-10 select-none">light_mode</span>
+                <span className="material-symbols-outlined text-[16px] text-white/80 z-10 select-none">dark_mode</span>
               </div>
-              <Toggle
-                enabled={animationsEnabled}
-                onToggle={() => setAnimationsEnabled(!animationsEnabled)}
-              />
+            </label>
+            <button className="text-white/80 hover:text-white transition-colors p-1">
+              <span className="material-symbols-outlined">search</span>
+            </button>
+            <div className="hidden sm:flex items-center justify-center bg-purple-badge text-white px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+              Level 9
+            </div>
+            <div className="flex items-center gap-3 pl-2 border-l border-white/10">
+              <span className="text-white text-sm font-medium hidden sm:block">Rivaldo</span>
+              <div className="size-9 rounded-full bg-cover bg-center border-2 border-white/20 bg-purple-badge"></div>
             </div>
           </div>
         </div>
+      </header>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="p-4 border-b border-gray-200">
-            <h2 className="font-semibold text-gray-900">Accentkleur</h2>
-            <p className="text-sm text-gray-500 mt-1">Personaliseer de hoofdkleur van de app</p>
+      <main className="flex-1 flex justify-center py-8 px-4 sm:px-6 md:px-8">
+        <div className="w-full max-w-[1400px] flex flex-col gap-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-konsensi-dark dark:text-secondary text-3xl">settings</span>
+                <h1 className="text-konsensi-dark dark:text-white text-3xl md:text-4xl font-black tracking-tight">Instellingen</h1>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
+            </div>
+            <button 
+              className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-dark-card text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors shadow-sm"
+              onClick={() => window.location.href = createPageUrl('HelpSupport')}
+            >
+              <span className="material-symbols-outlined text-[20px]">help_outline</span>
+              <span>Hulp</span>
+            </button>
           </div>
-          <div className="p-4">
-            <div className="grid grid-cols-5 gap-3">
-              {colors.map((colorOption) => (
-                <button
-                  key={colorOption.id}
-                  onClick={() => setAccentColor(colorOption.id)}
-                  className={`relative w-full aspect-square rounded-lg ${colorOption.color} hover:scale-110 transition-transform ${
-                    accentColor === colorOption.id ? 'ring-4 ring-gray-300' : ''
+
+          <div className="flex flex-col lg:flex-row gap-6 items-start">
+            {/* Sidebar */}
+            <aside className="w-full lg:w-1/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-4 lg:p-6 flex flex-col sticky top-24">
+              <nav className="flex flex-col gap-2">
+                <a 
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                    isActiveRoute('Settings') 
+                      ? 'bg-secondary text-konsensi-dark' 
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
                   }`}
-                  title={colorOption.name}
+                  href={createPageUrl('Settings')}
                 >
-                  {accentColor === colorOption.id && (
-                    <Check className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 text-white" />
-                  )}
+                  <span className="material-symbols-outlined">account_circle</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Mijn Profiel</span>
+                </a>
+                <a 
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                    isActiveRoute('SecuritySettings')
+                      ? 'bg-secondary text-konsensi-dark'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                  }`}
+                  href={createPageUrl('SecuritySettings')}
+                >
+                  <span className="material-symbols-outlined">shield</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Account & Beveiliging</span>
+                </a>
+                <a 
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                    isActiveRoute('NotificationSettings')
+                      ? 'bg-secondary text-konsensi-dark'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                  }`}
+                  href={createPageUrl('NotificationSettings')}
+                >
+                  <span className="material-symbols-outlined">notifications</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Notificaties</span>
+                </a>
+                <a 
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                    isActiveRoute('DisplaySettings')
+                      ? 'bg-secondary text-konsensi-dark'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                  }`}
+                  href={createPageUrl('DisplaySettings')}
+                >
+                  <span className={`material-symbols-outlined ${isActiveRoute('DisplaySettings') ? 'fill-1' : ''}`} style={isActiveRoute('DisplaySettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    tune
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('DisplaySettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>App Voorkeuren</span>
+                </a>
+                <a 
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                    isActiveRoute('Privacy')
+                      ? 'bg-secondary text-konsensi-dark'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                  }`}
+                  href={createPageUrl('Privacy')}
+                >
+                  <span className="material-symbols-outlined">lock</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Privacy</span>
+                </a>
+                <div className="mt-4 pt-2 px-4 pb-1">
+                  <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Hulp & Support</h3>
+                </div>
+                <a 
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                    isActiveRoute('HelpSupport')
+                      ? 'bg-secondary text-konsensi-dark'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                  }`}
+                  href={createPageUrl('HelpSupport')}
+                >
+                  <span className="material-symbols-outlined">help</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Help Center</span>
+                </a>
+                <a 
+                  className="group flex items-center gap-4 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white transition-all"
+                  href={createPageUrl('TermsOfService')}
+                >
+                  <span className="material-symbols-outlined">description</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Algemene Voorwaarden</span>
+                </a>
+                <a 
+                  className="group flex items-center gap-4 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white transition-all"
+                  href={createPageUrl('PrivacyPolicy')}
+                >
+                  <span className="material-symbols-outlined">policy</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Privacybeleid</span>
+                </a>
+              </nav>
+            </aside>
+
+            {/* Main Content */}
+            <section className="w-full lg:w-3/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-6 md:p-8 lg:p-8">
+              <div className="mb-8">
+                <h2 className="text-konsensi-dark dark:text-white font-bold text-2xl">App Voorkeuren</h2>
+                <p className="text-gray-600 dark:text-gray-400 text-[15px] mt-1">Pas de app aan naar jouw wensen</p>
+              </div>
+
+              <div className="flex flex-col gap-8">
+                {/* Language */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-gray-100 dark:border-dark-border">
+                  <div className="flex gap-4">
+                    <div className="mt-1 flex-shrink-0">
+                      <span className="material-symbols-outlined text-konsensi-dark dark:text-white text-[24px]">translate</span>
+                    </div>
+                    <div>
+                      <h3 className="text-gray-900 dark:text-white font-semibold text-lg">Taal</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Kies je voorkeurstaal voor de applicatie.</p>
+                    </div>
+                  </div>
+                  <div className="relative w-full md:w-auto">
+                    <select 
+                      className="appearance-none w-full md:w-40 bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border rounded-xl py-2.5 pl-4 pr-10 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-konsensi-green/20 focus:border-konsensi-green transition-all cursor-pointer"
+                      value={language}
+                      onChange={async (e) => {
+                        const newLang = e.target.value;
+                        changeLanguage(newLang);
+                        try {
+                          await User.updateMyUserData({ language_preference: newLang });
+                        } catch (error) {
+                          console.error('Error saving language:', error);
+                        }
+                      }}
+                    >
+                      {languages.map(lang => (
+                        <option key={lang.code} value={lang.code}>{lang.name}</option>
+                      ))}
+                    </select>
+                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none text-xl">expand_more</span>
+                  </div>
+                </div>
+
+                {/* Theme */}
+                <div className="flex flex-col gap-4 pb-6 border-b border-gray-100 dark:border-dark-border">
+                  <div className="flex gap-4">
+                    <div className="mt-1">
+                      <span className="material-symbols-outlined text-accent-blue text-[24px]">palette</span>
+                    </div>
+                    <div>
+                      <h3 className="text-gray-900 dark:text-white font-semibold text-lg">Thema</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Kies tussen een licht, donker of systeemthema.</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-6 pl-0 md:pl-[44px] mt-2">
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-dark-border group-hover:border-konsensi-green transition-colors bg-white dark:bg-dark-card-elevated">
+                        <input 
+                          className="peer sr-only" 
+                          name="theme" 
+                          type="radio"
+                          checked={theme === 'light'}
+                          onChange={() => {
+                            setTheme('light');
+                            setDarkMode(false);
+                            document.documentElement.classList.remove('dark');
+                            localStorage.setItem('theme', 'light');
+                          }}
+                        />
+                        <div className="w-2.5 h-2.5 rounded-full bg-konsensi-green scale-0 peer-checked:scale-100 transition-transform"></div>
+                        <div className="absolute inset-0 rounded-full border border-konsensi-green opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                      </div>
+                      <span className="text-gray-900 dark:text-white text-sm">Licht</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-dark-border group-hover:border-konsensi-green transition-colors bg-white dark:bg-dark-card-elevated">
+                        <input 
+                          className="peer sr-only" 
+                          name="theme" 
+                          type="radio"
+                          checked={theme === 'dark'}
+                          onChange={() => {
+                            setTheme('dark');
+                            setDarkMode(true);
+                            document.documentElement.classList.add('dark');
+                            localStorage.setItem('theme', 'dark');
+                          }}
+                        />
+                        <div className="w-2.5 h-2.5 rounded-full bg-konsensi-green scale-0 peer-checked:scale-100 transition-transform"></div>
+                        <div className="absolute inset-0 rounded-full border border-konsensi-green opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                      </div>
+                      <span className="text-gray-900 dark:text-white text-sm">Donker</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-dark-border group-hover:border-konsensi-green transition-colors bg-white dark:bg-dark-card-elevated">
+                        <input 
+                          className="peer sr-only" 
+                          name="theme" 
+                          type="radio"
+                          checked={theme === 'auto'}
+                          onChange={() => {
+                            setTheme('auto');
+                            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                            setDarkMode(prefersDark);
+                            if (prefersDark) {
+                              document.documentElement.classList.add('dark');
+                            } else {
+                              document.documentElement.classList.remove('dark');
+                            }
+                            localStorage.setItem('theme', 'auto');
+                          }}
+                        />
+                        <div className="w-2.5 h-2.5 rounded-full bg-konsensi-green scale-0 peer-checked:scale-100 transition-transform"></div>
+                        <div className="absolute inset-0 rounded-full border border-konsensi-green opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                      </div>
+                      <span className="text-gray-900 dark:text-white text-sm">Systeem</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Currency */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div className="flex gap-4">
+                    <div className="mt-1">
+                      <span className="material-symbols-outlined text-konsensi-green text-[24px]">euro_symbol</span>
+                    </div>
+                    <div>
+                      <h3 className="text-gray-900 dark:text-white font-semibold text-lg">Valuta</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">Stel je voorkeursvaluta in.</p>
+                    </div>
+                  </div>
+                  <div className="relative w-full md:w-auto">
+                    <select 
+                      className="appearance-none w-full md:w-40 bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border rounded-xl py-2.5 pl-4 pr-10 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-konsensi-green/20 focus:border-konsensi-green transition-all cursor-pointer"
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                    >
+                      {currencies.map(curr => (
+                        <option key={curr.code} value={curr.code}>{curr.name} ({curr.symbol})</option>
+                      ))}
+                    </select>
+                    <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none text-xl">expand_more</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 pt-4 border-t border-gray-100 dark:border-dark-border flex justify-end">
+                <button 
+                  className="bg-konsensi-green text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-konsensi-green-light transition-colors shadow-sm focus:ring-4 focus:ring-konsensi-green/30 focus:outline-none"
+                  onClick={handleSave}
+                  disabled={saving}
+                >
+                  {saving ? 'Opslaan...' : 'Wijzigingen opslaan'}
                 </button>
-              ))}
-            </div>
+              </div>
+            </section>
           </div>
         </div>
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full py-3 bg-emerald-500 text-white rounded-lg font-semibold hover:bg-emerald-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {saving ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Opslaan...
-            </>
-          ) : (
-            'Opslaan'
-          )}
-        </button>
-      </div>
+      </main>
     </div>
   );
 }

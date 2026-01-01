@@ -58,6 +58,61 @@
   - Action toolbar met legend
   - Modals voor werkdag bewerken en loonstrook uploaden
 
+- ✅ **debts.jsx** - Volledig nieuw design met:
+  - Dark/light mode toggle
+  - Nieuwe table layout
+  - Summary cards (Afloscapaciteit, Openstaand, Strategie)
+  - Collapsible sections (AI Schuld Analyse, Voortgang & Uitdagingen)
+  - Nieuwe modals voor filters, scan brief, nieuwe schuld
+
+- ✅ **Potjes.jsx** - Volledig nieuw design met:
+  - Dark/light mode toggle
+  - Nieuwe card layout
+  - NIBUD vergelijking chart
+  - Enveloppe overzicht card
+  - Low budget warning banner
+  - Nieuwe modals voor potjes beheer
+
+### Settings & Configuration
+- ✅ **Settings.jsx** - Volledig nieuw design met:
+  - Sidebar navigatie met actieve route highlighting
+  - Profielafbeelding upload/verwijderen
+  - Formulier voor persoonlijke gegevens
+  - Wachtwoord wijzigen link
+  - Dark/light mode toggle in header
+
+- ✅ **SecuritySettings.jsx** - Volledig nieuw design met:
+  - Twee-factor authenticatie toggle
+  - Actieve sessies beheer
+  - Gekoppelde apps beheer
+  - Account verwijderen sectie
+  - Dark/light mode toggle
+
+- ✅ **NotificationSettings.jsx** - Volledig nieuw design met:
+  - Toggles voor verschillende notificatietypes
+  - Budget overschreden, schuldherinneringen, potje vol, nieuw advies
+  - E-mail en push notificaties
+  - Dark/light mode toggle
+
+- ✅ **DisplaySettings.jsx** (App Voorkeuren) - Volledig nieuw design met:
+  - Taal selectie
+  - Thema selectie (Licht/Donker/Systeem)
+  - Valuta selectie
+  - Dark/light mode toggle
+
+- ✅ **Privacy.jsx** - Nieuw design met:
+  - Gegevens delen met derden toggle
+  - Marketingcommunicatie toggle
+  - Link naar Privacybeleid
+  - Dark/light mode toggle
+
+- ✅ **HelpSupport.jsx** - Nieuw design met:
+  - FAQ sectie
+  - Contact opnemen (telefoon, email)
+  - Feedback geven link
+  - Links naar Algemene Voorwaarden en Privacybeleid
+  - Dark/light mode toggle
+
 ### Layout & Navigation
 - ✅ **Layout.jsx** - Sidebar volledig verwijderd, nieuwe header, conditional rendering voor auth pages
 
@@ -71,6 +126,7 @@
 - ✅ **GamificationStats.jsx** - Nieuw component
 - ✅ **DashboardFooter.jsx** - Nieuw component
 - ✅ **CommonCostsSelector.jsx** - Nieuw design
+- ✅ **DebtDetailsModal.jsx** - Volledig nieuw design met dark/light mode toggle, twee-kolom layout
 
 ### Services & Backend
 - ✅ **gamificationService.js** - Nieuwe service voor gamification features
@@ -82,9 +138,6 @@
 ## ⚠️ OUD DESIGN (Nog te Updaten)
 
 ### Financial Management
-- ✅ **debts.jsx** - Volledig nieuw design met dark/light mode toggle, nieuwe table layout, summary cards, collapsible sections
-- ✅ **MaandelijkseLasten.jsx** - Vervangt Expenses.jsx, volledig nieuw design
-- ⚠️ **Potjes.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **BudgetPlan.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **CentVoorCent.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **AflossingsOverzicht.jsx** - Oud design, nog niet geüpdatet
@@ -95,15 +148,11 @@
 - ⚠️ **VasteLastenCheck.jsx** - Oud design, nog niet geüpdatet
 
 ### Settings & Configuration
-- ⚠️ **Settings.jsx** - Oud design, nog niet geüpdatet
-- ⚠️ **SecuritySettings.jsx** - Oud design, nog niet geüpdatet
-- ⚠️ **DisplaySettings.jsx** - Oud design, nog niet geüpdatet
-- ⚠️ **NotificationSettings.jsx** - Oud design, nog niet geüpdatet
-- ⚠️ **LanguageSettings.jsx** - Oud design, nog niet geüpdatet
+- ❌ **LanguageSettings.jsx** - Verwijderd (functionaliteit nu in DisplaySettings.jsx)
 - ⚠️ **VTLBSettings.jsx** - Oud design, nog niet geüpdatet
 
 ### Help & Support
-- ⚠️ **GetHelp.jsx** - Oud design, nog niet geüpdatet
+- ❌ **GetHelp.jsx** - Verwijderd (vervangen door HelpSupport.jsx)
 - ⚠️ **FAQ.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **Feedback.jsx** - Oud design, nog niet geüpdatet
 
@@ -118,12 +167,13 @@
 - ⚠️ **bank-connected.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **Wishlist.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **onboarding.jsx** - Oud onboarding (wordt vervangen door OnboardingNew.jsx)
+- ❌ **Expenses.jsx** - Verwijderd (vervangen door MaandelijkseLasten.jsx)
 
 ---
 
 ## 📊 Samenvatting
 
-### Nieuw Design: **17 pagina's** ✅
+### Nieuw Design: **26 pagina's** ✅
 1. Login
 2. SignUp
 3. ForgotPassword
@@ -139,16 +189,24 @@
 13. Adempauze
 14. WorkSchedule
 15. debts
-16. Layout (sidebar verwijderd)
-17. + 8 nieuwe dashboard components
+16. Potjes
+17. Settings (Mijn Profiel)
+18. SecuritySettings (Account & Beveiliging)
+19. NotificationSettings (Notificaties)
+20. DisplaySettings (App Voorkeuren)
+21. Privacy
+22. HelpSupport
+23. Layout (sidebar verwijderd)
+24. DebtDetailsModal (component)
+25. + 8 nieuwe dashboard components
 
-### Oud Design: **~25 pagina's** ⚠️
-- Financial management (6 pagina's)
-- Tools & calculators (4 pagina's)
-- Settings (6 pagina's)
+### Oud Design: **~18 pagina's** ⚠️
+- Financial management (3 pagina's)
+- Tools & calculators (3 pagina's)
+- Settings (2 pagina's)
 - Help & support (3 pagina's)
-- Admin (4 pagina's)
-- Other (3 pagina's)
+- Admin (3 pagina's)
+- Other (4 pagina's)
 
 ### Features Geïmplementeerd:
 - ✅ Dark/Light mode toggle op alle nieuwe pagina's
@@ -160,13 +218,15 @@
 - ✅ Supabase integratie
 - ✅ Sidebar verwijderd
 - ✅ Favicon geüpdatet
+- ✅ Sidebar navigatie in Settings sectie
+- ✅ Consistente header op alle Settings pagina's
 
 ---
 
 ## 🎯 Volgende Stappen (Suggesties)
 
-1. **Prioriteit 1**: Financial pages (debts, Expenses, Potjes, BudgetPlan)
-2. **Prioriteit 2**: Settings pages (Settings, SecuritySettings, etc.)
-3. **Prioriteit 3**: Tools & Calculators
-4. **Prioriteit 4**: Help & Admin pages
-
+1. **Prioriteit 1**: Financial pages (BudgetPlan, CentVoorCent, AflossingsOverzicht)
+2. **Prioriteit 2**: Tools & Calculators (VTLBCalculator, AdempauzeCalculator, VasteLastenCheck)
+3. **Prioriteit 3**: Help & Support pages (FAQ, Feedback)
+4. **Prioriteit 4**: Admin pages
+5. **Prioriteit 5**: Other pages (BankConnections, Wishlist)
