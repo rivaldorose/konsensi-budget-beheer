@@ -195,7 +195,7 @@
 - ⚠️ **AdminFAQ.jsx** - Oud design, nog niet geüpdatet
 - ❌ **AdminNewsletter.jsx** - Verwijderd
 - ⚠️ **AdminSupport.jsx** - Oud design, nog niet geüpdatet
-- ⚠️ **AdminResearch.jsx** - Oud design, nog niet geüpdatet
+- ❌ **AdminResearch.jsx** - Verwijderd
 
 ### Other Pages
 - ❌ **BankConnections.jsx** - Verwijderd
@@ -240,12 +240,12 @@
 27. DebtDetailsModal (component)
 28. + 8 nieuwe dashboard components
 
-### Oud Design: **~10 pagina's** ⚠️
+### Oud Design: **~9 pagina's** ⚠️
 - Financial management (1 pagina)
 - Tools & calculators (0 pagina's)
 - Settings (1 pagina)
 - Help & support (3 pagina's)
-- Admin (3 pagina's)
+- Admin (2 pagina's)
 - Other (2 pagina's)
 
 ### Features Geïmplementeerd:

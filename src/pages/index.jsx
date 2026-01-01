@@ -40,8 +40,6 @@ import VTLBSettings from "./VTLBSettings";
 
 import AdminSupport from "./AdminSupport";
 
-import AdminResearch from "./AdminResearch";
-
 import WorkSchedule from "./WorkSchedule";
 
 import BudgetPlan from "./BudgetPlan";
@@ -107,8 +105,6 @@ const PAGES = {
     VTLBSettings: VTLBSettings,
     
     AdminSupport: AdminSupport,
-    
-    AdminResearch: AdminResearch,
     
     WorkSchedule: WorkSchedule,
     
@@ -202,8 +198,6 @@ function PagesContent() {
                 <Route path="/VTLBSettings" element={<VTLBSettings />} />
                 
                 <Route path="/AdminSupport" element={<AdminSupport />} />
-                
-                <Route path="/AdminResearch" element={<AdminResearch />} />
                 
                 <Route path="/WorkSchedule" element={<WorkSchedule />} />
                 
