@@ -1,7 +1,7 @@
 import React from "react";
 import Layout from "./Layout.jsx";
 import { User } from "@/api/entities";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import debts from "./debts";
 
@@ -134,29 +134,29 @@ function _getCurrentPage(url) {
 
 // Root redirect component that checks auth and onboarding
 function RootRedirect() {
+    const navigate = useNavigate();
     const [loading, setLoading] = React.useState(true);
-    const [redirectTo, setRedirectTo] = React.useState('/Dashboard');
     
     React.useEffect(() => {
         const checkAuth = async () => {
             try {
                 const userData = await User.me();
                 if (!userData) {
-                    setRedirectTo('/login');
+                    navigate('/login', { replace: true });
                 } else if (!userData.onboarding_completed) {
-                    setRedirectTo('/onboarding');
+                    navigate('/onboarding', { replace: true });
                 } else {
-                    setRedirectTo('/Dashboard');
+                    navigate('/Dashboard', { replace: true });
                 }
             } catch (error) {
                 console.error('Error checking auth:', error);
-                setRedirectTo('/login');
+                navigate('/login', { replace: true });
             } finally {
                 setLoading(false);
             }
         };
         checkAuth();
-    }, []);
+    }, [navigate]);
     
     if (loading) {
         return (
@@ -166,7 +166,7 @@ function RootRedirect() {
         );
     }
     
-    return <Navigate to={redirectTo} replace />;
+    return null;
 }
 
 // Create a wrapper component that uses useLocation inside the Router context
