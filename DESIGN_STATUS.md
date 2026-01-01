@@ -109,7 +109,7 @@
 
 ### Admin Pages
 - ⚠️ **AdminFAQ.jsx** - Oud design, nog niet geüpdatet
-- ⚠️ **AdminNewsletter.jsx** - Oud design, nog niet geüpdatet
+- ❌ **AdminNewsletter.jsx** - Verwijderd
 - ⚠️ **AdminSupport.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **AdminResearch.jsx** - Oud design, nog niet geüpdatet
 

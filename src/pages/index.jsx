@@ -44,8 +44,6 @@ import SecuritySettings from "./SecuritySettings";
 
 import DisplaySettings from "./DisplaySettings";
 
-import AdminNewsletter from "./AdminNewsletter";
-
 import AflossingsOverzicht from "./AflossingsOverzicht";
 
 import VTLBSettings from "./VTLBSettings";
@@ -119,8 +117,6 @@ const PAGES = {
     SecuritySettings: SecuritySettings,
     
     DisplaySettings: DisplaySettings,
-    
-    AdminNewsletter: AdminNewsletter,
     
     AflossingsOverzicht: AflossingsOverzicht,
     
@@ -222,8 +218,6 @@ function PagesContent() {
                 <Route path="/SecuritySettings" element={<SecuritySettings />} />
                 
                 <Route path="/DisplaySettings" element={<DisplaySettings />} />
-                
-                <Route path="/AdminNewsletter" element={<AdminNewsletter />} />
                 
                 <Route path="/AflossingsOverzicht" element={<AflossingsOverzicht />} />
                 
