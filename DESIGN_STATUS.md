@@ -192,9 +192,9 @@
 - ⚠️ **Feedback.jsx** - Oud design, nog niet geüpdatet
 
 ### Admin Pages
-- ⚠️ **AdminFAQ.jsx** - Oud design, nog niet geüpdatet
+- ❌ **AdminFAQ.jsx** - Verwijderd
 - ❌ **AdminNewsletter.jsx** - Verwijderd
-- ⚠️ **AdminSupport.jsx** - Oud design, nog niet geüpdatet
+- ❌ **AdminSupport.jsx** - Verwijderd
 - ❌ **AdminResearch.jsx** - Verwijderd
 
 ### Other Pages
@@ -240,12 +240,12 @@
 27. DebtDetailsModal (component)
 28. + 8 nieuwe dashboard components
 
-### Oud Design: **~8 pagina's** ⚠️
+### Oud Design: **~6 pagina's** ⚠️
 - Financial management (1 pagina)
 - Tools & calculators (0 pagina's)
 - Settings (1 pagina)
 - Help & support (3 pagina's)
-- Admin (2 pagina's)
+- Admin (0 pagina's) ✅ Alle verwijderd
 - Other (1 pagina)
 
 ### Features Geïmplementeerd:
@@ -268,5 +268,5 @@
 1. **Prioriteit 1**: Financial pages (BudgetPlan)
 2. **Prioriteit 2**: Tools & Calculators (Alle voltooid ✅)
 3. **Prioriteit 3**: Help & Support pages (FAQ, Feedback)
-4. **Prioriteit 4**: Admin pages
+4. **Prioriteit 4**: Admin pages (Alle verwijderd ✅)
 5. **Prioriteit 5**: Other pages (Wishlist)

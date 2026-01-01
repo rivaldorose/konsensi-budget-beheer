@@ -16,8 +16,6 @@ import Dashboard from "./Dashboard";
 
 import Settings from "./Settings";
 
-import AdminFAQ from "./AdminFAQ";
-
 import Adempauze from "./Adempauze";
 
 import AdempauzeCalculator from "./AdempauzeCalculator";
@@ -35,8 +33,6 @@ import SecuritySettings from "./SecuritySettings";
 import DisplaySettings from "./DisplaySettings";
 
 import VTLBSettings from "./VTLBSettings";
-
-import AdminSupport from "./AdminSupport";
 
 import WorkSchedule from "./WorkSchedule";
 
@@ -80,8 +76,6 @@ const PAGES = {
     
     Settings: Settings,
     
-    AdminFAQ: AdminFAQ,
-    
     Adempauze: Adempauze,
     
     AdempauzeCalculator: AdempauzeCalculator,
@@ -99,8 +93,6 @@ const PAGES = {
     DisplaySettings: DisplaySettings,
     
     VTLBSettings: VTLBSettings,
-    
-    AdminSupport: AdminSupport,
     
     WorkSchedule: WorkSchedule,
     
@@ -173,8 +165,6 @@ function PagesContent() {
                 
                 <Route path="/Settings" element={<Settings />} />
                 
-                <Route path="/AdminFAQ" element={<AdminFAQ />} />
-                
                 <Route path="/Adempauze" element={<Adempauze />} />
                 
                 <Route path="/AdempauzeCalculator" element={<AdempauzeCalculator />} />
@@ -192,8 +182,6 @@ function PagesContent() {
                 <Route path="/DisplaySettings" element={<DisplaySettings />} />
                 
                 <Route path="/VTLBSettings" element={<VTLBSettings />} />
-                
-                <Route path="/AdminSupport" element={<AdminSupport />} />
                 
                 <Route path="/WorkSchedule" element={<WorkSchedule />} />
                 
