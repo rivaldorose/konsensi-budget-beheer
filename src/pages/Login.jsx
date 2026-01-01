@@ -133,16 +133,12 @@ export default function Login() {
 
         <div className="mx-auto flex w-full max-w-[480px] flex-col">
           {/* Logo */}
-          <div className="mb-12 flex items-center gap-3">
+          <div className="mb-12 flex items-center">
             <img 
               src="/logo.png" 
               alt="Konsensi Logo" 
-              className="h-10 w-auto"
+              className="h-20 w-auto"
             />
-            <div className="flex flex-col leading-none">
-              <span className="font-heading text-2xl font-bold tracking-tight text-brand-dark dark:text-white">KONSENSI</span>
-              <span className="text-sm font-medium tracking-wide text-primary uppercase">Budgetbeheer</span>
-            </div>
           </div>
 
           {/* Welcome Text */}
@@ -278,37 +274,14 @@ export default function Login() {
         <div className="absolute -top-20 -right-20 h-96 w-96 rounded-full bg-white/5 blur-3xl"></div>
         <div className="absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-primary/20 blur-3xl"></div>
 
-        <div className="relative z-10 flex flex-col items-center max-w-[480px]">
+        <div className="relative z-10 flex flex-col items-center justify-center max-w-[480px]">
           {/* Image */}
-          <div className="mb-12 relative z-20">
+          <div className="relative z-20">
             <img
               alt="Konsensi Financial Illustration"
               className="h-auto w-full max-w-[450px] drop-shadow-2xl rounded-2xl object-contain bg-transparent"
               src="/login .png"
             />
-          </div>
-
-          {/* Testimonial Card */}
-          <div className="w-full rounded-2xl border border-white/30 bg-white/10 p-8 shadow-2xl backdrop-blur-md">
-            <div className="mb-4 text-green-300">
-              <span className="material-symbols-outlined text-[32px]">format_quote</span>
-            </div>
-            <p className="mb-6 text-lg font-medium leading-relaxed text-white">
-              "Konsensi heeft me geholpen om weer grip op mijn financiën te krijgen! Het is overzichtelijk, snel en geeft me rust."
-            </p>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 overflow-hidden rounded-full border-2 border-white/30 bg-white/20">
-                <img
-                  alt="User Avatar"
-                  className="h-full w-full object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzZnZrhF4NnwzsgPqobjmpkEmtdAIhVqpoOV9W00OkUE_ubC7LKdq0r9HsgQMJldF_NbuUoz6DFY2RykbQfO0Gj8bjS4ypuckKroFyoLBPFGwlj7JcIwGZ3BI9Xzcxf63sK26FWTmKJrNtMZpxLOaTVE68yYD_aDw0-YInMDmn8F8Xg5SSCepGNmr3XLP7CxUMveUhNk2FkDfPffmIe-sETkQOv5UvYpptaGAvtlLGDUUOoUyxpLYXVi0n8lEggpybbvYH4Fdi6Gs"
-                />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-white">— Lisa, 24 jaar</p>
-                <p className="text-xs text-white/70 italic">Student & Freelancer</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>
