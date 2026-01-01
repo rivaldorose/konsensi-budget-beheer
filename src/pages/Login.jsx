@@ -36,7 +36,7 @@ export default function Login() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate('/dashboard');
+        navigate('/Dashboard');
       }
     };
     checkSession();
@@ -59,7 +59,7 @@ export default function Login() {
         title: 'Ingelogd! ✅',
         description: 'Welkom terug!',
       });
-      navigate('/dashboard');
+      navigate('/Dashboard');
     } catch (error) {
       console.error('Auth error:', error);
       toast({
