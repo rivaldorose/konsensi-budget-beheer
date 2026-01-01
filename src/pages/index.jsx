@@ -20,10 +20,6 @@ import Settings from "./Settings";
 
 import AdminFAQ from "./AdminFAQ";
 
-import BankConnections from "./BankConnections";
-
-import BankConnected from "./bank-connected";
-
 import Adempauze from "./Adempauze";
 
 import AdempauzeCalculator from "./AdempauzeCalculator";
@@ -91,10 +87,6 @@ const PAGES = {
     Settings: Settings,
     
     AdminFAQ: AdminFAQ,
-    
-    BankConnections: BankConnections,
-    
-    "bank-connected": BankConnected,
     
     Adempauze: Adempauze,
     
@@ -190,10 +182,6 @@ function PagesContent() {
                 <Route path="/Settings" element={<Settings />} />
                 
                 <Route path="/AdminFAQ" element={<AdminFAQ />} />
-                
-                <Route path="/BankConnections" element={<BankConnections />} />
-                
-                <Route path="/bank-connected" element={<BankConnected />} />
                 
                 <Route path="/Adempauze" element={<Adempauze />} />
                 
