@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Lightbulb, TrendingUp, AlertTriangle, Heart, ChevronDown, ChevronUp } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { InvokeLLM } from "@/api/integrations";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AIPersonalizedTips({ user }) {
@@ -31,7 +31,7 @@ ${user.has_debts ? `- Aantal schuldeisers: ${user.debt_count_range || 'onbekend'
 ${user.story ? `- Verhaal: ${user.story}` : ''}
             `.trim();
 
-            const response = await base44.integrations.Core.InvokeLLM({
+            const response = await InvokeLLM({
                 prompt: `Je bent een empathische financiële coach. Analyseer de volgende situatie en geef 4 concrete, praktische tips. Elke tip moet een categorie hebben (advies, waarschuwing, of positief) en moet persoonlijk en bemoedigend zijn.
 
 ${context}

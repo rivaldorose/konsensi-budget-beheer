@@ -34,7 +34,7 @@ import {
   Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
+import { InvokeLLM } from '@/api/integrations';
 import { formatCurrency } from '@/components/utils/formatters';
 
 // NIBUD categorieën met gemiddelde percentages
@@ -130,7 +130,7 @@ export default function AIBudgetPlannerWidget({
       // AI analyse voor tips en allocatie
       let aiInsights = null;
       try {
-        const response = await base44.integrations.Core.InvokeLLM({
+        const response = await InvokeLLM({
           prompt: `Analyseer dit budget en geef 3-4 korte, praktische tips.
 
 Inkomen: €${income.toFixed(2)}/maand

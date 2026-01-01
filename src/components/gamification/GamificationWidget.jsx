@@ -6,7 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Star, Zap, TrendingUp, Award, ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { base44 } from "@/api/base44Client";
+import { User } from "@/api/entities";
+import { UserProgress } from "@/api/entities";
+import { Achievement } from "@/api/entities";
+import { Challenge } from "@/api/entities";
+import { checkAchievements } from "@/api/functions";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function GamificationWidget({ compact = false, onViewAll }) {
@@ -28,8 +32,9 @@ export default function GamificationWidget({ compact = false, onViewAll }) {
 
     const loadProgress = async () => {
         try {
-            const user = await base44.auth.me();
-            const progressRecords = await base44.entities.UserProgress.filter({ 
+            const user = await User.me();
+            if (!user) return;
+            const progressRecords = await UserProgress.filter({ 
                 created_by: user.email 
             });
 
@@ -38,12 +43,12 @@ export default function GamificationWidget({ compact = false, onViewAll }) {
             }
 
             // Load recent achievements (last 3)
-            const achievements = await base44.entities.Achievement.filter(
-                { created_by: user.email },
-                '-unlocked_at',
-                3
-            );
-            setRecentAchievements(achievements);
+            const allAchievements = await Achievement.filter({ created_by: user.email });
+            const recentAchievements = allAchievements
+                .filter(a => a.is_unlocked)
+                .sort((a, b) => new Date(b.unlocked_at || 0) - new Date(a.unlocked_at || 0))
+                .slice(0, 3);
+            setRecentAchievements(recentAchievements);
         } catch (error) {
             console.error('Error loading progress:', error);
         } finally {
@@ -53,15 +58,17 @@ export default function GamificationWidget({ compact = false, onViewAll }) {
 
     const loadWeeklyChallenge = async () => {
         try {
-            const user = await base44.auth.me();
-            const challenges = await base44.entities.Challenge.filter(
+            const user = await User.me();
+            if (!user) return;
+            const challenges = await Challenge.filter(
                 { 
                     created_by: user.email,
                     status: 'active',
                     type: 'weekly'
-                },
-                '-created_date',
-                1
+                }
+            ).then(challenges => challenges
+                .sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0))
+                .slice(0, 1)
             );
 
             if (challenges.length > 0) {
@@ -90,7 +97,7 @@ export default function GamificationWidget({ compact = false, onViewAll }) {
             const endOfWeek = new Date(today);
             endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
 
-            const newChallenge = await base44.entities.Challenge.create({
+            const newChallenge = await Challenge.create({
                 ...randomChallenge,
                 type: 'weekly',
                 start_date: today.toISOString().split('T')[0],
@@ -108,10 +115,10 @@ export default function GamificationWidget({ compact = false, onViewAll }) {
     const checkAchievements = async () => {
         setChecking(true);
         try {
-            const response = await base44.functions.invoke('checkAchievements');
+            const response = await checkAchievements({});
             
-            if (response.data.success) {
-                const { newAchievements, progress: updatedProgress } = response.data;
+            if (response.success) {
+                const { newAchievements, progress: updatedProgress } = response;
                 
                 // Update progress
                 setProgress(updatedProgress);

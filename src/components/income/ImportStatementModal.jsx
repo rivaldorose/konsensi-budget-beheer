@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Upload, FileText, Loader2, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { base44 } from "@/api/base44Client";
+import { UploadFile, ExtractDataFromUploadedFile } from "@/api/integrations";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/components/utils/formatters";
@@ -55,7 +55,7 @@ export default function ImportStatementModal({ isOpen, onClose, onImportComplete
 
     try {
       // Stap 1: Upload het bestand
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await UploadFile({ file });
       
       // Stap 2: Definieer het schema voor transacties
       const schema = {
@@ -97,7 +97,7 @@ export default function ImportStatementModal({ isOpen, onClose, onImportComplete
       };
 
       // Stap 3: AI extractie
-      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+      const result = await ExtractDataFromUploadedFile({
         file_url: file_url,
         json_schema: schema
       });

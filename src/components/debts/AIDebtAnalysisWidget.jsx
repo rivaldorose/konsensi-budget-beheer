@@ -21,7 +21,7 @@ import {
   Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { base44 } from '@/api/base44Client';
+import { InvokeLLM } from '@/api/integrations';
 import { formatCurrency } from '@/components/utils/formatters';
 
 // Bereken maanden tot afbetaling
@@ -206,7 +206,7 @@ export default function AIDebtAnalysisWidget({ debts, vtlbData }) {
           urgentie: d.urgency_level
         }));
 
-        const response = await base44.integrations.Core.InvokeLLM({
+        const response = await InvokeLLM({
           prompt: `Analyseer deze schulden en geef 2-3 korte, praktische tips voor afbetaling.
           
 Schulden: ${JSON.stringify(debtSummary)}

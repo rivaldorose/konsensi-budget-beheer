@@ -9,7 +9,13 @@ import { nl } from "date-fns/locale";
 import { formatCurrency } from "@/components/utils/formatters";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
-import { base44 } from "@/api/base44Client";
+import { User } from "@/api/entities";
+import { Income } from "@/api/entities";
+import { MonthlyCost } from "@/api/entities";
+import { Debt } from "@/api/entities";
+import { Pot } from "@/api/entities";
+import { PaymentStatus } from "@/api/entities";
+import { Notification } from "@/api/entities";
 
 export default function PaymentAnalysisModal({ isOpen, onClose, unpaidItem, currentMonth }) {
   const [analyzing, setAnalyzing] = useState(true);
@@ -26,30 +32,30 @@ export default function PaymentAnalysisModal({ isOpen, onClose, unpaidItem, curr
   // Haal data op voor analyse
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
+    queryFn: () => User.me(),
   });
 
   const { data: incomes = [] } = useQuery({
     queryKey: ['incomes', user?.email],
-    queryFn: () => base44.entities.Income.filter({ created_by: user.email }),
+    queryFn: () => Income.filter({ created_by: user.email }),
     enabled: !!user,
   });
 
   const { data: costs = [] } = useQuery({
     queryKey: ['monthlyCosts', user?.email],
-    queryFn: () => base44.entities.MonthlyCost.filter({ created_by: user.email, status: 'actief' }),
+    queryFn: () => MonthlyCost.filter({ created_by: user.email, status: 'actief' }),
     enabled: !!user,
   });
 
   const { data: debts = [] } = useQuery({
     queryKey: ['debts', user?.email],
-    queryFn: () => base44.entities.Debt.filter({ created_by: user.email, status: 'betalingsregeling' }),
+    queryFn: () => Debt.filter({ created_by: user.email, status: 'betalingsregeling' }),
     enabled: !!user,
   });
 
   const { data: potjes = [] } = useQuery({
     queryKey: ['pots', user?.email],
-    queryFn: () => base44.entities.Pot.filter({ created_by: user.email }),
+    queryFn: () => Pot.filter({ created_by: user.email }),
     enabled: !!user,
   });
 
@@ -63,19 +69,19 @@ export default function PaymentAnalysisModal({ isOpen, onClose, unpaidItem, curr
       };
 
       // 1. Update PaymentStatus met nieuwe datum
-      const existingStatus = await base44.entities.PaymentStatus.filter({
+      const existingStatus = await PaymentStatus.filter({
         cost_id: unpaidItem.id,
         month: currentMonth,
         created_by: user.email
       });
 
       if (existingStatus.length > 0) {
-        results.paymentStatus = await base44.entities.PaymentStatus.update(existingStatus[0].id, {
+        results.paymentStatus = await PaymentStatus.update(existingStatus[0].id, {
           postponed_to_date: format(newDate, 'yyyy-MM-dd'),
           notes: `Uitgesteld via analyse. ${potsToAdjust.length > 0 ? `${potsToAdjust.length} potjes aangepast.` : ''}`
         });
       } else {
-        results.paymentStatus = await base44.entities.PaymentStatus.create({
+        results.paymentStatus = await PaymentStatus.create({
           cost_id: unpaidItem.id,
           cost_name: unpaidItem.name || unpaidItem.creditor_name,
           cost_amount: unpaidItem.amount || unpaidItem.monthly_payment,
@@ -91,7 +97,7 @@ export default function PaymentAnalysisModal({ isOpen, onClose, unpaidItem, curr
       // 2. Pas potjes aan (als strategie 'postpone_pots' is)
       if (potsToAdjust.length > 0) {
         for (const pot of potsToAdjust) {
-          const updated = await base44.entities.Pot.update(pot.id, {
+          const updated = await Pot.update(pot.id, {
             monthly_budget: 0,
             // Bewaar origineel budget in een note
             notes: `Tijdelijk op €0 gezet voor betaling van ${unpaidItem.name || unpaidItem.creditor_name}. Was: €${pot.monthly_budget}`
@@ -101,7 +107,7 @@ export default function PaymentAnalysisModal({ isOpen, onClose, unpaidItem, curr
       }
 
       // 3. Maak notificatie aan voor herinnering
-      results.notification = await base44.entities.Notification.create({
+      results.notification = await Notification.create({
         title: `💰 Betaling ${unpaidItem.name || unpaidItem.creditor_name}`,
         message: `Vergeet niet om ${formatCurrency(unpaidItem.amount || unpaidItem.monthly_payment)} te betalen voor ${unpaidItem.name || unpaidItem.creditor_name}`,
         type: 'fixed_cost',

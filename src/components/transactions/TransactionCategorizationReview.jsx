@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { base44 } from "@/api/base44Client";
+import { User } from "@/api/entities";
+import { Transaction } from "@/api/entities";
+import { categorizeTransaction } from "@/api/functions";
 import { Sparkles, Check, X, AlertCircle, TrendingUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatCurrency } from "@/components/utils/formatters";
@@ -25,12 +27,13 @@ export default function TransactionCategorizationReview({ isOpen, onClose, onRev
     const loadUncategorizedTransactions = async () => {
         setLoading(true);
         try {
-            const user = await base44.auth.me();
+            const user = await User.me();
+            if (!user) return;
             
             // Load transactions that need review (low confidence or not verified)
-            const allTransactions = await base44.entities.Transaction.filter({
+            const allTransactions = await Transaction.filter({
                 created_by: user.email
-            }, '-created_date', 50);
+            });
 
             const needReview = allTransactions.filter(t => 
                 !t.manually_verified && 
@@ -53,7 +56,7 @@ export default function TransactionCategorizationReview({ isOpen, onClose, onRev
     const handleApprove = async (transaction) => {
         setProcessing(true);
         try {
-            await base44.entities.Transaction.update(transaction.id, {
+            await Transaction.update(transaction.id, {
                 manually_verified: true,
                 category: transaction.ai_suggested_category || transaction.category
             });
@@ -79,7 +82,7 @@ export default function TransactionCategorizationReview({ isOpen, onClose, onRev
     const handleCorrect = async (transaction, newCategory) => {
         setProcessing(true);
         try {
-            await base44.entities.Transaction.update(transaction.id, {
+            await Transaction.update(transaction.id, {
                 category: newCategory,
                 manually_verified: true,
                 ai_confidence: 100 // User correction = 100% confidence
@@ -106,14 +109,14 @@ export default function TransactionCategorizationReview({ isOpen, onClose, onRev
     const handleRecategorize = async (transaction) => {
         setProcessing(true);
         try {
-            const response = await base44.functions.invoke('categorizeTransaction', {
+            const response = await categorizeTransaction({
                 description: transaction.description,
                 amount: transaction.amount,
                 type: transaction.type
             });
 
             if (response.data.success) {
-                await base44.entities.Transaction.update(transaction.id, {
+                await Transaction.update(transaction.id, {
                     ai_suggested_category: response.data.category,
                     ai_confidence: response.data.confidence
                 });

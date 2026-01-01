@@ -5,8 +5,7 @@ import { Loader2, Zap, Award, Snowflake, TrendingDown, Clock, Shield, Info, X } 
 import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/components/ui/toast';
 import { useTranslation } from '@/components/utils/LanguageContext';
-// CRITICAL: New import for base44 client
-import { base44 } from '@/api/base44Client';
+import { calculateStrategies, activateStrategy } from '@/api/functions';
 import { formatCurrency } from '@/components/utils/formatters';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
@@ -14,9 +13,7 @@ import { nl } from 'date-fns/locale';
 import SnowballExplanationModal from './SnowballExplanationModal';
 import AvalancheExplanationModal from './AvalancheExplanationModal';
 
-// CRITICAL: Replaced existing imports for calculateStrategies and activateStrategy
-const calculateStrategies = (params) => base44.functions.invoke('calculateStrategies', params);
-const activateStrategy = (params) => base44.functions.invoke('activateStrategy', params);
+// Functions are now imported from @/api/functions
 
 
 const StrategyCard = ({ title, icon, description, advantages, disadvantages, result, onChoose, isChoosing, t, onShowExplanation }) => {

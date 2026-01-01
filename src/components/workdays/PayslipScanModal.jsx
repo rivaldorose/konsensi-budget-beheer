@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/toast';
-import { base44 } from '@/api/base44Client';
+import { UploadFile, ExtractDataFromUploadedFile } from '@/api/integrations';
 import { Payslip } from '@/api/entities';
 import { WorkDay } from '@/api/entities';
 import { Upload, FileText, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -25,11 +25,11 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
     setUploading(true);
     try {
       // Upload file
-      const uploadResult = await base44.integrations.Core.UploadFile({ file });
+      const uploadResult = await UploadFile({ file });
       setFileUrl(uploadResult.file_url);
 
       // Extract data with AI
-      const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
+      const extractResult = await ExtractDataFromUploadedFile({
         file_url: uploadResult.file_url,
         json_schema: {
           type: "object",

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, TrendingUp, AlertTriangle, Lightbulb, RefreshCw } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { InvokeLLM } from "@/api/integrations";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatCurrency } from "@/components/utils/formatters";
 
@@ -30,7 +30,7 @@ Financiële data voor ${selectedMonth}:
 - Schuld afbetaald: €${monthlyData.debt_paid || 0}
             `.trim();
 
-            const response = await base44.integrations.Core.InvokeLLM({
+            const response = await InvokeLLM({
                 prompt: `Je bent een empathische financiële coach. Analyseer deze maandelijkse financiële data en geef 4 concrete inzichten. Wees praktisch, bemoedigend en specifiek.
 
 ${context}

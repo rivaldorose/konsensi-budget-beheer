@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, Loader2, Check, X } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { base44 } from '@/api/base44Client';
+import { UploadFile, ExtractDataFromUploadedFile } from '@/api/integrations';
 import { MonthlyCost } from '@/api/entities';
 import { Transaction } from '@/api/entities';
 import { Pot } from '@/api/entities';
@@ -128,7 +128,7 @@ export default function ScanCostModal({ isOpen, onClose, onCostAdded }) {
       };
 
       // Data extractie
-      const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
+      const extractResult = await ExtractDataFromUploadedFile({
         file_url: fileUrl,
         json_schema: schema
       });

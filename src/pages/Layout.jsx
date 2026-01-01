@@ -8,7 +8,7 @@ import { MonthlyCost } from "@/api/entities";
 import { MonthlyCheck } from "@/api/entities";
 import { Debt } from "@/api/entities";
 import { Transaction } from "@/api/entities";
-import { base44 } from "@/api/base44Client";
+import { UploadFile } from "@/api/integrations";
 import { ToastProvider, useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,7 +59,6 @@ import ScanDebtModal from "@/components/debts/ScanDebtModal";
 
 
 import PostponedPaymentTracker from "@/components/checks/PostponedPaymentTracker";
-import YOLChatButton from "@/components/agents/YOLChatButton";
 import { ErrorBoundary } from "@/components/utils/ErrorBoundary";
 
 
@@ -1006,9 +1005,6 @@ function LayoutWithProvider({ children, currentPageName }) {
           </main>
         </div>
 
-        
-        <YOLChatButton />
-
             {/* Feedback FAB Button */}
             <Link
               to={createPageUrl('Feedback')}
@@ -1168,7 +1164,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                         toast({ title: '📸 Bon wordt verwerkt...' });
                         
                         // Upload file to Supabase Storage
-                        const uploadResult = await base44.integrations.Core.UploadFile({ file });
+                        const uploadResult = await UploadFile({ file });
                         
                         // TODO: Implement ExtractDataFromUploadedFile with Supabase Edge Function
                         // For now, show manual input form

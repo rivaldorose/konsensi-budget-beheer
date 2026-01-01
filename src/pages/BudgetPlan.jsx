@@ -373,20 +373,37 @@ export default function BudgetPlan() {
             <p className="text-text-secondary dark:text-gray-400 text-base">Jouw inkomsten en uitgaven op een rij voor {getMonthName(selectedMonth)}</p>
           </div>
           {/* Month Picker */}
-          <button 
-            className="group flex items-center justify-between gap-3 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] hover:border-primary/50 dark:hover:border-primary/50 text-text-main dark:text-white px-5 py-2.5 rounded-full shadow-sm hover:shadow transition-all min-w-[200px]"
-            onClick={() => {
-              const newMonth = new Date(selectedMonth);
-              newMonth.setMonth(newMonth.getMonth() + 1);
-              setSelectedMonth(newMonth);
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 group-hover:text-primary transition-colors text-[20px]">calendar_month</span>
-              <span className="font-bold text-sm">{getMonthName(selectedMonth)}</span>
-                    </div>
-            <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">expand_more</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const newMonth = new Date(selectedMonth);
+                newMonth.setMonth(newMonth.getMonth() - 1);
+                setSelectedMonth(newMonth);
+              }}
+              className="flex items-center justify-center size-10 rounded-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] hover:border-primary/50 text-text-main dark:text-white transition-colors"
+            >
+              <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+            </button>
+            <button 
+              className="group flex items-center justify-between gap-3 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] hover:border-primary/50 dark:hover:border-primary/50 text-text-main dark:text-white px-5 py-2.5 rounded-full shadow-sm hover:shadow transition-all min-w-[200px]"
+            >
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 group-hover:text-primary transition-colors text-[20px]">calendar_month</span>
+                <span className="font-bold text-sm">{getMonthName(selectedMonth)}</span>
+              </div>
+              <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">expand_more</span>
+            </button>
+            <button
+              onClick={() => {
+                const newMonth = new Date(selectedMonth);
+                newMonth.setMonth(newMonth.getMonth() + 1);
+                setSelectedMonth(newMonth);
+              }}
+              className="flex items-center justify-center size-10 rounded-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] hover:border-primary/50 text-text-main dark:text-white transition-colors"
+            >
+              <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+            </button>
+          </div>
                 </div>
                 
         {/* Tabs Section */}
@@ -487,16 +504,18 @@ export default function BudgetPlan() {
                             <div 
                               className="size-10 rounded-full flex items-center justify-center transition-colors group-hover:scale-110"
                               style={{
-                                backgroundColor: isIncome ? `${categoryColor}1a` : `${categoryColor}1a`,
+                                backgroundColor: `${categoryColor}1a`,
                                 color: categoryColor
                               }}
                               onMouseEnter={(e) => {
                                 e.currentTarget.style.backgroundColor = categoryColor;
                                 e.currentTarget.style.color = 'white';
+                                e.currentTarget.style.transform = 'scale(1.1)';
                               }}
                               onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor = `${categoryColor}1a`;
                                 e.currentTarget.style.color = categoryColor;
+                                e.currentTarget.style.transform = 'scale(1)';
                               }}
                             >
                               <span className="material-symbols-outlined">{icon}</span>

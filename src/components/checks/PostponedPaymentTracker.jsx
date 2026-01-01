@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { base44 } from "@/api/base44Client";
+import { User } from "@/api/entities";
+import { PaymentStatus } from "@/api/entities";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, CheckCircle, Calendar, X } from "lucide-react";
@@ -18,12 +19,12 @@ export default function PostponedPaymentTracker() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me(),
+    queryFn: () => User.me(),
   });
 
   const { data: paymentStatuses = [] } = useQuery({
     queryKey: ['paymentStatuses', user?.email],
-    queryFn: () => base44.entities.PaymentStatus.filter({ created_by: user.email }),
+    queryFn: () => PaymentStatus.filter({ created_by: user.email }),
     enabled: !!user,
     staleTime: 1 * 60 * 1000,
   });

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { base44 } from '@/api/base44Client';
+import { supabaseSync } from '@/api/functions';
 import { Cloud, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
 
@@ -11,14 +11,14 @@ export default function SupabaseSyncButton() {
   const handleSync = async () => {
     setSyncing(true);
     try {
-      const response = await base44.functions.invoke('supabaseSync', {
+      const response = await supabaseSync({
         action: 'sync_all'
       });
 
-      if (response.data.success) {
+      if (response.success) {
         toast({
           title: '✅ Sync succesvol',
-          description: `Gesynchroniseerd: ${response.data.syncResults.debts} schulden, ${response.data.syncResults.income} inkomsten, ${response.data.syncResults.transactions} transacties`
+          description: `Gesynchroniseerd: ${response.syncResults?.debts || 0} schulden, ${response.syncResults?.income || 0} inkomsten, ${response.syncResults?.transactions || 0} transacties`
         });
       }
     } catch (error) {

@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, Lock, TrendingUp, Sparkles } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { User } from "@/api/entities";
+import { Achievement } from "@/api/entities";
 import { motion } from "framer-motion";
 
 export default function AchievementsModal({ isOpen, onClose }) {
@@ -21,8 +22,9 @@ export default function AchievementsModal({ isOpen, onClose }) {
     const loadAchievements = async () => {
         setLoading(true);
         try {
-            const user = await base44.auth.me();
-            const allAchievements = await base44.entities.Achievement.filter({ 
+            const user = await User.me();
+            if (!user) return;
+            const allAchievements = await Achievement.filter({ 
                 created_by: user.email 
             }, '-unlocked_at');
             
