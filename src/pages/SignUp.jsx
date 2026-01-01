@@ -20,7 +20,7 @@ export default function SignUp() {
       if (saved) return saved === 'dark';
       return window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
-    return true; // Default to dark for signup
+    return false; // Default to light for signup
   });
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -161,9 +161,9 @@ export default function SignUp() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col lg:flex-row bg-background-dark dark:bg-background-dark">
+    <div className="flex h-screen w-full flex-col lg:flex-row bg-white dark:bg-background-dark overflow-hidden">
       {/* LEFT SIDE: Form Section */}
-      <div className="relative flex w-full flex-1 flex-col justify-center bg-[#0a0a0a] dark:bg-[#0a0a0a] px-6 py-12 lg:w-1/2 lg:px-20 z-10">
+      <div className="relative flex w-full lg:w-1/2 flex-col justify-center overflow-y-auto bg-white dark:bg-[#0a0a0a] shadow-subtle px-6 py-10 lg:px-20 lg:py-16 z-10">
         {/* Theme Toggle */}
         <div className="absolute top-6 right-6 lg:top-8 lg:right-8 z-20">
           <label aria-label="Switch theme" className="relative inline-flex items-center cursor-pointer select-none">
@@ -188,20 +188,20 @@ export default function SignUp() {
 
         <div className="mx-auto w-full max-w-[480px] animate-fade-in">
           {/* Logo */}
-          <div className="mb-12 flex items-center">
-            <img 
-              src="/logo.png" 
-              alt="Konsensi Logo" 
-              className="h-20 w-auto"
-            />
+          <div className="mb-12 flex items-center gap-3">
+            <span className="material-symbols-outlined text-brand-dark dark:text-white" style={{ fontSize: '24px' }}>forest</span>
+            <div className="flex items-baseline gap-2">
+              <span className="font-display font-bold text-2xl text-brand-dark dark:text-white tracking-tight">KONSENSI</span>
+              <span className="font-body text-sm text-primary font-normal">Budgetbeheer</span>
+            </div>
           </div>
 
           {/* Header */}
           <div className="mb-10">
-            <h1 className="text-[32px] font-bold leading-tight text-white mb-2 dark:text-white">
+            <h1 className="font-display font-bold text-[32px] text-text-main dark:text-white leading-tight mb-2">
               Maak je account aan
             </h1>
-            <p className="text-base text-[#a1a1a1] dark:text-[#a1a1a1] font-normal">
+            <p className="font-body text-base text-text-sub dark:text-[#a1a1a1]">
               Start vandaag nog met budgetteren
             </p>
           </div>
@@ -209,16 +209,16 @@ export default function SignUp() {
           {/* Form */}
           <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
             {/* Name Field */}
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-[#a1a1a1] dark:text-[#a1a1a1]" htmlFor="fullname">
+            <div>
+              <label className="block font-body font-semibold text-sm text-gray-700 dark:text-[#a1a1a1] mb-2" htmlFor="fullname">
                 Volledige naam
               </label>
-              <div className="relative flex items-center group">
-                <span className="material-symbols-outlined absolute left-4 text-gray-500 dark:text-gray-500 transition-colors group-focus-within:text-primary" style={{ fontSize: '20px' }}>
+              <div className="group flex w-full items-center rounded-xl bg-input-bg dark:bg-[#1a1a1a] border border-input-border dark:border-[#2a2a2a] px-4 py-3.5 focus-within:border-primary focus-within:bg-white dark:focus-within:bg-[#1a1a1a] focus-within:shadow-glow transition-all">
+                <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 mr-3 transition-colors group-focus-within:text-primary" style={{ fontSize: '20px' }}>
                   person
                 </span>
                 <input
-                  className="w-full rounded-xl border border-[#2a2a2a] dark:border-[#2a2a2a] bg-[#1a1a1a] dark:bg-[#1a1a1a] py-3.5 pl-12 pr-4 text-white dark:text-white placeholder-gray-500 dark:placeholder-gray-500 shadow-sm transition-all focus:border-primary focus:bg-[#1a1a1a] dark:focus:bg-[#1a1a1a] focus:ring-1 focus:ring-primary outline-none"
+                  className="w-full bg-transparent border-none p-0 text-text-main dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0 text-base"
                   id="fullname"
                   placeholder="Voor- en achternaam"
                   type="text"
@@ -230,16 +230,16 @@ export default function SignUp() {
             </div>
 
             {/* Email Field */}
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-[#a1a1a1] dark:text-[#a1a1a1]" htmlFor="email">
+            <div>
+              <label className="block font-body font-semibold text-sm text-gray-700 dark:text-[#a1a1a1] mb-2" htmlFor="email">
                 E-mailadres
               </label>
-              <div className="relative flex items-center group">
-                <span className="material-symbols-outlined absolute left-4 text-gray-500 dark:text-gray-500 transition-colors group-focus-within:text-primary" style={{ fontSize: '20px' }}>
+              <div className="group flex w-full items-center rounded-xl bg-input-bg dark:bg-[#1a1a1a] border border-input-border dark:border-[#2a2a2a] px-4 py-3.5 focus-within:border-primary focus-within:bg-white dark:focus-within:bg-[#1a1a1a] focus-within:shadow-glow transition-all">
+                <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 mr-3 transition-colors group-focus-within:text-primary" style={{ fontSize: '20px' }}>
                   mail
                 </span>
                 <input
-                  className="w-full rounded-xl border border-[#2a2a2a] dark:border-[#2a2a2a] bg-[#1a1a1a] dark:bg-[#1a1a1a] py-3.5 pl-12 pr-4 text-white dark:text-white placeholder-gray-500 dark:placeholder-gray-500 shadow-sm transition-all focus:border-primary focus:bg-[#1a1a1a] dark:focus:bg-[#1a1a1a] focus:ring-1 focus:ring-primary outline-none"
+                  className="w-full bg-transparent border-none p-0 text-text-main dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0 text-base"
                   id="email"
                   placeholder="naam@voorbeeld.nl"
                   type="email"
@@ -251,16 +251,16 @@ export default function SignUp() {
             </div>
 
             {/* Password Field */}
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-[#a1a1a1] dark:text-[#a1a1a1]" htmlFor="password">
+            <div>
+              <label className="block font-body font-semibold text-sm text-gray-700 dark:text-[#a1a1a1] mb-2" htmlFor="password">
                 Wachtwoord
               </label>
-              <div className="relative flex items-center group">
-                <span className="material-symbols-outlined absolute left-4 text-gray-500 dark:text-gray-500 transition-colors group-focus-within:text-primary" style={{ fontSize: '20px' }}>
+              <div className="group flex w-full items-center rounded-xl bg-input-bg dark:bg-[#1a1a1a] border border-input-border dark:border-[#2a2a2a] px-4 py-3.5 focus-within:border-primary focus-within:bg-white dark:focus-within:bg-[#1a1a1a] focus-within:shadow-glow transition-all">
+                <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 mr-3 transition-colors group-focus-within:text-primary" style={{ fontSize: '20px' }}>
                   lock
                 </span>
                 <input
-                  className="w-full rounded-xl border border-[#2a2a2a] dark:border-[#2a2a2a] bg-[#1a1a1a] dark:bg-[#1a1a1a] py-3.5 pl-12 pr-12 text-white dark:text-white placeholder-gray-500 dark:placeholder-gray-500 shadow-sm transition-all focus:border-primary focus:bg-[#1a1a1a] dark:focus:bg-[#1a1a1a] focus:ring-1 focus:ring-primary outline-none"
+                  className="w-full bg-transparent border-none p-0 text-text-main dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0 text-base"
                   id="password"
                   placeholder="••••••••"
                   type={showPassword ? 'text' : 'password'}
@@ -270,7 +270,7 @@ export default function SignUp() {
                   minLength={6}
                 />
                 <button
-                  className="absolute right-4 flex items-center justify-center text-gray-500 dark:text-gray-500 hover:text-white dark:hover:text-white transition-colors cursor-pointer rounded-full p-1 hover:bg-white/5"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white focus:outline-none flex items-center"
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                 >
@@ -281,14 +281,14 @@ export default function SignUp() {
               </div>
               {/* Password Strength Meter */}
               {password.length > 0 && (
-                <div className="mt-2 flex flex-col gap-1.5">
-                  <div className="h-1.5 w-full rounded-full bg-[#2a2a2a] dark:bg-[#2a2a2a] overflow-hidden">
+                <div className="mt-2 flex flex-col gap-1">
+                  <div className="h-1.5 w-full bg-gray-200 dark:bg-[#2a2a2a] rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full ${passwordStrength.color} shadow-[0_0_10px_rgba(234,179,8,0.5)]`}
+                      className={`strength-bar h-full rounded-full ${passwordStrength.color}`}
                       style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
                     ></div>
                   </div>
-                  <p className={`text-xs font-medium text-right ${passwordStrength.color.replace('bg-', 'text-')}`}>
+                  <p className={`text-xs font-body text-right ${passwordStrength.color === 'bg-red-500' ? 'text-red-600' : passwordStrength.color === 'bg-yellow-500' ? 'text-yellow-600' : 'text-green-600'}`}>
                     {passwordStrength.label}
                   </p>
                 </div>
@@ -296,16 +296,16 @@ export default function SignUp() {
             </div>
 
             {/* Confirm Password Field */}
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-[#a1a1a1] dark:text-[#a1a1a1]" htmlFor="confirm-password">
+            <div>
+              <label className="block font-body font-semibold text-sm text-gray-700 dark:text-[#a1a1a1] mb-2" htmlFor="confirm-password">
                 Bevestig wachtwoord
               </label>
-              <div className="relative flex items-center group">
-                <span className="material-symbols-outlined absolute left-4 text-gray-500 dark:text-gray-500 transition-colors group-focus-within:text-primary" style={{ fontSize: '20px' }}>
+              <div className="group flex w-full items-center rounded-xl bg-input-bg dark:bg-[#1a1a1a] border border-input-border dark:border-[#2a2a2a] px-4 py-3.5 focus-within:border-primary focus-within:bg-white dark:focus-within:bg-[#1a1a1a] focus-within:shadow-glow transition-all">
+                <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 mr-3 transition-colors group-focus-within:text-primary" style={{ fontSize: '20px' }}>
                   lock
                 </span>
                 <input
-                  className="w-full rounded-xl border border-[#2a2a2a] dark:border-[#2a2a2a] bg-[#1a1a1a] dark:bg-[#1a1a1a] py-3.5 pl-12 pr-12 text-white dark:text-white placeholder-gray-500 dark:placeholder-gray-500 shadow-sm transition-all focus:border-primary focus:bg-[#1a1a1a] dark:focus:bg-[#1a1a1a] focus:ring-1 focus:ring-primary outline-none"
+                  className="w-full bg-transparent border-none p-0 text-text-main dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0 text-base"
                   id="confirm-password"
                   placeholder="••••••••"
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -314,12 +314,12 @@ export default function SignUp() {
                   required
                 />
                 {confirmPassword.length > 0 && (
-                  <span className={`material-symbols-outlined absolute right-12 ${passwordsMatch ? 'text-primary' : 'text-red-500'}`} style={{ fontSize: '20px' }}>
+                  <span className={`material-symbols-outlined ml-2 ${passwordsMatch ? 'text-primary' : 'text-red-500'}`} style={{ fontSize: '20px' }}>
                     {passwordsMatch ? 'check_circle' : 'cancel'}
                   </span>
                 )}
                 <button
-                  className="absolute right-4 flex items-center justify-center text-gray-500 dark:text-gray-500 hover:text-white dark:hover:text-white transition-colors cursor-pointer rounded-full p-1 hover:bg-white/5"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white focus:outline-none flex items-center ml-2"
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
@@ -331,75 +331,101 @@ export default function SignUp() {
             </div>
 
             {/* Terms Checkbox */}
-            <div className="mt-2 flex items-start gap-3">
-              <div className="relative flex h-5 items-center">
+            <div className="flex items-start gap-3 mt-1 mb-2 checkbox-wrapper">
+              <label className="relative flex items-center cursor-pointer">
                 <input
-                  className="peer h-5 w-5 appearance-none rounded border border-[#2a2a2a] dark:border-[#2a2a2a] bg-[#1a1a1a] dark:bg-[#1a1a1a] transition-all checked:border-primary checked:bg-primary hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-1 focus:ring-offset-[#0a0a0a] cursor-pointer"
-                  id="terms"
+                  className="peer sr-only"
                   type="checkbox"
+                  id="terms"
                   checked={termsAccepted}
                   onChange={(e) => setTermsAccepted(e.target.checked)}
                   required
                 />
-                <span className="material-symbols-outlined pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 transition-opacity peer-checked:opacity-100" style={{ fontSize: '16px' }}>
-                  check
-                </span>
-              </div>
-              <label className="text-sm leading-relaxed text-[#a1a1a1] dark:text-[#a1a1a1] select-none cursor-pointer" htmlFor="terms">
+                <div className="h-5 w-5 rounded border border-gray-300 dark:border-[#2a2a2a] bg-white dark:bg-[#1a1a1a] transition-colors peer-focus:ring-2 peer-focus:ring-primary/20 flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary">
+                  <svg className="hidden w-3.5 h-3.5 text-white pointer-events-none peer-checked:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"></path>
+                  </svg>
+                </div>
+              </label>
+              <p className="text-sm text-text-sub dark:text-[#a1a1a1] leading-snug">
                 Ik ga akkoord met de{' '}
-                <a className="font-medium text-primary underline decoration-primary/30 underline-offset-2 transition-colors hover:text-[#34d399] hover:decoration-primary" href="#" onClick={(e) => e.preventDefault()}>
+                <a className="text-primary hover:underline" href="#" onClick={(e) => e.preventDefault()}>
                   Algemene Voorwaarden
                 </a>
                 {' '}en{' '}
-                <a className="font-medium text-primary underline decoration-primary/30 underline-offset-2 transition-colors hover:text-[#34d399] hover:decoration-primary" href="#" onClick={(e) => e.preventDefault()}>
+                <a className="text-primary hover:underline" href="#" onClick={(e) => e.preventDefault()}>
                   Privacybeleid
                 </a>
-              </label>
+                .
+              </p>
             </div>
 
             {/* Submit Button */}
             <button
-              className="group mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3.5 text-base font-bold text-white shadow-[0_4px_14px_0_rgba(16,183,127,0.39)] transition-all hover:bg-emerald-600 hover:shadow-[0_6px_20px_rgba(16,183,127,0.23)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group flex w-full items-center justify-center gap-3 rounded-xl bg-primary px-6 py-4 text-white shadow-button transition-all hover:bg-primary-hover hover:scale-[1.02] active:bg-primary-active active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
               disabled={loading}
             >
-              {loading ? 'Bezig...' : 'Account aanmaken'}
+              <span className="font-display font-semibold text-base">
+                {loading ? 'Bezig...' : 'Account aanmaken'}
+              </span>
               {!loading && (
-                <span className="material-symbols-outlined transition-transform group-hover:translate-x-1" style={{ fontSize: '20px' }}>
+                <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform" style={{ fontSize: '20px' }}>
                   arrow_forward
                 </span>
               )}
             </button>
 
             {/* Divider */}
-            <div className="my-4 h-px w-full bg-[#2a2a2a] dark:bg-[#2a2a2a]"></div>
+            <div className="relative my-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200 dark:border-[#2a2a2a]"></div>
+              </div>
+            </div>
 
             {/* Login Link */}
-            <p className="text-center text-[15px] text-[#a1a1a1] dark:text-[#a1a1a1]">
-              Heb je al een account?{' '}
-              <Link className="font-semibold text-primary underline decoration-primary/30 underline-offset-2 transition-colors hover:text-[#34d399] hover:decoration-primary" to="/login">
+            <div className="text-center">
+              <span className="text-[15px] text-text-sub dark:text-[#a1a1a1]">Heb je al een account? </span>
+              <Link className="text-[15px] font-semibold text-primary hover:text-primary-hover hover:underline" to="/login">
                 Log in
               </Link>
-            </p>
+            </div>
           </form>
         </div>
       </div>
 
-      {/* RIGHT SIDE: Illustration Section */}
-      <div className="hidden lg:flex w-1/2 flex-col items-center justify-center bg-gradient-to-br from-[#059669] to-[#10b981] relative overflow-hidden p-12">
-        {/* Decorative Background Elements */}
-        <div className="absolute top-0 right-0 h-[500px] w-[500px] -translate-y-1/2 translate-x-1/3 rounded-full bg-white/5 blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 h-[600px] w-[600px] translate-y-1/3 -translate-x-1/3 rounded-full bg-black/10 blur-3xl"></div>
-
+      {/* RIGHT SIDE: Visual */}
+      <div className="hidden lg:flex w-1/2 flex-col items-center justify-center relative p-16 overflow-hidden">
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#3D6456] to-[#10B981] z-0"></div>
+        {/* Decorative Elements */}
+        <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] z-0 pointer-events-none"></div>
+        {/* Floating shapes */}
+        <div className="absolute top-20 left-20 w-32 h-32 rounded-full bg-white opacity-5 blur-2xl animate-pulse"></div>
+        <div className="absolute bottom-40 right-20 w-48 h-48 rounded-full bg-[#10B981] opacity-20 blur-3xl"></div>
+        
         {/* Content Container */}
-        <div className="relative z-10 flex flex-col items-center justify-center max-w-[440px]">
-          {/* Illustration Area */}
-          <div className="relative flex items-center justify-center">
+        <div className="relative z-10 flex flex-col items-center max-w-[520px]">
+          {/* Illustration */}
+          <div className="mb-12 relative w-full max-w-[400px]">
             <img
-              className="relative w-full max-w-[450px] drop-shadow-2xl object-contain bg-transparent"
+              className="w-full drop-shadow-2xl object-contain bg-transparent"
               alt="Konsensi Sign Up Illustration"
               src="/sign up.png"
             />
+          </div>
+          
+          {/* Testimonial Card */}
+          <div className="w-full rounded-2xl bg-white/95 dark:bg-white/10 backdrop-blur-md border border-white/30 dark:border-white/20 p-8 shadow-card relative">
+            <span className="material-symbols-outlined absolute top-6 left-6 text-primary opacity-80" style={{ fontSize: '32px' }}>format_quote</span>
+            <div className="pl-8">
+              <p className="font-body text-lg leading-relaxed text-gray-800 dark:text-white italic">
+                "In 5 minuten had ik volledig inzicht in mijn uitgaven! Het heeft me echt geholpen om te sparen voor mijn eerste huis."
+              </p>
+              <p className="mt-4 font-body text-sm font-semibold text-gray-600 dark:text-white/80">
+                — Mark, 28 jaar
+              </p>
+            </div>
           </div>
         </div>
       </div>

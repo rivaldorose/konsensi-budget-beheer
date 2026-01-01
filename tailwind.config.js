@@ -99,8 +99,11 @@ module.exports = {
   		},
   		boxShadow: {
   			soft: '4px 0 24px rgba(0,0,0,0.04)',
-  			glow: '0 4px 12px rgba(16,185,129,0.2)',
-  			card: '0 2px 8px rgba(0,0,0,0.04)',
+  			subtle: '4px 0 24px rgba(0,0,0,0.04)',
+  			glow: '0 0 0 3px rgba(16,185,129,0.1)',
+  			button: '0 4px 12px rgba(16,185,129,0.2)',
+  			card: '0 8px 32px rgba(0,0,0,0.1)',
+  			float: '0 20px 60px rgba(61,100,86,0.3)',
   			nav: '0 2px 4px rgba(0,0,0,0.1)',
   			hover: '0 4px 12px rgba(0,0,0,0.1)'
   		},
