@@ -51,6 +51,13 @@
   - FAQ section
   - CTA button
 
+- ✅ **WorkSchedule.jsx** - Volledig nieuw design met:
+  - Dark/light mode toggle
+  - Nieuwe calendar layout
+  - Stats cards (Totaal Verdiend, Uren Gewerkt, Geplande Uren, Gemiddeld Uurloon)
+  - Action toolbar met legend
+  - Modals voor werkdag bewerken en loonstrook uploaden
+
 ### Layout & Navigation
 - ✅ **Layout.jsx** - Sidebar volledig verwijderd, nieuwe header, conditional rendering voor auth pages
 
@@ -75,7 +82,7 @@
 ## ⚠️ OUD DESIGN (Nog te Updaten)
 
 ### Financial Management
-- ⚠️ **debts.jsx** - Oud design, nog niet geüpdatet
+- ✅ **debts.jsx** - Volledig nieuw design met dark/light mode toggle, nieuwe table layout, summary cards, collapsible sections
 - ⚠️ **Expenses.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **Potjes.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **BudgetPlan.jsx** - Oud design, nog niet geüpdatet
@@ -86,7 +93,6 @@
 - ⚠️ **VTLBCalculator.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **AdempauzeCalculator.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **VasteLastenCheck.jsx** - Oud design, nog niet geüpdatet
-- ⚠️ **WorkSchedule.jsx** - Oud design, nog niet geüpdatet
 
 ### Settings & Configuration
 - ⚠️ **Settings.jsx** - Oud design, nog niet geüpdatet
@@ -117,7 +123,7 @@
 
 ## 📊 Samenvatting
 
-### Nieuw Design: **15 pagina's** ✅
+### Nieuw Design: **17 pagina's** ✅
 1. Login
 2. SignUp
 3. ForgotPassword
@@ -131,8 +137,10 @@
 11. Income
 12. MaandelijkseLasten
 13. Adempauze
-14. Layout (sidebar verwijderd)
-15. + 8 nieuwe dashboard components
+14. WorkSchedule
+15. debts
+16. Layout (sidebar verwijderd)
+17. + 8 nieuwe dashboard components
 
 ### Oud Design: **~25 pagina's** ⚠️
 - Financial management (6 pagina's)

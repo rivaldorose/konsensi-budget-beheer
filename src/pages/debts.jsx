@@ -1,35 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Debt } from "@/api/entities";
 import { DebtStrategy } from "@/api/entities";
 import { DebtPayoffSchedule } from "@/api/entities";
 import { DebtPayment } from "@/api/entities";
 import { User } from "@/api/entities";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/toast";
 import { vtblService } from "@/components/services";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Search, 
-  Filter, 
-  Download, 
-  Plus,
-  ArrowUpDown,
-  FileText,
-  Shield,
-  Building,
-  ShoppingBag,
-  Zap,
-  Calculator,
-  Target,
-  Eye,
-  EyeOff,
-  ChevronDown,
-  HelpCircle,
-  Pencil,
-  X
-} from "lucide-react";
 import DebtForm from "../components/debts/DebtForm";
 import DebtDetailsModal from "../components/debts/DebtDetailsModal";
 import StrategyChoiceModal from "../components/debts/StrategyChoiceModal";
@@ -42,8 +18,6 @@ import DebtAchievementsModal from "../components/debts/DebtAchievementsModal";
 import DebtsInfoModal from "../components/debts/DebtsInfoModal";
 import AIDebtAnalysisWidget from "../components/debts/AIDebtAnalysisWidget";
 import ScanDebtModal from "../components/debts/ScanDebtModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { motion } from "framer-motion";
 import { createPageUrl } from "@/utils";
 import { formatCurrency } from "@/components/utils/formatters";
 
@@ -51,14 +25,18 @@ const statusLabels = {
   niet_actief: 'Niet Actief',
   wachtend: 'Wachtend',
   betalingsregeling: 'Betalingsregeling',
-  afbetaald: 'Afbetaald'
+  afbetaald: 'Afbetaald',
+  actief: 'Actief',
+  aanmaning: 'Aanmaning'
 };
 
 const statusColors = {
-  niet_actief: 'bg-gray-400 text-white',
-  wachtend: 'bg-yellow-500 text-white',
-  betalingsregeling: 'bg-blue-500 text-white',
-  afbetaald: 'bg-green-500 text-white'
+  niet_actief: 'bg-gray-100 dark:bg-dark-card-elevated text-gray-600 dark:text-text-tertiary border border-gray-200 dark:border-dark-border-accent',
+  wachtend: 'bg-accent-yellow/15 dark:bg-accent-yellow/10 text-accent-yellow border border-accent-yellow/20 dark:border-accent-yellow/20',
+  betalingsregeling: 'bg-status-blue/15 dark:bg-accent-blue/10 text-status-blue dark:text-accent-blue border border-status-blue/20 dark:border-accent-blue/20',
+  afbetaald: 'bg-status-green/15 dark:bg-primary-green/10 text-status-green dark:text-primary-green border border-status-green/20 dark:border-primary-green/20',
+  actief: 'bg-status-green/15 dark:bg-primary-green/10 text-status-green dark:text-primary-green border border-status-green/20 dark:border-primary-green/20',
+  aanmaning: 'bg-status-red/15 dark:bg-accent-red/10 text-status-red dark:text-accent-red border border-status-red/20 dark:border-accent-red/20 animate-pulse'
 };
 
 const creditorTypeLabels = {
@@ -102,18 +80,37 @@ export default function Debts() {
   const [showVtlbInfo, setShowVtlbInfo] = useState(false);
   const [showScanModal, setShowScanModal] = useState(false);
   const [showAddChoiceModal, setShowAddChoiceModal] = useState(false);
+  const [showAIAnalysis, setShowAIAnalysis] = useState(false);
   const [filters, setFilters] = useState({
-        status: 'all',
-        creditorType: 'all',
-        minAmount: '',
-        maxAmount: '',
-        dateFrom: '',
-        dateTo: '',
-        searchTerm: ''
-      });
-      const [currentPage, setCurrentPage] = useState(1);
-      const ITEMS_PER_PAGE = 20;
-      const { toast } = useToast();
+    status: 'all',
+    creditorType: 'all',
+    minAmount: '',
+    maxAmount: '',
+    dateFrom: '',
+    dateTo: '',
+    searchTerm: ''
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
+  const { toast } = useToast();
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
 
   const loadDebts = React.useCallback(async () => {
     try {
@@ -122,7 +119,6 @@ export default function Debts() {
       const data = await Debt.filter({ created_by: userData.email }, '-created_date');
       setDebts(data);
       
-      // Load active strategy
       const strategies = await DebtStrategy.filter({ created_by: userData.email, is_active: true });
       if (strategies.length > 0) {
         setActiveStrategy(strategies[0]);
@@ -133,7 +129,6 @@ export default function Debts() {
         setPayoffSchedule([]);
       }
       
-      // Load VTBL data
       try {
         const vtblResult = await vtblService.calculateVtbl();
         setVtblData(vtblResult);
@@ -141,14 +136,12 @@ export default function Debts() {
         console.error("Error loading VTBL data:", error);
       }
       
-      // Load all payments to calculate total paid (same as Dashboard)
       try {
         const allPayments = await DebtPayment.filter({ created_by: userData.email });
         const totalPaid = allPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
         setTotalPaidAllTime(totalPaid);
         setPaymentCount(allPayments.length);
         
-        // Calculate this month's payments
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const thisMonthPayments = allPayments.filter(p => {
@@ -189,20 +182,8 @@ export default function Debts() {
         toast({ title: "Schuld bijgewerkt! 📝" });
       } else {
         await Debt.create(debtData);
-        
-        if (debtData.status === 'actief') {
-          toast({
-            title: "Schuld toegevoegd! 💚",
-            description: "Trots op je dat je actie neemt!"
-          });
-        } else {
-          toast({
-            title: "Schuld geregistreerd! 📝",
-            description: "Je hebt de eerste stap al gezet door het te registreren"
-          });
-        }
+        toast({ title: "Schuld toegevoegd! 💚" });
       }
-      
       setShowAddForm(false);
       setEditingDebt(null);
       loadDebts();
@@ -231,7 +212,6 @@ export default function Debts() {
 
   const handleDebtScanned = async (scannedData) => {
     try {
-      // Check if debt with same case_number already exists
       if (scannedData.case_number) {
         const existingDebts = await Debt.filter({ 
           case_number: scannedData.case_number,
@@ -239,7 +219,6 @@ export default function Debts() {
         });
 
         if (existingDebts.length > 0) {
-          // Update existing debt with new amounts
           const existingDebt = existingDebts[0];
           const updateData = {
             principal_amount: scannedData.principal_amount,
@@ -248,31 +227,18 @@ export default function Debts() {
             amount: scannedData.amount,
             notes: (existingDebt.notes || '') + `\n\nBijgewerkt op ${new Date().toLocaleDateString('nl-NL')} - nieuwe bedragen gescand`
           };
-
           await Debt.update(existingDebt.id, updateData);
           await loadDebts();
-          toast({ 
-            title: "📝 Schuld bijgewerkt!",
-            description: "Je kunt nu de volgende brief scannen"
-          });
+          toast({ title: "📝 Schuld bijgewerkt!" });
           return;
         }
       }
-
-      // Create new debt if no duplicate found
       await Debt.create(scannedData);
       await loadDebts();
-      toast({ 
-        title: "✅ Schuld toegevoegd!",
-        description: "Je kunt nu de volgende brief scannen"
-      });
+      toast({ title: "✅ Schuld toegevoegd!" });
     } catch (error) {
       console.error("Error processing scanned debt:", error);
-      toast({ 
-        title: "Fout bij verwerken", 
-        description: error.message,
-        variant: "destructive" 
-      });
+      toast({ title: "Fout bij verwerken", variant: "destructive" });
     }
   };
 
@@ -282,67 +248,47 @@ export default function Debts() {
   };
 
   const getCreditorIcon = (type, name) => {
-    if (type === 'deurwaarder' || type === 'incasso_en_deurwaarder') {
-      return { icon: Shield, color: 'bg-blue-100 text-blue-600' };
+    if (type === 'deurwaarder' || type === 'incasso_en_deurwaarder' || type === 'overheid') {
+      return { icon: 'gavel', bgColor: 'bg-status-red/10 dark:bg-accent-red/10', iconColor: 'text-status-red dark:text-accent-red' };
     }
-    
     if (name) {
       const lowerName = name.toLowerCase();
-      if (lowerName.includes('eneco') || lowerName.includes('vattenfall') || lowerName.includes('essent')) {
-        return { icon: Zap, color: 'bg-yellow-100 text-yellow-600' };
-      }
-      if (lowerName.includes('bank') || lowerName.includes('ing') || lowerName.includes('rabobank')) {
-        return { icon: Building, color: 'bg-green-100 text-green-600' };
-      }
-      if (lowerName.includes('bol') || lowerName.includes('zalando') || lowerName.includes('shop')) {
-        return { icon: ShoppingBag, color: 'bg-pink-100 text-pink-600' };
+      if (lowerName.includes('cjib')) {
+        return { icon: 'gavel', bgColor: 'bg-status-red/10 dark:bg-accent-red/10', iconColor: 'text-status-red dark:text-accent-red' };
       }
     }
-    
-    return { icon: FileText, color: 'bg-gray-100 text-gray-600' };
+    if (statusLabels[type] === 'Afbetaald') {
+      return { icon: 'check_circle', bgColor: 'bg-status-green/10 dark:bg-primary-green/10', iconColor: 'text-status-green dark:text-primary-green' };
+    }
+    return { icon: 'description', bgColor: 'bg-gray-100 dark:bg-dark-card-elevated', iconColor: 'text-gray-500 dark:text-text-secondary' };
   };
 
-  const filteredAndSortedDebts = React.useMemo(() => {
-        let filtered = debts.filter(debt => {
-          // Zoekterm (uit header of filter modal) - zoek ook op status
-          const combinedSearchTerm = searchTerm || filters.searchTerm || '';
-          const statusLabel = statusLabels[debt.status]?.toLowerCase() || '';
-          const matchesSearch = combinedSearchTerm === '' || 
-            debt.creditor_name.toLowerCase().includes(combinedSearchTerm.toLowerCase()) ||
-            (debt.case_number && debt.case_number.toLowerCase().includes(combinedSearchTerm.toLowerCase())) ||
-            statusLabel.includes(combinedSearchTerm.toLowerCase());
-      
-      // Status filter
+  const filteredAndSortedDebts = useMemo(() => {
+    let filtered = debts.filter(debt => {
+      const combinedSearchTerm = searchTerm || filters.searchTerm || '';
+      const statusLabel = statusLabels[debt.status]?.toLowerCase() || '';
+      const matchesSearch = combinedSearchTerm === '' || 
+        debt.creditor_name.toLowerCase().includes(combinedSearchTerm.toLowerCase()) ||
+        (debt.case_number && debt.case_number.toLowerCase().includes(combinedSearchTerm.toLowerCase())) ||
+        statusLabel.includes(combinedSearchTerm.toLowerCase());
       const matchesStatus = filters.status === 'all' || debt.status === filters.status;
-      
-      // Creditor type filter
       const matchesCreditorType = filters.creditorType === 'all' || debt.creditor_type === filters.creditorType;
-      
-      // Bedrag filter
       const debtAmount = debt.amount || 0;
       const minAmount = filters.minAmount ? parseFloat(filters.minAmount) : 0;
       const maxAmount = filters.maxAmount ? parseFloat(filters.maxAmount) : Infinity;
       const matchesAmount = debtAmount >= minAmount && debtAmount <= maxAmount;
-      
-      // Datum filter
       let matchesDate = true;
       if (debt.origin_date) {
         const debtDate = new Date(debt.origin_date);
-        if (filters.dateFrom) {
-          matchesDate = matchesDate && debtDate >= new Date(filters.dateFrom);
-        }
-        if (filters.dateTo) {
-          matchesDate = matchesDate && debtDate <= new Date(filters.dateTo);
-        }
+        if (filters.dateFrom) matchesDate = matchesDate && debtDate >= new Date(filters.dateFrom);
+        if (filters.dateTo) matchesDate = matchesDate && debtDate <= new Date(filters.dateTo);
       }
-      
       return matchesSearch && matchesStatus && matchesCreditorType && matchesAmount && matchesDate;
     });
 
     filtered.sort((a, b) => {
       let aValue = a[sortField];
       let bValue = b[sortField];
-
       if (sortField === 'amount') {
         aValue = parseFloat(aValue || 0);
         bValue = parseFloat(bValue || 0);
@@ -350,35 +296,30 @@ export default function Debts() {
         aValue = new Date(aValue);
         bValue = new Date(bValue);
       }
-
       if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
       return 0;
     });
 
     return filtered;
-        }, [debts, searchTerm, filters, sortField, sortDirection]);
+  }, [debts, searchTerm, filters, sortField, sortDirection]);
 
-        // Reset page when filters change
-        React.useEffect(() => {
-          setCurrentPage(1);
-        }, [searchTerm, filters]);
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filters]);
 
-        // Paginering
-        const totalPages = Math.ceil(filteredAndSortedDebts.length / ITEMS_PER_PAGE);
-        const paginatedDebts = React.useMemo(() => {
-          const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-          return filteredAndSortedDebts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-        }, [filteredAndSortedDebts, currentPage]);
+  const totalPages = Math.ceil(filteredAndSortedDebts.length / ITEMS_PER_PAGE);
+  const paginatedDebts = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredAndSortedDebts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredAndSortedDebts, currentPage]);
 
-  const activeDebts = debts.filter(d => d.status === 'actief').length;
+  const activeDebts = debts.filter(d => d.status === 'actief' || d.status === 'betalingsregeling').length;
   const paidOffDebts = debts.filter(d => d.status === 'afbetaald').length;
-  // Bereken het daadwerkelijk openstaande bedrag: totaal schuldbedrag MINUS wat al afbetaald is
   const totalDebtAmount = debts
     .filter(d => d.status !== 'afbetaald')
     .reduce((sum, d) => sum + ((d.amount || 0) - (d.amount_paid || 0)), 0);
   
-  // Calculate VTLB / available budget for strategy
   const calculateAvailableBudget = () => {
     if (!user) return 0;
     const income = user.monthly_income || 0;
@@ -400,608 +341,466 @@ export default function Debts() {
     }
   };
 
+  const toggleTheme = () => {
+    setDarkMode(!darkMode);
+  };
+
   if (loading) {
     return (
-      <div className="p-6 animate-pulse">
-        <div className="h-8 bg-gray-200 rounded mb-6 w-48"></div>
-        <div className="h-64 bg-gray-200 rounded"></div>
+      <div className="min-h-screen bg-background-light dark:bg-dark-bg flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400 dark:border-gray-600"></div>
       </div>
     );
   }
 
   if (debts.length === 0) {
     return (
-      <motion.div 
-        className="p-6 flex flex-col items-center justify-center min-h-[60vh]"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="text-center max-w-md mx-auto">
-          <div className="text-6xl mb-4">📋</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Nog geen schulden geregistreerd</h2>
-          <p className="text-gray-600 mb-6">Registreer je betaalachterstanden om grip te krijgen op je financiën.</p>
-          <Button 
-            onClick={() => setShowAddForm(true)}
-            className="bg-green-500 hover:bg-green-600"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Eerste schuld toevoegen
-          </Button>
+      <div className="min-h-screen bg-background-light dark:bg-dark-bg text-[#131d0c] dark:text-text-primary font-body">
+        <div className="fixed top-6 right-6 lg:top-8 lg:right-8 z-20">
+          <label aria-label="Switch theme" className="relative inline-flex items-center cursor-pointer select-none">
+            <input className="sr-only" id="theme-toggle" type="checkbox" checked={darkMode} onChange={toggleTheme} />
+            <div className="w-16 h-9 bg-gray-100 dark:bg-gray-800 rounded-full shadow-inner flex items-center justify-between px-1.5 transition-colors duration-300 border border-gray-200 dark:border-gray-700">
+              <span className={`material-symbols-outlined text-[20px] z-10 transition-colors duration-300 ${darkMode ? 'text-gray-400' : 'text-amber-500'}`}>light_mode</span>
+              <span className={`material-symbols-outlined text-[20px] z-10 transition-colors duration-300 ${darkMode ? 'text-brand-dark' : 'text-gray-400'}`}>dark_mode</span>
+              <div className={`toggle-circle absolute left-1 top-1 bg-white dark:bg-gray-700 w-7 h-7 rounded-full shadow-md transition-transform duration-300 border border-gray-100 dark:border-gray-600 ${darkMode ? 'translate-x-7' : ''}`}></div>
+            </div>
+          </label>
         </div>
-        
-        <DebtWizard
-          isOpen={showAddForm}
-          onClose={() => setShowAddForm(false)}
-          onSave={loadDebts}
-        />
-      </motion.div>
+        <div className="p-6 flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="text-center max-w-md mx-auto">
+            <div className="text-6xl mb-4">📋</div>
+            <h2 className="text-2xl font-bold text-[#131d0c] dark:text-text-primary mb-2">Nog geen schulden geregistreerd</h2>
+            <p className="text-gray-600 dark:text-text-secondary mb-6">Registreer je betaalachterstanden om grip te krijgen op je financiën.</p>
+            <button 
+              onClick={() => setShowAddForm(true)}
+              className="bg-primary dark:bg-primary-green hover:bg-primary-dark dark:hover:bg-light-green text-secondary dark:text-dark-bg font-bold px-6 py-3 rounded-xl shadow-sm transition-all"
+            >
+              <span className="material-symbols-outlined !text-[20px] mr-2">add</span>
+              Eerste schuld toevoegen
+            </button>
+          </div>
+          <DebtWizard isOpen={showAddForm} onClose={() => setShowAddForm(false)} onSave={loadDebts} />
+        </div>
+      </div>
     );
   }
 
   const allPaidOff = debts.every(d => d.status === 'afbetaald');
   if (allPaidOff) {
     return (
-      <motion.div 
-        className="p-6 flex flex-col items-center justify-center min-h-[60vh]"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="text-center">
-          <div className="text-6xl mb-4">🎊</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Alle schulden afbetaald!</h2>
-          <p className="text-gray-600 mb-6">Wat een prestatie! Je hebt het gedaan.</p>
-          
-          <Card className="mt-8 max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle>Je Geschiedenis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {debts.map((debt) => (
-                  <div key={debt.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Badge className="bg-yellow-500 text-white">✅</Badge>
-                      <span className="font-medium">{debt.creditor_name}</span>
-                    </div>
-                    <span className="text-green-600 font-bold">€{(debt.amount || 0).toFixed(2)}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+      <div className="min-h-screen bg-background-light dark:bg-dark-bg text-[#131d0c] dark:text-text-primary font-body">
+        <div className="fixed top-6 right-6 lg:top-8 lg:right-8 z-20">
+          <label aria-label="Switch theme" className="relative inline-flex items-center cursor-pointer select-none">
+            <input className="sr-only" id="theme-toggle" type="checkbox" checked={darkMode} onChange={toggleTheme} />
+            <div className="w-16 h-9 bg-gray-100 dark:bg-gray-800 rounded-full shadow-inner flex items-center justify-between px-1.5 transition-colors duration-300 border border-gray-200 dark:border-gray-700">
+              <span className={`material-symbols-outlined text-[20px] z-10 transition-colors duration-300 ${darkMode ? 'text-gray-400' : 'text-amber-500'}`}>light_mode</span>
+              <span className={`material-symbols-outlined text-[20px] z-10 transition-colors duration-300 ${darkMode ? 'text-brand-dark' : 'text-gray-400'}`}>dark_mode</span>
+              <div className={`toggle-circle absolute left-1 top-1 bg-white dark:bg-gray-700 w-7 h-7 rounded-full shadow-md transition-transform duration-300 border border-gray-100 dark:border-gray-600 ${darkMode ? 'translate-x-7' : ''}`}></div>
+            </div>
+          </label>
         </div>
-      </motion.div>
+        <div className="p-6 flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="text-6xl mb-4">🎊</div>
+            <h2 className="text-2xl font-bold text-[#131d0c] dark:text-text-primary mb-2">Alle schulden afbetaald!</h2>
+            <p className="text-gray-600 dark:text-text-secondary mb-6">Wat een prestatie! Je hebt het gedaan.</p>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <motion.div 
-      className="px-4 py-4 md:p-6 space-y-4 md:space-y-6"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-    >
-      <div className="flex flex-col gap-3">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-2xl md:text-3xl font-bold text-green-500">Betaalachterstanden</h1>
-            <button
-              onClick={() => setShowInfoModal(true)}
-              className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-              title="Uitleg"
-            >
-              <HelpCircle className="w-5 h-5" />
-            </button>
+    <div className="min-h-screen bg-background-light dark:bg-dark-bg text-[#131d0c] dark:text-text-primary font-body antialiased">
+      {/* Theme Toggle */}
+      <div className="fixed top-6 right-6 lg:top-8 lg:right-8 z-20">
+        <label aria-label="Switch theme" className="relative inline-flex items-center cursor-pointer select-none">
+          <input className="sr-only" id="theme-toggle" type="checkbox" checked={darkMode} onChange={toggleTheme} />
+          <div className="w-16 h-9 bg-gray-100 dark:bg-gray-800 rounded-full shadow-inner flex items-center justify-between px-1.5 transition-colors duration-300 border border-gray-200 dark:border-gray-700">
+            <span className={`material-symbols-outlined text-[20px] z-10 transition-colors duration-300 ${darkMode ? 'text-gray-400' : 'text-amber-500'}`}>light_mode</span>
+            <span className={`material-symbols-outlined text-[20px] z-10 transition-colors duration-300 ${darkMode ? 'text-brand-dark' : 'text-gray-400'}`}>dark_mode</span>
+            <div className={`toggle-circle absolute left-1 top-1 bg-white dark:bg-gray-700 w-7 h-7 rounded-full shadow-md transition-transform duration-300 border border-gray-100 dark:border-gray-600 ${darkMode ? 'translate-x-7' : ''}`}></div>
           </div>
-          {paidOffDebts > 0 && (
-            <p className="text-green-600">🎉 {paidOffDebts} schuld{paidOffDebts > 1 ? 'en' : ''} afbetaald!</p>
-          )}
-        </div>
-
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-2 flex-1 sm:flex-none"
-            onClick={() => setShowFilters(true)}
-          >
-            <Filter className="w-4 h-4" />
-            <span className="hidden sm:inline">Filters</span>
-            {(filters.status !== 'all' || filters.creditorType !== 'all' || filters.minAmount || filters.maxAmount || filters.dateFrom || filters.dateTo) && (
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-            )}
-          </Button>
-          <Button 
-            variant="outline"
-            size="sm"
-            onClick={() => setShowScanModal(true)}
-            className="flex items-center gap-2 flex-1 sm:flex-none bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
-          >
-            📸
-            <span className="hidden sm:inline">Scan Brief</span>
-            <span className="sm:hidden">Scan</span>
-          </Button>
-          <Button 
-            data-tour="add-debt"
-            size="sm"
-            onClick={() => {
-              // On mobile, show choice modal. On desktop, go straight to form
-              if (window.innerWidth < 768) {
-                setShowAddChoiceModal(true);
-              } else {
-                setShowAddForm(true);
-              }
-            }}
-            className="bg-green-500 hover:bg-green-600 flex items-center gap-2 flex-1 sm:flex-none"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Nieuwe Schuld</span>
-            <span className="sm:hidden">Nieuw</span>
-          </Button>
-        </div>
+        </label>
       </div>
 
-      <div className="w-full md:max-w-md">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <Input
-            placeholder="Zoek op naam of status..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        {searchTerm && (
-          <p className="text-sm text-gray-500 mt-1">
-            {filteredAndSortedDebts.length} resultaten gevonden
-          </p>
-        )}
-      </div>
-
-      {/* VTLB / Budget Info Card */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="border-l-4 border-l-blue-500">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Calculator className="w-4 h-4 text-blue-600" />
-                <span className="text-xs sm:text-sm text-gray-600">Afloscapaciteit</span>
-              </div>
-              <button
-                onClick={() => setShowVtlbInfo(true)}
-                className="p-1 rounded-full hover:bg-blue-50 text-blue-400 hover:text-blue-600 transition-colors"
-                title="Wat is VTLB?"
-              >
-                <HelpCircle className="w-4 h-4" />
-              </button>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-blue-600">
-              {vtblData ? formatCurrency(vtblData.aflosCapaciteit) : formatCurrency(availableBudget)}
-            </p>
-            <Button 
-              variant="link" 
-              size="sm" 
-              className="p-0 h-auto text-xs sm:text-sm text-blue-600"
-              onClick={() => window.location.href = createPageUrl('VTLBCalculator')}
-            >
-              VTLB berekenen →
-            </Button>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-l-4 border-l-orange-500">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Target className="w-4 h-4 text-orange-600" />
-                <span className="text-xs sm:text-sm text-gray-600">Openstaand</span>
-              </div>
-              <button 
-                onClick={() => setShowTotalAmount(!showTotalAmount)}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                aria-label={showTotalAmount ? "Bedrag verbergen" : "Bedrag tonen"}
-              >
-                {showTotalAmount ? (
-                  <EyeOff className="w-4 h-4 text-gray-400" />
-                ) : (
-                  <Eye className="w-4 h-4 text-gray-400" />
-                )}
-              </button>
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-orange-600">
-              {showTotalAmount ? formatCurrency(totalDebtAmount) : "€ ••••"}
-            </p>
-            <p className="text-xs text-gray-500">{debts.filter(d => d.status !== 'afbetaald').length} schulden</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="border-l-4 border-l-purple-500">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-              <span className="text-base sm:text-lg">⚡</span>
-              <span className="text-xs sm:text-sm text-gray-600">Strategie</span>
-            </div>
-            {activeStrategy ? (
-              <>
-                <p className="text-base sm:text-lg font-bold text-purple-600 capitalize">
-                  {activeStrategy.strategy_type === 'snowball' ? '❄️ Sneeuwbal' : 
-                   activeStrategy.strategy_type === 'avalanche' ? '⚡ Lawine' : 
-                   '⚖️ Gelijk'}
+      {/* Main Content */}
+      <main className="flex-1 w-full flex justify-center py-8 px-4 sm:px-8">
+        <div className="w-full max-w-[1400px] flex flex-col gap-8">
+          {/* Page Header */}
+          <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="flex flex-col gap-1">
+              <h1 className="text-4xl md:text-5xl font-extrabold text-primary-dark dark:text-text-primary font-display">Betaalachterstanden</h1>
+              {paidOffDebts > 0 && (
+                <p className="text-status-green dark:text-primary-green font-medium flex items-center gap-2 mt-1">
+                  <span>🎉</span> {paidOffDebts} schuld{paidOffDebts > 1 ? 'en' : ''} afbetaald!
                 </p>
-                <Button 
-                  variant="link" 
-                  size="sm" 
-                  className="p-0 h-auto text-xs sm:text-sm text-purple-600"
-                  onClick={() => setShowStrategyModal(true)}
-                >
-                  Wijzigen →
-                </Button>
-              </>
-            ) : (
-              <>
-                <p className="text-xs sm:text-sm text-gray-500">Geen strategie</p>
-                <Button 
-                  variant="link" 
-                  size="sm" 
-                  className="p-0 h-auto text-xs sm:text-sm text-purple-600"
-                  onClick={() => setShowStrategyModal(true)}
-                >
-                  Kies strategie →
-                </Button>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* AI Debt Analysis Widget */}
-      <AIDebtAnalysisWidget 
-        debts={debts}
-        vtlbData={vtblData}
-      />
-
-      {/* Active Strategy Widget */}
-      {activeStrategy && (
-        <ActiveStrategyWidget 
-          strategy={activeStrategy}
-          schedule={payoffSchedule}
-          debts={debts}
-          onDeactivate={handleDeactivateStrategy}
-        />
-      )}
-
-      {/* Gamification Widgets - Collapsible */}
-      <Card className="border-purple-200">
-        <CardHeader 
-          className="cursor-pointer py-2 sm:py-3 hover:bg-gray-50 transition-colors px-3 sm:px-6"
-          onClick={() => setShowGamification(!showGamification)}
-        >
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-              🎮 Voortgang & Uitdagingen
-            </CardTitle>
-            <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform ${showGamification ? 'rotate-180' : ''}`} />
-          </div>
-        </CardHeader>
-        {showGamification && (
-          <CardContent className="pt-0 px-3 sm:px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-              <DebtJourneyWidget
-                debts={debts}
-                totalPaid={totalPaidAllTime}
-                paymentCount={paymentCount}
-                onViewAll={() => setShowAchievements(true)}
-              />
-              <DebtChallengesWidget
-                currentMonthPaid={currentMonthPaid}
-                paymentCountThisMonth={paymentCountThisMonth}
-                onChallengeComplete={loadDebts}
-              />
-            </div>
-          </CardContent>
-        )}
-      </Card>
-
-      {activeDebts > 0 && (
-        <Card className="border-l-4 border-l-green-500 bg-green-50">
-          <CardContent className="p-3 sm:p-4">
-            <p className="font-medium text-green-800 text-sm sm:text-base">
-              💪 {activeDebts} actieve regeling{activeDebts > 1 ? 'en' : ''}! Blijf volhouden.
-            </p>
-            <p className="text-xs sm:text-sm text-green-600">
-              Openstaand: {formatCurrency(totalDebtAmount)}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Mobile Cards View */}
-      <div className="md:hidden space-y-3" data-tour="debt-list">
-        {/* Mobile Sort Options */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2">
-          <span className="text-sm text-gray-500 flex-shrink-0">Sorteer:</span>
-          {[
-            { field: 'creditor_name', label: 'Naam' },
-            { field: 'amount', label: 'Bedrag' },
-            { field: 'origin_date', label: 'Datum' },
-            { field: 'status', label: 'Status' }
-          ].map(opt => (
-            <button
-              key={opt.field}
-              onClick={() => handleSort(opt.field)}
-              className={`px-3 py-1.5 rounded-full text-sm flex-shrink-0 flex items-center gap-1 ${
-                sortField === opt.field 
-                  ? 'bg-green-100 text-green-700 font-medium' 
-                  : 'bg-gray-100 text-gray-600'
-              }`}
-            >
-              {opt.label}
-              {sortField === opt.field && (
-                <ArrowUpDown className="w-3 h-3" />
               )}
-            </button>
-          ))}
-        </div>
+              {/* Search below header */}
+              <div className="mt-4 relative max-w-md w-full group">
+                <span className="material-symbols-outlined absolute left-4 top-3 text-gray-400 dark:text-text-tertiary group-focus-within:text-primary dark:group-focus-within:text-primary-green transition-colors">search</span>
+                <input 
+                  className="w-full h-12 pl-12 pr-4 rounded-xl border-none bg-white dark:bg-dark-card-elevated shadow-soft dark:shadow-soft text-gray-700 dark:text-text-primary placeholder-gray-400 dark:placeholder-text-tertiary focus:ring-2 focus:ring-primary dark:focus:ring-primary-green outline-none transition-all" 
+                  placeholder="Zoek op naam of status..." 
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <button 
+                onClick={() => setShowFilters(true)}
+                className="h-11 px-5 rounded-xl border border-gray-300 dark:border-dark-border bg-white dark:bg-transparent text-gray-700 dark:text-text-primary font-semibold text-sm hover:bg-gray-50 dark:hover:bg-dark-card-elevated flex items-center gap-2 shadow-sm transition-all"
+              >
+                <span className="material-symbols-outlined !text-[18px]">filter_list</span>
+                Filters
+              </button>
+              <button 
+                onClick={() => setShowScanModal(true)}
+                className="h-11 px-5 rounded-xl border border-gray-300 dark:border-dark-border bg-white dark:bg-transparent text-gray-700 dark:text-text-primary font-semibold text-sm hover:bg-gray-50 dark:hover:bg-dark-card-elevated flex items-center gap-2 shadow-sm transition-all"
+              >
+                <span className="material-symbols-outlined !text-[18px]">document_scanner</span>
+                Scan Brief
+              </button>
+              <button 
+                onClick={() => {
+                  if (window.innerWidth < 768) {
+                    setShowAddChoiceModal(true);
+                  } else {
+                    setShowAddForm(true);
+                  }
+                }}
+                className="h-11 px-5 rounded-xl bg-primary dark:bg-primary-green text-primary-dark dark:text-dark-bg font-bold text-sm hover:bg-[#a2f565] dark:hover:bg-light-green flex items-center gap-2 shadow-sm transition-all transform hover:-translate-y-0.5"
+              >
+                <span className="material-symbols-outlined !text-[20px] font-bold">add</span>
+                Nieuwe Schuld
+              </button>
+            </div>
+          </header>
 
-        {paginatedDebts.map((debt) => {
-          const creditorIcon = getCreditorIcon(debt.creditor_type, debt.creditor_name);
-          const IconComponent = creditorIcon.icon;
-          
-          return (
-            <motion.div
-              key={debt.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
-              onClick={() => handleViewDetails(debt)}
-            >
-              <div className="flex items-start justify-between gap-3">
+          {/* Summary Cards Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Afloscapaciteit */}
+            <div className="bg-white dark:bg-dark-card rounded-3xl p-6 shadow-soft dark:shadow-soft flex flex-col gap-4 relative group hover:shadow-card dark:hover:shadow-card transition-shadow">
+              <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-xl ${creditorIcon.color} flex items-center justify-center flex-shrink-0`}>
-                    <IconComponent className="w-6 h-6" />
+                  <div className="size-10 rounded-full bg-blue-100 dark:bg-accent-blue/10 flex items-center justify-center text-status-blue dark:text-accent-blue border border-status-blue/20 dark:border-accent-blue/20">
+                    <span className="material-symbols-outlined">track_changes</span>
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">{debt.creditor_name}</p>
-                    <p className="text-sm text-gray-500">{creditorTypeLabels[debt.creditor_type] || debt.creditor_type || 'Schuldeiser'}</p>
-                  </div>
+                  <span className="text-sm font-medium text-gray-500 dark:text-text-secondary uppercase tracking-wide">Afloscapaciteit</span>
                 </div>
-                <Badge className={`${statusColors[debt.status]} flex-shrink-0`}>
-                  {statusLabels[debt.status]}
-                </Badge>
+                <button onClick={() => setShowVtlbInfo(true)} className="material-symbols-outlined text-gray-300 dark:text-text-tertiary cursor-help text-sm hover:text-gray-500 dark:hover:text-text-secondary transition-colors">help</button>
               </div>
-              
-              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {showTotalAmount ? formatCurrency(debt.amount || 0) : "€ ••••"}
-                  </p>
-                  {debt.status === 'betalingsregeling' && debt.monthly_payment && (
-                    <p className="text-sm text-blue-600">
-                      {formatCurrency(debt.monthly_payment)}/mnd
-                    </p>
-                  )}
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-500">
-                    {debt.origin_date && new Date(debt.origin_date).toLocaleDateString('nl-NL', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                  </p>
-                  {debt.case_number && (
-                    <p className="text-xs text-gray-400">#{debt.case_number}</p>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
-
-        {/* Mobile Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              Vorige
-            </Button>
-            <span className="text-sm text-gray-600">
-              {currentPage} / {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-            >
-              Volgende
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Desktop Table View */}
-      <Card data-tour="debt-list" className="hidden md:block">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b border-gray-200">
-                <tr className="text-left">
-                  <th className="p-4 font-medium text-gray-700">
-                    <button 
-                      onClick={() => handleSort('creditor_name')}
-                      className="flex items-center gap-1 hover:text-gray-900"
-                    >
-                      Naam/incasso
-                      <ArrowUpDown className="w-4 h-4" />
-                    </button>
-                  </th>
-                  <th className="p-4 font-medium text-gray-700">
-                    <button 
-                      onClick={() => handleSort('origin_date')}
-                      className="flex items-center gap-1 hover:text-gray-900"
-                    >
-                      Datum
-                      <ArrowUpDown className="w-4 h-4" />
-                    </button>
-                  </th>
-                  <th className="p-4 font-medium text-gray-700">Dossiernummer</th>
-                  <th className="p-4 font-medium text-gray-700">
-                    <button 
-                      onClick={() => handleSort('amount')}
-                      className="flex items-center gap-1 hover:text-gray-900"
-                    >
-                      Bedrag
-                      <ArrowUpDown className="w-4 h-4" />
-                    </button>
-                  </th>
-                  <th className="p-4 font-medium text-gray-700">
-                    <button 
-                      onClick={() => handleSort('status')}
-                      className="flex items-center gap-1 hover:text-gray-900"
-                    >
-                      Status
-                      <ArrowUpDown className="w-4 h-4" />
-                    </button>
-                  </th>
-                  <th className="p-4 font-medium text-gray-700">Acties</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedDebts.map((debt) => {
-                  const creditorIcon = getCreditorIcon(debt.creditor_type, debt.creditor_name);
-                  const IconComponent = creditorIcon.icon;
-                  
-                  return (
-                    <motion.tr 
-                      key={debt.id}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.1 }}
-                    >
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-lg ${creditorIcon.color} flex items-center justify-center`}>
-                            <IconComponent className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{debt.creditor_name}</p>
-                            <p className="text-sm text-gray-500">{creditorTypeLabels[debt.creditor_type] || debt.creditor_type || 'Schuldeiser'}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4 text-gray-700">
-                        {debt.origin_date && new Date(debt.origin_date).toLocaleDateString('nl-NL', {
-                          month: 'short',
-                          day: '2-digit',
-                          year: 'numeric'
-                        })}
-                      </td>
-                      <td className="p-4 text-gray-700">
-                        {debt.case_number || '-'}
-                      </td>
-                      <td className="p-4 font-bold text-gray-900">
-                        {showTotalAmount ? formatCurrency(debt.amount || 0) : "€ ••••"}
-                      </td>
-                      <td className="p-4">
-                        <div className="space-y-1">
-                          <Badge className={statusColors[debt.status]}>
-                            {statusLabels[debt.status]}
-                          </Badge>
-                          {debt.status === 'betalingsregeling' && debt.monthly_payment && (
-                            <div className="text-xs text-blue-600">
-                              {formatCurrency(debt.monthly_payment)}/mnd
-                              {((debt.amount || 0) - (debt.amount_paid || 0)) > 0 && (
-                                <span className="text-gray-500 ml-1">
-                                  ({Math.ceil(((debt.amount || 0) - (debt.amount_paid || 0)) / debt.monthly_payment)} mnd)
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleViewDetails(debt)}
-                        >
-                          Details
-                        </Button>
-                      </td>
-                    </motion.tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Desktop Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-              <p className="text-sm text-gray-600">
-                Tonen {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSortedDebts.length)} van {filteredAndSortedDebts.length}
-              </p>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
+              <div>
+                <p className="text-3xl font-extrabold text-primary-dark dark:text-text-primary font-display">
+                  {vtblData ? formatCurrency(vtblData.aflosCapaciteit) : formatCurrency(availableBudget)}
+                </p>
+                <a 
+                  className="text-status-blue dark:text-accent-blue text-sm font-semibold hover:underline mt-1 inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform cursor-pointer" 
+                  onClick={() => window.location.href = createPageUrl('VTLBCalculator')}
                 >
-                  Vorige
-                </Button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
+                  VTLB berekenen <span className="material-symbols-outlined !text-[16px]">arrow_forward</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Openstaand */}
+            <div className="bg-white dark:bg-dark-card rounded-3xl p-6 shadow-soft dark:shadow-soft flex flex-col gap-4 relative group hover:shadow-card dark:hover:shadow-card transition-shadow">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-full bg-orange-100 dark:bg-accent-orange/10 flex items-center justify-center text-status-orange dark:text-accent-orange border border-status-orange/20 dark:border-accent-orange/20">
+                    <span className="material-symbols-outlined">warning</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-500 dark:text-text-secondary uppercase tracking-wide">Openstaand</span>
+                </div>
+                <button 
+                  onClick={() => setShowTotalAmount(!showTotalAmount)}
+                  className="material-symbols-outlined text-gray-300 dark:text-text-tertiary cursor-pointer hover:text-gray-500 dark:hover:text-text-secondary text-sm transition-colors"
+                >
+                  {showTotalAmount ? 'visibility_off' : 'visibility'}
+                </button>
+              </div>
+              <div>
+                <p className="text-3xl font-extrabold text-status-orange dark:text-accent-orange font-display">
+                  {showTotalAmount ? formatCurrency(totalDebtAmount) : '€ ••••'}
+                </p>
+                <p className="text-gray-500 dark:text-text-tertiary text-sm font-medium mt-1">{debts.filter(d => d.status !== 'afbetaald').length} schulden</p>
+              </div>
+            </div>
+
+            {/* Strategie */}
+            <div className="bg-white dark:bg-dark-card rounded-3xl p-6 shadow-soft dark:shadow-soft flex flex-col gap-4 relative group hover:shadow-card dark:hover:shadow-card transition-shadow">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-full bg-purple-100 dark:bg-accent-purple/10 flex items-center justify-center text-status-purple dark:text-accent-purple border border-status-purple/20 dark:border-accent-purple/20">
+                    <span className="material-symbols-outlined">bolt</span>
+                  </div>
+                  <span className="text-sm font-medium text-gray-500 dark:text-text-secondary uppercase tracking-wide">Strategie</span>
+                </div>
+              </div>
+              <div>
+                {activeStrategy ? (
+                  <>
+                    <p className="text-2xl font-bold text-gray-700 dark:text-text-primary mt-1 mb-1 font-display capitalize">
+                      {activeStrategy.strategy_type === 'snowball' ? '❄️ Sneeuwbal' : 
+                       activeStrategy.strategy_type === 'avalanche' ? '⚡ Lawine' : 
+                       '⚖️ Gelijk'}
+                    </p>
+                    <a 
+                      className="text-status-purple dark:text-accent-purple text-sm font-semibold hover:underline inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform cursor-pointer" 
+                      onClick={() => setShowStrategyModal(true)}
+                    >
+                      Wijzigen <span className="material-symbols-outlined !text-[16px]">arrow_forward</span>
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-2xl font-bold text-gray-700 dark:text-text-primary mt-1 mb-1 font-display">Geen strategie</p>
+                    <a 
+                      className="text-status-purple dark:text-accent-purple text-sm font-semibold hover:underline inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform cursor-pointer" 
+                      onClick={() => setShowStrategyModal(true)}
+                    >
+                      Kies strategie <span className="material-symbols-outlined !text-[16px]">arrow_forward</span>
+                    </a>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* AI Schuld Analyse Section (Collapsible) */}
+          <div className="bg-white dark:bg-dark-card rounded-3xl shadow-soft dark:shadow-soft overflow-hidden">
+            <div 
+              className="p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors group"
+              onClick={() => setShowAIAnalysis(!showAIAnalysis)}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🤖</span>
+                <h3 className="text-lg font-bold text-primary-dark dark:text-text-primary font-display">AI Schuld Analyse</h3>
+                <span className="px-2 py-0.5 rounded-full bg-status-blue/15 dark:bg-accent-blue/10 text-status-blue dark:text-accent-blue text-xs font-bold border border-status-blue/20 dark:border-accent-blue/20">
+                  {activeDebts} actief
+                </span>
+              </div>
+              <span className={`material-symbols-outlined text-gray-400 dark:text-text-secondary group-hover:text-gray-600 dark:group-hover:text-text-primary transition-all ${showAIAnalysis ? 'rotate-180' : ''}`}>expand_more</span>
+            </div>
+            {showAIAnalysis && (
+              <div className="px-6 pb-6">
+                <AIDebtAnalysisWidget debts={debts} vtlbData={vtblData} />
+              </div>
+            )}
+          </div>
+
+          {/* Voortgang & Uitdagingen Section (Collapsible) */}
+          <div className="bg-white dark:bg-dark-card rounded-3xl shadow-soft dark:shadow-soft overflow-hidden">
+            <div 
+              className="p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors group"
+              onClick={() => setShowGamification(!showGamification)}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📈</span>
+                <h3 className="text-lg font-bold text-primary-dark dark:text-text-primary font-display">Voortgang & Uitdagingen</h3>
+              </div>
+              <span className={`material-symbols-outlined text-gray-400 dark:text-text-secondary group-hover:text-gray-600 dark:group-hover:text-text-primary transition-all ${showGamification ? 'rotate-180' : ''}`}>expand_more</span>
+            </div>
+            {showGamification && (
+              <div className="px-6 pb-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <DebtJourneyWidget
+                    debts={debts}
+                    totalPaid={totalPaidAllTime}
+                    paymentCount={paymentCount}
+                    onViewAll={() => setShowAchievements(true)}
+                  />
+                  <DebtChallengesWidget
+                    currentMonthPaid={currentMonthPaid}
+                    paymentCountThisMonth={paymentCountThisMonth}
+                    onChallengeComplete={loadDebts}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Active Strategy Widget */}
+          {activeStrategy && (
+            <ActiveStrategyWidget 
+              strategy={activeStrategy}
+              schedule={payoffSchedule}
+              debts={debts}
+              onDeactivate={handleDeactivateStrategy}
+            />
+          )}
+
+          {/* Debt List Table */}
+          <div className="bg-white dark:bg-dark-card rounded-3xl shadow-soft dark:shadow-soft overflow-hidden w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[800px]">
+                <thead>
+                  <tr className="border-b border-gray-100 dark:border-dark-border">
+                    <th 
+                      className="text-left py-5 px-6 text-gray-500 dark:text-text-secondary text-xs font-semibold uppercase tracking-wider cursor-pointer hover:text-primary-dark dark:hover:text-text-primary transition-colors"
+                      onClick={() => handleSort('creditor_name')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Naam/Incasso <span className="material-symbols-outlined !text-[16px] opacity-70">unfold_more</span>
+                      </div>
+                    </th>
+                    <th 
+                      className="text-left py-5 px-6 text-gray-500 dark:text-text-secondary text-xs font-semibold uppercase tracking-wider cursor-pointer hover:text-primary-dark dark:hover:text-text-primary transition-colors"
+                      onClick={() => handleSort('origin_date')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Datum <span className="material-symbols-outlined !text-[16px] opacity-70">unfold_more</span>
+                      </div>
+                    </th>
+                    <th className="text-left py-5 px-6 text-gray-500 dark:text-text-secondary text-xs font-semibold uppercase tracking-wider">
+                      Dossiernummer
+                    </th>
+                    <th 
+                      className="text-left py-5 px-6 text-gray-500 dark:text-text-secondary text-xs font-semibold uppercase tracking-wider cursor-pointer hover:text-primary-dark dark:hover:text-text-primary transition-colors"
+                      onClick={() => handleSort('amount')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Bedrag <span className="material-symbols-outlined !text-[16px] opacity-70">unfold_more</span>
+                      </div>
+                    </th>
+                    <th 
+                      className="text-left py-5 px-6 text-gray-500 dark:text-text-secondary text-xs font-semibold uppercase tracking-wider cursor-pointer hover:text-primary-dark dark:hover:text-text-primary transition-colors"
+                      onClick={() => handleSort('status')}
+                    >
+                      <div className="flex items-center gap-1">
+                        Status <span className="material-symbols-outlined !text-[16px] opacity-70">unfold_more</span>
+                      </div>
+                    </th>
+                    <th className="text-right py-5 px-6 text-gray-500 dark:text-text-secondary text-xs font-semibold uppercase tracking-wider">
+                      Acties
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50 dark:divide-dark-border">
+                  {paginatedDebts.map((debt) => {
+                    const creditorIcon = getCreditorIcon(debt.creditor_type, debt.creditor_name);
+                    const status = debt.status || 'niet_actief';
+                    
                     return (
-                      <Button
-                        key={pageNum}
-                        variant={currentPage === pageNum ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(pageNum)}
-                        className={`w-8 h-8 p-0 ${currentPage === pageNum ? 'bg-green-500 hover:bg-green-600' : ''}`}
+                      <tr 
+                        key={debt.id}
+                        className="group hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors cursor-pointer"
+                        onClick={() => handleViewDetails(debt)}
                       >
-                        {pageNum}
-                      </Button>
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-3">
+                            <div className={`size-10 rounded-xl ${creditorIcon.bgColor} border ${creditorIcon.bgColor.includes('dark:') ? 'border-dark-border-accent' : 'border-gray-200'} flex items-center justify-center ${creditorIcon.iconColor} group-hover:opacity-80 transition-opacity`}>
+                              <span className="material-symbols-outlined !text-[20px]">{creditorIcon.icon}</span>
+                            </div>
+                            <div>
+                              <p className="font-bold text-primary-dark dark:text-text-primary text-sm group-hover:text-status-blue dark:group-hover:text-accent-blue transition-colors">{debt.creditor_name}</p>
+                              <p className="text-xs text-gray-400 dark:text-text-secondary">{creditorTypeLabels[debt.creditor_type] || debt.creditor_type || 'Schuldeiser'}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 text-sm text-gray-600 dark:text-text-primary font-medium">
+                          {debt.origin_date && new Date(debt.origin_date).toLocaleDateString('nl-NL', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
+                        </td>
+                        <td className="py-4 px-6 text-sm text-gray-400 dark:text-text-secondary">
+                          {debt.case_number || '-'}
+                        </td>
+                        <td className="py-4 px-6 font-bold text-primary-dark dark:text-text-primary">
+                          {showTotalAmount ? formatCurrency(debt.amount || 0) : '€ ••••'}
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="flex flex-col items-start gap-1">
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${statusColors[status] || statusColors.niet_actief}`}>
+                              {statusLabels[status] || status}
+                            </span>
+                            {status === 'betalingsregeling' && debt.monthly_payment && (
+                              <span className="text-[10px] text-gray-500 dark:text-text-tertiary font-medium ml-1">
+                                {formatCurrency(debt.monthly_payment)}/mnd ({Math.ceil(((debt.amount || 0) - (debt.amount_paid || 0)) / debt.monthly_payment)} mnd)
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <button 
+                            className="text-status-blue dark:text-accent-blue text-sm font-semibold hover:text-light-green dark:hover:text-light-green transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewDetails(debt);
+                            }}
+                          >
+                            Details
+                          </button>
+                        </td>
+                      </tr>
                     );
                   })}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                >
-                  Volgende
-                </Button>
-              </div>
+                </tbody>
+              </table>
             </div>
-          )}
-        </CardContent>
-      </Card>
 
-                        {/* Wizard voor nieuwe schulden */}
-      <DebtWizard
-        isOpen={showAddForm && !editingDebt}
-        onClose={() => setShowAddForm(false)}
-        onSave={loadDebts}
-      />
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 dark:border-dark-border">
+                <p className="text-sm text-gray-600 dark:text-text-secondary">
+                  Tonen {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSortedDebts.length)} van {filteredAndSortedDebts.length}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-transparent text-gray-700 dark:text-text-primary text-sm font-medium hover:bg-gray-50 dark:hover:bg-dark-card-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    Vorige
+                  </button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${
+                            currentPage === pageNum
+                              ? 'bg-primary dark:bg-primary-green text-primary-dark dark:text-dark-bg'
+                              : 'border border-gray-300 dark:border-dark-border bg-white dark:bg-transparent text-gray-700 dark:text-text-primary hover:bg-gray-50 dark:hover:bg-dark-card-elevated'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-transparent text-gray-700 dark:text-text-primary text-sm font-medium hover:bg-gray-50 dark:hover:bg-dark-card-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    Volgende
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
 
-      {/* Form voor bewerken */}
+      {/* Modals */}
+      <DebtWizard isOpen={showAddForm && !editingDebt} onClose={() => setShowAddForm(false)} onSave={loadDebts} />
+      
       {editingDebt && (
         <DebtForm
           debt={editingDebt}
@@ -1056,10 +855,7 @@ export default function Debts() {
         allDebtsCleared={debts.length > 0 && debts.every(d => d.status === 'afbetaald')}
       />
 
-      <DebtsInfoModal
-        isOpen={showInfoModal}
-        onClose={() => setShowInfoModal(false)}
-      />
+      <DebtsInfoModal isOpen={showInfoModal} onClose={() => setShowInfoModal(false)} />
 
       <ScanDebtModal
         isOpen={showScanModal}
@@ -1070,45 +866,41 @@ export default function Debts() {
       {/* Add Choice Modal (Mobile) */}
       {showAddChoiceModal && (
         <>
-          <div className="fixed inset-0 z-[2000] bg-black/50 backdrop-blur-sm" onClick={() => setShowAddChoiceModal(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-[2001] bg-white rounded-t-3xl p-6 pb-8 animate-slide-up">
+          <div className="fixed inset-0 z-[2000] bg-black/50 dark:bg-black/80 backdrop-blur-sm" onClick={() => setShowAddChoiceModal(false)} />
+          <div className="fixed bottom-0 left-0 right-0 z-[2001] bg-white dark:bg-dark-card rounded-t-3xl p-6 pb-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Nieuwe schuld toevoegen</h2>
-              <Button variant="ghost" size="icon" onClick={() => setShowAddChoiceModal(false)}>
-                <X className="w-5 h-5" />
-              </Button>
+              <h2 className="text-xl font-bold text-[#131d0c] dark:text-text-primary">Nieuwe schuld toevoegen</h2>
+              <button onClick={() => setShowAddChoiceModal(false)} className="text-gray-400 dark:text-text-secondary hover:text-gray-600 dark:hover:text-text-primary">
+                <span className="material-symbols-outlined">close</span>
+              </button>
             </div>
-
             <div className="space-y-3">
               <button
                 onClick={() => {
                   setShowAddChoiceModal(false);
                   setShowScanModal(true);
                 }}
-                className="w-full flex items-center gap-4 p-4 bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 rounded-2xl transition-all active:scale-[0.98]"
+                className="w-full flex items-center gap-4 p-4 bg-blue-50 dark:bg-accent-blue/10 hover:bg-blue-100 dark:hover:bg-accent-blue/20 border-2 border-blue-200 dark:border-accent-blue/20 rounded-2xl transition-all active:scale-[0.98]"
               >
-                <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center text-3xl">
-                  📸
-                </div>
+                <div className="w-14 h-14 bg-blue-100 dark:bg-accent-blue/20 rounded-xl flex items-center justify-center text-3xl">📸</div>
                 <div className="flex-1 text-left">
-                  <h3 className="font-bold text-gray-900 text-lg">Scan incassobrief</h3>
-                  <p className="text-sm text-gray-600">Maak een foto van je brief</p>
+                  <h3 className="font-bold text-[#131d0c] dark:text-text-primary text-lg">Scan incassobrief</h3>
+                  <p className="text-sm text-gray-600 dark:text-text-secondary">Maak een foto van je brief</p>
                 </div>
               </button>
-
               <button
                 onClick={() => {
                   setShowAddChoiceModal(false);
                   setShowAddForm(true);
                 }}
-                className="w-full flex items-center gap-4 p-4 bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-2xl transition-all active:scale-[0.98]"
+                className="w-full flex items-center gap-4 p-4 bg-gray-50 dark:bg-dark-card-elevated hover:bg-gray-100 dark:hover:bg-dark-border-accent border-2 border-gray-200 dark:border-dark-border rounded-2xl transition-all active:scale-[0.98]"
               >
-                <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center">
-                  <Pencil className="w-7 h-7 text-gray-600" />
+                <div className="w-14 h-14 bg-gray-100 dark:bg-dark-card-elevated rounded-xl flex items-center justify-center">
+                  <span className="material-symbols-outlined text-gray-600 dark:text-text-secondary !text-[28px]">edit</span>
                 </div>
                 <div className="flex-1 text-left">
-                  <h3 className="font-bold text-gray-900 text-lg">Handmatig invoeren</h3>
-                  <p className="text-sm text-gray-600">Vul de gegevens zelf in</p>
+                  <h3 className="font-bold text-[#131d0c] dark:text-text-primary text-lg">Handmatig invoeren</h3>
+                  <p className="text-sm text-gray-600 dark:text-text-secondary">Vul de gegevens zelf in</p>
                 </div>
               </button>
             </div>
@@ -1117,46 +909,48 @@ export default function Debts() {
       )}
 
       {/* VTLB Info Modal */}
-      <Dialog open={showVtlbInfo} onOpenChange={setShowVtlbInfo}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-blue-600" />
-              Wat is VTLB?
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800">
-                <strong>VTLB</strong> = Vrij Te Laten Bedrag
+      {showVtlbInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-dark-card rounded-3xl w-full max-w-md shadow-2xl dark:shadow-modal-dark">
+            <div className="p-6 border-b border-gray-100 dark:border-dark-border flex items-center justify-between">
+              <h3 className="text-lg font-bold text-[#131d0c] dark:text-text-primary font-display flex items-center gap-2">
+                <span className="material-symbols-outlined text-status-blue dark:text-accent-blue">calculate</span>
+                Wat is VTLB?
+              </h3>
+              <button onClick={() => setShowVtlbInfo(false)} className="text-gray-400 dark:text-text-secondary hover:text-gray-600 dark:hover:text-text-primary">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="bg-blue-50 dark:bg-accent-blue/10 border border-blue-200 dark:border-accent-blue/20 rounded-lg p-4">
+                <p className="text-sm text-blue-800 dark:text-accent-blue">
+                  <strong>VTLB</strong> = Vrij Te Laten Bedrag
+                </p>
+              </div>
+              <p className="text-gray-700 dark:text-text-secondary">
+                Dit is het bedrag dat je <strong>minimaal nodig hebt om van te leven</strong>. De rest kun je gebruiken om schulden af te lossen.
+              </p>
+              <div className="bg-gray-50 dark:bg-dark-card-elevated rounded-lg p-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-text-secondary">Je inkomen</span>
+                  <span className="font-medium text-[#131d0c] dark:text-text-primary">€ 2.000</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-text-secondary">Min: VTLB (levensonderhoud)</span>
+                  <span className="font-medium text-status-red dark:text-accent-red">- € 1.500</span>
+                </div>
+                <div className="border-t border-gray-200 dark:border-dark-border pt-2 flex justify-between">
+                  <span className="font-medium text-[#131d0c] dark:text-text-primary">= Afloscapaciteit</span>
+                  <span className="font-bold text-status-blue dark:text-accent-blue">€ 500</span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-text-tertiary">
+                💡 Dit bedrag kun je maandelijks gebruiken voor betalingsregelingen met schuldeisers.
               </p>
             </div>
-            
-            <p className="text-gray-700">
-              Dit is het bedrag dat je <strong>minimaal nodig hebt om van te leven</strong>. De rest kun je gebruiken om schulden af te lossen.
-            </p>
-
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Je inkomen</span>
-                <span className="font-medium">€ 2.000</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Min: VTLB (levensonderhoud)</span>
-                <span className="font-medium text-red-600">- € 1.500</span>
-              </div>
-              <div className="border-t pt-2 flex justify-between">
-                <span className="font-medium text-gray-900">= Afloscapaciteit</span>
-                <span className="font-bold text-blue-600">€ 500</span>
-              </div>
-            </div>
-
-            <p className="text-sm text-gray-500">
-              💡 Dit bedrag kun je maandelijks gebruiken voor betalingsregelingen met schuldeisers.
-            </p>
           </div>
-        </DialogContent>
-      </Dialog>
-      </motion.div>
-      );
+        </div>
+      )}
+    </div>
+  );
 }
