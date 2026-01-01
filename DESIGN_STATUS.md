@@ -208,7 +208,7 @@
 
 ## 📊 Samenvatting
 
-### Nieuw Design: **31 pagina's** ✅
+### Nieuw Design: **32 pagina's** ✅
 1. Login
 2. SignUp
 3. ForgotPassword
@@ -231,14 +231,15 @@
 20. DisplaySettings (App Voorkeuren)
 21. Privacy
 22. HelpSupport
-23. VTLBSettings (VTLB Berekening)
-24. CentVoorCent (Maandelijkse Reflectie)
-25. VTLBCalculator (Afloscapaciteit Calculator)
-26. AdempauzeCalculator (Beslagvrije Voet Calculator)
-27. VasteLastenCheck (Vaste Lasten Check met Payment Modal)
-28. Layout (sidebar verwijderd)
-27. DebtDetailsModal (component)
-28. + 8 nieuwe dashboard components
+23. FAQSettings (Veelgestelde Vragen in Instellingen)
+24. VTLBSettings (VTLB Berekening)
+25. CentVoorCent (Maandelijkse Reflectie)
+26. VTLBCalculator (Afloscapaciteit Calculator)
+27. AdempauzeCalculator (Beslagvrije Voet Calculator)
+28. VasteLastenCheck (Vaste Lasten Check met Payment Modal)
+29. Layout (sidebar verwijderd)
+30. DebtDetailsModal (component)
+31. + 8 nieuwe dashboard components
 
 ### Oud Design: **~6 pagina's** ⚠️
 - Financial management (1 pagina)
@@ -267,6 +268,6 @@
 
 1. **Prioriteit 1**: Financial pages (BudgetPlan)
 2. **Prioriteit 2**: Tools & Calculators (Alle voltooid ✅)
-3. **Prioriteit 3**: Help & Support pages (FAQ, Feedback)
+3. **Prioriteit 3**: Help & Support pages (FAQ ✅, Feedback)
 4. **Prioriteit 4**: Admin pages (Alle verwijderd ✅)
 5. **Prioriteit 5**: Other pages (Wishlist)

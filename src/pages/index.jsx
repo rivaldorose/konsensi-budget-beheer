@@ -50,6 +50,8 @@ import Privacy from "./Privacy";
 
 import HelpSupport from "./HelpSupport";
 
+import FAQSettings from "./FAQSettings";
+
 import Login from "./Login";
 
 import SignUp from "./SignUp";
@@ -109,6 +111,8 @@ const PAGES = {
     Privacy: Privacy,
     
     HelpSupport: HelpSupport,
+    
+    FAQSettings: FAQSettings,
     
 }
 
@@ -198,6 +202,8 @@ function PagesContent() {
                 <Route path="/Privacy" element={<Privacy />} />
                 
                 <Route path="/HelpSupport" element={<HelpSupport />} />
+                
+                <Route path="/FAQSettings" element={<FAQSettings />} />
                 
             </Routes>
         </Layout>

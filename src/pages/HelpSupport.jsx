@@ -163,7 +163,7 @@ export default function HelpSupport() {
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
                     isActiveRoute('HelpSupport')
-                      ? 'bg-secondary text-konsensi-dark'
+                      ? 'bg-secondary text-konsensi-dark dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
                   }`}
                   href={createPageUrl('HelpSupport')}
@@ -172,6 +172,19 @@ export default function HelpSupport() {
                     help
                   </span>
                   <span className={`text-sm ${isActiveRoute('HelpSupport') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Help Center</span>
+                </a>
+                <a 
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                    isActiveRoute('FAQSettings')
+                      ? 'bg-secondary text-konsensi-dark dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                  }`}
+                  href={createPageUrl('FAQSettings')}
+                >
+                  <span className={`material-symbols-outlined ${isActiveRoute('FAQSettings') ? 'fill-1' : ''}`} style={isActiveRoute('FAQSettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    help_outline
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('FAQSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Veelgestelde Vragen</span>
                 </a>
                 <a 
                   className="group flex items-center gap-4 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white transition-all"
@@ -206,7 +219,10 @@ export default function HelpSupport() {
                   <div className="flex-1">
                     <h3 className="text-gray-900 dark:text-white font-semibold text-lg mb-1">Veelgestelde vragen (FAQ)</h3>
                     <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">Vind snel antwoorden op de meest voorkomende vragen.</p>
-                    <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border hover:border-gray-300 dark:hover:border-dark-border-accent text-konsensi-green rounded-lg text-sm font-medium transition-colors group">
+                    <button 
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border hover:border-gray-300 dark:hover:border-dark-border-accent text-konsensi-green rounded-lg text-sm font-medium transition-colors group"
+                      onClick={() => window.location.href = createPageUrl('FAQSettings')}
+                    >
                       <span>Bekijk FAQ</span>
                       <ArrowRight className="w-4 h-4 text-konsensi-green group-hover:translate-x-0.5 transition-transform" />
                     </button>

@@ -311,7 +311,7 @@ export default function Settings() {
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
                     isActiveRoute('HelpSupport')
-                      ? 'bg-secondary text-konsensi-dark'
+                      ? 'bg-secondary text-konsensi-dark dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
                   }`}
                   href={createPageUrl('HelpSupport')}
@@ -320,6 +320,19 @@ export default function Settings() {
                     help
                   </span>
                   <span className={`text-sm ${isActiveRoute('HelpSupport') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Help Center</span>
+                </a>
+                <a 
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                    isActiveRoute('FAQSettings')
+                      ? 'bg-secondary text-konsensi-dark dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                  }`}
+                  href={createPageUrl('FAQSettings')}
+                >
+                  <span className={`material-symbols-outlined ${isActiveRoute('FAQSettings') ? 'fill-1' : ''}`} style={isActiveRoute('FAQSettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    help_outline
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('FAQSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Veelgestelde Vragen</span>
                 </a>
                 <a 
                   className="group flex items-center gap-4 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white transition-all"
