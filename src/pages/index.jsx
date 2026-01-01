@@ -1,7 +1,6 @@
 import React from "react";
 import Layout from "./Layout.jsx";
 import { User } from "@/api/entities";
-import { useNavigate } from "react-router-dom";
 
 import debts from "./debts";
 
@@ -132,84 +131,32 @@ function _getCurrentPage(url) {
     return pageName || Object.keys(PAGES)[0];
 }
 
-// Root redirect component that checks auth and onboarding
+// Simple root redirect component using window.location to avoid React Router context issues
 function RootRedirect() {
-    // #region agent log
-    React.useEffect(() => {
-        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:136',message:'RootRedirect component mounted',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    }, []);
-    // #endregion
-    
-    const navigate = useNavigate();
-    const [loading, setLoading] = React.useState(true);
-    
-    // #region agent log
-    React.useEffect(() => {
-        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:142',message:'RootRedirect hooks initialized',data:{navigateType:typeof navigate,loading},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    }, []);
-    // #endregion
-    
     React.useEffect(() => {
         const checkAuth = async () => {
-            // #region agent log
-            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:148',message:'checkAuth started',data:{loading},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-            // #endregion
             try {
                 const userData = await User.me();
-                // #region agent log
-                fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:152',message:'User.me() completed',data:{hasUserData:!!userData,hasOnboardingCompleted:userData?.onboarding_completed},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                // #endregion
                 if (!userData) {
-                    // #region agent log
-                    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:155',message:'Redirecting to login - no user data',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
-                    navigate('/login', { replace: true });
+                    window.location.href = '/login';
                 } else if (!userData.onboarding_completed) {
-                    // #region agent log
-                    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:159',message:'Redirecting to onboarding',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
-                    navigate('/onboarding', { replace: true });
+                    window.location.href = '/onboarding';
                 } else {
-                    // #region agent log
-                    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:163',message:'Redirecting to Dashboard',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
-                    navigate('/Dashboard', { replace: true });
+                    window.location.href = '/Dashboard';
                 }
             } catch (error) {
-                // #region agent log
-                fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:167',message:'Error in checkAuth',data:{error:error.message,errorName:error.name,errorStack:error.stack?.substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                // #endregion
                 console.error('Error checking auth:', error);
-                navigate('/login', { replace: true });
-            } finally {
-                setLoading(false);
-                // #region agent log
-                fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:174',message:'checkAuth completed, loading set to false',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                // #endregion
+                window.location.href = '/login';
             }
         };
         checkAuth();
-    }, [navigate]);
+    }, []);
     
-    // #region agent log
-    React.useEffect(() => {
-        if (loading) {
-            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:194',message:'RootRedirect returning loading UI',data:{loading},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-        } else {
-            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:197',message:'RootRedirect returning null',data:{loading},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-        }
-    }, [loading]);
-    // #endregion
-    
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-lg">Laden...</div>
-            </div>
-        );
-    }
-    
-    return null;
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="text-lg">Laden...</div>
+        </div>
+    );
 }
 
 // Create a wrapper component that uses useLocation inside the Router context
