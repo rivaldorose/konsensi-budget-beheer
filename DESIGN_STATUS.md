@@ -139,7 +139,14 @@
 
 ### Financial Management
 - ⚠️ **BudgetPlan.jsx** - Oud design, nog niet geüpdatet
-- ⚠️ **CentVoorCent.jsx** - Oud design, nog niet geüpdatet
+- ✅ **CentVoorCent.jsx** - Volledig nieuw design met:
+  - Dark/light mode toggle
+  - Maandelijkse samenvatting (Inkomen, Uitgaven, Overgebleven)
+  - Visualisatie sectie (Inkomen vs Uitgaven, Uitgaven Breakdown)
+  - Reflectie sectie (Wat ging goed, Aandachtspunten)
+  - Schulden voortgang
+  - Advies voor volgende maand
+  - Vergelijking met vorige maand
 - ❌ **AflossingsOverzicht.jsx** - Verwijderd
 
 ### Tools & Calculators
@@ -178,7 +185,7 @@
 
 ## 📊 Samenvatting
 
-### Nieuw Design: **27 pagina's** ✅
+### Nieuw Design: **28 pagina's** ✅
 1. Login
 2. SignUp
 3. ForgotPassword
@@ -202,12 +209,13 @@
 21. Privacy
 22. HelpSupport
 23. VTLBSettings (VTLB Berekening)
-24. Layout (sidebar verwijderd)
-25. DebtDetailsModal (component)
-26. + 8 nieuwe dashboard components
+24. CentVoorCent (Maandelijkse Reflectie)
+25. Layout (sidebar verwijderd)
+26. DebtDetailsModal (component)
+27. + 8 nieuwe dashboard components
 
-### Oud Design: **~16 pagina's** ⚠️
-- Financial management (2 pagina's)
+### Oud Design: **~15 pagina's** ⚠️
+- Financial management (1 pagina)
 - Tools & calculators (3 pagina's)
 - Settings (1 pagina)
 - Help & support (3 pagina's)
@@ -231,7 +239,7 @@
 
 ## 🎯 Volgende Stappen (Suggesties)
 
-1. **Prioriteit 1**: Financial pages (BudgetPlan, CentVoorCent)
+1. **Prioriteit 1**: Financial pages (BudgetPlan)
 2. **Prioriteit 2**: Tools & Calculators (VTLBCalculator, AdempauzeCalculator, VasteLastenCheck)
 3. **Prioriteit 3**: Help & Support pages (FAQ, Feedback)
 4. **Prioriteit 4**: Admin pages
