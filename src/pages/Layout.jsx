@@ -90,7 +90,8 @@ function LayoutWithProvider({ children, currentPageName }) {
   const currentPath = location.pathname.toLowerCase().replace(/\/$/, '');
   const isAuthPage = currentPath === '/login' || currentPath === '/signup' || currentPath === '/onboarding' || 
                      currentPath === '/forgot-password' || currentPath === '/email-sent' || 
-                     currentPath === '/reset-password' || currentPath === '/password-saved';
+                     currentPath === '/reset-password' || currentPath === '/password-saved' ||
+                     currentPath === '/terms' || currentPath === '/privacy';
 
   const [fabPosition, setFabPosition] = React.useState({ x: null, y: null });
   const fabRef = React.useRef(null);

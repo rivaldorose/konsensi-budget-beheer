@@ -12,6 +12,10 @@ import onboarding from "./onboarding";
 
 import OnboardingNew from "./OnboardingNew";
 
+import TermsOfService from "./TermsOfService";
+
+import PrivacyPolicy from "./PrivacyPolicy";
+
 import Dashboard from "./Dashboard";
 
 import Settings from "./Settings";

@@ -347,17 +347,17 @@ export default function SignUp() {
                   </svg>
                 </div>
               </label>
-              <p className="text-sm text-text-sub dark:text-[#a1a1a1] leading-snug">
-                Ik ga akkoord met de{' '}
-                <a className="text-primary hover:underline" href="#" onClick={(e) => e.preventDefault()}>
-                  Algemene Voorwaarden
-                </a>
-                {' '}en{' '}
-                <a className="text-primary hover:underline" href="#" onClick={(e) => e.preventDefault()}>
-                  Privacybeleid
-                </a>
-                .
-              </p>
+                  <p className="text-sm text-text-sub dark:text-[#a1a1a1] leading-snug">
+                    Ik ga akkoord met de{' '}
+                    <Link className="text-primary hover:underline" to="/terms">
+                      Algemene Voorwaarden
+                    </Link>
+                    {' '}en{' '}
+                    <Link className="text-primary hover:underline" to="/privacy">
+                      Privacybeleid
+                    </Link>
+                    .
+                  </p>
             </div>
 
             {/* Submit Button */}
