@@ -83,7 +83,7 @@
 
 ### Financial Management
 - ✅ **debts.jsx** - Volledig nieuw design met dark/light mode toggle, nieuwe table layout, summary cards, collapsible sections
-- ⚠️ **Expenses.jsx** - Oud design, nog niet geüpdatet
+- ✅ **MaandelijkseLasten.jsx** - Vervangt Expenses.jsx, volledig nieuw design
 - ⚠️ **Potjes.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **BudgetPlan.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **CentVoorCent.jsx** - Oud design, nog niet geüpdatet

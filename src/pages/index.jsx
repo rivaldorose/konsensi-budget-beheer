@@ -1,7 +1,5 @@
 import Layout from "./Layout.jsx";
 
-import Expenses from "./Expenses";
-
 import debts from "./debts";
 
 import CentVoorCent from "./CentVoorCent";
@@ -83,8 +81,6 @@ import PasswordSaved from "./PasswordSaved";
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
-    
-    Expenses: Expenses,
     
     debts: debts,
     
@@ -181,9 +177,7 @@ function PagesContent() {
                 
                 <Route path="/password-saved" element={<PasswordSaved />} />
                 
-                <Route path="/" element={<Expenses />} />
-                
-                <Route path="/Expenses" element={<Expenses />} />
+                <Route path="/" element={<MaandelijkseLasten />} />
                 
                 <Route path="/debts" element={<debts />} />
                 
