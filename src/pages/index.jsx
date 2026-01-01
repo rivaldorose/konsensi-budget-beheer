@@ -40,8 +40,6 @@ import SecuritySettings from "./SecuritySettings";
 
 import DisplaySettings from "./DisplaySettings";
 
-import AflossingsOverzicht from "./AflossingsOverzicht";
-
 import VTLBSettings from "./VTLBSettings";
 
 import AdminSupport from "./AdminSupport";
@@ -113,8 +111,6 @@ const PAGES = {
     SecuritySettings: SecuritySettings,
     
     DisplaySettings: DisplaySettings,
-    
-    AflossingsOverzicht: AflossingsOverzicht,
     
     VTLBSettings: VTLBSettings,
     
@@ -214,8 +210,6 @@ function PagesContent() {
                 <Route path="/SecuritySettings" element={<SecuritySettings />} />
                 
                 <Route path="/DisplaySettings" element={<DisplaySettings />} />
-                
-                <Route path="/AflossingsOverzicht" element={<AflossingsOverzicht />} />
                 
                 <Route path="/VTLBSettings" element={<VTLBSettings />} />
                 

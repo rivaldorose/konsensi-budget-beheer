@@ -140,7 +140,7 @@
 ### Financial Management
 - ⚠️ **BudgetPlan.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **CentVoorCent.jsx** - Oud design, nog niet geüpdatet
-- ⚠️ **AflossingsOverzicht.jsx** - Oud design, nog niet geüpdatet
+- ❌ **AflossingsOverzicht.jsx** - Verwijderd
 
 ### Tools & Calculators
 - ⚠️ **VTLBCalculator.jsx** - Oud design, nog niet geüpdatet
@@ -200,8 +200,8 @@
 24. DebtDetailsModal (component)
 25. + 8 nieuwe dashboard components
 
-### Oud Design: **~18 pagina's** ⚠️
-- Financial management (3 pagina's)
+### Oud Design: **~17 pagina's** ⚠️
+- Financial management (2 pagina's)
 - Tools & calculators (3 pagina's)
 - Settings (2 pagina's)
 - Help & support (3 pagina's)
@@ -225,7 +225,7 @@
 
 ## 🎯 Volgende Stappen (Suggesties)
 
-1. **Prioriteit 1**: Financial pages (BudgetPlan, CentVoorCent, AflossingsOverzicht)
+1. **Prioriteit 1**: Financial pages (BudgetPlan, CentVoorCent)
 2. **Prioriteit 2**: Tools & Calculators (VTLBCalculator, AdempauzeCalculator, VasteLastenCheck)
 3. **Prioriteit 3**: Help & Support pages (FAQ, Feedback)
 4. **Prioriteit 4**: Admin pages
