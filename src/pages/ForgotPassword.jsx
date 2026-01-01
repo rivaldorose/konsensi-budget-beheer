@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/toast';
@@ -6,8 +6,30 @@ import { useToast } from '@/components/ui/toast';
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [darkMode]);
+
+  const toggleTheme = () => {
+    setDarkMode(!darkMode);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,10 +57,27 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="bg-[#F8F8F8] dark:bg-background-dark min-h-screen flex items-center justify-center p-4">
-      <main className="w-full max-w-[480px] bg-white dark:bg-[#1E293B] border border-gray-200 dark:border-gray-700 rounded-[24px] shadow-modal p-8 md:p-12 relative flex flex-col items-center">
+    <div className="bg-gray-100 dark:bg-[#0a0a0a] min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
+      <main className="w-full max-w-[480px] bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] p-8 md:p-12 relative flex flex-col items-center">
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          aria-label="Toggle dark mode"
+          className="absolute top-6 right-6 relative inline-flex h-10 w-16 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-gray-200 dark:bg-gray-700 transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        >
+          <span className="sr-only">Use dark mode settings</span>
+          <span className={`pointer-events-none relative inline-block h-9 w-9 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out flex items-center justify-center ${darkMode ? 'translate-x-6' : 'translate-x-0'}`}>
+            <span className={`material-symbols-outlined absolute inset-0 flex h-full w-full items-center justify-center text-yellow-500 transition-opacity duration-200 ease-in ${darkMode ? 'opacity-0' : 'opacity-100'}`}>
+              light_mode
+            </span>
+            <span className={`material-symbols-outlined absolute inset-0 flex h-full w-full items-center justify-center text-primary transition-opacity duration-200 ease-in ${darkMode ? 'opacity-100' : 'opacity-0'}`}>
+              dark_mode
+            </span>
+          </span>
+        </button>
+
         {/* Logo Section */}
-        <div className="flex flex-col items-center mb-10">
+        <div className="flex flex-col items-center gap-1 mb-10">
           <div className="flex items-center mb-1">
             <img 
               src="/logo.png" 
@@ -50,10 +89,10 @@ export default function ForgotPassword() {
 
         {/* Header Text */}
         <div className="text-center w-full mb-8">
-          <h1 className="font-display font-bold text-[32px] leading-tight text-gray-800 dark:text-white mb-3">
+          <h1 className="font-display font-bold text-3xl leading-tight text-gray-900 dark:text-white mb-3">
             Wachtwoord vergeten?
           </h1>
-          <p className="text-base text-gray-500 dark:text-gray-400 font-normal leading-relaxed px-2">
+          <p className="text-base text-gray-600 dark:text-[#a1a1a1] font-normal leading-relaxed px-2">
             Geen probleem! Vul je e-mailadres in en we sturen je een link om je wachtwoord opnieuw in te stellen.
           </p>
         </div>
@@ -61,18 +100,18 @@ export default function ForgotPassword() {
         {/* Form Section */}
         <form onSubmit={handleSubmit} className="w-full flex flex-col">
           {/* Email Field */}
-          <div className="flex flex-col gap-2 mb-2">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1" htmlFor="email">
+          <div className="flex flex-col gap-2 mb-6">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-[#a1a1a1] mb-2" htmlFor="email">
               E-mailadres
             </label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <span className="material-symbols-outlined text-gray-400 group-focus-within:text-primary transition-colors duration-200" style={{ fontSize: '20px' }}>
+            <div className="group relative flex items-center w-full rounded-xl bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] transition-all duration-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20">
+              <div className="pl-4 text-gray-400 dark:text-gray-500">
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
                   mail
                 </span>
               </div>
               <input
-                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-white rounded-xl py-3.5 pl-11 pr-4 outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white dark:focus:bg-gray-800 focus:border-primary focus:ring-4 focus:ring-primary/10 hover:border-gray-300 dark:hover:border-gray-500"
+                className="w-full bg-transparent border-none text-gray-900 dark:text-white placeholder-gray-500 focus:ring-0 py-3.5 px-3"
                 id="email"
                 name="email"
                 placeholder="naam@voorbeeld.nl"
@@ -86,7 +125,7 @@ export default function ForgotPassword() {
 
           {/* Submit Button */}
           <button
-            className="w-full mt-8 bg-primary hover:bg-primary-dark active:bg-primary-darker text-white font-display font-semibold text-base py-4 px-6 rounded-xl shadow-button flex items-center justify-center gap-3 transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full mt-8 bg-primary hover:bg-[#34d399] active:bg-[#059669] text-black font-display font-semibold text-base py-4 px-6 rounded-xl shadow-[0_4px_12px_rgba(16,185,129,0.2)] flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             type="submit"
             disabled={loading}
           >
@@ -101,11 +140,10 @@ export default function ForgotPassword() {
           {/* Back to Login Link */}
           <div className="mt-6 text-center">
             <Link
-              className="inline-flex items-center gap-1.5 text-[15px] font-medium text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary hover:underline transition-colors duration-200 group/back"
+              className="text-[15px] text-gray-600 dark:text-[#a1a1a1] hover:text-primary dark:hover:text-primary underline decoration-1 underline-offset-4 transition-colors"
               to="/login"
             >
-              <span className="transition-transform duration-200 group-hover/back:-translate-x-1">←</span>
-              Terug naar inloggen
+              ← Terug naar inloggen
             </Link>
           </div>
         </form>
