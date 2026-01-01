@@ -191,24 +191,23 @@ function RootRedirect() {
         checkAuth();
     }, [navigate]);
     
+    // #region agent log
+    React.useEffect(() => {
+        if (loading) {
+            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:194',message:'RootRedirect returning loading UI',data:{loading},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+        } else {
+            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:197',message:'RootRedirect returning null',data:{loading},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+        }
+    }, [loading]);
+    // #endregion
+    
     if (loading) {
-        // #region agent log
-        React.useEffect(() => {
-            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:182',message:'RootRedirect returning loading UI',data:{loading},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-        }, [loading]);
-        // #endregion
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="text-lg">Laden...</div>
             </div>
         );
     }
-    
-    // #region agent log
-    React.useEffect(() => {
-        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:192',message:'RootRedirect returning null',data:{loading},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-    }, [loading]);
-    // #endregion
     
     return null;
 }
