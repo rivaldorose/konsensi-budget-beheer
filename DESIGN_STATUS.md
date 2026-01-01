@@ -149,7 +149,12 @@
 
 ### Settings & Configuration
 - ❌ **LanguageSettings.jsx** - Verwijderd (functionaliteit nu in DisplaySettings.jsx)
-- ⚠️ **VTLBSettings.jsx** - Oud design, nog niet geüpdatet
+- ✅ **VTLBSettings.jsx** - Volledig nieuw design met:
+  - Dark/light mode toggle
+  - VTLB berekening weergave
+  - Berekening breakdown
+  - Budget verdeling
+  - Link naar gegevens aanpassen
 
 ### Help & Support
 - ❌ **GetHelp.jsx** - Verwijderd (vervangen door HelpSupport.jsx)
@@ -173,7 +178,7 @@
 
 ## 📊 Samenvatting
 
-### Nieuw Design: **26 pagina's** ✅
+### Nieuw Design: **27 pagina's** ✅
 1. Login
 2. SignUp
 3. ForgotPassword
@@ -196,14 +201,15 @@
 20. DisplaySettings (App Voorkeuren)
 21. Privacy
 22. HelpSupport
-23. Layout (sidebar verwijderd)
-24. DebtDetailsModal (component)
-25. + 8 nieuwe dashboard components
+23. VTLBSettings (VTLB Berekening)
+24. Layout (sidebar verwijderd)
+25. DebtDetailsModal (component)
+26. + 8 nieuwe dashboard components
 
-### Oud Design: **~17 pagina's** ⚠️
+### Oud Design: **~16 pagina's** ⚠️
 - Financial management (2 pagina's)
 - Tools & calculators (3 pagina's)
-- Settings (2 pagina's)
+- Settings (1 pagina)
 - Help & support (3 pagina's)
 - Admin (3 pagina's)
 - Other (4 pagina's)

@@ -281,6 +281,19 @@ export default function Settings() {
                 </a>
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                    isActiveRoute('VTLBSettings')
+                      ? 'bg-secondary text-konsensi-dark dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                  }`}
+                  href={createPageUrl('VTLBSettings')}
+                >
+                  <span className={`material-symbols-outlined ${isActiveRoute('VTLBSettings') ? 'fill-1' : ''}`} style={isActiveRoute('VTLBSettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    calculate
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('VTLBSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>VTLB Berekening</span>
+                </a>
+                <a 
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
                     isActiveRoute('Privacy')
                       ? 'bg-secondary text-konsensi-dark'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
@@ -354,14 +367,14 @@ export default function Settings() {
                   >
                     <span className="material-symbols-outlined text-white">edit</span>
                   </div>
-                  <input
-                    type="file"
-                    id="photo-upload"
-                    accept="image/*"
-                    onChange={handlePhotoUpload}
-                    className="hidden"
-                    disabled={uploading}
-                  />
+              <input
+                type="file"
+                id="photo-upload"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+                disabled={uploading}
+              />
                 </div>
                 <div className="flex flex-col items-center sm:items-start pt-2 gap-3">
                   <h3 className="text-gray-900 dark:text-white font-bold text-lg">Profielafbeelding</h3>
@@ -369,9 +382,9 @@ export default function Settings() {
                   <div className="flex gap-3 mt-1">
                     <button 
                       className="px-5 py-2.5 bg-gray-100 dark:bg-dark-card-elevated hover:bg-gray-200 dark:hover:bg-dark-border text-gray-900 dark:text-white rounded-full text-sm font-bold transition-colors"
-                      onClick={() => document.getElementById('photo-upload').click()}
-                      disabled={uploading}
-                    >
+                onClick={() => document.getElementById('photo-upload').click()}
+                disabled={uploading}
+              >
                       {uploading ? 'Uploaden...' : 'Nieuwe foto uploaden'}
                     </button>
                     {user?.profielfoto_url && (
@@ -383,8 +396,8 @@ export default function Settings() {
                         <span className="material-symbols-outlined text-[20px]">delete</span>
                       </button>
                     )}
+                    </div>
                   </div>
-                </div>
               </div>
 
               {/* Form */}
@@ -406,26 +419,26 @@ export default function Settings() {
                         className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 dark:border-dark-border focus:border-konsensi-green focus:ring focus:ring-konsensi-green/20 bg-gray-50 dark:bg-dark-card-elevated text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 font-medium transition-all"
                         placeholder="Jouw naam" 
                         type="text" 
-                        value={formData.voornaam}
-                        onChange={(e) => setFormData({...formData, voornaam: e.target.value})}
+                    value={formData.voornaam}
+                    onChange={(e) => setFormData({...formData, voornaam: e.target.value})}
                         disabled={!editing}
-                      />
-                    </div>
+                  />
+                </div>
                   </label>
                   <label className="flex flex-col gap-2">
                     <span className="text-gray-900 dark:text-white font-semibold text-sm">E-mailadres</span>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">mail</span>
-                      </div>
+                </div>
                       <input 
                         className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 dark:border-dark-border focus:border-konsensi-green focus:ring focus:ring-konsensi-green/20 bg-gray-50 dark:bg-dark-card-elevated text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 font-medium transition-all"
                         placeholder="jouw@email.nl" 
-                        type="email" 
-                        value={formData.email}
-                        disabled
-                      />
-                    </div>
+                    type="email"
+                    value={formData.email}
+                    disabled
+                  />
+                </div>
                   </label>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -442,8 +455,8 @@ export default function Settings() {
                         value={formData.telefoonnummer}
                         onChange={(e) => setFormData({...formData, telefoonnummer: e.target.value})}
                         disabled={!editing}
-                      />
-                    </div>
+                  />
+                </div>
                   </label>
                   <label className="flex flex-col gap-2">
                     <span className="text-gray-900 dark:text-white font-semibold text-sm">Adres</span>
@@ -455,11 +468,11 @@ export default function Settings() {
                         className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 dark:border-dark-border focus:border-konsensi-green focus:ring focus:ring-konsensi-green/20 bg-gray-50 dark:bg-dark-card-elevated text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 font-medium transition-all"
                         placeholder="Straat en huisnummer" 
                         type="text" 
-                        value={formData.adres}
-                        onChange={(e) => setFormData({...formData, adres: e.target.value})}
+                    value={formData.adres}
+                    onChange={(e) => setFormData({...formData, adres: e.target.value})}
                         disabled={!editing}
-                      />
-                    </div>
+                  />
+                </div>
                   </label>
                 </div>
                 <div className="flex flex-col gap-2 pt-2">
@@ -474,21 +487,21 @@ export default function Settings() {
                         disabled 
                         placeholder="********" 
                         type="password" 
-                      />
-                    </div>
-                    <button 
+                  />
+                </div>
+          <button
                       className="px-6 py-3 border border-gray-300 dark:border-dark-border rounded-full font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:border-gray-400 dark:hover:border-dark-border-accent transition-colors whitespace-nowrap"
                       type="button"
-                      onClick={() => window.location.href = createPageUrl('SecuritySettings')}
+            onClick={() => window.location.href = createPageUrl('SecuritySettings')}
                     >
                       Wijzig
-                    </button>
-                  </div>
-                </div>
+          </button>
+              </div>
+            </div>
                 <div className="flex items-center justify-end pt-8 mt-4 border-t border-gray-100 dark:border-dark-border">
                   {editing ? (
                     <>
-                      <button 
+          <button
                         className="text-gray-500 dark:text-gray-400 font-semibold text-sm mr-6 hover:text-gray-800 dark:hover:text-gray-200 transition-colors" 
                         type="button"
                         onClick={() => {
@@ -497,15 +510,15 @@ export default function Settings() {
                         }}
                       >
                         Annuleren
-                      </button>
-                      <button 
+          </button>
+          <button
                         className="px-8 py-3 bg-konsensi-green hover:bg-konsensi-green-light text-white rounded-full font-bold shadow-md shadow-green-500/20 transition-all transform active:scale-95" 
                         type="submit"
                       >
                         Wijzigingen opslaan
-                      </button>
-                    </>
-                  ) : (
+          </button>
+                </>
+              ) : (
                     <button 
                       className="px-8 py-3 bg-konsensi-green hover:bg-konsensi-green-light text-white rounded-full font-bold shadow-md shadow-green-500/20 transition-all transform active:scale-95" 
                       type="button"
