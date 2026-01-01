@@ -1,131 +1,78 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from '@/components/utils/LanguageContext';
 import { Income } from '@/api/entities';
 import { MonthlyCost } from '@/api/entities';
 import { Debt } from '@/api/entities';
 import { Transaction } from '@/api/entities';
 import { User } from '@/api/entities';
 import { Pot } from '@/api/entities';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { formatCurrency } from '@/components/utils/formatters';
-import { 
-    Plus, 
-    Upload, 
-    Lightbulb,
-    Briefcase,
-    ShoppingCart,
-    Home,
-    Music,
-    CreditCard,
-    Calendar,
-    Sliders,
-    BarChart3,
-    History,
-    HelpCircle,
-    Camera,
-    X,
-    Loader2
-} from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-import { useToast } from '@/components/ui/toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { createPageUrl } from '@/utils';
 import AddTransactionModal from '@/components/budget/AddTransactionModal';
-import BudgetAllocationSliders from '@/components/budget/BudgetAllocationSliders';
-import PotProgressCards from '@/components/budget/PotProgressCards';
-import BudgetHistory from '@/components/budget/BudgetHistory';
-import SmartSuggestions from '@/components/budget/SmartSuggestions';
-import BudgetInfoModal from '@/components/budget/BudgetInfoModal';
-import AIBudgetPlannerWidget from '@/components/budget/AIBudgetPlannerWidget';
-import MonthlyBudgetPlanner from '@/components/budget/MonthlyBudgetPlanner';
-import BudgetOverviewCard from '@/components/budget/BudgetOverviewCard';
-import LentLoansWidget from '@/components/budget/LentLoansWidget';
 
 export default function BudgetPlan() {
-    const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
-    const [periodFilter, setPeriodFilter] = useState('Maand');
-    const [transactionTab, setTransactionTab] = useState('inkomsten');
+  const [darkMode, setDarkMode] = useState(false);
+  const [activeTab, setActiveTab] = useState('overzicht');
+  const [transactionFilter, setTransactionFilter] = useState('Alles');
+  const [searchTerm, setSearchTerm] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
-    const [showInfoModal, setShowInfoModal] = useState(false);
-    
-    const [activeTab, setActiveTab] = useState('overzicht');
     
     // Financial data
     const [totalIncome, setTotalIncome] = useState(0);
     const [totalExpenses, setTotalExpenses] = useState(0);
     const [fixedCosts, setFixedCosts] = useState(0);
     const [debtPayments, setDebtPayments] = useState(0);
-    const [availableForPots, setAvailableForPots] = useState(0);
     const [saldo, setSaldo] = useState(0);
     
     // Transaction list & categories
     const [transactions, setTransactions] = useState([]);
     const [potBreakdown, setPotBreakdown] = useState([]);
     const [allPots, setAllPots] = useState([]);
-    const [showScanModal, setShowScanModal] = useState(false);
-    const [scanning, setScanning] = useState(false);
-    const [scannedData, setScannedData] = useState(null);
-    const [showBudgetPlanner, setShowBudgetPlanner] = useState(false);
-    const [budgetOverviewRefresh, setBudgetOverviewRefresh] = useState(null);
-    const { toast } = useToast();
+  const [debts, setDebts] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
 
     useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const isDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    setDarkMode(isDark);
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
         loadData();
     }, []);
     
-    // Herbereken data wanneer periodFilter verandert (zonder reload)
     useEffect(() => {
         if (user) {
             loadData();
         }
-    }, [periodFilter]);
+  }, [selectedMonth]);
 
-    // Bereken periode grenzen
+  const toggleTheme = () => {
+    const newTheme = !darkMode;
+    setDarkMode(newTheme);
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+    if (newTheme) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
+
     const getPeriodBounds = () => {
-        const today = new Date();
+    const today = new Date(selectedMonth);
         today.setHours(0, 0, 0, 0);
         
-        let startDate, endDate;
-        
-        switch (periodFilter) {
-            case 'Dag':
-                startDate = new Date(today);
-                endDate = new Date(today);
+    const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
                 endDate.setHours(23, 59, 59, 999);
-                break;
-            case 'Week':
-                startDate = new Date(today);
-                startDate.setDate(today.getDate() - today.getDay() + 1); // Maandag
-                endDate = new Date(startDate);
-                endDate.setDate(startDate.getDate() + 6);
-                endDate.setHours(23, 59, 59, 999);
-                break;
-            case '2 Weken':
-                startDate = new Date(today);
-                startDate.setDate(today.getDate() - 13);
-                endDate = new Date(today);
-                endDate.setHours(23, 59, 59, 999);
-                break;
-            case 'Maand':
-            default:
-                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                endDate.setHours(23, 59, 59, 999);
-                break;
-        }
         
         return { startDate, endDate, today };
     };
 
     const loadData = async () => {
         try {
-            // Alleen loading tonen bij eerste keer laden
             if (!user) {
                 setLoading(true);
             }
@@ -133,16 +80,12 @@ export default function BudgetPlan() {
             const userData = await User.me();
             setUser(userData);
 
-            const { startDate, endDate, today } = getPeriodBounds();
-            const currentMonth = today.getMonth();
-            const currentYear = today.getFullYear();
+      const { startDate, endDate } = getPeriodBounds();
 
+      // Load income
             const incomeData = await Income.filter({ created_by: userData.email });
-            
-            // Filter inkomsten op geselecteerde periode
             const filteredIncome = incomeData.filter(income => {
                 if (income.income_type === 'vast') {
-                    // Vast inkomen: check of het actief is in de geselecteerde periode
                     if (income.is_active === false) return false;
                     if (income.start_date) {
                         const incomeStartDate = new Date(income.start_date);
@@ -154,7 +97,6 @@ export default function BudgetPlan() {
                     }
                     return true;
                 } else {
-                    // Extra inkomen: alleen als datum in geselecteerde periode valt
                     if (!income.date) return false;
                     const incomeDate = new Date(income.date);
                     return incomeDate >= startDate && incomeDate <= endDate;
@@ -169,14 +111,14 @@ export default function BudgetPlan() {
                 }
             }, 0);
 
+      // Load monthly costs
             const monthlyCostsData = await MonthlyCost.filter({ 
                 status: 'actief',
                 created_by: userData.email 
             });
             
-            // Filter vaste lasten op periode (check payment_date binnen periode)
+      const today = new Date(selectedMonth);
             const filteredCosts = monthlyCostsData.filter(cost => {
-                // Check of de betaaldag binnen de geselecteerde periode valt
                 const paymentDay = cost.payment_date || 1;
                 const paymentDate = new Date(today.getFullYear(), today.getMonth(), paymentDay);
                 return paymentDate >= startDate && paymentDate <= endDate;
@@ -186,12 +128,12 @@ export default function BudgetPlan() {
                 sum + (parseFloat(cost.amount) || 0), 0
             );
 
+      // Load debts
             const debtsData = await Debt.filter({ 
                 status: 'betalingsregeling',
                 created_by: userData.email 
             });
             
-            // Filter schulden op periode
             const filteredDebts = debtsData.filter(debt => {
                 if (!debt.payment_plan_date) return false;
                 const paymentDay = new Date(debt.payment_plan_date).getDate();
@@ -202,7 +144,9 @@ export default function BudgetPlan() {
             const debtPaymentsTotal = filteredDebts.reduce((sum, debt) => 
                 sum + (parseFloat(debt.monthly_payment) || 0), 0
             );
+      setDebts(filteredDebts);
 
+      // Load transactions
             const transactionsData = await Transaction.filter({ created_by: userData.email });
             const filteredTransactions = transactionsData.filter(tx => {
                 const txDate = new Date(tx.date);
@@ -216,13 +160,11 @@ export default function BudgetPlan() {
             const expensesTotal = monthlyCostsTotal + debtPaymentsTotal + periodExpenses;
             const saldoTotal = incomeTotal - expensesTotal;
             const fixedTotal = monthlyCostsTotal + debtPaymentsTotal;
-            const availableTotal = incomeTotal - fixedTotal;
 
             setTotalIncome(incomeTotal);
             setTotalExpenses(expensesTotal);
             setFixedCosts(fixedTotal);
             setDebtPayments(debtPaymentsTotal);
-            setAvailableForPots(availableTotal);
             setSaldo(saldoTotal);
 
             // Build transactions list
@@ -235,8 +177,7 @@ export default function BudgetPlan() {
                         ? (parseFloat(income.monthly_equivalent) || parseFloat(income.amount))
                         : parseFloat(income.amount),
                     date: income.date || income.start_date,
-                    category: 'Werk',
-                    icon: Briefcase
+          category: 'Inkomen'
                 })),
                 ...filteredCosts.map(cost => ({
                     id: `cost-${cost.id}`,
@@ -246,9 +187,7 @@ export default function BudgetPlan() {
                     date: cost.start_date || new Date().toISOString().split('T')[0],
                     category: cost.category === 'wonen' ? 'Wonen' : 
                               cost.category === 'abonnementen' || cost.category === 'streaming_diensten' ? 'Abonnementen' :
-                              cost.category || 'Overig',
-                    icon: cost.category === 'wonen' ? Home : 
-                          cost.category === 'abonnementen' || cost.category === 'streaming_diensten' ? Music : Calendar
+                    cost.category || 'Overig'
                 })),
                 ...filteredDebts.map(debt => ({
                     id: `debt-${debt.id}`,
@@ -256,8 +195,7 @@ export default function BudgetPlan() {
                     description: `${debt.creditor_name} (Regeling)`,
                     amount: parseFloat(debt.monthly_payment),
                     date: debt.payment_plan_date,
-                    category: 'Betalingsregeling',
-                    icon: CreditCard
+          category: 'Betalingsregeling'
                 })),
                 ...filteredTransactions.filter(tx => tx.type === 'expense').map(tx => ({
                     id: `tx-${tx.id}`,
@@ -265,33 +203,43 @@ export default function BudgetPlan() {
                     description: tx.description || 'Uitgave',
                     amount: parseFloat(tx.amount),
                     date: tx.date,
-                    category: tx.category || 'Boodschappen',
-                    icon: ShoppingCart
+          category: tx.category || 'Boodschappen'
                 }))
             ];
 
             allTransactions.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
             setTransactions(allTransactions);
 
-            // Haal potjes op en bereken uitgaven per potje
+      // Load pots
             const potsData = await Pot.filter({ created_by: userData.email });
             const expensePots = potsData.filter(p => p.pot_type === 'expense');
             
-            const potColors = [
-                '#3b82f6', '#ef4444', '#f59e0b', '#10b981', '#8b5cf6', 
-                '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1'
-            ];
+      const potColors = {
+        'Wonen': '#10b77f',
+        'Boodschappen': '#3b82f6',
+        'Vervoer': '#f59e0b',
+        'Abonnementen': '#8b5cf6',
+        'Overig': '#ef4444'
+      };
             
             const totalPotSpent = expensePots.reduce((sum, pot) => sum + (parseFloat(pot.spent) || 0), 0);
             
-            const breakdown = expensePots.map((pot, index) => ({
-                name: pot.name,
-                icon: pot.icon || '💰',
-                amount: parseFloat(pot.spent) || 0,
-                budget: parseFloat(pot.budget) || 0,
-                percentage: totalPotSpent > 0 ? Math.round(((parseFloat(pot.spent) || 0) / totalPotSpent) * 100) : 0,
-                color: potColors[index % potColors.length]
-            })).filter(p => p.budget > 0).sort((a, b) => b.amount - a.amount);
+      // Calculate category breakdown
+      const categoryMap = {};
+      allTransactions.filter(tx => tx.type === 'expense').forEach(tx => {
+        const cat = tx.category || 'Overig';
+        if (!categoryMap[cat]) {
+          categoryMap[cat] = 0;
+        }
+        categoryMap[cat] += tx.amount;
+      });
+
+      const breakdown = Object.entries(categoryMap).map(([name, amount]) => ({
+        name,
+        amount,
+        color: potColors[name] || '#6b7280',
+        percentage: totalExpenses > 0 ? Math.round((amount / totalExpenses) * 100) : 0
+      })).sort((a, b) => b.amount - a.amount);
 
             setPotBreakdown(breakdown);
             setAllPots(expensePots);
@@ -306,620 +254,396 @@ export default function BudgetPlan() {
     const formatDate = (dateStr) => {
         if (!dateStr) return '';
         const date = new Date(dateStr);
-        return date.toLocaleDateString('nl-NL', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    return date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('nl-NL', { 
+      style: 'currency', 
+      currency: 'EUR',
+      minimumFractionDigits: 2 
+    }).format(amount);
+  };
+
+  const getMonthName = (date) => {
+    return date.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' });
+  };
+
+  const filteredTransactions = transactions.filter(tx => {
+    // Filter by type
+    if (transactionFilter === 'Inkomsten' && tx.type !== 'income') return false;
+    if (transactionFilter === 'Uitgaven' && tx.type !== 'expense') return false;
+    
+    // Filter by search
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      return tx.description.toLowerCase().includes(searchLower) || 
+             tx.category.toLowerCase().includes(searchLower);
+    }
+    
+    return true;
+  });
+
+  const getCategoryIcon = (category) => {
+    const icons = {
+      'Wonen': 'home',
+      'Boodschappen': 'shopping_cart',
+      'Vervoer': 'directions_car',
+      'Abonnementen': 'smartphone',
+      'Inkomen': 'arrow_upward',
+      'Betalingsregeling': 'handshake',
+      'Overig': 'more_horiz'
+    };
+    return icons[category] || 'category';
+  };
+
+  const getCategoryColor = (category, type) => {
+    if (type === 'income') return '#10b77f';
+    const colors = {
+      'Wonen': '#10b77f',
+      'Boodschappen': '#3b82f6',
+      'Vervoer': '#f59e0b',
+      'Abonnementen': '#8b5cf6',
+      'Overig': '#ef4444'
+    };
+    return colors[category] || '#6b7280';
     };
 
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
+        <div className="w-10 h-10 border-4 border-dashed rounded-full animate-spin border-gray-400 dark:border-gray-600"></div>
             </div>
         );
     }
 
-    const { startDate, endDate } = getPeriodBounds();
-
     return (
-        <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background-light dark:bg-background-dark">
             {/* Header */}
-            <div className="flex flex-col gap-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-2">
-                        <h1 className="text-2xl font-bold text-gray-900">💰 Budgetplan</h1>
+      <header className="bg-[#f8fcfa] dark:bg-[#141f1b] border-b border-[#e7f3ef] dark:border-[#2a2a2a] sticky top-0 z-50">
+        <div className="px-6 md:px-10 py-3 flex items-center justify-between max-w-[1400px] mx-auto w-full">
+          {/* Logo Section */}
+          <div className="flex items-center gap-4 text-[#0d1b17] dark:text-white">
+            <div className="size-6 text-primary">
+              <svg className="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
+              </svg>
+            </div>
+            <h2 className="text-text-main dark:text-white text-xl font-bold tracking-tight">Konsensi</h2>
+          </div>
+          {/* Navigation Links */}
+          <nav className="hidden md:flex items-center gap-8">
+            <a className="text-primary text-sm font-bold border-b-2 border-primary pb-1" href={createPageUrl('BudgetPlan')}>Budgetplan</a>
+            <a className="text-text-main dark:text-gray-400 hover:text-primary text-sm font-medium transition-colors" href={createPageUrl('Potjes')}>Potjes</a>
+            <a className="text-text-main dark:text-gray-400 hover:text-primary text-sm font-medium transition-colors" href={createPageUrl('Settings')}>Instellingen</a>
+          </nav>
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            <button 
+              aria-label="Settings" 
+              className="flex items-center justify-center size-10 rounded-full bg-[#e7f3ef] dark:bg-[#2a2a2a] text-text-main dark:text-white hover:bg-[#d0e6dd] dark:hover:bg-[#3a3a3a] transition-colors"
+              onClick={() => window.location.href = createPageUrl('Settings')}
+            >
+              <span className="material-symbols-outlined text-[20px]">settings</span>
+            </button>
+            <button 
+              aria-label="Toggle Theme" 
+              className="flex items-center justify-center size-10 rounded-full bg-[#e7f3ef] dark:bg-[#2a2a2a] text-text-main dark:text-white hover:bg-[#d0e6dd] dark:hover:bg-[#3a3a3a] transition-colors"
+              onClick={toggleTheme}
+            >
+              <span className="material-symbols-outlined text-[20px]">{darkMode ? 'light_mode' : 'dark_mode'}</span>
+            </button>
                         <button
-                            onClick={() => setShowInfoModal(true)}
-                            className="p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-                            title="Uitleg"
-                        >
-                            <HelpCircle className="w-5 h-5" />
+              aria-label="User Profile" 
+              className="flex items-center justify-center size-10 rounded-full bg-[#e7f3ef] dark:bg-[#2a2a2a] text-text-main dark:text-white hover:bg-[#d0e6dd] dark:hover:bg-[#3a3a3a] transition-colors"
+              onClick={() => window.location.href = createPageUrl('Settings')}
+            >
+              <span className="material-symbols-outlined text-[20px]">person</span>
                         </button>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <p className="text-gray-500 text-sm hidden md:block">
-                            {(() => {
-                                const formatDateStr = (d) => d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
-                                return `${formatDateStr(startDate)} - ${formatDateStr(endDate)}`;
-                            })()}
-                        </p>
-                        <Button 
-                            onClick={() => setShowBudgetPlanner(true)}
-                            className="hidden md:flex bg-green-600 hover:bg-green-700 text-white shadow-md"
-                        >
-                            <Calendar className="w-4 h-4 mr-2" />
-                            💰 Budget Plannen
-                        </Button>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-grow w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-text-main dark:text-white text-3xl md:text-4xl font-extrabold tracking-tight">Budgetplan: Maandoverzicht</h1>
+            <p className="text-text-secondary dark:text-gray-400 text-base">Jouw inkomsten en uitgaven op een rij voor {getMonthName(selectedMonth)}</p>
+          </div>
+          {/* Month Picker */}
+          <button 
+            className="group flex items-center justify-between gap-3 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] hover:border-primary/50 dark:hover:border-primary/50 text-text-main dark:text-white px-5 py-2.5 rounded-full shadow-sm hover:shadow transition-all min-w-[200px]"
+            onClick={() => {
+              const newMonth = new Date(selectedMonth);
+              newMonth.setMonth(newMonth.getMonth() + 1);
+              setSelectedMonth(newMonth);
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 group-hover:text-primary transition-colors text-[20px]">calendar_month</span>
+              <span className="font-bold text-sm">{getMonthName(selectedMonth)}</span>
                     </div>
+            <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">expand_more</span>
+          </button>
                 </div>
                 
-                {/* Mobiele Budget Planner Knop - groot en opvallend */}
-                <Button 
-                    onClick={() => setShowBudgetPlanner(true)}
-                    className="md:hidden w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg py-6 text-lg font-semibold rounded-xl"
-                >
-                    <Calendar className="w-5 h-5 mr-2" />
-                    💰 Budget Plannen
-                </Button>
-
-                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 self-start">
-                    {['Dag', 'Week', '2 Weken', 'Maand'].map((period) => (
+        {/* Tabs Section */}
+        <div className="mb-8 border-b border-gray-200 dark:border-[#2a2a2a]">
+          <div className="flex gap-8">
+            <button
+              onClick={() => setActiveTab('overzicht')}
+              className={`flex items-center justify-center border-b-[3px] pb-3 px-4 transition-colors ${
+                activeTab === 'overzicht'
+                  ? 'border-primary text-primary dark:text-primary bg-white dark:bg-[#1a1a1a] rounded-t-lg'
+                  : 'border-transparent text-text-secondary dark:text-gray-400 hover:text-text-main dark:hover:text-white'
+              }`}
+            >
+              <span className="text-base font-bold tracking-tight">Overzicht</span>
+            </button>
                         <button
-                            key={period}
-                            onClick={() => setPeriodFilter(period)}
-                            className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                                periodFilter === period 
-                                    ? 'bg-white shadow-sm text-gray-900 font-medium' 
-                                    : 'text-gray-600 hover:text-gray-900'
-                            }`}
-                        >
-                            {period}
+              onClick={() => setActiveTab('betalingsregelingen')}
+              className={`flex items-center justify-center border-b-[3px] pb-3 px-4 transition-colors ${
+                activeTab === 'betalingsregelingen'
+                  ? 'border-primary text-primary dark:text-primary bg-white dark:bg-[#1a1a1a] rounded-t-lg'
+                  : 'border-transparent text-text-secondary dark:text-gray-400 hover:text-text-main dark:hover:text-white'
+              }`}
+            >
+              <span className="text-base font-medium tracking-tight">Betalingsregelingen</span>
                         </button>
-                    ))}
                 </div>
             </div>
 
-            {/* Tab Navigation */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-4 mb-6">
-                    <TabsTrigger value="overzicht" className="flex items-center gap-2">
-                        <BarChart3 className="w-4 h-4" />
-                        <span className="hidden sm:inline">Overzicht</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="verdelen" className="flex items-center gap-2">
-                        <Sliders className="w-4 h-4" />
-                        <span className="hidden sm:inline">Verdelen</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="voortgang" className="flex items-center gap-2">
-                        <Lightbulb className="w-4 h-4" />
-                        <span className="hidden sm:inline">Voortgang</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="historie" className="flex items-center gap-2">
-                        <History className="w-4 h-4" />
-                        <span className="hidden sm:inline">Historie</span>
-                    </TabsTrigger>
-                </TabsList>
-
-                {/* Tab 1: Overzicht (existing content) */}
-                <TabsContent value="overzicht">
-
-            {/* AI Budget Planner Widget */}
-            <AIBudgetPlannerWidget 
-                income={totalIncome}
-                fixedCosts={fixedCosts}
-                variableExpenses={totalExpenses - fixedCosts}
-                currentSavings={0}
-                pots={allPots}
-                transactions={transactions}
-                goals={[]}
-            />
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-                {/* Left Column - Kasboek */}
-                <div className="lg:col-span-2">
-                    <Card className="shadow-sm">
-                        <CardHeader className="pb-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <CardTitle className="text-xl">Kasboek</CardTitle>
-                                    <p className="text-sm text-gray-500">Overzicht van je financiën</p>
+        {/* Tab Content: Overzicht */}
+        {activeTab === 'overzicht' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Left Column: Balance & Transactions */}
+            <div className="lg:col-span-8 flex flex-col gap-8">
+              {/* Main Card */}
+              <div className="bg-surface-light dark:bg-[#1a1a1a] rounded-2xl p-6 md:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]">
+                {/* Balance Section */}
+                <div className="mb-10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="material-symbols-outlined text-primary text-[24px]">account_balance_wallet</span>
+                    <h2 className="text-text-main dark:text-white text-xl font-bold">Huidig Saldo</h2>
                                 </div>
-                                <Button 
-                                    className="bg-gray-900 hover:bg-gray-800 text-white"
-                                    onClick={() => setShowAddModal(true)}
-                                >
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Toevoegen
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            {/* Summary Row */}
-                            <div className="grid grid-cols-3 gap-4 mb-6">
-                                <div className="bg-gray-50 rounded-xl p-4">
-                                    <p className="text-xs text-gray-500 mb-1">Inkomsten</p>
-                                    <p className="text-xl font-bold text-green-600">
-                                        € {totalIncome.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
-                                    </p>
-                                </div>
-                                <div className="bg-gray-50 rounded-xl p-4">
-                                    <p className="text-xs text-gray-500 mb-1">Uitgaven</p>
-                                    <p className="text-xl font-bold text-red-600">
-                                        € {totalExpenses.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
-                                    </p>
-                                    <div className="text-xs text-gray-500 mt-1 space-y-0.5">
-                                        <div className="flex justify-between">
-                                            <span>Vaste lasten:</span>
-                                            <span>€{(fixedCosts - debtPayments).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}</span>
-                                        </div>
-                                        {debtPayments > 0 && (
-                                            <div className="flex justify-between">
-                                                <span>Regelingen:</span>
-                                                <span>€{debtPayments.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="bg-gray-50 rounded-xl p-4">
-                                    <p className="text-xs text-gray-500 mb-1">Saldo</p>
-                                    <p className={`text-xl font-bold ${saldo >= 0 ? 'text-gray-900' : 'text-red-600'}`}>
-                                        € {saldo.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
-                                    </p>
+                  <div className="flex flex-col sm:flex-row sm:items-end gap-2 sm:gap-4">
+                    <span className={`text-5xl md:text-6xl font-extrabold tracking-tight ${saldo >= 0 ? 'text-primary' : 'text-red-500'}`}>
+                      {formatCurrency(saldo)}
+                    </span>
+                    <span className="text-text-secondary dark:text-gray-400 text-sm pb-2 font-medium">Beschikbaar na vaste lasten en potjes</span>
                                 </div>
                             </div>
 
-                            {/* Transaction Tabs */}
-                            <div>
-                                <div className="grid grid-cols-2 gap-2 mb-4">
-                                    {[
-                                        { key: 'inkomsten', label: 'Inkomsten', count: transactions.filter(t => t.type === 'income').length },
-                                        { key: 'uitgaven', label: 'Uitgaven', count: transactions.filter(t => t.type === 'expense').length }
-                                    ].map((tab) => (
+                {/* Filter & Search Toolbar */}
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                  <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                    {['Alles', 'Inkomsten', 'Uitgaven'].map((filter) => (
                                         <button
-                                            key={tab.key}
-                                            onClick={() => setTransactionTab(tab.key)}
-                                            className={`py-3 text-sm font-medium rounded-full transition-colors ${
-                                                transactionTab === tab.key
-                                                    ? 'bg-gray-900 text-white'
-                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                            }`}
-                                        >
-                                            {tab.label} ({tab.count})
+                        key={filter}
+                        onClick={() => setTransactionFilter(filter)}
+                        className={`flex h-9 items-center px-5 rounded-full text-sm font-bold shadow-sm transition-transform active:scale-95 whitespace-nowrap ${
+                          transactionFilter === filter
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-100 dark:bg-[#2a2a2a] text-text-secondary dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-[#3a3a3a] hover:text-text-main dark:hover:text-white'
+                        }`}
+                      >
+                        {filter}
                                         </button>
                                     ))}
                                 </div>
-                                <div className="space-y-1 max-h-[400px] overflow-y-auto">
-                                    {transactions
-                                        .filter(tx => {
-                                            if (transactionTab === 'inkomsten') return tx.type === 'income';
-                                            if (transactionTab === 'uitgaven') return tx.type === 'expense';
-                                            return true;
-                                        })
-                                        .map((tx) => {
-                                        const Icon = tx.icon;
+                  <div className="relative w-full md:w-auto">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 material-symbols-outlined text-[20px]">search</span>
+                    <input 
+                      className="w-full md:w-64 pl-10 pr-4 py-2 rounded-full border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#2a2a2a] text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-text-main dark:text-white" 
+                      placeholder="Zoek transacties..." 
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Transactions List */}
+                <div className="flex flex-col gap-4">
+                  <h3 className="text-text-main dark:text-white text-lg font-bold mb-2">Overzicht transacties</h3>
+                  {filteredTransactions.length === 0 ? (
+                    <div className="text-center py-8 text-text-secondary dark:text-gray-400">
+                      <p>Geen transacties gevonden</p>
+                    </div>
+                  ) : (
+                    filteredTransactions.map((tx) => {
+                      const isIncome = tx.type === 'income';
+                      const categoryColor = getCategoryColor(tx.category, tx.type);
+                      const icon = getCategoryIcon(tx.category);
+                      
                                         return (
                                             <div 
                                                 key={tx.id}
-                                                className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                                                        <Icon className="w-4 h-4 text-gray-600" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-medium text-gray-900 text-sm">{tx.description}</p>
-                                                        <p className="text-xs text-gray-500">
-                                                            {tx.category} · {formatDate(tx.date)}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <p className={`font-semibold ${tx.type === 'income' ? 'text-green-600' : 'text-gray-900'}`}>
-                                                    {tx.type === 'income' ? '+' : '−'}€ {tx.amount.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
-                                                </p>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Right Column */}
-                <div className="space-y-6">
-                    {/* Bon Scanner */}
-                    <Card className="shadow-sm">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base flex items-center gap-2">
-                                📷 Bon Scanner
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
+                          className="flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-[#222] transition-colors border border-transparent hover:border-gray-100 dark:hover:border-[#2a2a2a] group"
+                        >
+                          <div className="flex items-center gap-4">
                             <div 
-                                className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center cursor-pointer hover:border-gray-400 hover:bg-gray-50 transition-colors"
-                                onClick={() => setShowScanModal(true)}
+                              className="size-10 rounded-full flex items-center justify-center transition-colors group-hover:scale-110"
+                              style={{
+                                backgroundColor: isIncome ? `${categoryColor}1a` : `${categoryColor}1a`,
+                                color: categoryColor
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = categoryColor;
+                                e.currentTarget.style.color = 'white';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = `${categoryColor}1a`;
+                                e.currentTarget.style.color = categoryColor;
+                              }}
                             >
-                                <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                <p className="text-sm text-gray-500 mb-3">Scan een bon en koppel aan potje</p>
-                                <Button variant="outline" className="bg-gray-100 border-0 hover:bg-gray-200">
-                                    <Upload className="w-4 h-4 mr-2" />
-                                    Selecteer of maak foto
-                                </Button>
+                              <span className="material-symbols-outlined">{icon}</span>
                             </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Uitgaven per Potje */}
-                    <Card className="shadow-sm">
-                        <CardHeader className="pb-3">
-                            <CardTitle className="text-base">Budgetverdeling</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-3">
-                                {potBreakdown.length === 0 ? (
-                                    <p className="text-sm text-gray-500 text-center py-2">Geen potjes gevonden</p>
-                                ) : (
-                                    potBreakdown.map((pot) => {
-                                        const budgetPercentage = totalIncome > 0 ? Math.round((pot.budget / totalIncome) * 100) : 0;
-                                        const spentPercentage = pot.budget > 0 ? Math.round((pot.amount / pot.budget) * 100) : 0;
-                                        return (
-                                            <div key={pot.name} className="space-y-1">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-lg">{pot.icon}</span>
-                                                        <span className="text-sm text-gray-700">{pot.name}</span>
+                            <div className="flex flex-col">
+                              <span className="text-text-main dark:text-white font-bold text-sm md:text-base">{tx.description}</span>
+                              <span className="text-text-secondary dark:text-gray-400 text-xs md:text-sm">{tx.category}</span>
                                                     </div>
-                                                    <span className="text-xs text-gray-500">{budgetPercentage}% van inkomen</span>
                                                 </div>
-                                                <div className="w-full bg-gray-100 rounded-full h-2">
-                                                    <div 
-                                                        className={`h-2 rounded-full transition-all ${spentPercentage > 100 ? 'bg-red-500' : spentPercentage > 80 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                                                        style={{ width: `${Math.min(spentPercentage, 100)}%` }}
-                                                    />
-                                                </div>
-                                                <div className="flex justify-between text-xs text-gray-500">
-                                                    <span>€{pot.amount.toFixed(0)} uitgegeven</span>
-                                                    <span>€{pot.budget.toFixed(0)} budget</span>
+                          <div className="text-right">
+                            <p 
+                              className="font-bold text-sm md:text-base"
+                              style={{ color: categoryColor }}
+                            >
+                              {isIncome ? '+' : '-'}{formatCurrency(tx.amount)}
+                            </p>
+                            <p className="text-gray-400 dark:text-gray-500 text-xs md:text-sm">{formatDate(tx.date)}</p>
                                                 </div>
                                             </div>
                                         );
                                     })
                                 )}
                             </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Smart Suggestions */}
-                    <SmartSuggestions 
-                        userEmail={user?.email} 
-                        totalIncome={totalIncome} 
-                    />
                 </div>
             </div>
 
-            {/* Budget Overzicht Card - onderaan en inklapbaar */}
-            <BudgetOverviewCard 
-                userEmail={user?.email}
-                onPlanBudget={() => setShowBudgetPlanner(true)}
-                onRefresh={setBudgetOverviewRefresh}
-            />
-
-            {/* Uitgeleende Leningen Widget */}
-            <LentLoansWidget userEmail={user?.email} />
-
-                </TabsContent>
-
-                {/* Tab 2: Budget Verdelen */}
-                <TabsContent value="verdelen">
-                    <div className="space-y-6">
-                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                            <h3 className="font-semibold text-blue-900 mb-1">📊 Leer Budgetteren</h3>
-                            <p className="text-sm text-blue-800">
-                                Hier kun je je beschikbare geld verdelen over je potjes. 
-                                Sleep de schuifjes om te bepalen hoeveel je aan elke categorie wilt besteden.
-                                Probeer je budget zo te verdelen dat je aan het eind van de maand geld overhoudt!
-                            </p>
+            {/* Right Column: Spending Categories (Widget) */}
+            <div className="lg:col-span-4">
+              <div className="bg-surface-light dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] sticky top-24">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-text-main dark:text-white text-lg font-bold">Uitgaven per Categorie</h3>
+                  <span className="text-xs font-bold bg-gray-100 dark:bg-[#2a2a2a] text-text-secondary dark:text-gray-400 px-2 py-1 rounded">
+                    {totalIncome > 0 ? Math.round((totalExpenses / totalIncome) * 100) : 0}% van Budget
+                  </span>
+                </div>
+                <div className="flex flex-col gap-6">
+                  {potBreakdown.map((category) => {
+                    const percentage = totalExpenses > 0 ? Math.round((category.amount / totalExpenses) * 100) : 0;
+                    const icon = getCategoryIcon(category.name);
+                    
+                    return (
+                      <div key={category.name} className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2 text-text-main dark:text-white font-bold">
+                            <span className="material-symbols-outlined text-[18px]" style={{ color: category.color }}>{icon}</span>
+                            {category.name}
+                          </div>
+                          <span className="font-bold">{formatCurrency(category.amount)}</span>
                         </div>
-                        
-                        <BudgetAllocationSliders
-                            availableForPots={availableForPots}
-                            totalIncome={totalIncome}
-                            fixedCosts={fixedCosts}
-                            userEmail={user?.email}
-                            onUpdate={loadData}
-                        />
-                    </div>
-                </TabsContent>
-
-                {/* Tab 3: Voortgang per Potje */}
-                <TabsContent value="voortgang">
-                    <div className="space-y-6">
-                        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                            <h3 className="font-semibold text-green-900 mb-1">📈 Realtime Feedback</h3>
-                            <p className="text-sm text-green-800">
-                                Hier zie je precies hoeveel je hebt uitgegeven per potje en hoeveel je nog over hebt.
-                                Groen = goed op schema, Geel = bijna op, Rood = over budget.
-                            </p>
+                        <div className="w-full bg-gray-100 dark:bg-[#333] rounded-full h-2">
+                          <div 
+                            className="h-2 rounded-full"
+                            style={{ width: `${percentage}%`, backgroundColor: category.color }}
+                          ></div>
                         </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-                        <PotProgressCards
-                            userEmail={user?.email}
-                            periodStart={startDate}
-                            periodEnd={endDate}
-                        />
-
-                        {/* Smart Suggestions */}
-                        <SmartSuggestions 
-                            userEmail={user?.email} 
-                            totalIncome={totalIncome} 
-                        />
+        {/* Tab Content: Betalingsregelingen */}
+        {activeTab === 'betalingsregelingen' && (
+          <div className="bg-surface-light dark:bg-[#1a1a1a] rounded-2xl p-6 md:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]">
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+              <div>
+                <h2 className="text-text-main dark:text-white text-2xl font-bold mb-1">Jouw Betalingsregelingen</h2>
+                <p className="text-text-secondary dark:text-gray-400 text-sm">Overzicht van al je actieve en afgeronde betalingsregelingen.</p>
+              </div>
+              <button 
+                className="flex items-center gap-2 bg-primary hover:bg-emerald-600 text-white px-5 py-2.5 rounded-full font-bold text-sm transition-colors shadow-sm"
+                onClick={() => window.location.href = createPageUrl('debts')}
+              >
+                <span className="material-symbols-outlined text-[20px]">add</span>
+                Nieuwe Betalingsregeling
+              </button>
                     </div>
-                </TabsContent>
-
-                {/* Tab 4: Historisch Overzicht */}
-                <TabsContent value="historie">
-                    <div className="space-y-6">
-                        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
-                            <h3 className="font-semibold text-purple-900 mb-1">📚 Leer van je Verleden</h3>
-                            <p className="text-sm text-purple-800">
-                                Bekijk hoe je bestedingspatroon zich ontwikkelt over de maanden. 
-                                Zo kun je zien waar je verbetert en waar nog ruimte is voor groei.
-                            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[600px]">
+                <thead>
+                  <tr className="border-b border-gray-100 dark:border-[#2a2a2a]">
+                    <th className="py-3 px-2 text-xs font-bold text-text-secondary dark:text-gray-400 uppercase tracking-wider">Schuldeiser</th>
+                    <th className="py-3 px-2 text-xs font-bold text-text-secondary dark:text-gray-400 uppercase tracking-wider">Bedrag</th>
+                    <th className="py-3 px-2 text-xs font-bold text-text-secondary dark:text-gray-400 uppercase tracking-wider">Maandelijks</th>
+                    <th className="py-3 px-2 text-xs font-bold text-text-secondary dark:text-gray-400 uppercase tracking-wider">Volgende Betaaldag</th>
+                    <th className="py-3 px-2 text-xs font-bold text-text-secondary dark:text-gray-400 uppercase tracking-wider">Status</th>
+                    <th className="py-3 px-2 text-xs font-bold text-text-secondary dark:text-gray-400 uppercase tracking-wider text-right">Acties</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  {debts.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="py-8 text-center text-text-secondary dark:text-gray-400">
+                        Geen betalingsregelingen gevonden
+                      </td>
+                    </tr>
+                  ) : (
+                    debts.map((debt) => {
+                      const nextPayment = debt.payment_plan_date ? new Date(debt.payment_plan_date) : null;
+                      const isActive = debt.status === 'betalingsregeling';
+                      
+                      return (
+                        <tr key={debt.id} className="border-b border-gray-50 dark:border-[#222] hover:bg-gray-50/50 dark:hover:bg-[#222] transition-colors">
+                          <td className="py-4 px-2 font-bold text-text-main dark:text-white">{debt.creditor_name}</td>
+                          <td className="py-4 px-2 text-text-secondary dark:text-gray-400">{formatCurrency(parseFloat(debt.total_amount) || 0)}</td>
+                          <td className="py-4 px-2 text-text-main dark:text-white font-medium">{formatCurrency(parseFloat(debt.monthly_payment) || 0)}</td>
+                          <td className="py-4 px-2 text-text-secondary dark:text-gray-400">
+                            {nextPayment ? formatDate(nextPayment.toISOString()) : '-'}
+                          </td>
+                          <td className="py-4 px-2">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                              isActive 
+                                ? 'bg-green-100 dark:bg-green-500/20 text-green-800 dark:text-green-400'
+                                : 'bg-gray-100 dark:bg-gray-500/20 text-gray-600 dark:text-gray-400'
+                            }`}>
+                              {isActive ? 'Actief' : 'Afgerond'}
+                            </span>
+                          </td>
+                          <td className="py-4 px-2 text-right">
+                            <a 
+                              className="text-primary hover:text-emerald-700 dark:hover:text-emerald-400 font-bold text-sm hover:underline" 
+                              href={createPageUrl('debts')}
+                            >
+                              Details
+                            </a>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
                         </div>
-
-                        <BudgetHistory userEmail={user?.email} />
                     </div>
-                </TabsContent>
-            </Tabs>
+        )}
+      </main>
 
+      {/* Add Transaction Modal */}
             <AddTransactionModal
                 isOpen={showAddModal}
                 onClose={() => setShowAddModal(false)}
                 onSuccess={() => loadData()}
                 userEmail={user?.email}
             />
-
-            <BudgetInfoModal
-                isOpen={showInfoModal}
-                onClose={() => setShowInfoModal(false)}
-            />
-
-            <MonthlyBudgetPlanner
-                isOpen={showBudgetPlanner}
-                onClose={() => setShowBudgetPlanner(false)}
-                user={user}
-                onBudgetSet={(budgetData) => {
-                    console.log('📋 Budget ingesteld, refreshing overview...');
-                    // Refresh budget overview
-                    if (budgetOverviewRefresh) {
-                        console.log('🔄 Calling budgetOverviewRefresh...');
-                        budgetOverviewRefresh();
-                    } else {
-                        console.warn('⚠️ budgetOverviewRefresh is not set!');
-                    }
-
-                    toast({ 
-                        title: '✅ Budget ingesteld!', 
-                        description: `Je hebt €${budgetData.availableMoney?.toFixed(2)} verdeeld over je potjes.`
-                    });
-                }}
-            />
-
-            {/* Bon Scan Modal */}
-            <Dialog open={showScanModal} onOpenChange={(open) => {
-                setShowScanModal(open);
-                if (!open) {
-                    setScannedData(null);
-                    setScanning(false);
-                }
-            }}>
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                            📷 Bon Scannen
-                        </DialogTitle>
-                    </DialogHeader>
-
-                    {!scannedData ? (
-                        <div className="space-y-4 py-4">
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                <p className="text-sm text-blue-800">
-                                    Upload een foto van je kassabon. De AI leest automatisch de winkel, het bedrag en de datum.
-                                </p>
-                            </div>
-
-                            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
-                                {scanning ? (
-                                    <div className="space-y-3">
-                                        <Loader2 className="w-10 h-10 text-gray-400 mx-auto animate-spin" />
-                                        <p className="text-sm text-gray-600">Bon wordt verwerkt...</p>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <Camera className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                                        <p className="text-gray-600 mb-4">Upload een foto van je bon</p>
-                                        
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            capture="environment"
-                                            className="hidden"
-                                            id="bon-upload-budget"
-                                            onChange={async (e) => {
-                                                const file = e.target.files?.[0];
-                                                if (!file) return;
-                                                
-                                                setScanning(true);
-                                                try {
-                                                    const uploadResult = await base44.integrations.Core.UploadFile({ file });
-                                                    
-                                                    const extractResult = await base44.integrations.Core.ExtractDataFromUploadedFile({
-                                                        file_url: uploadResult.file_url,
-                                                        json_schema: {
-                                                            type: "object",
-                                                            properties: {
-                                                                merchant: { type: "string", description: "Naam van de winkel" },
-                                                                date: { type: "string", description: "Datum van aankoop (YYYY-MM-DD)" },
-                                                                total: { type: "number", description: "Totaalbedrag" }
-                                                            }
-                                                        }
-                                                    });
-                                                    
-                                                    if (extractResult.status === 'success' && extractResult.output) {
-                                                        setScannedData({
-                                                            merchant: extractResult.output.merchant || 'Gescande bon',
-                                                            date: extractResult.output.date || new Date().toISOString().split('T')[0],
-                                                            amount: extractResult.output.total || 0,
-                                                            selectedPot: ''
-                                                        });
-                                                    } else {
-                                                        throw new Error('Kon bon niet lezen');
-                                                    }
-                                                } catch (error) {
-                                                    console.error('Scan error:', error);
-                                                    toast({ 
-                                                        title: '❌ Fout bij scannen', 
-                                                        description: error.message,
-                                                        variant: 'destructive' 
-                                                    });
-                                                    setScanning(false);
-                                                }
-                                            }}
-                                        />
-                                        
-                                        <label htmlFor="bon-upload-budget">
-                                            <Button type="button" className="bg-[#386641] hover:bg-[#2A4B30]" asChild>
-                                                <span className="cursor-pointer">
-                                                    <Camera className="w-4 h-4 mr-2" />
-                                                    Maak foto / Upload
-                                                </span>
-                                            </Button>
-                                        </label>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="space-y-4 py-4">
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                                <p className="text-sm text-green-800">
-                                    ✅ Bon gescand! Controleer de gegevens en kies een potje.
-                                </p>
-                            </div>
-
-                            <div className="space-y-3">
-                                <div>
-                                    <Label>Winkel / Beschrijving</Label>
-                                    <Input
-                                        value={scannedData.merchant}
-                                        onChange={(e) => setScannedData({...scannedData, merchant: e.target.value})}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <Label>Bedrag (€)</Label>
-                                        <Input
-                                            type="number"
-                                            step="0.01"
-                                            value={scannedData.amount}
-                                            onChange={(e) => setScannedData({...scannedData, amount: parseFloat(e.target.value) || 0})}
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label>Datum</Label>
-                                        <Input
-                                            type="date"
-                                            value={scannedData.date}
-                                            onChange={(e) => setScannedData({...scannedData, date: e.target.value})}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <Label>🏺 Koppel aan potje</Label>
-                                    <Select 
-                                        value={scannedData.selectedPot} 
-                                        onValueChange={(value) => setScannedData({...scannedData, selectedPot: value})}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Kies een potje..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="geen">Geen potje (algemene uitgave)</SelectItem>
-                                            {allPots.map(pot => (
-                                                <SelectItem key={pot.id} value={pot.id}>
-                                                    {pot.icon} {pot.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Door een potje te kiezen wordt de uitgave automatisch bijgehouden
-                                    </p>
-                                </div>
-                            </div>
-
-                            <DialogFooter className="gap-2">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        setScannedData(null);
-                                        setScanning(false);
-                                    }}
-                                >
-                                    Opnieuw scannen
-                                </Button>
-                                <Button
-                                    className="bg-[#386641] hover:bg-[#2A4B30]"
-                                    onClick={async () => {
-                                        try {
-                                            // Create transaction
-                                            await Transaction.create({
-                                                type: 'expense',
-                                                amount: scannedData.amount,
-                                                category: scannedData.selectedPot && scannedData.selectedPot !== 'geen' 
-                                                    ? allPots.find(p => p.id === scannedData.selectedPot)?.name || 'Overig'
-                                                    : 'Overig',
-                                                description: scannedData.merchant,
-                                                date: scannedData.date
-                                            });
-
-                                            // Update pot spent amount if linked
-                                            if (scannedData.selectedPot && scannedData.selectedPot !== 'geen') {
-                                                const pot = allPots.find(p => p.id === scannedData.selectedPot);
-                                                if (pot) {
-                                                    await Pot.update(pot.id, {
-                                                        spent: (parseFloat(pot.spent) || 0) + scannedData.amount
-                                                    });
-                                                }
-                                            }
-
-                                            toast({ 
-                                                title: '✅ Uitgave opgeslagen!', 
-                                                description: scannedData.selectedPot && scannedData.selectedPot !== 'geen'
-                                                    ? `Gekoppeld aan ${allPots.find(p => p.id === scannedData.selectedPot)?.name}`
-                                                    : 'Als algemene uitgave'
-                                            });
-
-                                            setShowScanModal(false);
-                                            setScannedData(null);
-                                            loadData();
-                                        } catch (error) {
-                                            console.error('Error saving:', error);
-                                            toast({ 
-                                                title: '❌ Fout bij opslaan', 
-                                                description: error.message,
-                                                variant: 'destructive' 
-                                            });
-                                        }
-                                    }}
-                                >
-                                    💾 Opslaan
-                                </Button>
-                            </DialogFooter>
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }
