@@ -10,6 +10,8 @@ import VTLBCalculator from "./VTLBCalculator";
 
 import onboarding from "./onboarding";
 
+import OnboardingNew from "./OnboardingNew";
+
 import Dashboard from "./Dashboard";
 
 import Settings from "./Settings";
@@ -185,7 +187,9 @@ function PagesContent() {
                 
                 <Route path="/VTLBCalculator" element={<VTLBCalculator />} />
                 
-                <Route path="/onboarding" element={<onboarding />} />
+                <Route path="/onboarding" element={<OnboardingNew />} />
+                
+                <Route path="/onboarding-new" element={<OnboardingNew />} />
                 
                 <Route path="/Dashboard" element={<Dashboard />} />
                 
