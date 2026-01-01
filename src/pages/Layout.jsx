@@ -211,20 +211,19 @@ function LayoutWithProvider({ children, currentPageName }) {
   }, [showConfirmModal, user]);
 
   React.useEffect(() => {
+    // Skip auth check on auth pages (login, signup, onboarding)
+    if (isAuthPage) {
+      setCheckingOnboarding(false);
+      return;
+    }
+
     const loadInitialUser = async () => {
       try {
         const userData = await User.me();
         
         if (!userData) {
-          console.log('No authenticated user: Auth session missing!');
-          // Redirect to login if not logged in
-          const currentPath = window.location.pathname;
-          if (currentPath !== '/login' && currentPath !== '/onboarding' && !currentPath.includes('login') && !currentPath.includes('onboarding')) {
-            window.location.href = '/login';
-            return;
-          }
-          setUser(null);
-          setCheckingOnboarding(false);
+          // Redirect to login if not logged in (only log if not on auth pages)
+          window.location.href = '/login';
           return;
         }
         
