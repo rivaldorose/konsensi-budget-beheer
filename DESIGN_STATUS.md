@@ -150,7 +150,13 @@
 - ❌ **AflossingsOverzicht.jsx** - Verwijderd
 
 ### Tools & Calculators
-- ⚠️ **VTLBCalculator.jsx** - Oud design, nog niet geüpdatet
+- ✅ **VTLBCalculator.jsx** - Volledig nieuw design met:
+  - Dark/light mode toggle
+  - Inkomsten sectie (vast inkomen + geprojecteerd inkomen)
+  - Uitgaven sectie (vaste lasten + betalingsregelingen)
+  - Woonsituatie sectie (type huishouden, aantal kinderen, huur/hypotheek)
+  - Live berekening van afloscapaciteit
+  - Opslaan functionaliteit
 - ⚠️ **AdempauzeCalculator.jsx** - Oud design, nog niet geüpdatet
 - ⚠️ **VasteLastenCheck.jsx** - Oud design, nog niet geüpdatet
 
@@ -185,7 +191,7 @@
 
 ## 📊 Samenvatting
 
-### Nieuw Design: **28 pagina's** ✅
+### Nieuw Design: **29 pagina's** ✅
 1. Login
 2. SignUp
 3. ForgotPassword
@@ -210,13 +216,14 @@
 22. HelpSupport
 23. VTLBSettings (VTLB Berekening)
 24. CentVoorCent (Maandelijkse Reflectie)
-25. Layout (sidebar verwijderd)
-26. DebtDetailsModal (component)
-27. + 8 nieuwe dashboard components
+25. VTLBCalculator (Afloscapaciteit Calculator)
+26. Layout (sidebar verwijderd)
+27. DebtDetailsModal (component)
+28. + 8 nieuwe dashboard components
 
-### Oud Design: **~15 pagina's** ⚠️
+### Oud Design: **~14 pagina's** ⚠️
 - Financial management (1 pagina)
-- Tools & calculators (3 pagina's)
+- Tools & calculators (2 pagina's)
 - Settings (1 pagina)
 - Help & support (3 pagina's)
 - Admin (3 pagina's)
@@ -240,7 +247,7 @@
 ## 🎯 Volgende Stappen (Suggesties)
 
 1. **Prioriteit 1**: Financial pages (BudgetPlan)
-2. **Prioriteit 2**: Tools & Calculators (VTLBCalculator, AdempauzeCalculator, VasteLastenCheck)
+2. **Prioriteit 2**: Tools & Calculators (AdempauzeCalculator, VasteLastenCheck)
 3. **Prioriteit 3**: Help & Support pages (FAQ, Feedback)
 4. **Prioriteit 4**: Admin pages
 5. **Prioriteit 5**: Other pages (BankConnections, Wishlist)
