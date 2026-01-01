@@ -161,7 +161,7 @@ export default function SignUp() {
   };
 
   return (
-    <div className="flex h-screen w-full flex-col lg:flex-row bg-white dark:bg-background-dark overflow-hidden">
+    <div className="flex min-h-screen w-full flex-col lg:flex-row bg-white dark:bg-background-dark">
       {/* LEFT SIDE: Form Section */}
       <div className="relative flex w-full lg:w-1/2 flex-col justify-center overflow-y-auto bg-white dark:bg-[#0a0a0a] shadow-subtle px-6 py-10 lg:px-20 lg:py-16 z-10">
         {/* Theme Toggle */}
@@ -188,12 +188,12 @@ export default function SignUp() {
 
         <div className="mx-auto w-full max-w-[480px] animate-fade-in">
           {/* Logo */}
-          <div className="mb-12 flex items-center gap-3">
-            <span className="material-symbols-outlined text-brand-dark dark:text-white" style={{ fontSize: '24px' }}>forest</span>
-            <div className="flex items-baseline gap-2">
-              <span className="font-display font-bold text-2xl text-brand-dark dark:text-white tracking-tight">KONSENSI</span>
-              <span className="font-body text-sm text-primary font-normal">Budgetbeheer</span>
-            </div>
+          <div className="mb-12 flex items-center">
+            <img 
+              src="/logo.png" 
+              alt="Konsensi Logo" 
+              className="h-20 w-auto"
+            />
           </div>
 
           {/* Header */}
@@ -401,31 +401,17 @@ export default function SignUp() {
         {/* Decorative Elements */}
         <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] z-0 pointer-events-none"></div>
         {/* Floating shapes */}
-        <div className="absolute top-20 left-20 w-32 h-32 rounded-full bg-white opacity-5 blur-2xl animate-pulse"></div>
         <div className="absolute bottom-40 right-20 w-48 h-48 rounded-full bg-[#10B981] opacity-20 blur-3xl"></div>
         
         {/* Content Container */}
-        <div className="relative z-10 flex flex-col items-center max-w-[520px]">
+        <div className="relative z-10 flex flex-col items-center justify-center max-w-[520px]">
           {/* Illustration */}
-          <div className="mb-12 relative w-full max-w-[400px]">
+          <div className="relative w-full max-w-[400px]">
             <img
               className="w-full drop-shadow-2xl object-contain bg-transparent"
               alt="Konsensi Sign Up Illustration"
               src="/sign up.png"
             />
-          </div>
-          
-          {/* Testimonial Card */}
-          <div className="w-full rounded-2xl bg-white/95 dark:bg-white/10 backdrop-blur-md border border-white/30 dark:border-white/20 p-8 shadow-card relative">
-            <span className="material-symbols-outlined absolute top-6 left-6 text-primary opacity-80" style={{ fontSize: '32px' }}>format_quote</span>
-            <div className="pl-8">
-              <p className="font-body text-lg leading-relaxed text-gray-800 dark:text-white italic">
-                "In 5 minuten had ik volledig inzicht in mijn uitgaven! Het heeft me echt geholpen om te sparen voor mijn eerste huis."
-              </p>
-              <p className="mt-4 font-body text-sm font-semibold text-gray-600 dark:text-white/80">
-                — Mark, 28 jaar
-              </p>
-            </div>
           </div>
         </div>
       </div>
