@@ -33,11 +33,6 @@ export default function Login() {
   }, [darkMode]);
 
   useEffect(() => {
-    // #region agent log
-    const imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuBZeKZgV15zBY8Hdko-SRWsy-DaMW6QgpEhp70TwjiWKIH4k6eQLCV8B5np6o-_kUVA9h2po7jELVbWid2sUjpLU9F2Y0gVpD25c4ItWrZBMrPxSPSB-lp5oYwrnUw-VXDHDlA0x_ge4Kd052I-padhP77b_oGonwzx0qXJgZburTji5RfUA-FQFYKvjXRxjxE1_Qi076Jj2MLk6yZLUUPKOaIsoMgnjmPkFvP4LehskmRvmUF6vJZsGChFd09PYbNPnZhQ2Xp-UQk";
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:35',message:'Login component mounted - image URL in code',data:{imageUrlPrefix:imageUrl.substring(0,80)+'...',urlLength:imageUrl.length,pathname:window.location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-    
     // Check if user is already logged in
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -139,7 +134,11 @@ export default function Login() {
         <div className="mx-auto flex w-full max-w-[480px] flex-col">
           {/* Logo */}
           <div className="mb-12 flex items-center gap-3">
-            <span className="material-symbols-outlined text-[28px] text-brand-dark dark:text-primary">forest</span>
+            <img 
+              src="/logo.png" 
+              alt="Konsensi Logo" 
+              className="h-10 w-auto"
+            />
             <div className="flex flex-col leading-none">
               <span className="font-heading text-2xl font-bold tracking-tight text-brand-dark dark:text-white">KONSENSI</span>
               <span className="text-sm font-medium tracking-wide text-primary uppercase">Budgetbeheer</span>
@@ -285,29 +284,7 @@ export default function Login() {
             <img
               alt="Konsensi Financial Illustration"
               className="h-auto w-full max-w-[450px] drop-shadow-2xl rounded-2xl object-contain bg-transparent"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZeKZgV15zBY8Hdko-SRWsy-DaMW6QgpEhp70TwjiWKIH4k6eQLCV8B5np6o-_kUVA9h2po7jELVbWid2sUjpLU9F2Y0gVpD25c4ItWrZBMrPxSPSB-lp5oYwrnUw-VXDHDlA0x_ge4Kd052I-padhP77b_oGonwzx0qXJgZburTji5RfUA-FQFYKvjXRxjxE1_Qi076Jj2MLk6yZLUUPKOaIsoMgnjmPkFvP4LehskmRvmUF6vJZsGChFd09PYbNPnZhQ2Xp-UQk?v=2"
-              onLoad={(e) => {
-                // #region agent log
-                fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:284',message:'Image loaded successfully',data:{src:e.target.src,width:e.target.naturalWidth,height:e.target.naturalHeight,computedDisplay:window.getComputedStyle(e.target).display,computedVisibility:window.getComputedStyle(e.target).visibility,computedOpacity:window.getComputedStyle(e.target).opacity},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-                // #endregion
-              }}
-              onError={(e) => {
-                // #region agent log
-                fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:292',message:'Image failed to load',data:{src:e.target.src,error:'Image load error'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-                // #endregion
-                console.error('Image failed to load', e);
-              }}
-              ref={(img) => {
-                if (img) {
-                  // #region agent log
-                  setTimeout(() => {
-                    const styles = window.getComputedStyle(img);
-                    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:301',message:'Image ref - initial state',data:{src:img.src,srcUrl:img.currentSrc||img.src,complete:img.complete,naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,display:styles.display,visibility:styles.visibility,opacity:styles.opacity,width:styles.width,height:styles.height,parentDisplay:window.getComputedStyle(img.parentElement).display},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-                  }, 100);
-                  // #endregion
-                }
-              }}
-              style={{ display: 'block' }}
+              src="/login .png"
             />
           </div>
 
