@@ -6,8 +6,6 @@ import CentVoorCent from "./CentVoorCent";
 
 import VTLBCalculator from "./VTLBCalculator";
 
-import onboarding from "./onboarding";
-
 import OnboardingNew from "./OnboardingNew";
 
 import TermsOfService from "./TermsOfService";
@@ -77,8 +75,6 @@ const PAGES = {
     CentVoorCent: CentVoorCent,
     
     VTLBCalculator: VTLBCalculator,
-    
-    onboarding: onboarding,
     
     Dashboard: Dashboard,
     

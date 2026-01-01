@@ -201,7 +201,7 @@
 - ❌ **BankConnections.jsx** - Verwijderd
 - ❌ **bank-connected.jsx** - Verwijderd
 - ⚠️ **Wishlist.jsx** - Oud design, nog niet geüpdatet
-- ⚠️ **onboarding.jsx** - Oud onboarding (wordt vervangen door OnboardingNew.jsx)
+- ❌ **onboarding.jsx** - Verwijderd (vervangen door OnboardingNew.jsx)
 - ❌ **Expenses.jsx** - Verwijderd (vervangen door MaandelijkseLasten.jsx)
 
 ---
@@ -240,13 +240,13 @@
 27. DebtDetailsModal (component)
 28. + 8 nieuwe dashboard components
 
-### Oud Design: **~9 pagina's** ⚠️
+### Oud Design: **~8 pagina's** ⚠️
 - Financial management (1 pagina)
 - Tools & calculators (0 pagina's)
 - Settings (1 pagina)
 - Help & support (3 pagina's)
 - Admin (2 pagina's)
-- Other (2 pagina's)
+- Other (1 pagina)
 
 ### Features Geïmplementeerd:
 - ✅ Dark/Light mode toggle op alle nieuwe pagina's
