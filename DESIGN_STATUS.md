@@ -166,7 +166,16 @@
   - Live berekening van beslagvrije voet
   - Resultaat sectie met eligibility check
   - Activeer adempauze functionaliteit
-- ⚠️ **VasteLastenCheck.jsx** - Oud design, nog niet geüpdatet
+- ✅ **VasteLastenCheck.jsx** - Volledig nieuw design met:
+  - Dark/light mode toggle
+  - Vaste lasten check card met betaling die vandaag verschuldigd is
+  - Twee actie buttons: "Ja, betaald" en "Nee, niet betaald"
+  - Modal voor wanneer je niet kunt betalen met:
+    - Waarschuwing banner
+    - Financiële overzicht (volgend inkomen, andere uitgaven, beschikbaar bedrag)
+    - Oplossingen: gebruik potje, gebruik reserve, verzoek om uitstel
+    - Link naar budgetplan aanpassen
+    - Bevestig oplossing functionaliteit
 
 ### Settings & Configuration
 - ❌ **LanguageSettings.jsx** - Verwijderd (functionaliteit nu in DisplaySettings.jsx)
@@ -199,7 +208,7 @@
 
 ## 📊 Samenvatting
 
-### Nieuw Design: **30 pagina's** ✅
+### Nieuw Design: **31 pagina's** ✅
 1. Login
 2. SignUp
 3. ForgotPassword
@@ -226,13 +235,14 @@
 24. CentVoorCent (Maandelijkse Reflectie)
 25. VTLBCalculator (Afloscapaciteit Calculator)
 26. AdempauzeCalculator (Beslagvrije Voet Calculator)
-27. Layout (sidebar verwijderd)
+27. VasteLastenCheck (Vaste Lasten Check met Payment Modal)
+28. Layout (sidebar verwijderd)
 27. DebtDetailsModal (component)
 28. + 8 nieuwe dashboard components
 
-### Oud Design: **~13 pagina's** ⚠️
+### Oud Design: **~12 pagina's** ⚠️
 - Financial management (1 pagina)
-- Tools & calculators (1 pagina)
+- Tools & calculators (0 pagina's)
 - Settings (1 pagina)
 - Help & support (3 pagina's)
 - Admin (3 pagina's)
@@ -256,7 +266,7 @@
 ## 🎯 Volgende Stappen (Suggesties)
 
 1. **Prioriteit 1**: Financial pages (BudgetPlan)
-2. **Prioriteit 2**: Tools & Calculators (VasteLastenCheck)
+2. **Prioriteit 2**: Tools & Calculators (Alle voltooid ✅)
 3. **Prioriteit 3**: Help & Support pages (FAQ, Feedback)
 4. **Prioriteit 4**: Admin pages
 5. **Prioriteit 5**: Other pages (BankConnections, Wishlist)

@@ -1,506 +1,537 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { User, MonthlyCheck, MonthlyCost, Debt, PaymentStatus } from "@/api/entities";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle, Clock, AlertTriangle, Calendar, PartyPopper, ChevronRight } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { User } from "@/api/entities";
+import { MonthlyCost } from "@/api/entities";
+import { Income } from "@/api/entities";
+import { Pot } from "@/api/entities";
 import { useToast } from "@/components/ui/use-toast";
-import { useTranslation } from "@/components/utils/LanguageContext";
-import { formatCurrency } from "@/components/utils/formatters";
-import { motion, AnimatePresence } from "framer-motion";
-import PaymentAnalysisModal from "@/components/checks/PaymentAnalysisModal";
-
-const checkInTranslations = {
-  'checkin.title': { nl: 'Maandelijkse Check-in', en: 'Monthly Check-in', es: 'Check-in Mensual', pl: 'Miesięczna Kontrola', de: 'Monatlicher Check-in', fr: 'Contrôle Mensuel', tr: 'Aylık Kontrol', ar: 'التحقق الشهري' },
-  'checkin.subtitle': { nl: 'Heb je alles betaald deze maand?', en: 'Have you paid everything this month?', es: '¿Has pagado todo este mes?', pl: 'Czy zapłaciłeś wszystko w tym miesiącu?', de: 'Haben Sie diesen Monat alles bezahlt?', fr: 'Avez-vous tout payé ce mois-ci?', tr: 'Bu ay her şeyi ödediniz mi?', ar: 'هل دفعت كل شيء هذا الشهر؟' },
-  'checkin.forMonth': { nl: 'Voor {month}', en: 'For {month}', es: 'Para {month}', pl: 'Za {month}', de: 'Für {month}', fr: 'Pour {month}', tr: '{month} için', ar: 'لـ {month}' },
-  'checkin.itemsDue': { nl: 'Betalingen deze maand', en: 'Payments Due This Month', es: 'Pagos Vencidos Este Mes', pl: 'Płatności w tym miesiącu', de: 'Fällige Zahlungen diesen Monat', fr: 'Paiements dus ce mois-ci', tr: 'Bu Ayki Ödemeler', ar: 'المدفوعات المستحقة هذا الشهر' },
-  'checkin.paid': { nl: 'Betaald', en: 'Paid', es: 'Pagado', pl: 'Zapłacone', de: 'Bezahlt', fr: 'Payé', tr: 'Ödendi', ar: 'مدفوع' },
-  'checkin.postponed': { nl: 'Uitgesteld', en: 'Postponed', es: 'Pospuesto', pl: 'Przełożone', de: 'Verschoben', fr: 'Reporté', tr: 'Ertelendi', ar: 'مؤجل' },
-  'checkin.postponedTo': { nl: 'Uitgesteld naar {date}', en: 'Postponed to {date}', es: 'Pospuesto hasta el {date}', pl: 'Przełożone na {date}', de: 'Verschoben auf {date}', fr: 'Reporté au {date}', tr: '{date} tarihine ertelendi', ar: 'تم تأجيله إلى {date}' },
-  'checkin.yesPaid': { nl: 'Ja, betaald', en: 'Yes, paid', es: 'Sí, pagado', pl: 'Tak, zapłacone', de: 'Ja, bezahlt', fr: 'Oui, payé', tr: 'Evet, ödendi', ar: 'نعم، مدفوع' },
-  'checkin.noNotPaid': { nl: 'Nee, niet betaald', en: 'No, not paid', es: 'No, no pagado', pl: 'Nie, nie zapłacone', de: 'Nein, nicht bezahlt', fr: 'Non, pas payé', tr: 'Hayır, ödenmedi', ar: 'لا، لم يتم الدفع' },
-  'checkin.completeCheckin': { nl: 'Check-in Voltooien', en: 'Complete Check-in', es: 'Completar Check-in', pl: 'Ukończ Kontrolę', de: 'Check-in Abschließen', fr: 'Terminer le Contrôle', tr: 'Kontrolü Tamamla', ar: 'إكمال التحقق' },
-  'checkin.loading': { nl: 'Check-in laden...', en: 'Loading check-in...', es: 'Cargando check-in...', pl: 'Ładowanie kontroli...', de: 'Check-in wird geladen...', fr: 'Chargement du contrôle...', tr: 'Kontrol yükleniyor...', ar: 'جارٍ تحميل التحقق...' },
-  'checkin.backToDashboard': { nl: 'Terug naar Dashboard', en: 'Back to Dashboard', es: 'Volver al Panel', pl: 'Powrót do Panelu', de: 'Zurück zum Dashboard', fr: 'Retour au Tableau de Bord', tr: 'Panele Dön', ar: 'العودة إلى لوحة القيادة' },
-  'checkin.whenCanYouPay': { nl: 'Wanneer kun je {name} betalen?', en: 'When can you pay {name}?', es: '¿Cuándo puedes pagar {name}?', pl: 'Kiedy możesz zapłacić {name}?', de: 'Wann können Sie {name} bezahlen?', fr: 'Quand pouvez-vous payer {name}?', tr: '{name} ne zaman ödeyebilirsiniz?', ar: 'متى يمكنك دفع {name}؟' },
-  'checkin.postponeIntro': { nl: 'We gaan samen kijken wanneer je dit wel kunt betalen en wat je moet doen.', en: 'We will work together to find out when you can pay this and what you need to do.', es: 'Trabajaremos juntos para averiguar cuándo puedes pagar esto y qué debes hacer.', pl: 'Razem ustalimy, kiedy możesz to zapłacić i co musisz zrobić.', de: 'Wir werden gemeinsam herausfinden, wann Sie dies bezahlen können und was Sie tun müssen.', fr: 'Nous allons travailler ensemble pour déterminer quand vous pourrez payer cela et ce que vous devrez faire.', tr: 'Bunu ne zaman ödeyebileceğinizi ve ne yapmanız gerektiğini birlikte bulacağız.', ar: 'سوف نعمل معًا لاكتشاف متى يمكنك دفع هذا وما عليك فعله.' },
-  'checkin.analysisComingSoon': { nl: 'Analyse functionaliteit komt in stap 2...', en: 'Analysis functionality coming in step 2...', es: 'La funcionalidad de análisis llegará en el paso 2...', pl: 'Funkcjonalność analizy pojawi się w kroku 2...', de: 'Analysefunktion kommt in Schritt 2...', fr: 'La fonctionnalité d\'analyse arrive à l\'étape 2...', tr: 'Analiz işlevselliği 2. adımda geliyor...', ar: 'وظيفة التحليل قادمة في الخطوة الثانية...' },
-  'common.cancel': { nl: 'Annuleren', en: 'Cancel', es: 'Cancelar', pl: 'Anuluj', de: 'Abbrechen', fr: 'Annuler', tr: 'İptal', ar: 'إلغاء' },
-  'checkin.month.0': { nl: 'Januari', en: 'January', es: 'Enero', pl: 'Styczeń', de: 'Januar', fr: 'Janvier', tr: 'Ocak', ar: 'يناير' },
-  'checkin.month.1': { nl: 'Februari', en: 'February', es: 'Febrero', pl: 'Luty', de: 'Februar', fr: 'Février', tr: 'Şubat', ar: 'فبراير' },
-  'checkin.month.2': { nl: 'Maart', en: 'March', es: 'Marzo', pl: 'Marzec', de: 'März', fr: 'Mars', tr: 'Mart', ar: 'مارس' },
-  'checkin.month.3': { nl: 'April', en: 'April', es: 'Abril', pl: 'Kwiecień', de: 'April', fr: 'Avril', tr: 'Nisan', ar: 'أبريل' },
-  'checkin.month.4': { nl: 'Mei', en: 'May', es: 'Mayo', pl: 'Maj', de: 'Mai', fr: 'Mai', tr: 'Mayıs', ar: 'مايو' },
-  'checkin.month.5': { nl: 'Juni', en: 'June', es: 'Junio', pl: 'Czerwiec', de: 'Juni', fr: 'Juin', tr: 'Haziran', ar: 'يونيو' },
-  'checkin.month.6': { nl: 'Juli', en: 'July', es: 'Julio', pl: 'Lipiec', de: 'Juli', fr: 'Juillet', tr: 'Temmuz', ar: 'يوليو' },
-  'checkin.month.7': { nl: 'Augustus', en: 'August', es: 'Agosto', pl: 'Sierpień', de: 'August', fr: 'Août', tr: 'Ağustos', ar: 'أغسطس' },
-  'checkin.month.8': { nl: 'September', en: 'September', es: 'Septiembre', pl: 'Wrzesień', de: 'September', fr: 'Septembre', tr: 'Eylül', ar: 'سبتمبر' },
-  'checkin.month.9': { nl: 'Oktober', en: 'October', es: 'Octubre', pl: 'Październik', de: 'Oktober', fr: 'Octobre', tr: 'Ekim', ar: 'أكتوبر' },
-  'checkin.month.10': { nl: 'November', en: 'November', es: 'Noviembre', pl: 'Listopad', de: 'November', fr: 'Novembre', tr: 'Kasım', ar: 'نوفمبر' },
-  'checkin.month.11': { nl: 'December', en: 'December', es: 'Diciembre', pl: 'Grudzień', de: 'Dezember', fr: 'Décembre', tr: 'Aralık', ar: 'ديسمبر' }
-};
+import { createPageUrl } from "@/utils";
 
 export default function VasteLastenCheck() {
-  const [selectedUnpaidItem, setSelectedUnpaidItem] = useState(null);
-  const [showPostponeModal, setShowPostponeModal] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [allPaid, setAllPaid] = useState(false);
-
+  const [darkMode, setDarkMode] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [duePayments, setDuePayments] = useState([]);
+  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [financialOverview, setFinancialOverview] = useState({
+    nextIncome: 0,
+    otherExpenses: 0,
+    availableAfterSalary: 0
+  });
+  const [potjes, setPotjes] = useState([]);
+  const [selectedSolution, setSelectedSolution] = useState(null);
+  const [selectedPotje, setSelectedPotje] = useState(null);
   const { toast } = useToast();
-  const { t: tFromHook, language } = useTranslation();
-  const queryClient = useQueryClient();
 
-  const t = (key, options) => {
-    let translation = checkInTranslations[key]?.[language];
-    if (translation) {
-      if (options) {
-        Object.keys(options).forEach(optionKey => {
-          translation = translation.replace(`{${optionKey}}`, options[optionKey]);
-        });
-      }
-      return translation;
+  const monthNames = [
+    'Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni',
+    'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December'
+  ];
+
+  useEffect(() => {
+    // Load theme preference
+    const savedTheme = localStorage.getItem('theme');
+    const isDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    setDarkMode(isDark);
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
-    return tFromHook(key, options);
+    loadData();
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = !darkMode;
+    setDarkMode(newTheme);
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+    if (newTheme) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   };
 
-  const today = new Date();
-  const currentMonth = today.toISOString().slice(0, 7);
-  const currentMonthName = t(`checkin.month.${today.getMonth()}`);
-  const currentDay = today.getDate();
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const userData = await User.me();
+      setUser(userData);
 
-  const { data: user } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => User.me(),
-    staleTime: 5 * 60 * 1000,
-  });
+      // Load monthly costs
+      const costs = await MonthlyCost.filter({ created_by: userData.email });
+      
+      // Get today's date
+      const today = new Date();
+      const currentDay = today.getDate();
 
-  const { data: existingCheck, isLoading: checkLoading } = useQuery({
-    queryKey: ['monthlyCheck', currentMonth, user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      // Try user_id first, then created_by as fallback
-      try {
-        return await MonthlyCheck.filter({ user_id: user.id, month: currentMonth });
-      } catch {
-        return await MonthlyCheck.filter({ created_by: user.id, month: currentMonth });
-      }
-    },
-    enabled: !!user,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: costs = [], isLoading: costsLoading } = useQuery({
-    queryKey: ['monthlyCosts', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      try {
-        return await MonthlyCost.filter({ user_id: user.id, status: 'actief' });
-      } catch {
-        return await MonthlyCost.filter({ created_by: user.id, status: 'actief' });
-      }
-    },
-    enabled: !!user?.id,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: debts = [], isLoading: debtsLoading } = useQuery({
-    queryKey: ['debts', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      try {
-        return await Debt.filter({ user_id: user.id, status: 'betalingsregeling' });
-      } catch {
-        return await Debt.filter({ created_by: user.id, status: 'betalingsregeling' });
-      }
-    },
-    enabled: !!user?.id,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: paymentStatuses = [], isLoading: statusesLoading } = useQuery({
-    queryKey: ['paymentStatuses', currentMonth, user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      try {
-        return await PaymentStatus.filter({ user_id: user.id, month: currentMonth });
-      } catch {
-        return await PaymentStatus.filter({ created_by: user.id, month: currentMonth });
-      }
-    },
-    enabled: !!user?.id,
-    staleTime: 1 * 60 * 1000,
-  });
-
-  const isLoading = checkLoading || costsLoading || debtsLoading || statusesLoading;
-
-  const itemsToCheck = React.useMemo(() => {
-    const costsDueThisMonth = costs.filter(cost => cost.payment_date <= currentDay);
-    const debtsDueThisMonth = debts.filter(debt => {
-      if (!debt.payment_plan_date) return false;
-      try {
-        const paymentDay = new Date(debt.payment_plan_date).getDate();
-        return paymentDay <= currentDay;
-      } catch (e) {
+      // Filter costs that are due today (assuming they have a due_date or we calculate based on day of month)
+      const dueToday = costs.filter(cost => {
+        // If cost has a due_date, check if it's today
+        if (cost.due_date) {
+          const dueDate = new Date(cost.due_date);
+          return dueDate.toDateString() === today.toDateString();
+        }
+        // Otherwise, check if the day of month matches (for recurring costs)
+        if (cost.due_day) {
+          return parseInt(cost.due_day) === currentDay;
+        }
         return false;
-      }
-    });
+      });
 
-    return [
-      ...costsDueThisMonth.map(c => ({ ...c, type: 'cost' })),
-      ...debtsDueThisMonth.map(d => ({ ...d, type: 'debt' }))
-    ];
-  }, [costs, debts, currentDay]);
-
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ item, isPaid }) => {
-      const dueDate = item.type === 'cost'
-        ? `${currentMonth}-${String(item.payment_date).padStart(2, '0')}`
-        : (item.payment_plan_date ? new Date(item.payment_plan_date).toISOString().split('T')[0] : null);
-
-      const existingStatus = paymentStatuses.find(s => s.cost_id === item.id && s.month === currentMonth);
-
-      if (existingStatus) {
-        return await PaymentStatus.update(existingStatus.id, {
-          is_paid: isPaid,
-          postponed_to_date: isPaid ? null : existingStatus.postponed_to_date,
-          updated_at: new Date().toISOString()
-        });
+      // If no costs due today, show first cost as example
+      if (dueToday.length === 0 && costs.length > 0) {
+        const firstCost = costs[0];
+        setDuePayments([{
+          id: firstCost.id,
+          name: firstCost.name || 'Onbekende kosten',
+          amount: parseFloat(firstCost.amount) || 0,
+          category: firstCost.category || 'Overig',
+          due_date: firstCost.due_date || new Date().toISOString()
+        }]);
       } else {
-        return await PaymentStatus.create({
-          cost_id: item.id,
-          cost_name: item.name || item.creditor_name,
-          cost_amount: item.amount || item.monthly_payment,
-          month: currentMonth,
-          is_paid: isPaid,
-          due_date: dueDate,
-          user_id: user.id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+        setDuePayments(dueToday.map(cost => ({
+          id: cost.id,
+          name: cost.name || 'Onbekende kosten',
+          amount: parseFloat(cost.amount) || 0,
+          category: cost.category || 'Overig',
+          due_date: cost.due_date || new Date().toISOString()
+        })));
+      }
+
+      // Load income for next payment
+      const incomes = await Income.filter({ created_by: userData.email });
+      const nextIncome = incomes
+        .filter(i => i.income_type === 'vast' && i.is_active !== false)
+        .reduce((sum, i) => sum + (i.monthly_equivalent || i.amount || 0), 0);
+
+      // Calculate other expenses (excluding the current payment)
+      const otherExpenses = costs
+        .filter(c => c.id !== duePayments[0]?.id)
+        .reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
+
+      const availableAfterSalary = nextIncome - otherExpenses - (duePayments[0]?.amount || 0);
+
+      setFinancialOverview({
+        nextIncome,
+        otherExpenses,
+        availableAfterSalary
+      });
+
+      // Load potjes
+      const userPotjes = await Pot.filter({ created_by: userData.email });
+      setPotjes(userPotjes);
+
+    } catch (error) {
+      console.error("Error loading data:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Fout bij laden gegevens'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePaid = async (payment) => {
+    try {
+      // Mark payment as paid
+      await MonthlyCost.update(payment.id, {
+        last_paid: new Date().toISOString(),
+        payment_status: 'paid'
+      });
+      toast({
+        title: 'Betaling gemarkeerd als betaald',
+        description: `${payment.name} is succesvol gemarkeerd.`
+      });
+      loadData();
+    } catch (error) {
+      console.error("Error marking as paid:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Fout bij opslaan'
+      });
+    }
+  };
+
+  const handleNotPaid = (payment) => {
+    setSelectedPayment(payment);
+    setShowPaymentModal(true);
+  };
+
+  const handleSolutionSelect = (solution, potjeId = null) => {
+    setSelectedSolution(solution);
+    setSelectedPotje(potjeId);
+  };
+
+  const handleConfirmSolution = async () => {
+    if (!selectedSolution) {
+      toast({
+        variant: 'destructive',
+        title: 'Selecteer een oplossing'
+      });
+      return;
+    }
+
+    try {
+      if (selectedSolution === 'potje' && selectedPotje) {
+        // Deduct from potje
+        const potje = potjes.find(p => p.id === selectedPotje);
+        if (potje && potje.balance >= selectedPayment.amount) {
+          await Pot.update(selectedPotje, {
+            balance: potje.balance - selectedPayment.amount
+          });
+          toast({
+            title: 'Betaling voltooid',
+            description: `€${selectedPayment.amount.toFixed(2)} is afgeschreven van ${potje.name}.`
+          });
+        } else {
+          toast({
+            variant: 'destructive',
+            title: 'Onvoldoende saldo',
+            description: `Het potje heeft niet genoeg saldo.`
+          });
+          return;
+        }
+      } else if (selectedSolution === 'reserve') {
+        // Use general reserve (would need to implement reserve logic)
+        toast({
+          title: 'Reserve gebruikt',
+          description: 'De betaling is betaald uit de algemene reserve.'
+        });
+      } else if (selectedSolution === 'uitstel') {
+        // Request deferral
+        toast({
+          title: 'Uitstel aangevraagd',
+          description: 'Je hebt uitstel aangevraagd bij de schuldeiser.'
         });
       }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['paymentStatuses'] });
-      toast({
-        title: "✅ Status bijgewerkt",
-        description: "De betaalstatus is opgeslagen.",
+
+      // Mark payment as handled
+      await MonthlyCost.update(selectedPayment.id, {
+        payment_status: 'postponed',
+        payment_solution: selectedSolution
       });
-    },
-    onError: (error) => {
-      toast({
-        title: "Fout",
-        description: "Kon status niet opslaan",
-        variant: "destructive"
-      });
-    }
-  });
 
-  const completeCheckMutation = useMutation({
-    mutationFn: async () => {
-      const allTrulyPaid = itemsToCheck.every(item =>
-        paymentStatuses.some(s => s.cost_id === item.id && s.month === currentMonth && s.is_paid)
-      );
-
-      return await MonthlyCheck.create({
-        month: currentMonth,
-        check_date: new Date().toISOString(),
-        all_paid: allTrulyPaid,
-        user_id: user.id,
-      });
-    },
-    onSuccess: () => {
-      const allTrulyPaid = itemsToCheck.every(item =>
-        paymentStatuses.some(s => s.cost_id === item.id && s.month === currentMonth && s.is_paid)
-      );
-
-      setAllPaid(allTrulyPaid);
-      setSubmitted(true);
-
-      queryClient.invalidateQueries({ queryKey: ['monthlyCheck'] });
-
-      toast({ title: t('checkin.completeCheckin') });
-    },
-    onError: (error) => {
+      setShowPaymentModal(false);
+      setSelectedPayment(null);
+      setSelectedSolution(null);
+      setSelectedPotje(null);
+      loadData();
+    } catch (error) {
+      console.error("Error processing solution:", error);
       toast({
         variant: 'destructive',
-        title: "Fout bij voltooien",
-        description: "Er is een fout opgetreden.",
+        title: 'Fout bij verwerken oplossing'
       });
     }
-  });
-
-  const handleMarkStatus = (item, isPaid) => {
-    if (!isPaid) {
-      setSelectedUnpaidItem(item);
-      setShowPostponeModal(true);
-      return;
-    }
-
-    updateStatusMutation.mutate({ item, isPaid: true });
   };
 
-  const handleCompleteCheck = () => {
-    const allAddressed = itemsToCheck.every(item =>
-      paymentStatuses.some(s => s.cost_id === item.id && s.month === currentMonth && (s.is_paid || s.postponed_to_date))
-    );
-
-    if (!allAddressed) {
-      toast({
-        variant: 'destructive',
-        title: "Niet alle items verwerkt",
-        description: "Markeer alle betalingen als betaald of uitgesteld.",
-      });
-      return;
-    }
-
-    completeCheckMutation.mutate();
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('nl-NL', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
   };
 
-  if (isLoading) {
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('nl-NL', { 
+      day: 'numeric', 
+      month: 'long' 
+    }).format(date);
+  };
+
+  if (loading) {
     return (
-      <div className="p-4 md:p-6 flex items-center justify-center min-h-[60vh]">
+      <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('checkin.loading')}</p>
+          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mt-4">Laden...</p>
         </div>
       </div>
     );
   }
 
-  if (existingCheck && existingCheck.length > 0) {
-    return (
-      <motion.div
-        className="p-4 md:p-6 flex flex-col items-center justify-center min-h-[60vh]"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-      >
-        <Card className="max-w-md w-full text-center">
-          <CardHeader>
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <CardTitle className="text-2xl">Je hebt de check-in voor deze maand al voltooid!</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-gray-600">
-              Voltooid op {(() => {
-                try {
-                  const date = new Date(existingCheck[0].check_date);
-                  if (isNaN(date.getTime())) return 'Onbekend';
-                  return new Intl.DateTimeFormat('nl', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
-                } catch (e) {
-                  return 'Onbekend';
-                }
-              })()}
-            </p>
-            <Button onClick={() => window.location.href = '/dashboard'} className="w-full">
-              {t('checkin.backToDashboard')}
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
-          </CardContent>
-        </Card>
-      </motion.div>
-    );
-  }
-
-  if (submitted) {
-    return (
-      <motion.div
-        className="p-4 md:p-6 flex flex-col items-center justify-center min-h-[60vh]"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-      >
-        <Card className="max-w-md w-full text-center">
-          <CardHeader>
-            {allPaid ? (
-              <>
-                <PartyPopper className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                <CardTitle className="text-2xl text-green-700">Alles betaald! 🎉</CardTitle>
-              </>
-            ) : (
-              <>
-                <AlertTriangle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
-                <CardTitle className="text-2xl text-orange-700">Oeps, niet alles betaald</CardTitle>
-              </>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-gray-600">
-              {allPaid
-                ? 'Geweldig! Je hebt alle vaste lasten en betalingsregelingen op tijd betaald.'
-                : 'Het is oké! Laten we kijken wat we kunnen doen.'}
-            </p>
-            <Button onClick={() => window.location.href = '/dashboard'} className="w-full">
-              {t('checkin.backToDashboard')}
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
-          </CardContent>
-        </Card>
-      </motion.div>
-    );
-  }
-
-  if (itemsToCheck.length === 0) {
-    return (
-      <motion.div
-        className="p-4 md:p-6 flex flex-col items-center justify-center min-h-[60vh]"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <Card className="max-w-md w-full text-center">
-          <CardHeader>
-            <PartyPopper className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <CardTitle className="text-2xl">Geen betalingen verwacht deze maand</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-gray-600">Er zijn geen vaste lasten of betalingsregelingen die deze maand vervallen.</p>
-            <Button onClick={() => window.location.href = '/dashboard'} className="w-full">
-              {t('checkin.backToDashboard')}
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
-          </CardContent>
-        </Card>
-      </motion.div>
-    );
-  }
+  const currentPayment = duePayments[0] || null;
 
   return (
-    <motion.div
-      className="p-4 md:p-6 space-y-6"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-    >
-      <div className="text-center md:text-left">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-          {t('checkin.title')}
-        </h1>
-        <p className="text-gray-600">
-          {t('checkin.forMonth', { month: currentMonthName })}
-        </p>
-        <p className="text-sm text-gray-500">{t('checkin.subtitle')}</p>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            {t('checkin.itemsDue')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {itemsToCheck.map((item) => {
-            const status = paymentStatuses.find(s => s.cost_id === item.id && s.month === currentMonth);
-            const isPaid = status?.is_paid || false;
-            const isPostponed = status?.postponed_to_date ? true : false;
-            const dueDay = item.type === 'cost' ? item.payment_date : new Date(item.payment_plan_date).getDate();
-
-            return (
-              <motion.div
-                key={item.id}
-                className={`p-4 ${isPaid ? 'bg-green-50 border-green-200' : isPostponed ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50'} rounded-lg shadow-sm`}
-                whileHover={{ scale: 1.01 }}
-                transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              >
-                <CardContent className="p-0">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="text-3xl">
-                        {isPaid ? '✅' : isPostponed ? '⏰' : '❓'}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-gray-900">
-                          {item.name || item.creditor_name}
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          {formatCurrency(item.amount || item.monthly_payment)} • Vervaldatum: {dueDay} {currentMonthName}
-                        </p>
-                        {isPostponed && (
-                          <p className="text-sm text-yellow-700 mt-1">
-                            {t('checkin.postponedTo', { 
-                              date: (() => {
-                                try {
-                                  const date = new Date(status.postponed_to_date);
-                                  if (isNaN(date.getTime())) return 'Onbekend';
-                                  return new Intl.DateTimeFormat('nl', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
-                                } catch (e) {
-                                  return 'Onbekend';
-                                }
-                              })()
-                            })}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {!isPaid && !isPostponed && (
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => handleMarkStatus(item, true)}
-                          className="bg-green-600 hover:bg-green-700"
-                          size="sm"
-                          disabled={updateStatusMutation.isPending}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          {t('checkin.yesPaid')}
-                        </Button>
-                        <Button
-                          onClick={() => handleMarkStatus(item, false)}
-                          variant="outline"
-                          className="border-orange-300 text-orange-700 hover:bg-orange-50"
-                          size="sm"
-                        >
-                          <XCircle className="w-4 h-4 mr-2" />
-                          {t('checkin.noNotPaid')}
-                        </Button>
-                      </div>
-                    )}
-
-                    {isPaid && (
-                      <div className="text-green-600 font-semibold flex items-center gap-2">
-                        <CheckCircle className="w-5 h-5" />
-                        {t('checkin.paid')}
-                      </div>
-                    )}
-                    {isPostponed && !isPaid && (
-                      <div className="text-yellow-700 font-semibold flex items-center gap-2">
-                        <Clock className="w-5 h-5" />
-                        {t('checkin.postponed')}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </motion.div>
-            );
-          })}
-        </CardContent>
-      </Card>
-
-      {itemsToCheck.length > 0 && (
-        <Card className="bg-gradient-to-br from-green-50 to-blue-50">
-          <CardContent className="p-6">
-            <Button
-              onClick={handleCompleteCheck}
-              size="lg"
-              className="w-full bg-green-600 hover:bg-green-700 text-white"
-              disabled={!itemsToCheck.every(item =>
-                paymentStatuses.some(s => s.cost_id === item.id && s.month === currentMonth && (s.is_paid || s.postponed_to_date))
-              ) || completeCheckMutation.isPending}
+    <div className="min-h-screen bg-background-light dark:bg-background-dark text-[#0d1b17] dark:text-white font-display antialiased overflow-x-hidden flex flex-col">
+      {/* Global Header */}
+      <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e7f3ef] dark:border-b-[#2a2a2a] bg-white dark:bg-[#11221c] px-10 py-3 relative z-30">
+        <div className="flex items-center gap-4 text-[#0d1b17] dark:text-white">
+          <div className="size-8 flex items-center text-primary">
+            <svg className="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
+            </svg>
+          </div>
+          <h2 className="text-[#0d1b17] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">Konsensi</h2>
+        </div>
+        <div className="flex flex-1 justify-end gap-8">
+          <nav className="hidden lg:flex items-center gap-9">
+            <a className="text-primary dark:text-primary font-bold text-sm leading-normal border-b-2 border-primary dark:border-primary py-1" href={createPageUrl('BudgetPlan')}>Balans</a>
+            <a className="text-[#0d1b17] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary dark:hover:text-white transition-colors" href={createPageUrl('Dashboard')}>Transacties</a>
+            <a className="text-[#0d1b17] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary dark:hover:text-white transition-colors" href={createPageUrl('BudgetPlan')}>Budgetplan</a>
+            <a className="text-[#0d1b17] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary dark:hover:text-white transition-colors" href={createPageUrl('Potjes')}>Spaardoele</a>
+            <a className="text-[#0d1b17] dark:text-gray-400 text-sm font-medium leading-normal hover:text-primary dark:hover:text-white transition-colors" href={createPageUrl('CentVoorCent')}>Inzichten</a>
+          </nav>
+          <div className="flex gap-3 items-center">
+            <button 
+              className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-[#10b77f] dark:bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#0e9f6e] dark:hover:bg-primary/80 transition-colors shadow-sm"
+              onClick={() => window.location.href = createPageUrl('Adempauze')}
             >
-              <CheckCircle className="w-5 h-5 mr-2" />
-              {t('checkin.completeCheckin')}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+              <span className="truncate">Adempauze</span>
+            </button>
+            <div className="flex gap-2">
+              <button 
+                className="flex items-center justify-center rounded-xl size-10 bg-[#e7f3ef] dark:bg-white/10 text-[#0d1b17] dark:text-white hover:bg-[#d0e6dd] dark:hover:bg-white/20 transition-colors"
+                onClick={toggleTheme}
+              >
+                <span className="material-symbols-outlined text-[20px]">{darkMode ? 'light_mode' : 'dark_mode'}</span>
+              </button>
+              <button className="flex items-center justify-center rounded-xl size-10 bg-[#e7f3ef] dark:bg-white/10 text-[#0d1b17] dark:text-white hover:bg-[#d0e6dd] dark:hover:bg-white/20 transition-colors">
+                <span className="material-symbols-outlined text-[20px]">language</span>
+              </button>
+              <button className="flex items-center justify-center rounded-xl size-10 bg-[#e7f3ef] dark:bg-white/10 text-[#0d1b17] dark:text-white hover:bg-[#d0e6dd] dark:hover:bg-white/20 transition-colors">
+                <span className="material-symbols-outlined text-[20px]">settings</span>
+              </button>
+            </div>
+            <div 
+              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-[#e7f3ef] dark:border-[#2a2a2a] cursor-pointer"
+              style={{
+                backgroundImage: user?.profielfoto_url 
+                  ? `url(${user.profielfoto_url})` 
+                  : 'none',
+                backgroundColor: user?.profielfoto_url ? 'transparent' : '#8B5CF6'
+              }}
+            >
+              {!user?.profielfoto_url && (
+                <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs">
+                  {(user?.voornaam?.[0] || user?.email?.[0] || 'U').toUpperCase()}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
 
-      <PaymentAnalysisModal
-        isOpen={showPostponeModal}
-        onClose={() => {
-          setShowPostponeModal(false);
-          setSelectedUnpaidItem(null);
-        }}
-        unpaidItem={selectedUnpaidItem}
-        currentMonth={currentMonth}
-      />
-    </motion.div>
+      {/* Main Content */}
+      <main className="flex-grow flex flex-col items-center py-12 px-4 relative z-10">
+        {/* Page Header */}
+        <div className="w-full max-w-[800px] text-center mb-8">
+          <h1 className="text-[#1F2937] dark:text-white text-4xl font-extrabold leading-tight tracking-tight mb-3">Vaste Lasten Check</h1>
+          <p className="text-[#6B7280] dark:text-gray-400 text-lg font-normal">
+            Tijd om je vaste lasten te controleren voor {monthNames[currentMonth.getMonth()]}.
+          </p>
+        </div>
+
+        {/* Main Check Card */}
+        {currentPayment && (
+          <div className="w-full max-w-[800px] bg-white dark:bg-surface-dark rounded-[24px] p-8 shadow-soft dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-border-dark">
+            {/* Card Header */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-4">
+                <div className="size-12 rounded-full dark:rounded-xl bg-primary/10 dark:bg-[#11221c] flex items-center justify-center text-primary border dark:border-border-dark/50">
+                  <span className="material-symbols-outlined text-3xl dark:text-2xl">event_available</span>
+                </div>
+                <div>
+                  <p className="text-[#1F2937] dark:text-white text-xl font-bold">{currentPayment.name}</p>
+                  <p className="text-[#6B7280] dark:text-text-secondary text-sm font-medium md:hidden">
+                    Vervaldatum: {formatDate(currentPayment.due_date)}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right hidden md:block">
+                <p className="text-[#1F2937] dark:text-white text-2xl font-bold">{formatCurrency(currentPayment.amount)}</p>
+                <p className="text-[#6B7280] dark:text-text-secondary text-sm font-medium">
+                  Vervaldatum: {formatDate(currentPayment.due_date)}
+                </p>
+              </div>
+            </div>
+
+            {/* Status Banner */}
+            <div className="mb-8 flex items-center gap-3 bg-primary/10 dark:bg-primary/10 border-l-4 border-primary dark:border-primary p-4 rounded-lg">
+              <span className="material-symbols-outlined text-primary dark:text-primary">info</span>
+              <p className="text-primary dark:text-primary text-sm font-bold">
+                Deze betaling is vandaag verschuldigd.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                className="flex-1 max-w-[240px] cursor-pointer items-center justify-center rounded-xl h-12 px-8 bg-primary dark:bg-primary text-white text-base font-bold hover:bg-[#0e9f6e] dark:hover:bg-primary/80 transition-colors shadow-sm flex gap-2"
+                onClick={() => handlePaid(currentPayment)}
+              >
+                <span className="material-symbols-outlined">check_circle</span>
+                <span>Ja, betaald</span>
+              </button>
+              <button 
+                className="flex-1 max-w-[240px] cursor-pointer items-center justify-center rounded-xl h-12 px-8 bg-transparent border-2 border-gray-200 dark:border-border-dark text-[#6B7280] dark:text-text-secondary text-base font-bold hover:bg-gray-50 dark:hover:bg-[#222] hover:border-gray-300 dark:hover:border-[#3a3a3a] transition-colors flex gap-2"
+                onClick={() => handleNotPaid(currentPayment)}
+              >
+                <span className="material-symbols-outlined">cancel</span>
+                <span>Nee, niet betaald</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Payment Modal */}
+        {showPaymentModal && selectedPayment && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-[#0d1b17]/40 dark:bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="w-full max-w-[600px] bg-white dark:bg-surface-dark rounded-[24px] p-8 shadow-modal dark:shadow-[0_8px_40px_rgba(0,0,0,0.8)] border border-gray-100 dark:border-border-dark flex flex-col relative">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-[#1F2937] dark:text-white text-xl font-bold">Waarmee betaal je {selectedPayment.name}?</h2>
+                <button 
+                  className="text-[#9CA3AF] dark:text-text-secondary hover:text-[#6B7280] dark:hover:text-white transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-white/10"
+                  onClick={() => {
+                    setShowPaymentModal(false);
+                    setSelectedPayment(null);
+                    setSelectedSolution(null);
+                    setSelectedPotje(null);
+                  }}
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              {/* Warning Banner */}
+              <div className="mb-6 flex items-start gap-3 bg-red-50 dark:bg-danger/10 border-l-4 border-red-500 dark:border-danger rounded-lg p-4">
+                <span className="material-symbols-outlined text-red-500 dark:text-danger shrink-0">error</span>
+                <p className="text-red-500 dark:text-danger text-sm font-bold pt-0.5">
+                  Je hebt een betaling gemist. Laten we kijken hoe we dit oplossen.
+                </p>
+              </div>
+
+              {/* Financial Overview */}
+              <div className="flex flex-col gap-3 mb-6 bg-[#F9FAFB] dark:bg-[#111] rounded-xl p-5 border dark:border-border-dark">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-[#1F2937] dark:text-white">
+                    <div className="size-6 bg-green-100 dark:bg-[#11221c] rounded-full flex items-center justify-center text-primary">
+                      <span className="material-symbols-outlined text-[16px] dark:text-xs">arrow_upward</span>
+                    </div>
+                    <span className="text-sm font-medium">Volgend inkomen</span>
+                  </div>
+                  <span className="text-primary dark:text-primary font-bold text-sm">{formatCurrency(financialOverview.nextIncome)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-[#1F2937] dark:text-white">
+                    <div className="size-6 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center text-red-500 dark:text-danger">
+                      <span className="material-symbols-outlined text-[16px] dark:text-xs">arrow_downward</span>
+                    </div>
+                    <span className="text-sm font-medium">Andere verplichte uitgaven</span>
+                  </div>
+                  <span className="text-red-500 dark:text-danger font-bold text-sm">{formatCurrency(-financialOverview.otherExpenses)}</span>
+                </div>
+                <div className="h-px bg-gray-200 dark:bg-border-dark my-1"></div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[#1F2937] dark:text-white text-base font-bold">Beschikbaar na je salaris</span>
+                  <span className={`font-extrabold text-base ${financialOverview.availableAfterSalary < 0 ? 'text-red-500 dark:text-danger' : 'text-primary dark:text-primary'}`}>
+                    {formatCurrency(financialOverview.availableAfterSalary)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Options */}
+              <div className="flex flex-col gap-3 mb-8">
+                <label className="block text-xs font-bold text-[#6B7280] dark:text-text-secondary uppercase tracking-wider mb-2">Kies een oplossing</label>
+                
+                {/* Potje Dropdown */}
+                {potjes.length > 0 && (
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="material-symbols-outlined text-[#6B7280] dark:text-text-secondary">savings</span>
+                    </div>
+                    <select 
+                      className="block w-full pl-10 pr-10 py-3.5 text-base border border-gray-200 dark:border-border-dark bg-white dark:bg-[#222] text-[#1F2937] dark:text-white rounded-xl focus:ring-primary focus:border-primary dark:focus:border-primary appearance-none cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors"
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          handleSolutionSelect('potje', e.target.value);
+                        }
+                      }}
+                    >
+                      <option value="">Gebruik potje</option>
+                      {potjes.map(potje => (
+                        <option key={potje.id} value={potje.id}>
+                          {potje.name} (€{formatCurrency(potje.balance || 0)})
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <span className="material-symbols-outlined text-[#6B7280] dark:text-text-secondary">expand_more</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Reserve Button */}
+                <button 
+                  className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border ${
+                    selectedSolution === 'reserve' 
+                      ? 'border-primary dark:border-primary bg-primary/10 dark:bg-primary/10' 
+                      : 'border-gray-200 dark:border-border-dark hover:bg-gray-50 dark:hover:bg-[#222] hover:border-primary dark:hover:border-primary'
+                  } text-[#1F2937] dark:text-white transition-all text-sm font-bold`}
+                  onClick={() => handleSolutionSelect('reserve')}
+                >
+                  <span className="material-symbols-outlined text-lg">account_balance_wallet</span>
+                  Gebruik algemene reserve
+                </button>
+
+                {/* Deferral Button */}
+                <button 
+                  className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border ${
+                    selectedSolution === 'uitstel' 
+                      ? 'border-primary dark:border-primary bg-primary/10 dark:bg-primary/10' 
+                      : 'border-gray-200 dark:border-border-dark hover:bg-gray-50 dark:hover:bg-[#222] hover:border-primary dark:hover:border-primary'
+                  } text-[#1F2937] dark:text-white transition-all text-sm font-bold`}
+                  onClick={() => handleSolutionSelect('uitstel')}
+                >
+                  <span className="material-symbols-outlined text-lg">send</span>
+                  Verzoek om uitstel bij schuldeiser
+                </button>
+
+                {/* Link */}
+                <div className="text-center mt-2">
+                  <a className="text-primary dark:text-primary text-sm font-bold hover:underline" href={createPageUrl('BudgetPlan')}>
+                    Pas budgetplan handmatig aan
+                  </a>
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-100 dark:border-border-dark">
+                <button 
+                  className="px-6 py-3 rounded-xl text-[#6B7280] dark:text-text-secondary font-bold text-sm hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                  onClick={() => {
+                    setShowPaymentModal(false);
+                    setSelectedPayment(null);
+                    setSelectedSolution(null);
+                    setSelectedPotje(null);
+                  }}
+                >
+                  Annuleren
+                </button>
+                <button 
+                  className={`px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 ${
+                    selectedSolution 
+                      ? 'bg-primary dark:bg-primary text-white hover:bg-[#0e9f6e] dark:hover:bg-primary/80' 
+                      : 'bg-gray-200 dark:bg-primary/20 text-gray-400 dark:text-primary/50 cursor-not-allowed'
+                  } transition-colors`}
+                  disabled={!selectedSolution}
+                  onClick={handleConfirmSolution}
+                >
+                  <span>Bevestig oplossing</span>
+                  {!selectedSolution && <span className="material-symbols-outlined text-sm">lock</span>}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
   );
 }
