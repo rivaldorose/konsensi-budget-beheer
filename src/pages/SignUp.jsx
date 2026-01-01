@@ -209,16 +209,16 @@ export default function SignUp() {
           {/* Form */}
           <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
             {/* Name Field */}
-            <div>
-              <label className="block font-body font-semibold text-sm text-gray-700 dark:text-[#a1a1a1] mb-2" htmlFor="fullname">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300" htmlFor="fullname">
                 Volledige naam
               </label>
-              <div className="group flex w-full items-center rounded-xl bg-input-bg dark:bg-[#1a1a1a] border border-input-border dark:border-[#2a2a2a] px-4 py-3.5 focus-within:border-primary focus-within:bg-white dark:focus-within:bg-[#1a1a1a] focus-within:shadow-glow transition-all">
-                <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 mr-3 transition-colors group-focus-within:text-primary" style={{ fontSize: '20px' }}>
-                  person
-                </span>
+              <div className="relative group">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 group-focus-within:text-primary transition-colors">
+                  <span className="material-symbols-outlined text-[20px]">person</span>
+                </div>
                 <input
-                  className="w-full bg-transparent border-none p-0 text-text-main dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0 text-base"
+                  className="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3.5 pl-11 pr-4 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary focus:bg-white dark:focus:bg-gray-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                   id="fullname"
                   placeholder="Voor- en achternaam"
                   type="text"
@@ -230,16 +230,16 @@ export default function SignUp() {
             </div>
 
             {/* Email Field */}
-            <div>
-              <label className="block font-body font-semibold text-sm text-gray-700 dark:text-[#a1a1a1] mb-2" htmlFor="email">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300" htmlFor="email">
                 E-mailadres
               </label>
-              <div className="group flex w-full items-center rounded-xl bg-input-bg dark:bg-[#1a1a1a] border border-input-border dark:border-[#2a2a2a] px-4 py-3.5 focus-within:border-primary focus-within:bg-white dark:focus-within:bg-[#1a1a1a] focus-within:shadow-glow transition-all">
-                <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 mr-3 transition-colors group-focus-within:text-primary" style={{ fontSize: '20px' }}>
-                  mail
-                </span>
+              <div className="relative group">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 group-focus-within:text-primary transition-colors">
+                  <span className="material-symbols-outlined text-[20px]">mail</span>
+                </div>
                 <input
-                  className="w-full bg-transparent border-none p-0 text-text-main dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0 text-base"
+                  className="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3.5 pl-11 pr-4 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary focus:bg-white dark:focus:bg-gray-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                   id="email"
                   placeholder="naam@voorbeeld.nl"
                   type="email"
@@ -251,16 +251,16 @@ export default function SignUp() {
             </div>
 
             {/* Password Field */}
-            <div>
-              <label className="block font-body font-semibold text-sm text-gray-700 dark:text-[#a1a1a1] mb-2" htmlFor="password">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300" htmlFor="password">
                 Wachtwoord
               </label>
-              <div className="group flex w-full items-center rounded-xl bg-input-bg dark:bg-[#1a1a1a] border border-input-border dark:border-[#2a2a2a] px-4 py-3.5 focus-within:border-primary focus-within:bg-white dark:focus-within:bg-[#1a1a1a] focus-within:shadow-glow transition-all">
-                <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 mr-3 transition-colors group-focus-within:text-primary" style={{ fontSize: '20px' }}>
-                  lock
-                </span>
+              <div className="relative group">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 group-focus-within:text-primary transition-colors">
+                  <span className="material-symbols-outlined text-[20px]">lock</span>
+                </div>
                 <input
-                  className="w-full bg-transparent border-none p-0 text-text-main dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0 text-base"
+                  className="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3.5 pl-11 pr-11 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary focus:bg-white dark:focus:bg-gray-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                   id="password"
                   placeholder="••••••••"
                   type={showPassword ? 'text' : 'password'}
@@ -270,11 +270,11 @@ export default function SignUp() {
                   minLength={6}
                 />
                 <button
-                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white focus:outline-none flex items-center"
                   type="button"
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+                  <span className="material-symbols-outlined text-[20px]">
                     {showPassword ? 'visibility_off' : 'visibility'}
                   </span>
                 </button>
@@ -296,16 +296,16 @@ export default function SignUp() {
             </div>
 
             {/* Confirm Password Field */}
-            <div>
-              <label className="block font-body font-semibold text-sm text-gray-700 dark:text-[#a1a1a1] mb-2" htmlFor="confirm-password">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300" htmlFor="confirm-password">
                 Bevestig wachtwoord
               </label>
-              <div className="group flex w-full items-center rounded-xl bg-input-bg dark:bg-[#1a1a1a] border border-input-border dark:border-[#2a2a2a] px-4 py-3.5 focus-within:border-primary focus-within:bg-white dark:focus-within:bg-[#1a1a1a] focus-within:shadow-glow transition-all">
-                <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 mr-3 transition-colors group-focus-within:text-primary" style={{ fontSize: '20px' }}>
-                  lock
-                </span>
+              <div className="relative group">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 group-focus-within:text-primary transition-colors">
+                  <span className="material-symbols-outlined text-[20px]">lock</span>
+                </div>
                 <input
-                  className="w-full bg-transparent border-none p-0 text-text-main dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-0 text-base"
+                  className="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3.5 pl-11 pr-11 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary focus:bg-white dark:focus:bg-gray-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                   id="confirm-password"
                   placeholder="••••••••"
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -314,16 +314,16 @@ export default function SignUp() {
                   required
                 />
                 {confirmPassword.length > 0 && (
-                  <span className={`material-symbols-outlined ml-2 ${passwordsMatch ? 'text-primary' : 'text-red-500'}`} style={{ fontSize: '20px' }}>
+                  <span className={`material-symbols-outlined absolute right-12 text-[20px] ${passwordsMatch ? 'text-primary' : 'text-red-500'}`}>
                     {passwordsMatch ? 'check_circle' : 'cancel'}
                   </span>
                 )}
                 <button
-                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white focus:outline-none flex items-center ml-2"
                   type="button"
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+                  <span className="material-symbols-outlined text-[20px]">
                     {showConfirmPassword ? 'visibility_off' : 'visibility'}
                   </span>
                 </button>
