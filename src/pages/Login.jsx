@@ -185,19 +185,12 @@ export default function Login() {
                 />
                 <span className="text-sm text-gray-500 dark:text-gray-400">Onthoud mij</span>
               </label>
-              <a
+              <Link
                 className="text-sm font-medium text-primary hover:text-primary-dark hover:underline transition-colors"
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  toast({
-                    title: 'Wachtwoord vergeten',
-                    description: 'Neem contact op met support voor hulp bij het resetten van je wachtwoord.',
-                  });
-                }}
+                to="/forgot-password"
               >
                 Wachtwoord vergeten?
-              </a>
+              </Link>
             </div>
 
             {/* Submit Button */}

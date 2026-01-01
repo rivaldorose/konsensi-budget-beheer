@@ -86,9 +86,11 @@ function LayoutWithProvider({ children, currentPageName }) {
   const { toast } = useToast();
   const { startPageTour, startFullOnboarding } = useTour();
 
-  // Check if we're on login, signup or onboarding page (case-insensitive, handle trailing slashes)
+  // Check if we're on auth pages (case-insensitive, handle trailing slashes)
   const currentPath = location.pathname.toLowerCase().replace(/\/$/, '');
-  const isAuthPage = currentPath === '/login' || currentPath === '/signup' || currentPath === '/onboarding';
+  const isAuthPage = currentPath === '/login' || currentPath === '/signup' || currentPath === '/onboarding' || 
+                     currentPath === '/forgot-password' || currentPath === '/email-sent' || 
+                     currentPath === '/reset-password' || currentPath === '/password-saved';
 
   const [fabPosition, setFabPosition] = React.useState({ x: null, y: null });
   const fabRef = React.useRef(null);

@@ -66,6 +66,14 @@ import Login from "./Login";
 
 import SignUp from "./SignUp";
 
+import ForgotPassword from "./ForgotPassword";
+
+import EmailSent from "./EmailSent";
+
+import ResetPassword from "./ResetPassword";
+
+import PasswordSaved from "./PasswordSaved";
+
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
@@ -158,6 +166,14 @@ function PagesContent() {
                 <Route path="/login" element={<Login />} />
                 
                 <Route path="/signup" element={<SignUp />} />
+                
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                
+                <Route path="/email-sent" element={<EmailSent />} />
+                
+                <Route path="/reset-password" element={<ResetPassword />} />
+                
+                <Route path="/password-saved" element={<PasswordSaved />} />
                 
                 <Route path="/" element={<Expenses />} />
                 
