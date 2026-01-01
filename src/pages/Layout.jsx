@@ -81,6 +81,14 @@ export default function Layout({ children, currentPageName }) {
 function LayoutWithProvider({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // #region agent log
+  React.useEffect(() => {
+    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:82',message:'LayoutWithProvider render start',data:{pathname:location.pathname,currentPageName,prevPage:sessionStorage.getItem('prevPageName')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    sessionStorage.setItem('prevPageName', currentPageName);
+  }, [location.pathname, currentPageName]);
+  // #endregion
+  
   const { t, language, changeLanguage } = useTranslation();
   const { toast } = useToast();
   const { startPageTour, startFullOnboarding } = useTour();
@@ -91,6 +99,17 @@ function LayoutWithProvider({ children, currentPageName }) {
                      currentPath === '/forgot-password' || currentPath === '/email-sent' || 
                      currentPath === '/reset-password' || currentPath === '/password-saved' ||
                      currentPath === '/terms' || currentPath === '/privacy';
+  
+  // #region agent log
+  React.useEffect(() => {
+    const prevPageName = sessionStorage.getItem('prevPageName');
+    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:101',message:'Layout render start',data:{pathname:location.pathname,currentPageName,prevPageName,isAuthPage,pageChanged:prevPageName!==currentPageName},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+    if (prevPageName && prevPageName !== currentPageName) {
+      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:104',message:'Page name changed',data:{from:prevPageName,to:currentPageName,pathname:location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+    }
+    sessionStorage.setItem('prevPageName', currentPageName);
+  }, [location.pathname, currentPageName, isAuthPage]);
+  // #endregion
 
   const [fabPosition, setFabPosition] = React.useState({ x: null, y: null });
   const fabRef = React.useRef(null);
@@ -704,6 +723,11 @@ function LayoutWithProvider({ children, currentPageName }) {
   
   // If on login/onboarding page, render without sidebar/header
   if (isAuthPage) {
+    // #region agent log
+    React.useEffect(() => {
+      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:725',message:'Rendering auth page',data:{isAuthPage,pathname:location.pathname,childrenType:children?.type?.name||'unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+    }, [isAuthPage, location.pathname]);
+    // #endregion
     return (
       <div className="min-h-screen bg-gray-50">
         {children}
@@ -712,6 +736,15 @@ function LayoutWithProvider({ children, currentPageName }) {
   }
 
   const isAnyModalOpen = showAddModal || showLoanModal || showScanBonModal || showConfirmModal;
+
+  // #region agent log
+  React.useEffect(() => {
+    const renderStart = Date.now();
+    const prevRenderTime = sessionStorage.getItem('lastRenderTime');
+    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:737',message:'Rendering children',data:{currentPageName,pathname:location.pathname,childrenType:children?.type?.name||'unknown',timeSinceLastRender:prevRenderTime?renderStart-parseInt(prevRenderTime):null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+    sessionStorage.setItem('lastRenderTime', renderStart.toString());
+  }, [currentPageName, location.pathname]);
+  // #endregion
 
   return (
     <div className={`theme-light flex min-h-screen bg-gray-50 font-sans antialiased ${isAnyModalOpen ? 'overflow-hidden' : ''}`} dir={languages.find(l => l.code === language)?.rtl ? 'rtl' : 'ltr'}>

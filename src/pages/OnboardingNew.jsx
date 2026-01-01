@@ -596,8 +596,37 @@ function MonthlyCostsStep({ formData, setFormData, darkMode }) {
 
 function DebtsCheckStep({ formData, setFormData, darkMode }) {
   const handleDebtChoice = (hasDebts) => {
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'OnboardingNew.jsx:598',message:'handleDebtChoice called',data:{hasDebts,currentHasDebts:formData.hasDebts,step:4},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+    // #endregion
     setFormData({ ...formData, hasDebts });
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'OnboardingNew.jsx:601',message:'setFormData called',data:{hasDebts,newFormDataHasDebts:formData.hasDebts},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+    // #endregion
   };
+  
+  // #region agent log
+  React.useEffect(() => {
+    const checkZIndex = () => {
+      const label = document.querySelector('label[for="debt_status_yes"], label:has(input[name="debt_status"][value="yes"])');
+      if (!label) {
+        const labels = document.querySelectorAll('label');
+        labels.forEach((l, i) => {
+          const input = l.querySelector('input[name="debt_status"][value="yes"]');
+          if (input) {
+            const rect = l.getBoundingClientRect();
+            const zIndex = window.getComputedStyle(l).zIndex;
+            const pointerEvents = window.getComputedStyle(l).pointerEvents;
+            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'OnboardingNew.jsx:610',message:'Debt button z-index check',data:{zIndex,pointerEvents,rect:{top:rect.top,left:rect.left,width:rect.width,height:rect.height},hasInput:!!input,labelIndex:i},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+          }
+        });
+      }
+    };
+    checkZIndex();
+    const interval = setInterval(checkZIndex, 1000);
+    return () => clearInterval(interval);
+  }, []);
+  // #endregion
 
   return (
     <>
@@ -613,30 +642,79 @@ function DebtsCheckStep({ formData, setFormData, darkMode }) {
         </p>
       </div>
 
-      <div className="flex flex-col gap-4 mb-10">
-        <label className="relative flex items-start sm:items-center gap-4 p-6 rounded-[16px] border-2 cursor-pointer transition-all duration-200 hover:-translate-y-[2px] group bg-white dark:bg-[#2a2a2a] border-gray-200 dark:border-[#3a3a3a] hover:border-primary">
+      <div className="flex flex-col gap-4 mb-10 relative z-0">
+        <label 
+          className={`relative flex items-start sm:items-center gap-4 p-6 rounded-[16px] border-2 cursor-pointer transition-all duration-200 hover:-translate-y-[2px] group z-0 ${
+            formData.hasDebts === true
+              ? 'bg-primary/10 dark:bg-primary/20 border-primary shadow-[0_0_0_3px_rgba(16,185,129,0.1)]'
+              : 'bg-white dark:bg-[#2a2a2a] border-gray-200 dark:border-[#3a3a3a] hover:border-primary'
+          }`}
+          style={{ zIndex: 1 }}
+          onClick={(e) => {
+            // #region agent log
+            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'OnboardingNew.jsx:648',message:'Label clicked for debt yes',data:{target:e.target.tagName,currentTarget:e.currentTarget.tagName,hasDebts:formData.hasDebts,eventType:e.type,clientX:e.clientX,clientY:e.clientY},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
+            e.preventDefault();
+            e.stopPropagation();
+            handleDebtChoice(true);
+          }}
+          onMouseDown={(e) => {
+            // #region agent log
+            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'OnboardingNew.jsx:655',message:'Label mousedown for debt yes',data:{target:e.target.tagName,hasDebts:formData.hasDebts},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
+          }}
+        >
           <input
             type="radio"
             name="debt_status"
             value="yes"
             checked={formData.hasDebts === true}
-            onChange={() => handleDebtChoice(true)}
+            onChange={(e) => {
+              // #region agent log
+              fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'OnboardingNew.jsx:670',message:'Radio input onChange',data:{checked:e.target.checked,value:e.target.value,hasDebts:formData.hasDebts},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+              // #endregion
+              handleDebtChoice(true);
+            }}
             className="sr-only peer"
+            disabled={false}
+            readOnly={false}
           />
           <div className="shrink-0 pt-1 sm:pt-0">
-            <span className="material-symbols-outlined text-amber-500 text-[24px]">error</span>
+            <span className={`material-symbols-outlined text-[24px] transition-colors ${
+              formData.hasDebts === true ? 'text-amber-500' : 'text-amber-500/60'
+            }`}>error</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-[18px] font-display font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
+            <span className={`text-[18px] font-display font-semibold transition-colors ${
+              formData.hasDebts === true
+                ? 'text-primary dark:text-primary'
+                : 'text-gray-900 dark:text-white group-hover:text-primary'
+            }`}>
               Ja, ik heb schulden
             </span>
-            <span className="text-[14px] text-gray-500 dark:text-[#a1a1a1] mt-1">
+            <span className={`text-[14px] mt-1 transition-colors ${
+              formData.hasDebts === true
+                ? 'text-primary font-medium'
+                : 'text-gray-500 dark:text-[#a1a1a1]'
+            }`}>
               Ik wil mijn schulden toevoegen
             </span>
           </div>
         </label>
 
-        <label className="relative flex items-start sm:items-center gap-4 p-6 rounded-[16px] border-2 cursor-pointer transition-all duration-200 hover:-translate-y-[2px] bg-primary/5 dark:bg-[rgba(16,185,129,0.1)] border-primary">
+        <label 
+          className={`relative flex items-start sm:items-center gap-4 p-6 rounded-[16px] border-2 cursor-pointer transition-all duration-200 hover:-translate-y-[2px] z-0 ${
+            formData.hasDebts === false
+              ? 'bg-primary/10 dark:bg-primary/20 border-primary shadow-[0_0_0_3px_rgba(16,185,129,0.1)]'
+              : 'bg-white dark:bg-[#2a2a2a] border-gray-200 dark:border-[#3a3a3a] hover:border-primary'
+          }`}
+          style={{ zIndex: 1 }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDebtChoice(false);
+          }}
+        >
           <input
             type="radio"
             name="debt_status"
@@ -646,13 +724,23 @@ function DebtsCheckStep({ formData, setFormData, darkMode }) {
             className="sr-only peer"
           />
           <div className="shrink-0 pt-1 sm:pt-0">
-            <span className="material-symbols-outlined text-primary text-[24px]">check_circle</span>
+            <span className={`material-symbols-outlined text-[24px] transition-colors ${
+              formData.hasDebts === false ? 'text-primary' : 'text-primary/60'
+            }`}>check_circle</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-[18px] font-display font-semibold text-gray-900 dark:text-white">
+            <span className={`text-[18px] font-display font-semibold transition-colors ${
+              formData.hasDebts === false
+                ? 'text-primary dark:text-primary'
+                : 'text-gray-900 dark:text-white'
+            }`}>
               Nee, geen schulden
             </span>
-            <span className="text-[14px] text-primary mt-1 font-medium">
+            <span className={`text-[14px] mt-1 transition-colors ${
+              formData.hasDebts === false
+                ? 'text-primary font-medium'
+                : 'text-gray-500 dark:text-[#a1a1a1]'
+            }`}>
               Geweldig! Blijf zo doorgaan
             </span>
           </div>
