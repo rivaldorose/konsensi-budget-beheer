@@ -71,10 +71,15 @@ export default function Login() {
       });
 
       // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:67',message:'signInWithPassword result',data:{hasError:!!error,hasData:!!data,hasSession:!!data?.session,hasUser:!!data?.session?.user},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:67',message:'signInWithPassword result',data:{hasError:!!error,hasData:!!data,hasSession:!!data?.session,hasUser:!!data?.session?.user,errorMessage:error?.message,errorStatus:error?.status},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
       // #endregion
 
-      if (error) throw error;
+      if (error) {
+        // #region agent log
+        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:77',message:'Login error details',data:{errorMessage:error.message,errorStatus:error.status,errorCode:error.code},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
+        // #endregion
+        throw error;
+      }
 
       // Wait for session to be stored using onAuthStateChange
       await new Promise((resolve) => {
@@ -115,13 +120,29 @@ export default function Login() {
       window.location.href = '/Dashboard';
     } catch (error) {
       // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:95',message:'Login error',data:{errorMessage:error.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:120',message:'Login error caught',data:{errorMessage:error.message,errorStatus:error.status,errorCode:error.code},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
       // #endregion
       
       console.error('Auth error:', error);
+      
+      // Provide user-friendly error messages based on error type
+      let errorMessage = 'Er is iets misgegaan. Probeer het opnieuw.';
+      
+      if (error.message) {
+        if (error.message.includes('Invalid login credentials') || error.message.includes('Email not confirmed')) {
+          errorMessage = 'Ongeldige email of wachtwoord. Controleer je gegevens en probeer het opnieuw.';
+        } else if (error.message.includes('Email rate limit')) {
+          errorMessage = 'Te veel login pogingen. Wacht even en probeer het later opnieuw.';
+        } else if (error.message.includes('User not found')) {
+          errorMessage = 'Dit account bestaat niet. Controleer je email adres.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
-        title: 'Fout',
-        description: error.message || 'Er is iets misgegaan. Probeer het opnieuw.',
+        title: 'Inloggen mislukt',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
