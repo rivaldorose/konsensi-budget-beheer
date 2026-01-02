@@ -133,8 +133,8 @@ export default function Settings() {
     return (
       <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
-          <p className="text-gray-600 dark:text-gray-400 text-sm mt-4">Laden...</p>
+          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-[#9CA3AF]"></div>
+          <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm mt-4">Laden...</p>
         </div>
       </div>
     );
@@ -147,7 +147,7 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark">
       {/* Header */}
-      <header className="bg-konsensi-dark shadow-md w-full h-16 flex items-center justify-center px-4 md:px-8 z-50 sticky top-0">
+      <header className="bg-primary shadow-md w-full h-16 flex items-center justify-center px-4 md:px-8 z-50 sticky top-0">
         <div className="w-full max-w-[1400px] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="size-8 flex items-center justify-center text-white">
@@ -159,7 +159,7 @@ export default function Settings() {
             <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('Dashboard')}>Dashboard</a>
             <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('BudgetPlan')}>Balans</a>
             <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('Debts')}>Schulden</a>
-            <a className="px-5 py-2 bg-secondary text-konsensi-dark rounded-full text-sm font-bold shadow-sm" href={createPageUrl('Settings')}>Instellingen</a>
+            <a className="px-5 py-2 bg-primary/10 text-primary rounded-full text-sm font-bold shadow-sm" href={createPageUrl('Settings')}>Instellingen</a>
           </nav>
           <div className="flex items-center gap-4">
             <label className="relative inline-flex items-center cursor-pointer mr-2">
@@ -209,13 +209,13 @@ export default function Settings() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-konsensi-dark dark:text-secondary text-3xl">settings</span>
-                <h1 className="text-konsensi-dark dark:text-white text-3xl md:text-4xl font-black tracking-tight">Instellingen</h1>
+                <span className="material-symbols-outlined text-primary dark:text-primary text-3xl">settings</span>
+                <h1 className="text-[#0d1b17] dark:text-white text-3xl md:text-4xl font-black tracking-tight">Instellingen</h1>
               </div>
-              <p className="text-gray-600 dark:text-gray-400 text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
+              <p className="text-[#6B7280] dark:text-[#9CA3AF] text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
             </div>
             <button 
-              className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-dark-card text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors shadow-sm"
+              className="flex items-center gap-2 px-5 py-2 rounded-full border border-[#E5E7EB] dark:border-[#2A3F36] bg-white dark:bg-[#1a2c26] text-[#0d1b17] dark:text-white text-sm font-bold hover:bg-gray-50 dark:hover:bg-[#2A3F36] transition-colors shadow-sm"
               onClick={() => window.location.href = createPageUrl('HelpSupport')}
             >
               <span className="material-symbols-outlined text-[20px]">help_outline</span>
@@ -225,13 +225,13 @@ export default function Settings() {
 
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Sidebar Navigation */}
-            <aside className="w-full lg:w-1/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-4 lg:p-6 flex flex-col sticky top-24">
+            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a2c26] rounded-[24px] lg:rounded-[24px] shadow-soft dark:shadow-soft border border-[#E5E7EB] dark:border-[#2A3F36] p-4 lg:p-6 flex flex-col sticky top-24">
               <nav className="flex flex-col gap-2">
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
                     isActiveRoute('Settings') 
-                      ? 'bg-secondary text-konsensi-dark' 
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                      ? 'bg-primary/10 text-primary' 
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('Settings')}
                 >
@@ -243,8 +243,8 @@ export default function Settings() {
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
                     isActiveRoute('SecuritySettings')
-                      ? 'bg-secondary text-konsensi-dark'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('SecuritySettings')}
                 >
@@ -256,8 +256,8 @@ export default function Settings() {
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
                     isActiveRoute('NotificationSettings')
-                      ? 'bg-secondary text-konsensi-dark'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('NotificationSettings')}
                 >
@@ -269,8 +269,8 @@ export default function Settings() {
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
                     isActiveRoute('DisplaySettings')
-                      ? 'bg-secondary text-konsensi-dark'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('DisplaySettings')}
                 >
@@ -282,8 +282,8 @@ export default function Settings() {
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
                     isActiveRoute('VTLBSettings')
-                      ? 'bg-secondary text-konsensi-dark dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                      ? 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('VTLBSettings')}
                 >
@@ -295,8 +295,8 @@ export default function Settings() {
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
                     isActiveRoute('Privacy')
-                      ? 'bg-secondary text-konsensi-dark'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('Privacy')}
                 >
@@ -311,8 +311,8 @@ export default function Settings() {
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
                     isActiveRoute('HelpSupport')
-                      ? 'bg-secondary text-konsensi-dark dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                      ? 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('HelpSupport')}
                 >
@@ -324,8 +324,8 @@ export default function Settings() {
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
                     isActiveRoute('FAQSettings')
-                      ? 'bg-secondary text-konsensi-dark dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white'
+                      ? 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('FAQSettings')}
                 >
@@ -335,14 +335,14 @@ export default function Settings() {
                   <span className={`text-sm ${isActiveRoute('FAQSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Veelgestelde Vragen</span>
                 </a>
                 <a 
-                  className="group flex items-center gap-4 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white transition-all"
+                  className="group flex items-center gap-4 px-4 py-3 rounded-xl text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white transition-all"
                   href={createPageUrl('TermsOfService')}
                 >
                   <span className="material-symbols-outlined">description</span>
                   <span className="font-medium text-sm group-hover:font-semibold">Algemene Voorwaarden</span>
                 </a>
                 <a 
-                  className="group flex items-center gap-4 px-4 py-3 rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-konsensi-dark dark:hover:text-white transition-all"
+                  className="group flex items-center gap-4 px-4 py-3 rounded-xl text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white transition-all"
                   href={createPageUrl('PrivacyPolicy')}
                 >
                   <span className="material-symbols-outlined">policy</span>
@@ -352,17 +352,17 @@ export default function Settings() {
             </aside>
 
             {/* Main Content Section */}
-            <section className="w-full lg:w-3/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-6 md:p-8 lg:p-10">
-              <div className="flex flex-col border-b border-gray-100 dark:border-dark-border pb-6 mb-8">
-                <h2 className="text-konsensi-dark dark:text-white text-2xl font-bold">Mijn Profiel</h2>
-                <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base mt-1">Update je persoonlijke informatie en beheer hoe anderen je zien.</p>
+            <section className="w-full lg:w-3/4 bg-white dark:bg-[#1a2c26] rounded-[24px] lg:rounded-[24px] shadow-soft dark:shadow-soft border border-[#E5E7EB] dark:border-[#2A3F36] p-6 md:p-8 lg:p-10">
+                <div className="flex flex-col border-b border-[#E5E7EB] dark:border-[#2A3F36] pb-6 mb-8">
+                <h2 className="text-[#0d1b17] dark:text-white text-2xl font-bold">Mijn Profiel</h2>
+                <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm md:text-base mt-1">Update je persoonlijke informatie en beheer hoe anderen je zien.</p>
               </div>
 
               {/* Profile Photo Section */}
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-10">
                 <div className="relative group cursor-pointer">
                   <div 
-                    className="size-24 md:size-32 rounded-full bg-cover bg-center border-4 border-gray-50 dark:border-dark-border shadow-sm"
+                    className="size-24 md:size-32 rounded-full bg-cover bg-center border-4 border-[#E5E7EB] dark:border-[#2A3F36] shadow-sm"
                     style={{
                       backgroundImage: user?.profielfoto_url ? `url(${user.profielfoto_url})` : 'none',
                       backgroundColor: user?.profielfoto_url ? 'transparent' : '#8B5CF6'
@@ -390,11 +390,11 @@ export default function Settings() {
               />
                 </div>
                 <div className="flex flex-col items-center sm:items-start pt-2 gap-3">
-                  <h3 className="text-gray-900 dark:text-white font-bold text-lg">Profielafbeelding</h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm text-center sm:text-left max-w-xs">Upload een nieuwe foto. JPG, GIF of PNG formaat. Maximaal 2MB.</p>
+                  <h3 className="text-[#0d1b17] dark:text-white font-bold text-lg">Profielafbeelding</h3>
+                  <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm text-center sm:text-left max-w-xs">Upload een nieuwe foto. JPG, GIF of PNG formaat. Maximaal 2MB.</p>
                   <div className="flex gap-3 mt-1">
                     <button 
-                      className="px-5 py-2.5 bg-gray-100 dark:bg-dark-card-elevated hover:bg-gray-200 dark:hover:bg-dark-border text-gray-900 dark:text-white rounded-full text-sm font-bold transition-colors"
+                      className="px-5 py-2.5 bg-gray-100 dark:bg-[#2A3F36] hover:bg-gray-200 dark:hover:bg-[#2A3F36] text-[#0d1b17] dark:text-white rounded-full text-sm font-bold transition-colors"
                 onClick={() => document.getElementById('photo-upload').click()}
                 disabled={uploading}
               >
@@ -423,13 +423,13 @@ export default function Settings() {
               >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <label className="flex flex-col gap-2">
-                    <span className="text-gray-900 dark:text-white font-semibold text-sm">Naam</span>
+                    <span className="text-[#0d1b17] dark:text-white font-semibold text-sm">Naam</span>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">person</span>
                       </div>
                       <input 
-                        className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 dark:border-dark-border focus:border-konsensi-green focus:ring focus:ring-konsensi-green/20 bg-gray-50 dark:bg-dark-card-elevated text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 font-medium transition-all"
+                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2A3F36] focus:border-primary focus:ring focus:ring-primary/20 bg-gray-50 dark:bg-[#2A3F36] text-[#0d1b17] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#9CA3AF] font-medium transition-all"
                         placeholder="Jouw naam" 
                         type="text" 
                     value={formData.voornaam}
@@ -445,7 +445,7 @@ export default function Settings() {
                         <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">mail</span>
                 </div>
                       <input 
-                        className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 dark:border-dark-border focus:border-konsensi-green focus:ring focus:ring-konsensi-green/20 bg-gray-50 dark:bg-dark-card-elevated text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 font-medium transition-all"
+                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2A3F36] focus:border-primary focus:ring focus:ring-primary/20 bg-gray-50 dark:bg-[#2A3F36] text-[#0d1b17] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#9CA3AF] font-medium transition-all"
                         placeholder="jouw@email.nl" 
                     type="email"
                     value={formData.email}
@@ -462,7 +462,7 @@ export default function Settings() {
                         <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">call</span>
                       </div>
                       <input 
-                        className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 dark:border-dark-border focus:border-konsensi-green focus:ring focus:ring-konsensi-green/20 bg-gray-50 dark:bg-dark-card-elevated text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 font-medium transition-all"
+                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2A3F36] focus:border-primary focus:ring focus:ring-primary/20 bg-gray-50 dark:bg-[#2A3F36] text-[#0d1b17] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#9CA3AF] font-medium transition-all"
                         placeholder="+31 6 ..." 
                         type="tel" 
                         value={formData.telefoonnummer}
@@ -478,7 +478,7 @@ export default function Settings() {
                         <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">home</span>
                       </div>
                       <input 
-                        className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 dark:border-dark-border focus:border-konsensi-green focus:ring focus:ring-konsensi-green/20 bg-gray-50 dark:bg-dark-card-elevated text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 font-medium transition-all"
+                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2A3F36] focus:border-primary focus:ring focus:ring-primary/20 bg-gray-50 dark:bg-[#2A3F36] text-[#0d1b17] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#9CA3AF] font-medium transition-all"
                         placeholder="Straat en huisnummer" 
                         type="text" 
                     value={formData.adres}
@@ -496,14 +496,14 @@ export default function Settings() {
                         <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">lock</span>
                       </div>
                       <input 
-                        className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-card-elevated text-gray-500 dark:text-gray-400 font-medium cursor-not-allowed"
+                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2A3F36] bg-gray-50 dark:bg-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] font-medium cursor-not-allowed"
                         disabled 
                         placeholder="********" 
                         type="password" 
                   />
                 </div>
           <button
-                      className="px-6 py-3 border border-gray-300 dark:border-dark-border rounded-full font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:border-gray-400 dark:hover:border-dark-border-accent transition-colors whitespace-nowrap"
+                      className="px-6 py-3 border border-[#E5E7EB] dark:border-[#2A3F36] rounded-full font-bold text-[#0d1b17] dark:text-white hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:border-[#D1D5DB] dark:hover:border-[#3A4F46] transition-colors whitespace-nowrap"
                       type="button"
             onClick={() => window.location.href = createPageUrl('SecuritySettings')}
                     >
@@ -511,11 +511,11 @@ export default function Settings() {
           </button>
               </div>
             </div>
-                <div className="flex items-center justify-end pt-8 mt-4 border-t border-gray-100 dark:border-dark-border">
+                <div className="flex items-center justify-end pt-8 mt-4 border-t border-[#E5E7EB] dark:border-[#2A3F36]">
                   {editing ? (
                     <>
           <button
-                        className="text-gray-500 dark:text-gray-400 font-semibold text-sm mr-6 hover:text-gray-800 dark:hover:text-gray-200 transition-colors" 
+                        className="text-[#6B7280] dark:text-[#9CA3AF] font-semibold text-sm mr-6 hover:text-[#0d1b17] dark:hover:text-white transition-colors" 
                         type="button"
                         onClick={() => {
                           setEditing(false);
@@ -525,7 +525,7 @@ export default function Settings() {
                         Annuleren
           </button>
           <button
-                        className="px-8 py-3 bg-konsensi-green hover:bg-konsensi-green-light text-white rounded-full font-bold shadow-md shadow-green-500/20 transition-all transform active:scale-95" 
+                        className="px-8 py-3 bg-primary hover:bg-primary-hover text-white rounded-full font-bold shadow-md shadow-primary/20 transition-all transform active:scale-95" 
                         type="submit"
                       >
                         Wijzigingen opslaan
