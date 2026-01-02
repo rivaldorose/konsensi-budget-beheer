@@ -168,7 +168,7 @@ export default function DisplaySettings() {
               <p className="text-gray-600 dark:text-gray-400 text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
             </div>
             <button 
-              className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-dark-card text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors shadow-sm"
+              className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a2c26] text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors shadow-sm"
               onClick={() => window.location.href = createPageUrl('HelpSupport')}
             >
               <span className="material-symbols-outlined text-[20px]">help_outline</span>
@@ -178,7 +178,7 @@ export default function DisplaySettings() {
 
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Sidebar */}
-            <aside className="w-full lg:w-1/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-4 lg:p-6 flex flex-col sticky top-24">
+            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a2c26] rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-4 lg:p-6 flex flex-col sticky top-24">
               <nav className="flex flex-col gap-2">
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
@@ -269,7 +269,7 @@ export default function DisplaySettings() {
             </aside>
 
             {/* Main Content */}
-            <section className="w-full lg:w-3/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-6 md:p-8 lg:p-8">
+            <section className="w-full lg:w-3/4 bg-white dark:bg-[#1a2c26] rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-6 md:p-8 lg:p-8">
               <div className="mb-8">
                 <h2 className="text-konsensi-dark dark:text-white font-bold text-2xl">App Voorkeuren</h2>
                 <p className="text-gray-600 dark:text-gray-400 text-[15px] mt-1">Pas de app aan naar jouw wensen</p>
@@ -277,7 +277,7 @@ export default function DisplaySettings() {
 
               <div className="flex flex-col gap-8">
                 {/* Language */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-gray-100 dark:border-dark-border">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-gray-100 dark:border-[#2A3F36]">
                   <div className="flex gap-4">
                     <div className="mt-1 flex-shrink-0">
                       <span className="material-symbols-outlined text-konsensi-dark dark:text-white text-[24px]">translate</span>
@@ -289,7 +289,7 @@ export default function DisplaySettings() {
                   </div>
                   <div className="relative w-full md:w-auto">
                     <select 
-                      className="appearance-none w-full md:w-40 bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border rounded-xl py-2.5 pl-4 pr-10 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-konsensi-green/20 focus:border-konsensi-green transition-all cursor-pointer"
+                      className="appearance-none w-full md:w-40 bg-gray-50 dark:bg-[#1a2c26]-elevated border border-gray-200 dark:border-[#2A3F36] rounded-xl py-2.5 pl-4 pr-10 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-konsensi-green/20 focus:border-konsensi-green transition-all cursor-pointer"
                       value={language}
                       onChange={async (e) => {
                         const newLang = e.target.value;
@@ -310,7 +310,7 @@ export default function DisplaySettings() {
                 </div>
 
                 {/* Theme */}
-                <div className="flex flex-col gap-4 pb-6 border-b border-gray-100 dark:border-dark-border">
+                <div className="flex flex-col gap-4 pb-6 border-b border-gray-100 dark:border-[#2A3F36]">
                   <div className="flex gap-4">
                     <div className="mt-1">
                       <span className="material-symbols-outlined text-accent-blue text-[24px]">palette</span>
@@ -322,7 +322,7 @@ export default function DisplaySettings() {
                   </div>
                   <div className="flex flex-wrap gap-6 pl-0 md:pl-[44px] mt-2">
                     <label className="flex items-center gap-3 cursor-pointer group">
-                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-dark-border group-hover:border-konsensi-green transition-colors bg-white dark:bg-dark-card-elevated">
+                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-[#2A3F36] group-hover:border-konsensi-green transition-colors bg-white dark:bg-[#1a2c26]-elevated">
                         <input 
                           className="peer sr-only" 
                           name="theme" 
@@ -341,7 +341,7 @@ export default function DisplaySettings() {
                       <span className="text-gray-900 dark:text-white text-sm">Licht</span>
                     </label>
                     <label className="flex items-center gap-3 cursor-pointer group">
-                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-dark-border group-hover:border-konsensi-green transition-colors bg-white dark:bg-dark-card-elevated">
+                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-[#2A3F36] group-hover:border-konsensi-green transition-colors bg-white dark:bg-[#1a2c26]-elevated">
                         <input 
                           className="peer sr-only" 
                           name="theme" 
@@ -360,7 +360,7 @@ export default function DisplaySettings() {
                       <span className="text-gray-900 dark:text-white text-sm">Donker</span>
                     </label>
                     <label className="flex items-center gap-3 cursor-pointer group">
-                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-dark-border group-hover:border-konsensi-green transition-colors bg-white dark:bg-dark-card-elevated">
+                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-[#2A3F36] group-hover:border-konsensi-green transition-colors bg-white dark:bg-[#1a2c26]-elevated">
                         <input 
                           className="peer sr-only" 
                           name="theme" 
@@ -399,7 +399,7 @@ export default function DisplaySettings() {
                   </div>
                   <div className="relative w-full md:w-auto">
                     <select 
-                      className="appearance-none w-full md:w-40 bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border rounded-xl py-2.5 pl-4 pr-10 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-konsensi-green/20 focus:border-konsensi-green transition-all cursor-pointer"
+                      className="appearance-none w-full md:w-40 bg-gray-50 dark:bg-[#1a2c26]-elevated border border-gray-200 dark:border-[#2A3F36] rounded-xl py-2.5 pl-4 pr-10 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-konsensi-green/20 focus:border-konsensi-green transition-all cursor-pointer"
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
                     >
@@ -412,7 +412,7 @@ export default function DisplaySettings() {
                 </div>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-gray-100 dark:border-dark-border flex justify-end">
+              <div className="mt-8 pt-4 border-t border-gray-100 dark:border-[#2A3F36] flex justify-end">
                 <button 
                   className="bg-konsensi-green text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-konsensi-green-light transition-colors shadow-sm focus:ring-4 focus:ring-konsensi-green/30 focus:outline-none"
                   onClick={handleSave}

@@ -193,7 +193,7 @@ export default function Adempauze() {
     return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-text-body dark:text-white flex flex-col">
       {/* Top Navigation Bar */}
-      <header className="bg-primary dark:bg-dark-card h-16 shadow-[0_2px_4px_rgba(0,0,0,0.1)] dark:border-b dark:border-dark-border sticky top-0 z-50">
+      <header className="bg-primary dark:bg-[#1a2c26] h-16 shadow-[0_2px_4px_rgba(0,0,0,0.1)] dark:border-b dark:border-[#2A3F36] sticky top-0 z-50">
         <div className="h-full max-w-[1400px] mx-auto px-4 lg:px-8 flex items-center justify-between">
           {/* Left: Logo */}
           <div className="flex items-center gap-2">
@@ -282,7 +282,7 @@ export default function Adempauze() {
           {/* LEFT COLUMN: Content */}
           <div className="flex flex-col gap-8">
             {/* 1. WELZIJN CHECK */}
-            <div className="bg-white dark:bg-dark-card rounded-3xl p-8 shadow-soft dark:shadow-lg border dark:border-dark-border">
+            <div className="bg-white dark:bg-[#1a2c26] rounded-3xl p-8 shadow-soft dark:shadow-lg border dark:border-[#2A3F36]">
               <div className="flex items-center gap-3 mb-6">
                 <h2 className="text-text-main dark:text-white font-display font-bold text-xl">💭 Hoe voel je je vandaag?</h2>
               </div>
@@ -295,7 +295,7 @@ export default function Adempauze() {
                         className={`w-full aspect-square max-w-[80px] rounded-xl border-2 ${
                           isSelected 
                             ? 'border-success dark:border-success bg-accent dark:bg-success/20 shadow-sm scale-110 ring-2 ring-accent dark:ring-success ring-offset-2' 
-                            : 'border-gray-200 dark:border-dark-border hover:border-success dark:hover:border-success hover:bg-accent/30 dark:hover:bg-success/10 hover:scale-105'
+                            : 'border-gray-200 dark:border-[#2A3F36] hover:border-success dark:hover:border-success hover:bg-accent/30 dark:hover:bg-success/10 hover:scale-105'
                         } transition-all duration-200 flex items-center justify-center text-3xl md:text-4xl`}
                         onClick={() => handleWellbeingSelect(option.value)}
                       >
@@ -304,7 +304,7 @@ export default function Adempauze() {
                       <span className={`font-body text-xs ${
                         isSelected 
                           ? 'text-success dark:text-success font-bold' 
-                          : 'text-text-sub dark:text-text-secondary font-medium group-hover:text-success dark:group-hover:text-success'
+                          : 'text-text-sub dark:text-[#9CA3AF] font-medium group-hover:text-success dark:group-hover:text-success'
                       } transition-colors`}>
                         {option.label}
                       </span>
@@ -312,19 +312,19 @@ export default function Adempauze() {
                   );
                 })}
               </div>
-              <p className="text-text-sub dark:text-text-secondary font-body text-[13px] italic text-center md:text-left mt-2">
+              <p className="text-text-sub dark:text-[#9CA3AF] font-body text-[13px] italic text-center md:text-left mt-2">
                 We houden je voortgang bij om je te ondersteunen
               </p>
               </div>
 
             {/* 2. RUST & HERSTEL TIPS */}
-            <div className="bg-white dark:bg-dark-card rounded-3xl p-8 shadow-soft dark:shadow-lg border dark:border-dark-border">
+            <div className="bg-white dark:bg-[#1a2c26] rounded-3xl p-8 shadow-soft dark:shadow-lg border dark:border-[#2A3F36]">
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-2">
                 <div>
                   <h2 className="text-text-main dark:text-white font-display font-bold text-xl flex items-center gap-2">
                     🌿 Rust & Herstel Activiteiten
                   </h2>
-                  <p className="text-text-body/80 dark:text-text-secondary font-body text-sm mt-1">
+                  <p className="text-text-body/80 dark:text-[#9CA3AF] font-body text-sm mt-1">
                     Hier zijn een paar dingen die kunnen helpen om weer rustig te worden:
                   </p>
                 </div>
@@ -338,12 +338,12 @@ export default function Adempauze() {
                   { icon: 'nature_people', title: 'Naar Buiten', text: 'Zoek een park of natuurgebied op in de buurt.' },
                   { icon: 'edit_note', title: 'Schrijf het op', text: 'Schrijf je gedachten van je af in een dagboek.' }
                 ].map((tip, index) => (
-                  <div key={index} className="bg-gray-50 dark:bg-dark-card-elevated rounded-2xl p-5 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-lg transition-all duration-200 group cursor-pointer border dark:border-dark-border">
-                    <div className="bg-white dark:bg-dark-card w-10 h-10 rounded-lg flex items-center justify-center mb-3 shadow-sm text-primary dark:text-success group-hover:text-success dark:group-hover:text-success transition-colors border dark:border-dark-border">
+                  <div key={index} className="bg-gray-50 dark:bg-[#1a2c26]-elevated rounded-2xl p-5 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-lg transition-all duration-200 group cursor-pointer border dark:border-[#2A3F36]">
+                    <div className="bg-white dark:bg-[#1a2c26] w-10 h-10 rounded-lg flex items-center justify-center mb-3 shadow-sm text-primary dark:text-success group-hover:text-success dark:group-hover:text-success transition-colors border dark:border-[#2A3F36]">
                       <span className="material-symbols-outlined">{tip.icon}</span>
                 </div>
                     <h3 className="font-display font-semibold text-[17px] text-text-main dark:text-white mb-1">{tip.title}</h3>
-                    <p className="font-body text-sm text-text-body dark:text-text-secondary leading-relaxed">{tip.text}</p>
+                    <p className="font-body text-sm text-text-body dark:text-[#9CA3AF] leading-relaxed">{tip.text}</p>
                   </div>
                 ))}
                 </div>
@@ -356,7 +356,7 @@ export default function Adempauze() {
               </div>
               <div>
                 <h3 className="font-display font-semibold text-[16px] text-text-main dark:text-white mb-1">Vergeet niet je essentiële rekeningen te betalen</h3>
-                <p className="font-body text-sm text-text-body dark:text-text-secondary leading-relaxed">
+                <p className="font-body text-sm text-text-body dark:text-[#9CA3AF] leading-relaxed">
                   Tijdens je adempauze worden schulden gepauzeerd, maar je moet nog steeds je lopende kosten zoals huur, energie en boodschappen betalen.
                 </p>
               </div>
@@ -366,40 +366,40 @@ export default function Adempauze() {
           {/* RIGHT COLUMN: Sticky Sidebar */}
           <div className="flex flex-col gap-6 sticky top-24">
             {/* 1. JE STATUS */}
-            <div className="bg-white dark:bg-dark-card rounded-3xl p-6 shadow-soft dark:shadow-lg border border-gray-100 dark:border-dark-border">
+            <div className="bg-white dark:bg-[#1a2c26] rounded-3xl p-6 shadow-soft dark:shadow-lg border border-gray-100 dark:border-[#2A3F36]">
               <h2 className="text-text-main dark:text-white font-display font-bold text-lg mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined">analytics</span>
                 Je Status
               </h2>
               <div className="flex flex-col gap-4">
-                <div className="flex justify-between items-center border-b border-gray-100 dark:border-dark-border pb-3">
-                  <span className="text-text-sub dark:text-text-secondary font-body text-sm">Inkomen</span>
+                <div className="flex justify-between items-center border-b border-gray-100 dark:border-[#2A3F36] pb-3">
+                  <span className="text-text-sub dark:text-[#9CA3AF] font-body text-sm">Inkomen</span>
                   <span className="text-success dark:text-success font-display font-semibold text-base">
                     {formatCurrency(userData.income)}/mnd
                   </span>
                     </div>
-                <div className="flex justify-between items-center border-b border-gray-100 dark:border-dark-border pb-3">
-                  <span className="text-text-sub dark:text-text-secondary font-body text-sm">Schulden</span>
+                <div className="flex justify-between items-center border-b border-gray-100 dark:border-[#2A3F36] pb-3">
+                  <span className="text-text-sub dark:text-[#9CA3AF] font-body text-sm">Schulden</span>
                   <span className="text-warning dark:text-warning font-display font-semibold text-base">
                     {formatCurrency(userData.debts)}
                   </span>
                         </div>
                 <div className="flex justify-between items-center pb-1">
-                  <span className="text-text-sub dark:text-text-secondary font-body text-sm">Status</span>
+                  <span className="text-text-sub dark:text-[#9CA3AF] font-body text-sm">Status</span>
                   <span className="bg-success/10 dark:bg-success/20 text-success-dark dark:text-success text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
                     Volledig Beschermd
                   </span>
             </div>
           </div>
-              <div className="mt-6 pt-4 border-t border-gray-100 dark:border-dark-border flex justify-between items-center">
+              <div className="mt-6 pt-4 border-t border-gray-100 dark:border-[#2A3F36] flex justify-between items-center">
                 <div className="flex flex-col">
-                  <span className="text-text-sub dark:text-text-secondary font-body text-xs">Actief sinds</span>
+                  <span className="text-text-sub dark:text-[#9CA3AF] font-body text-xs">Actief sinds</span>
                   <span className="text-text-body dark:text-white font-body text-sm font-medium">
                     {userData.activatedAt ? formatDate(userData.activatedAt) : formatDate(new Date())}
                   </span>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-text-sub dark:text-text-secondary font-body text-xs">Dagen actief</span>
+                  <span className="text-text-sub dark:text-[#9CA3AF] font-body text-xs">Dagen actief</span>
                   <span className="text-text-body dark:text-white font-body text-sm font-medium">
                     {userData.daysActive} dagen
                   </span>
@@ -408,7 +408,7 @@ export default function Adempauze() {
             </div>
 
             {/* 2. VOLGENDE STAPPEN */}
-            <div className="bg-white dark:bg-dark-card rounded-3xl p-6 shadow-soft dark:shadow-lg border border-gray-100 dark:border-dark-border">
+            <div className="bg-white dark:bg-[#1a2c26] rounded-3xl p-6 shadow-soft dark:shadow-lg border border-gray-100 dark:border-[#2A3F36]">
               <h2 className="text-text-main dark:text-white font-display font-bold text-lg mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-info dark:text-info">check_circle</span>
                 Volgende Stappen
@@ -420,7 +420,7 @@ export default function Adempauze() {
                     <label key={index} className={`flex items-start gap-3 cursor-pointer group ${isCompleted ? 'opacity-60' : ''}`}>
                       <input 
                         checked={isCompleted}
-                        className="mt-1 w-5 h-5 rounded border-gray-300 dark:border-dark-border text-success dark:text-success focus:ring-success/20 cursor-pointer" 
+                        className="mt-1 w-5 h-5 rounded border-gray-300 dark:border-[#2A3F36] text-success dark:text-success focus:ring-success/20 cursor-pointer" 
                         type="checkbox"
                         onChange={() => handleActionToggle(step.key)}
                       />
@@ -445,7 +445,7 @@ export default function Adempauze() {
             <div className="bg-purple-soft dark:bg-purple-badge/10 rounded-2xl p-6 text-center border border-purple-100 dark:border-purple-badge/20">
               <div className="text-4xl mb-3 block">💪</div>
               <h3 className="text-text-main dark:text-white font-display font-bold text-base mb-2">"Je bent niet alleen. 💚"</h3>
-              <p className="text-text-sub dark:text-text-secondary font-body text-[13px] leading-relaxed">
+              <p className="text-text-sub dark:text-[#9CA3AF] font-body text-[13px] leading-relaxed">
                 Deze momenten gaan voorbij. Je doet het goed door even te pauzeren.
               </p>
                   </div>

@@ -175,7 +175,7 @@ export default function FAQSettings() {
               <p className="text-gray-600 dark:text-gray-400 text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
             </div>
             <button 
-              className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-dark-card text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors shadow-sm"
+              className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a2c26] text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors shadow-sm"
               onClick={() => window.location.href = createPageUrl('HelpSupport')}
             >
               <span className="material-symbols-outlined text-[20px]">help_outline</span>
@@ -185,7 +185,7 @@ export default function FAQSettings() {
 
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Sidebar Navigation */}
-            <aside className="w-full lg:w-1/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-4 lg:p-6 flex flex-col sticky top-24">
+            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a2c26] rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-4 lg:p-6 flex flex-col sticky top-24">
               <nav className="flex flex-col gap-2">
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
@@ -312,7 +312,7 @@ export default function FAQSettings() {
             </aside>
 
             {/* Main Content Section */}
-            <section className="w-full lg:w-3/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-6 md:p-8 lg:p-10">
+            <section className="w-full lg:w-3/4 bg-white dark:bg-[#1a2c26] rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-6 md:p-8 lg:p-10">
               {/* Page Header */}
               <div className="mb-10">
                 <div className="flex items-center gap-4 mb-4">
@@ -330,7 +330,7 @@ export default function FAQSettings() {
               </div>
 
               {/* Search & Filter Card */}
-              <div className="bg-white dark:bg-dark-card-elevated rounded-3xl p-6 md:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-dark-border mb-8">
+              <div className="bg-white dark:bg-[#1a2c26]-elevated rounded-3xl p-6 md:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] mb-8">
                 {/* Search Bar */}
                 <div className="mb-8">
                   <label className="relative flex w-full items-center">
@@ -369,7 +369,7 @@ export default function FAQSettings() {
                 {filteredFaqs.map((faq, index) => (
                   <details 
                     key={index}
-                    className="group bg-white dark:bg-dark-card-elevated rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-dark-border overflow-hidden"
+                    className="group bg-white dark:bg-[#1a2c26]-elevated rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-[0_1px_3px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-[#2A3F36] overflow-hidden"
                     open={index === 0}
                   >
                     <summary className="flex cursor-pointer list-none items-center justify-between p-6 transition-colors hover:bg-gray-50/50 dark:hover:bg-dark-card">
@@ -391,7 +391,7 @@ export default function FAQSettings() {
               {/* Footer CTA */}
               <div className="mt-12 flex justify-center">
                 <button 
-                  className="flex items-center gap-2 px-6 py-3 rounded-xl border border-gray-200 dark:border-dark-border text-primary dark:text-primary font-bold hover:bg-white dark:hover:bg-dark-card-elevated hover:border-primary/30 dark:hover:border-primary/50 hover:shadow-sm transition-all bg-transparent"
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl border border-gray-200 dark:border-[#2A3F36] text-primary dark:text-primary font-bold hover:bg-white dark:hover:bg-dark-card-elevated hover:border-primary/30 dark:hover:border-primary/50 hover:shadow-sm transition-all bg-transparent"
                   onClick={() => window.location.href = createPageUrl('HelpSupport')}
                 >
                   <span className="material-symbols-outlined text-[20px]">mail</span>

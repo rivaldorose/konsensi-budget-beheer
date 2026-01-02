@@ -188,7 +188,7 @@ export default function SecuritySettings() {
               <p className="text-gray-600 dark:text-gray-400 text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
             </div>
             <button 
-              className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-dark-card text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors shadow-sm"
+              className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a2c26] text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors shadow-sm"
               onClick={() => window.location.href = createPageUrl('HelpSupport')}
             >
               <span className="material-symbols-outlined text-[20px]">help_outline</span>
@@ -198,7 +198,7 @@ export default function SecuritySettings() {
 
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Sidebar */}
-            <aside className="w-full lg:w-1/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-4 lg:p-6 flex flex-col sticky top-24">
+            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a2c26] rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-4 lg:p-6 flex flex-col sticky top-24">
               <nav className="flex flex-col gap-2">
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
@@ -291,8 +291,8 @@ export default function SecuritySettings() {
             </aside>
 
             {/* Main Content */}
-            <section className="w-full lg:w-3/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-6 md:p-8 lg:p-8">
-              <div className="flex flex-col border-b border-gray-100 dark:border-dark-border pb-6 mb-8">
+            <section className="w-full lg:w-3/4 bg-white dark:bg-[#1a2c26] rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-6 md:p-8 lg:p-8">
+              <div className="flex flex-col border-b border-gray-100 dark:border-[#2A3F36] pb-6 mb-8">
                 <h2 className="text-konsensi-dark dark:text-white font-bold text-2xl">Account & Beveiliging</h2>
                 <p className="text-gray-600 dark:text-gray-400 text-[15px] mt-2">Beheer je accountgegevens en beveiligingsinstellingen</p>
               </div>
@@ -360,7 +360,7 @@ export default function SecuritySettings() {
                         Afmelden
                       </button>
                     </div>
-                    <button className="mt-2 w-full sm:w-auto self-start px-4 py-2 bg-gray-50 dark:bg-dark-card-elevated hover:bg-gray-100 dark:hover:bg-dark-border text-konsensi-green text-sm font-medium rounded-lg border border-gray-200 dark:border-dark-border hover:border-gray-300 dark:hover:border-dark-border-accent transition-all">
+                    <button className="mt-2 w-full sm:w-auto self-start px-4 py-2 bg-gray-50 dark:bg-[#1a2c26]-elevated hover:bg-gray-100 dark:hover:bg-dark-border text-konsensi-green text-sm font-medium rounded-lg border border-gray-200 dark:border-[#2A3F36] hover:border-gray-300 dark:hover:border-dark-border-accent transition-all">
                       Beheer alle sessies
                     </button>
                   </div>
@@ -398,7 +398,7 @@ export default function SecuritySettings() {
                         Ontkoppelen
                       </button>
                     </div>
-                    <button className="mt-2 w-full sm:w-auto self-start px-4 py-2 bg-gray-50 dark:bg-dark-card-elevated hover:bg-gray-100 dark:hover:bg-dark-border text-konsensi-green text-sm font-medium rounded-lg border border-gray-200 dark:border-dark-border hover:border-gray-300 dark:hover:border-dark-border-accent transition-all">
+                    <button className="mt-2 w-full sm:w-auto self-start px-4 py-2 bg-gray-50 dark:bg-[#1a2c26]-elevated hover:bg-gray-100 dark:hover:bg-dark-border text-konsensi-green text-sm font-medium rounded-lg border border-gray-200 dark:border-[#2A3F36] hover:border-gray-300 dark:hover:border-dark-border-accent transition-all">
                       Beheer alle gekoppelde apps
                     </button>
                   </div>

@@ -90,7 +90,7 @@ export default function HelpSupport() {
               <p className="text-gray-600 dark:text-gray-400 text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
             </div>
             <button 
-              className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-dark-card text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors shadow-sm"
+              className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a2c26] text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors shadow-sm"
               onClick={() => window.location.href = createPageUrl('HelpSupport')}
             >
               <span className="material-symbols-outlined text-[20px]">help_outline</span>
@@ -100,7 +100,7 @@ export default function HelpSupport() {
 
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Sidebar */}
-            <aside className="w-full lg:w-1/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-4 lg:p-6 flex flex-col sticky top-24">
+            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a2c26] rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-4 lg:p-6 flex flex-col sticky top-24">
               <nav className="flex flex-col gap-2">
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
@@ -204,8 +204,8 @@ export default function HelpSupport() {
             </aside>
 
             {/* Main Content */}
-            <section className="w-full lg:w-3/4 bg-white dark:bg-dark-card rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-dark-border p-6 md:p-8 lg:p-8">
-              <div className="flex flex-col border-b border-gray-100 dark:border-dark-border pb-6 mb-8">
+            <section className="w-full lg:w-3/4 bg-white dark:bg-[#1a2c26] rounded-lg lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-6 md:p-8 lg:p-8">
+              <div className="flex flex-col border-b border-gray-100 dark:border-[#2A3F36] pb-6 mb-8">
                 <h2 className="text-konsensi-dark dark:text-white font-bold text-2xl">Hulp & Support</h2>
                 <p className="text-gray-600 dark:text-gray-400 text-[15px] mt-2">Vind antwoorden op veelgestelde vragen of neem contact met ons op</p>
               </div>
@@ -220,7 +220,7 @@ export default function HelpSupport() {
                     <h3 className="text-gray-900 dark:text-white font-semibold text-lg mb-1">Veelgestelde vragen (FAQ)</h3>
                     <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">Vind snel antwoorden op de meest voorkomende vragen.</p>
                     <button 
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border hover:border-gray-300 dark:hover:border-dark-border-accent text-konsensi-green rounded-lg text-sm font-medium transition-colors group"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-[#1a2c26]-elevated border border-gray-200 dark:border-[#2A3F36] hover:border-gray-300 dark:hover:border-dark-border-accent text-konsensi-green rounded-lg text-sm font-medium transition-colors group"
                       onClick={() => window.location.href = createPageUrl('FAQSettings')}
                     >
                       <span>Bekijk FAQ</span>
@@ -237,7 +237,7 @@ export default function HelpSupport() {
                   <div className="flex-1">
                     <h3 className="text-gray-900 dark:text-white font-semibold text-lg mb-1">Contact opnemen</h3>
                     <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">Neem contact met ons op via telefoon, e-mail of chat.</p>
-                    <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border hover:border-gray-300 dark:hover:border-dark-border-accent text-konsensi-green rounded-lg text-sm font-medium transition-colors group mb-4">
+                    <button className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-[#1a2c26]-elevated border border-gray-200 dark:border-[#2A3F36] hover:border-gray-300 dark:hover:border-dark-border-accent text-konsensi-green rounded-lg text-sm font-medium transition-colors group mb-4">
                       <span>Contactformulier</span>
                       <ArrowRight className="w-4 h-4 text-konsensi-green group-hover:translate-x-0.5 transition-transform" />
                     </button>
@@ -261,7 +261,7 @@ export default function HelpSupport() {
                     <h3 className="text-gray-900 dark:text-white font-semibold text-lg mb-1">Feedback geven</h3>
                     <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">Help ons Konsensi te verbeteren door je mening te delen.</p>
                     <button 
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border hover:border-gray-300 dark:hover:border-dark-border-accent text-konsensi-green rounded-lg text-sm font-medium transition-colors group"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-[#1a2c26]-elevated border border-gray-200 dark:border-[#2A3F36] hover:border-gray-300 dark:hover:border-dark-border-accent text-konsensi-green rounded-lg text-sm font-medium transition-colors group"
                       onClick={() => window.location.href = createPageUrl('Feedback')}
                     >
                       <span>Geef feedback</span>
