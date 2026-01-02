@@ -93,12 +93,13 @@ function LayoutWithProvider({ children, currentPageName }) {
   const { toast } = useToast();
   const { startPageTour, startFullOnboarding } = useTour();
 
-  // Check if we're on auth pages (case-insensitive, handle trailing slashes)
+  // Check if we're on auth pages or error pages (case-insensitive, handle trailing slashes)
   const currentPath = location.pathname.toLowerCase().replace(/\/$/, '');
   const isAuthPage = currentPath === '/login' || currentPath === '/signup' || currentPath === '/onboarding' || 
                      currentPath === '/forgot-password' || currentPath === '/email-sent' || 
                      currentPath === '/reset-password' || currentPath === '/password-saved' ||
-                     currentPath === '/terms' || currentPath === '/privacy';
+                     currentPath === '/terms' || currentPath === '/privacy' ||
+                     currentPath === '/maintenance';
   
   // #region agent log
   React.useEffect(() => {
