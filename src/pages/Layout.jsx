@@ -341,10 +341,25 @@ function LayoutWithProvider({ children, currentPageName }) {
             console.log('Huidige maand:', currentMonthStr);
             console.log('User email:', user.email);
 
-            const existingChecks = await MonthlyCheck.filter({ 
-                month: currentMonthStr,
-                created_by: user.email 
-            });
+            // Try user_id first, fallback to created_by (for backward compatibility)
+            let existingChecks = [];
+            try {
+              existingChecks = await MonthlyCheck.filter({ 
+                  month: currentMonthStr,
+                  user_id: user.id 
+              });
+            } catch (error) {
+              // Fallback to created_by if user_id doesn't work
+              try {
+                existingChecks = await MonthlyCheck.filter({ 
+                    month: currentMonthStr,
+                    created_by: user.email 
+                });
+              } catch (fallbackError) {
+                console.error('Error loading monthly checks:', fallbackError);
+                existingChecks = [];
+              }
+            }
             
             console.log('Bestaande checks deze maand:', existingChecks.length);
             
@@ -354,15 +369,30 @@ function LayoutWithProvider({ children, currentPageName }) {
                 return;
             }
 
+            // Try user_id first, fallback to created_by
             const [monthlyCosts, debts] = await Promise.all([
-              MonthlyCost.filter({ 
-                status: 'actief',
-                created_by: user.email 
-              }),
-              Debt.filter({ 
-                status: 'betalingsregeling',
-                created_by: user.email 
-              })
+              (async () => {
+                try {
+                  return await MonthlyCost.filter({ status: 'actief', user_id: user.id });
+                } catch {
+                  try {
+                    return await MonthlyCost.filter({ status: 'actief', created_by: user.email });
+                  } catch {
+                    return [];
+                  }
+                }
+              })(),
+              (async () => {
+                try {
+                  return await Debt.filter({ status: 'betalingsregeling', user_id: user.id });
+                } catch {
+                  try {
+                    return await Debt.filter({ status: 'betalingsregeling', created_by: user.email });
+                  } catch {
+                    return [];
+                  }
+                }
+              })()
             ]);
 
             console.log('Actieve maandelijkse kosten:', monthlyCosts.length);
@@ -606,7 +636,19 @@ function LayoutWithProvider({ children, currentPageName }) {
     if (!user?.email || !notificationsEnabled) return;
     
     try {
-      const allNotifications = await Notification.filter({ created_by: user.email }, '-created_date', 50);
+      // Try user_id first, fallback to created_by
+      let allNotifications = [];
+      try {
+        allNotifications = await Notification.filter({ user_id: user.id }, '-created_date', 50);
+      } catch (error) {
+        // Fallback to created_by if user_id doesn't work
+        try {
+          allNotifications = await Notification.filter({ created_by: user.email }, '-created_date', 50);
+        } catch (fallbackError) {
+          console.warn("Notifications unavailable, disabling feature:", fallbackError);
+          throw fallbackError; // Re-throw to trigger the catch block below
+        }
+      }
       setNotifications(allNotifications);
       const unread = allNotifications.filter(n => !n.is_read).length;
       setUnreadCount(unread);
