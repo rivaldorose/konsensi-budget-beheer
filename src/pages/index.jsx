@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import Layout from "./Layout.jsx";
 import { User } from "@/api/entities";
 
@@ -14,7 +14,8 @@ import TermsOfService from "./TermsOfService";
 
 import PrivacyPolicy from "./PrivacyPolicy";
 
-import Dashboard from "./Dashboard";
+// Lazy load Dashboard to avoid bundling issues
+const Dashboard = React.lazy(() => import("./Dashboard"));
 
 import Settings from "./Settings";
 
@@ -68,6 +69,7 @@ import PasswordSaved from "./PasswordSaved";
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
+// Note: Dashboard is lazy loaded, so we can't include it in PAGES object
 const PAGES = {
     
     debts: debts,
@@ -76,7 +78,7 @@ const PAGES = {
     
     VTLBCalculator: VTLBCalculator,
     
-    Dashboard: Dashboard,
+    // Dashboard: Dashboard, // Removed - lazy loaded
     
     Settings: Settings,
     
@@ -164,7 +166,18 @@ function PagesContent() {
                 
                 <Route path="/password-saved" element={<PasswordSaved />} />
                 
-                <Route path="/" element={<Dashboard />} />
+                <Route path="/" element={
+                    <Suspense fallback={
+                        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                            <div className="text-center">
+                                <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
+                                <p className="text-gray-600 text-sm mt-4">Laden...</p>
+                            </div>
+                        </div>
+                    }>
+                        <Dashboard />
+                    </Suspense>
+                } />
                 
                 <Route path="/debts" element={<debts />} />
                 
@@ -180,7 +193,18 @@ function PagesContent() {
                 
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 
-                <Route path="/Dashboard" element={<Dashboard />} />
+                <Route path="/Dashboard" element={
+                    <Suspense fallback={
+                        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                            <div className="text-center">
+                                <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
+                                <p className="text-gray-600 text-sm mt-4">Laden...</p>
+                            </div>
+                        </div>
+                    }>
+                        <Dashboard />
+                    </Suspense>
+                } />
                 
                 <Route path="/Settings" element={<Settings />} />
                 
