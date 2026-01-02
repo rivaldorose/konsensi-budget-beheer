@@ -14,6 +14,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
   const [darkMode, setDarkMode] = useState(() => {
     // Check localStorage first, then system preference
     if (typeof window !== 'undefined') {
@@ -58,6 +59,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(''); // Clear previous errors
 
     try {
       // #region agent log
@@ -140,6 +142,10 @@ export default function Login() {
         }
       }
       
+      // Set error state for inline display
+      setError(errorMessage);
+      
+      // Also show toast notification
       toast({
         title: 'Inloggen mislukt',
         description: errorMessage,
@@ -202,6 +208,24 @@ export default function Login() {
 
           {/* Login Form */}
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-4 flex items-start gap-3">
+                <span className="material-symbols-outlined text-red-500 dark:text-red-400 text-[20px] flex-shrink-0 mt-0.5">error</span>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-red-800 dark:text-red-200 mb-1">Inloggen mislukt</p>
+                  <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setError('')}
+                  className="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[18px]">close</span>
+                </button>
+              </div>
+            )}
+            
             {/* Email Input */}
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-gray-700 dark:text-gray-300" htmlFor="email">
@@ -217,7 +241,10 @@ export default function Login() {
                   placeholder="naam@voorbeeld.nl"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError(''); // Clear error when user types
+                  }}
                   required
                 />
               </div>
@@ -238,7 +265,10 @@ export default function Login() {
                   placeholder="••••••••"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError(''); // Clear error when user types
+                  }}
                   required
                   minLength={6}
                 />
