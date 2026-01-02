@@ -181,26 +181,29 @@ export default function Dashboard() {
   }, [tFromHook, language]);
   // #endregion
 
-  const t = useCallback((key, options) => {
-    // #region agent log
-    try {
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:177',message:'t function called',data:{key,hasTFromHook:!!tFromHook,language},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'L'})}).catch(()=>{});
-    } catch(e) {}
-    // #endregion
-    
-    let translation = dashboardTranslations[key]?.[language];
-    if (translation) {
-      if (options) {
-        Object.keys(options).forEach(optionKey => {
-          translation = translation.replace(`{${optionKey}}`, options[optionKey]);
-        });
+  // Use useMemo instead of useCallback to avoid initialization issues
+  const t = React.useMemo(() => {
+    return (key, options) => {
+      // #region agent log
+      try {
+        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:177',message:'t function called',data:{key,hasTFromHook:!!tFromHook,language},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'L'})}).catch(()=>{});
+      } catch(e) {}
+      // #endregion
+      
+      let translation = dashboardTranslations[key]?.[language];
+      if (translation) {
+        if (options) {
+          Object.keys(options).forEach(optionKey => {
+            translation = translation.replace(`{${optionKey}}`, options[optionKey]);
+          });
+        }
+        return translation;
       }
-      return translation;
-    }
-    if (tFromHook) {
-      return tFromHook(key, options);
-    }
-    return key; // Fallback if tFromHook is not available
+      if (tFromHook && typeof tFromHook === 'function') {
+        return tFromHook(key, options);
+      }
+      return key; // Fallback if tFromHook is not available
+    };
   }, [language, tFromHook]);
 
   const loadDashboardData = useCallback(async () => {
