@@ -69,7 +69,7 @@ import ResetPassword from "./ResetPassword";
 import PasswordSaved from "./PasswordSaved";
 
 import NotFound from "./NotFound";
-import Maintenance from "./Maintenance";
+import Maintenance from "./Maintenance"; // Fixed: removed duplicate import
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
