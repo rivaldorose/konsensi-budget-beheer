@@ -190,17 +190,17 @@ export default function Dashboard() {
       } catch(e) {}
       // #endregion
       
-      let translation = dashboardTranslations[key]?.[language];
-      if (translation) {
-        if (options) {
-          Object.keys(options).forEach(optionKey => {
-            translation = translation.replace(`{${optionKey}}`, options[optionKey]);
-          });
-        }
-        return translation;
+    let translation = dashboardTranslations[key]?.[language];
+    if (translation) {
+      if (options) {
+        Object.keys(options).forEach(optionKey => {
+          translation = translation.replace(`{${optionKey}}`, options[optionKey]);
+        });
       }
+      return translation;
+    }
       if (tFromHook && typeof tFromHook === 'function') {
-        return tFromHook(key, options);
+    return tFromHook(key, options);
       }
       return key; // Fallback if tFromHook is not available
     };
@@ -498,7 +498,7 @@ export default function Dashboard() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-50 p-4">
-        <div className="text-center p-8 bg-white rounded-lg shadow-md max-w-sm w-full">
+        <div className="text-center p-8 bg-white rounded-[24px] shadow-soft max-w-sm w-full">
           <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-800">{t('common.error')}</h2>
           <p className="text-gray-600 mt-2">{t('dashboard.errorLoading')}</p>
@@ -614,17 +614,17 @@ export default function Dashboard() {
         />
 
         {/* Startgids Widget for new users */}
-        {user && !user.onboarding_completed && 
-         allIncomes.length === 0 && allMonthlyCosts.length === 0 && debts.length === 0 && pots.length === 0 && (
-          <StartgidsWidget 
-            allIncomes={allIncomes}
-            allMonthlyCosts={allMonthlyCosts}
-            allDebts={debts}
-            allPots={pots}
-            user={user}
-            onRefresh={loadDashboardData}
-          />
-        )}
+      {user && !user.onboarding_completed && 
+       allIncomes.length === 0 && allMonthlyCosts.length === 0 && debts.length === 0 && pots.length === 0 && (
+        <StartgidsWidget 
+          allIncomes={allIncomes}
+          allMonthlyCosts={allMonthlyCosts}
+          allDebts={debts}
+          allPots={pots}
+          user={user}
+          onRefresh={loadDashboardData}
+        />
+      )}
 
         {/* Debt Journey Chart */}
         <DebtJourneyChart
@@ -632,12 +632,12 @@ export default function Dashboard() {
           totalPaid={totalPaidAllTime}
           progressPercentage={progressPercentage}
         />
-      </div>
+                  </div>
 
       {/* Right Column */}
       <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
         {/* Total Remaining Debt Card */}
-        <div className="bg-konsensi-dark text-white rounded-[2rem] p-6 shadow-soft relative overflow-hidden">
+        <div className="bg-primary text-white rounded-[24px] p-6 shadow-soft relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <span className="material-symbols-outlined text-[120px]">description</span>
           </div>
