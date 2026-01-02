@@ -260,7 +260,7 @@ export default function Debts() {
     if (statusLabels[type] === 'Afbetaald') {
       return { icon: 'check_circle', bgColor: 'bg-status-green/10 dark:bg-primary-green/10', iconColor: 'text-status-green dark:text-primary-green' };
       }
-    return { icon: 'description', bgColor: 'bg-gray-100 dark:bg-[#1a2c26]-elevated', iconColor: 'text-gray-500 dark:text-[#9CA3AF]' };
+    return { icon: 'description', bgColor: 'bg-gray-100 dark:bg-[#2A3F36]', iconColor: 'text-gray-500 dark:text-[#9CA3AF]' };
   };
 
   const filteredAndSortedDebts = useMemo(() => {
@@ -440,7 +440,7 @@ export default function Debts() {
               <div className="mt-4 relative max-w-md w-full group">
                 <span className="material-symbols-outlined absolute left-4 top-3 text-gray-400 dark:text-[#9CA3AF] group-focus-within:text-primary dark:group-focus-within:text-primary-green transition-colors">search</span>
                 <input 
-                  className="w-full h-12 pl-12 pr-4 rounded-[24px] border-none bg-white dark:bg-[#1a2c26]-elevated shadow-soft dark:shadow-soft text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-text-tertiary focus:ring-2 focus:ring-primary dark:focus:ring-primary-green outline-none transition-all" 
+                  className="w-full h-12 pl-12 pr-4 rounded-[24px] border-none bg-white dark:bg-[#2A3F36] shadow-soft dark:shadow-soft text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-[#9CA3AF] focus:ring-2 focus:ring-primary dark:focus:ring-primary-green outline-none transition-all" 
                   placeholder="Zoek op naam of status..." 
                   type="text"
                   value={searchTerm}
@@ -451,14 +451,14 @@ export default function Debts() {
             <div className="flex flex-wrap items-center gap-3">
               <button 
             onClick={() => setShowFilters(true)}
-                className="h-11 px-5 rounded-[24px] border border-gray-300 dark:border-[#2A3F36] bg-white dark:bg-transparent text-gray-700 dark:text-white font-semibold text-sm hover:bg-gray-50 dark:hover:bg-dark-card-elevated flex items-center gap-2 shadow-sm transition-all"
+                className="h-11 px-5 rounded-[24px] border border-gray-300 dark:border-[#2A3F36] bg-white dark:bg-transparent text-gray-700 dark:text-white font-semibold text-sm hover:bg-gray-50 dark:hover:bg-[#2A3F36] flex items-center gap-2 shadow-sm transition-all"
               >
                 <span className="material-symbols-outlined !text-[18px]">filter_list</span>
                 Filters
               </button>
               <button 
             onClick={() => setShowScanModal(true)}
-                className="h-11 px-5 rounded-[24px] border border-gray-300 dark:border-[#2A3F36] bg-white dark:bg-transparent text-gray-700 dark:text-white font-semibold text-sm hover:bg-gray-50 dark:hover:bg-dark-card-elevated flex items-center gap-2 shadow-sm transition-all"
+                className="h-11 px-5 rounded-[24px] border border-gray-300 dark:border-[#2A3F36] bg-white dark:bg-transparent text-gray-700 dark:text-white font-semibold text-sm hover:bg-gray-50 dark:hover:bg-[#2A3F36] flex items-center gap-2 shadow-sm transition-all"
               >
                 <span className="material-symbols-outlined !text-[18px]">document_scanner</span>
                 Scan Brief
@@ -572,7 +572,7 @@ export default function Debts() {
           {/* AI Schuld Analyse Section (Collapsible) */}
           <div className="bg-white dark:bg-[#1a2c26] rounded-3xl shadow-soft dark:shadow-soft overflow-hidden">
             <div 
-              className="p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors group"
+              className="p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2A3F36] transition-colors group"
               onClick={() => setShowAIAnalysis(!showAIAnalysis)}
             >
               <div className="flex items-center gap-3">
@@ -594,7 +594,7 @@ export default function Debts() {
           {/* Voortgang & Uitdagingen Section (Collapsible) */}
           <div className="bg-white dark:bg-[#1a2c26] rounded-3xl shadow-soft dark:shadow-soft overflow-hidden">
             <div 
-              className="p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors group"
+              className="p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2A3F36] transition-colors group"
           onClick={() => setShowGamification(!showGamification)}
         >
               <div className="flex items-center gap-3">
@@ -686,12 +686,12 @@ export default function Debts() {
                   return (
                       <tr 
                       key={debt.id}
-                        className="group hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors cursor-pointer"
+                        className="group hover:bg-gray-50 dark:hover:bg-[#2A3F36] transition-colors cursor-pointer"
                         onClick={() => handleViewDetails(debt)}
                       >
                         <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                            <div className={`size-10 rounded-[24px] ${creditorIcon.bgColor} border ${creditorIcon.bgColor.includes('dark:') ? 'border-dark-border-accent' : 'border-gray-200'} flex items-center justify-center ${creditorIcon.iconColor} group-hover:opacity-80 transition-opacity`}>
+                            <div className={`size-10 rounded-[24px] ${creditorIcon.bgColor} border ${creditorIcon.bgColor.includes('dark:') ? 'border-[#3A4F46]' : 'border-gray-200'} flex items-center justify-center ${creditorIcon.iconColor} group-hover:opacity-80 transition-opacity`}>
                               <span className="material-symbols-outlined !text-[20px]">{creditorIcon.icon}</span>
                           </div>
                           <div>
@@ -753,7 +753,7 @@ export default function Debts() {
                   <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-[24px] border border-gray-300 dark:border-[#2A3F36] bg-white dark:bg-transparent text-gray-700 dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-dark-card-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="px-4 py-2 rounded-[24px] border border-gray-300 dark:border-[#2A3F36] bg-white dark:bg-transparent text-gray-700 dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-[#2A3F36] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Vorige
                   </button>
@@ -776,7 +776,7 @@ export default function Debts() {
                           className={`w-8 h-8 rounded-[24px] text-sm font-medium transition-all ${
                             currentPage === pageNum
                               ? 'bg-primary dark:bg-primary-green text-primary-dark dark:text-dark-bg'
-                              : 'border border-gray-300 dark:border-[#2A3F36] bg-white dark:bg-transparent text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-dark-card-elevated'
+                              : 'border border-gray-300 dark:border-[#2A3F36] bg-white dark:bg-transparent text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-[#2A3F36]'
                           }`}
                       >
                         {pageNum}
@@ -787,7 +787,7 @@ export default function Debts() {
                   <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                    className="px-4 py-2 rounded-[24px] border border-gray-300 dark:border-[#2A3F36] bg-white dark:bg-transparent text-gray-700 dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-dark-card-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="px-4 py-2 rounded-[24px] border border-gray-300 dark:border-[#2A3F36] bg-white dark:bg-transparent text-gray-700 dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-[#2A3F36] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   Volgende
                   </button>
@@ -893,9 +893,9 @@ export default function Debts() {
                   setShowAddChoiceModal(false);
                   setShowAddForm(true);
                 }}
-                className="w-full flex items-center gap-4 p-4 bg-gray-50 dark:bg-[#1a2c26]-elevated hover:bg-gray-100 dark:hover:bg-dark-border-accent border-2 border-gray-200 dark:border-[#2A3F36] rounded-2xl transition-all active:scale-[0.98]"
+                className="w-full flex items-center gap-4 p-4 bg-gray-50 dark:bg-[#2A3F36] hover:bg-gray-100 dark:hover:bg-dark-border-accent border-2 border-gray-200 dark:border-[#2A3F36] rounded-2xl transition-all active:scale-[0.98]"
               >
-                <div className="w-14 h-14 bg-gray-100 dark:bg-[#1a2c26]-elevated rounded-[24px] flex items-center justify-center">
+                <div className="w-14 h-14 bg-gray-100 dark:bg-[#2A3F36] rounded-[24px] flex items-center justify-center">
                   <span className="material-symbols-outlined text-gray-600 dark:text-[#9CA3AF] !text-[28px]">edit</span>
                 </div>
                 <div className="flex-1 text-left">
@@ -930,7 +930,7 @@ export default function Debts() {
               <p className="text-gray-700 dark:text-[#9CA3AF]">
               Dit is het bedrag dat je <strong>minimaal nodig hebt om van te leven</strong>. De rest kun je gebruiken om schulden af te lossen.
             </p>
-              <div className="bg-gray-50 dark:bg-[#1a2c26]-elevated rounded-[24px] p-4 space-y-2">
+              <div className="bg-gray-50 dark:bg-[#2A3F36] rounded-[24px] p-4 space-y-2">
               <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-[#9CA3AF]">Je inkomen</span>
                   <span className="font-medium text-[#131d0c] dark:text-white">€ 2.000</span>
