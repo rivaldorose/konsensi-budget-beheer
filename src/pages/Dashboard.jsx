@@ -512,8 +512,6 @@ export default function Dashboard() {
     allTransactions = [],
     allPayments = [],
   } = dashboardData;
-
-  const chartData = graphView === 'week' ? weeklyGraphData : monthlyGraphData;
   
   const currentMonthFormatted = (() => {
     try {
