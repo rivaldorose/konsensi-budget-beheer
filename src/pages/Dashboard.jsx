@@ -127,12 +127,6 @@ const dashboardTranslations = {
 };
 
 export default function Dashboard() {
-  // #region agent log
-  React.useEffect(() => {
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:129',message:'Dashboard component rendering',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
-  }, []);
-  // #endregion
-  
   const [user, setUser] = useState(null);
   const [gamificationData, setGamificationData] = useState({
     level: 9,
@@ -170,23 +164,15 @@ export default function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
-  // #region agent log
-  React.useEffect(() => {
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:166',message:'Dashboard before useToast hook',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
-  }, []);
-  // #endregion
-  
   const { toast } = useToast();
-  
-  // #region agent log
-  React.useEffect(() => {
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:172',message:'Dashboard after useToast hook',data:{toastType:typeof toast},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
-  }, []);
-  // #endregion
-  
   const { t: tFromHook, language } = useTranslation();
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
+
+  // #region agent log
+  React.useEffect(() => {
+    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:189',message:'Dashboard component rendering',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H'})}).catch(()=>{});
+  }, []);
+  // #endregion
 
   const t = useCallback((key, options) => {
     let translation = dashboardTranslations[key]?.[language];
