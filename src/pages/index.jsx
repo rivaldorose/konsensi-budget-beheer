@@ -267,3 +267,4 @@ export default function Pages() {
             <PagesContent />
         </Router>
     );
+}
