@@ -67,6 +67,10 @@ import ResetPassword from "./ResetPassword";
 
 import PasswordSaved from "./PasswordSaved";
 
+import NotFound from "./NotFound";
+import Maintenance from "./Maintenance";
+import Maintenance from "./Maintenance";
+
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 // Note: Dashboard is lazy loaded, so we can't include it in PAGES object
@@ -243,6 +247,10 @@ function PagesContent() {
                 <Route path="/HelpSupport" element={<HelpSupport />} />
                 
                 <Route path="/FAQSettings" element={<FAQSettings />} />
+                
+                {/* Error Pages */}
+                <Route path="/maintenance" element={<Maintenance />} />
+                <Route path="*" element={<NotFound />} />
                 
             </Routes>
         </Layout>
