@@ -76,20 +76,31 @@ export default function Login() {
 
       if (error) throw error;
 
-      // Verify session is stored in localStorage
+      // Wait for session to be stored using onAuthStateChange
+      await new Promise((resolve) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          if (event === 'SIGNED_IN' && session) {
+            subscription.unsubscribe();
+            resolve(session);
+          }
+        });
+        
+        // Fallback timeout
+        setTimeout(() => {
+          subscription.unsubscribe();
+          resolve(null);
+        }, 2000);
+      });
+
+      // Verify session is stored
       const sessionCheck = await supabase.auth.getSession();
       // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:75',message:'Session check after login',data:{hasSession:!!sessionCheck.data?.session,hasUser:!!sessionCheck.data?.session?.user,localStorageKey:Object.keys(localStorage).filter(k=>k.includes('supabase')).join(',')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:75',message:'Session check after login',data:{hasSession:!!sessionCheck.data?.session,hasUser:!!sessionCheck.data?.session?.user},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
       // #endregion
 
-      // Wait a bit for session to be stored
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // Double check session before navigation
-      const sessionCheck2 = await supabase.auth.getSession();
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:82',message:'Session check before navigation',data:{hasSession:!!sessionCheck2.data?.session,hasUser:!!sessionCheck2.data?.session?.user},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
-      // #endregion
+      if (!sessionCheck.data?.session) {
+        throw new Error('Session not available after login');
+      }
 
       toast({
         title: 'Ingelogd! ✅',
@@ -97,10 +108,11 @@ export default function Login() {
       });
       
       // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:90',message:'Navigating to Dashboard',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:90',message:'Navigating to Dashboard',data:{hasSession:!!sessionCheck.data?.session},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
       // #endregion
       
-      navigate('/Dashboard');
+      // Use window.location.href for a full page reload to ensure session is available
+      window.location.href = '/Dashboard';
     } catch (error) {
       // #region agent log
       fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:95',message:'Login error',data:{errorMessage:error.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
