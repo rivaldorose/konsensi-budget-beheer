@@ -4,6 +4,100 @@ import { User } from '@/api/entities';
 
 const LanguageContext = createContext();
 
+// Fallback translations for missing keys
+const fallbackTranslations = {
+  'common.pleaseWait': {
+    nl: 'Even geduld...',
+    en: 'Please wait...',
+    es: 'Por favor espera...',
+    pl: 'Proszę czekać...',
+    de: 'Bitte warten...',
+    fr: 'Veuillez patienter...',
+    tr: 'Lütfen bekleyin...',
+    ar: 'يرجى الانتظار...'
+  },
+  'nav.adempauze': {
+    nl: 'Adempauze',
+    en: 'Breathing Space',
+    es: 'Respiro',
+    pl: 'Chwila oddechu',
+    de: 'Atempause',
+    fr: 'Pause',
+    tr: 'Nefes Molası',
+    ar: 'فترة راحة'
+  },
+  'notifications.title': {
+    nl: 'Meldingen',
+    en: 'Notifications',
+    es: 'Notificaciones',
+    pl: 'Powiadomienia',
+    de: 'Benachrichtigungen',
+    fr: 'Notifications',
+    tr: 'Bildirimler',
+    ar: 'الإشعارات'
+  },
+  'notifications.noNew': {
+    nl: 'Geen nieuwe meldingen',
+    en: 'No new notifications',
+    es: 'No hay notificaciones nuevas',
+    pl: 'Brak nowych powiadomień',
+    de: 'Keine neuen Benachrichtigungen',
+    fr: 'Aucune nouvelle notification',
+    tr: 'Yeni bildirim yok',
+    ar: 'لا توجد إشعارات جديدة'
+  },
+  'profile.accountDetails': {
+    nl: 'Accountgegevens',
+    en: 'Account Details',
+    es: 'Detalles de la cuenta',
+    pl: 'Szczegóły konta',
+    de: 'Kontodetails',
+    fr: 'Détails du compte',
+    tr: 'Hesap Detayları',
+    ar: 'تفاصيل الحساب'
+  },
+  'nav.settings': {
+    nl: 'Instellingen',
+    en: 'Settings',
+    es: 'Configuración',
+    pl: 'Ustawienia',
+    de: 'Einstellungen',
+    fr: 'Paramètres',
+    tr: 'Ayarlar',
+    ar: 'الإعدادات'
+  },
+  'profile.logout': {
+    nl: 'Uitloggen',
+    en: 'Logout',
+    es: 'Cerrar sesión',
+    pl: 'Wyloguj',
+    de: 'Abmelden',
+    fr: 'Déconnexion',
+    tr: 'Çıkış Yap',
+    ar: 'تسجيل الخروج'
+  },
+  'common.chooseLanguage': {
+    nl: 'Kies taal',
+    en: 'Choose language',
+    es: 'Elegir idioma',
+    pl: 'Wybierz język',
+    de: 'Sprache wählen',
+    fr: 'Choisir la langue',
+    tr: 'Dil seç',
+    ar: 'اختر اللغة'
+  },
+  'addmodal.add': {
+    nl: 'Toevoegen',
+    en: 'Add',
+    es: 'Añadir',
+    pl: 'Dodaj',
+    de: 'Hinzufügen',
+    fr: 'Ajouter',
+    tr: 'Ekle',
+    ar: 'إضافة'
+  }
+};
+
 export function useTranslation() {
   const context = useContext(LanguageContext);
   if (!context) {
@@ -73,7 +167,8 @@ export function LanguageProvider({ children }) {
   const t = useCallback((key, options = {}) => {
     if (loading) return '...'; 
 
-    const translationSet = translations[key];
+    // First check database translations, then fallback translations
+    const translationSet = translations[key] || fallbackTranslations[key];
     let translation = translationSet ? (translationSet[language] || translationSet['nl']) : key;
 
     if (!translationSet) {
