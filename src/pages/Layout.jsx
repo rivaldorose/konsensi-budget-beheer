@@ -301,8 +301,16 @@ function LayoutWithProvider({ children, currentPageName }) {
           }
         }
         
+        // #region agent log
+        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:304',message:'Setting user state',data:{userEmail:userData?.email,userVoornaam:userData?.voornaam,userFullName:userData?.full_name,userName:userData?.name,pathname:location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'M'})}).catch(()=>{});
+        // #endregion
+        
         setUser(userData);
       } catch (error) {
+        // #region agent log
+        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:307',message:'Error loading user',data:{errorMessage:error.message,pathname:location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'M'})}).catch(()=>{});
+        // #endregion
+        
         console.error("Error loading user:", error);
         setUser(null);
         // Redirect to login on error
@@ -948,7 +956,13 @@ function LayoutWithProvider({ children, currentPageName }) {
                     )}
                   </Avatar>
                   <span className="text-sm font-medium text-gray-900 hidden md:block capitalize">
-                    {user?.voornaam || user?.full_name || user?.name || user?.email?.split('@')[0] || 'Gebruiker'}
+                    {(() => {
+                      // #region agent log
+                      const displayName = user?.voornaam || user?.full_name || user?.name || user?.email?.split('@')[0] || 'Gebruiker';
+                      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:951',message:'Header rendering user name',data:{displayName,userEmail:user?.email,userVoornaam:user?.voornaam,userFullName:user?.full_name,userName:user?.name,hasUser:!!user},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'M'})}).catch(()=>{});
+                      // #endregion
+                      return displayName;
+                    })()}
                   </span>
                   <ChevronDown className="w-4 h-4 text-gray-500 hidden md:block" />
                 </Button>
