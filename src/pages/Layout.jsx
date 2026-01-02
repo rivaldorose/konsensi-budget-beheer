@@ -236,7 +236,16 @@ function LayoutWithProvider({ children, currentPageName }) {
     if (location.pathname === '/') {
       const handleRootRedirect = async () => {
         try {
+          // #region agent log
+          fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:235',message:'RootRedirect: User.me() called',data:{pathname:location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'K'})}).catch(()=>{});
+          // #endregion
+          
           const userData = await User.me();
+          
+          // #region agent log
+          fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:242',message:'RootRedirect: User.me() result',data:{userDataExists:!!userData,onboardingCompleted:userData?.onboarding_completed},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'K'})}).catch(()=>{});
+          // #endregion
+          
           if (!userData) {
             window.location.href = '/login';
           } else if (!userData.onboarding_completed) {
@@ -245,6 +254,10 @@ function LayoutWithProvider({ children, currentPageName }) {
             window.location.href = '/Dashboard';
           }
         } catch (error) {
+          // #region agent log
+          fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:252',message:'RootRedirect: Error checking auth',data:{errorMessage:error.message,errorStack:error.stack},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'K'})}).catch(()=>{});
+          // #endregion
+          
           console.error('Error checking auth for root redirect:', error);
           window.location.href = '/login';
         }
@@ -261,7 +274,15 @@ function LayoutWithProvider({ children, currentPageName }) {
 
     const loadInitialUser = async () => {
       try {
+        // #region agent log
+        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:275',message:'loadInitialUser: User.me() called',data:{pathname:location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'K'})}).catch(()=>{});
+        // #endregion
+        
         const userData = await User.me();
+        
+        // #region agent log
+        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:280',message:'loadInitialUser: User.me() result',data:{userDataExists:!!userData,onboardingCompleted:userData?.onboarding_completed},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'K'})}).catch(()=>{});
+        // #endregion
         
         if (!userData) {
           // Redirect to login if not logged in (only log if not on auth pages)
