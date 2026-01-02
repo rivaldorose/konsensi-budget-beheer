@@ -264,7 +264,7 @@ export default function CentVoorCent() {
             <p className="text-text-tertiary dark:text-text-secondary text-base">Jouw maandelijkse financiële reflectie</p>
           </div>
           <button 
-            className="flex items-center gap-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-lg px-4 py-2.5 text-text-main dark:text-white font-semibold shadow-sm hover:border-primary dark:hover:border-konsensi-green transition-colors cursor-pointer group"
+            className="flex items-center gap-2 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-[24px] px-4 py-2.5 text-text-main dark:text-white font-semibold shadow-sm hover:border-primary dark:hover:border-konsensi-green transition-colors cursor-pointer group"
             onClick={() => {/* Open month picker */}}
           >
             <span className="material-symbols-outlined text-text-tertiary dark:text-text-secondary group-hover:text-primary dark:group-hover:text-konsensi-green transition-colors">calendar_month</span>
@@ -352,7 +352,7 @@ export default function CentVoorCent() {
                   <span>Inkomen</span>
                   <span>{formatCurrency(monthlyData.totalIncome)}</span>
                 </div>
-                <div className="h-14 dark:h-[60px] w-full bg-background-light dark:bg-dark-card-elevated rounded-xl overflow-hidden relative group cursor-pointer border dark:border-dark-border">
+                <div className="h-14 dark:h-[60px] w-full bg-background-light dark:bg-dark-card-elevated rounded-[24px] overflow-hidden relative group cursor-pointer border dark:border-dark-border">
                   <div 
                     className="absolute top-0 left-0 h-full bg-primary/60 dark:bg-konsensi-green group-hover:bg-primary dark:group-hover:bg-konsensi-green-light transition-colors flex items-center justify-end px-4" 
                     style={{ width: '100%' }}
@@ -367,7 +367,7 @@ export default function CentVoorCent() {
                   <span>Uitgaven</span>
                   <span>{formatCurrency(monthlyData.totalExpenses)}</span>
                 </div>
-                <div className="h-14 dark:h-[60px] w-full bg-background-light dark:bg-dark-card-elevated rounded-xl overflow-hidden relative group cursor-pointer border dark:border-dark-border">
+                <div className="h-14 dark:h-[60px] w-full bg-background-light dark:bg-dark-card-elevated rounded-[24px] overflow-hidden relative group cursor-pointer border dark:border-dark-border">
                   <div 
                     className="absolute top-0 left-0 h-full bg-accent-orange dark:bg-konsensi-orange group-hover:opacity-90 transition-all duration-500 ease-out flex items-center justify-end px-4" 
                     style={{ width: `${expensePercentage}%` }}
@@ -376,7 +376,7 @@ export default function CentVoorCent() {
               </div>
             </div>
             <div className="mt-6 dark:mt-8 pt-6 dark:pt-6 border-t dark:border-t-dark-border">
-              <div className="bg-primary/20 dark:bg-konsensi-green/15 rounded-xl p-4 flex items-center gap-3 border dark:border-konsensi-green/20">
+              <div className="bg-primary/20 dark:bg-konsensi-green/15 rounded-[24px] p-4 flex items-center gap-3 border dark:border-konsensi-green/20">
                 <span className="material-symbols-outlined text-primary-dark dark:text-konsensi-green">celebration</span>
                 <p className="text-primary-dark dark:text-konsensi-green text-sm font-semibold">
                   Je gaf slechts {expensePercentage}% van je inkomen uit deze maand! 🎉
@@ -448,7 +448,7 @@ export default function CentVoorCent() {
                 <span className="material-symbols-outlined">check_circle</span> Wat ging goed
               </h4>
               {reflection.goodThings.map((item, index) => (
-                <div key={index} className="bg-accent-green/5 dark:bg-konsensi-green/10 p-4 rounded-2xl dark:rounded-xl flex gap-4 items-start border border-accent-green/10 dark:border-konsensi-green/20 hover:bg-accent-green/10 dark:hover:bg-konsensi-green/15 transition-colors">
+                <div key={index} className="bg-accent-green/5 dark:bg-konsensi-green/10 p-4 rounded-2xl dark:rounded-[24px] flex gap-4 items-start border border-accent-green/10 dark:border-konsensi-green/20 hover:bg-accent-green/10 dark:hover:bg-konsensi-green/15 transition-colors">
                   <span className="text-2xl">{item.emoji}</span>
                   <div>
                     <p className="text-text-secondary dark:text-text-secondary font-medium text-[15px] leading-relaxed">{item.text}</p>
@@ -462,7 +462,7 @@ export default function CentVoorCent() {
                 <span className="material-symbols-outlined">warning</span> Aandachtspunten
               </h4>
               {reflection.attentionPoints.map((item, index) => (
-                <div key={index} className="bg-accent-orange/5 dark:bg-konsensi-orange/10 p-4 rounded-2xl dark:rounded-xl flex gap-4 items-start border border-accent-orange/10 dark:border-konsensi-orange/20 hover:bg-accent-orange/10 dark:hover:bg-konsensi-orange/15 transition-colors">
+                <div key={index} className="bg-accent-orange/5 dark:bg-konsensi-orange/10 p-4 rounded-2xl dark:rounded-[24px] flex gap-4 items-start border border-accent-orange/10 dark:border-konsensi-orange/20 hover:bg-accent-orange/10 dark:hover:bg-konsensi-orange/15 transition-colors">
                   <span className="text-2xl">{item.emoji}</span>
                   <div>
                     <p className="text-text-secondary dark:text-text-secondary font-medium text-[15px] leading-relaxed">{item.text}</p>
@@ -497,14 +497,14 @@ export default function CentVoorCent() {
                 <p className="text-text-tertiary dark:text-text-secondary text-sm font-medium">€{monthlyData.debtPaid.toFixed(2)} afgelost deze maand</p>
               </div>
               <div>
-                <span className="inline-flex items-center gap-2 bg-blue-50 dark:bg-konsensi-blue/15 text-blue-600 dark:text-konsensi-blue text-sm font-bold px-4 py-2 dark:py-3 rounded-lg dark:rounded-xl border dark:border-konsensi-blue/20">
+                <span className="inline-flex items-center gap-2 bg-blue-50 dark:bg-konsensi-blue/15 text-blue-600 dark:text-konsensi-blue text-sm font-bold px-4 py-2 dark:py-3 rounded-[24px] dark:rounded-[24px] border dark:border-konsensi-blue/20">
                   <span className="material-symbols-outlined text-lg">calendar_month</span>
                   Als je €500/maand aflost, ben je over 27 maanden schuldenvrij! 📅
                 </span>
               </div>
             </div>
             {/* Right Part: Breakdown Box */}
-            <div className="lg:w-[350px] bg-background-light dark:bg-dark-card-elevated rounded-2xl dark:rounded-xl p-6 flex flex-col justify-center gap-4 border dark:border-dark-border">
+            <div className="lg:w-[350px] bg-background-light dark:bg-dark-card-elevated rounded-2xl dark:rounded-[24px] p-6 flex flex-col justify-center gap-4 border dark:border-dark-border">
               <div className="flex justify-between items-center">
                 <span className="text-text-secondary dark:text-text-secondary text-sm font-medium">Afgelost deze maand</span>
                 <span className="text-[#8B5CF6] dark:text-konsensi-purple font-bold">{formatCurrency(monthlyData.debtPaid)}</span>
@@ -555,7 +555,7 @@ export default function CentVoorCent() {
                 <span className="block font-semibold dark:text-text-primary">Deze maand: {formatCurrency(monthlyData.totalExpenses)} uitgegeven</span>
               </div>
             </div>
-            <div className={`bg-accent-orange/10 dark:bg-konsensi-orange/15 text-accent-orange dark:text-konsensi-orange font-bold px-4 py-2 rounded-lg dark:rounded-lg text-sm whitespace-nowrap border dark:border-konsensi-orange/20 flex items-center gap-2`}>
+            <div className={`bg-accent-orange/10 dark:bg-konsensi-orange/15 text-accent-orange dark:text-konsensi-orange font-bold px-4 py-2 rounded-[24px] dark:rounded-[24px] text-sm whitespace-nowrap border dark:border-konsensi-orange/20 flex items-center gap-2`}>
               <span>{expenseDiff >= 0 ? '+' : ''}{formatCurrency(expenseDiff)} meer uitgegeven</span>
               <span className="material-symbols-outlined text-sm">warning</span>
             </div>

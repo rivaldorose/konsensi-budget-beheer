@@ -280,22 +280,22 @@ export default function VasteLastenCheck() {
           </nav>
           <div className="flex gap-3 items-center">
             <button 
-              className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 px-4 bg-[#10b77f] dark:bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#0e9f6e] dark:hover:bg-primary/80 transition-colors shadow-sm"
+              className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-[24px] h-10 px-4 bg-[#10b77f] dark:bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-[#0e9f6e] dark:hover:bg-primary/80 transition-colors shadow-sm"
               onClick={() => window.location.href = createPageUrl('Adempauze')}
             >
               <span className="truncate">Adempauze</span>
             </button>
             <div className="flex gap-2">
               <button 
-                className="flex items-center justify-center rounded-xl size-10 bg-[#e7f3ef] dark:bg-white/10 text-[#0d1b17] dark:text-white hover:bg-[#d0e6dd] dark:hover:bg-white/20 transition-colors"
+                className="flex items-center justify-center rounded-[24px] size-10 bg-[#e7f3ef] dark:bg-white/10 text-[#0d1b17] dark:text-white hover:bg-[#d0e6dd] dark:hover:bg-white/20 transition-colors"
                 onClick={toggleTheme}
               >
                 <span className="material-symbols-outlined text-[20px]">{darkMode ? 'light_mode' : 'dark_mode'}</span>
               </button>
-              <button className="flex items-center justify-center rounded-xl size-10 bg-[#e7f3ef] dark:bg-white/10 text-[#0d1b17] dark:text-white hover:bg-[#d0e6dd] dark:hover:bg-white/20 transition-colors">
+              <button className="flex items-center justify-center rounded-[24px] size-10 bg-[#e7f3ef] dark:bg-white/10 text-[#0d1b17] dark:text-white hover:bg-[#d0e6dd] dark:hover:bg-white/20 transition-colors">
                 <span className="material-symbols-outlined text-[20px]">language</span>
               </button>
-              <button className="flex items-center justify-center rounded-xl size-10 bg-[#e7f3ef] dark:bg-white/10 text-[#0d1b17] dark:text-white hover:bg-[#d0e6dd] dark:hover:bg-white/20 transition-colors">
+              <button className="flex items-center justify-center rounded-[24px] size-10 bg-[#e7f3ef] dark:bg-white/10 text-[#0d1b17] dark:text-white hover:bg-[#d0e6dd] dark:hover:bg-white/20 transition-colors">
                 <span className="material-symbols-outlined text-[20px]">settings</span>
               </button>
             </div>
@@ -334,7 +334,7 @@ export default function VasteLastenCheck() {
             {/* Card Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-4">
-                <div className="size-12 rounded-full dark:rounded-xl bg-primary/10 dark:bg-[#11221c] flex items-center justify-center text-primary border dark:border-border-dark/50">
+                <div className="size-12 rounded-full dark:rounded-[24px] bg-primary/10 dark:bg-[#11221c] flex items-center justify-center text-primary border dark:border-border-dark/50">
                   <span className="material-symbols-outlined text-3xl dark:text-2xl">event_available</span>
                 </div>
                 <div>
@@ -353,7 +353,7 @@ export default function VasteLastenCheck() {
             </div>
 
             {/* Status Banner */}
-            <div className="mb-8 flex items-center gap-3 bg-primary/10 dark:bg-primary/10 border-l-4 border-primary dark:border-primary p-4 rounded-lg">
+            <div className="mb-8 flex items-center gap-3 bg-primary/10 dark:bg-primary/10 border-l-4 border-primary dark:border-primary p-4 rounded-[24px]">
               <span className="material-symbols-outlined text-primary dark:text-primary">info</span>
               <p className="text-primary dark:text-primary text-sm font-bold">
                 Deze betaling is vandaag verschuldigd.
@@ -363,14 +363,14 @@ export default function VasteLastenCheck() {
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button 
-                className="flex-1 max-w-[240px] cursor-pointer items-center justify-center rounded-xl h-12 px-8 bg-primary dark:bg-primary text-white text-base font-bold hover:bg-[#0e9f6e] dark:hover:bg-primary/80 transition-colors shadow-sm flex gap-2"
+                className="flex-1 max-w-[240px] cursor-pointer items-center justify-center rounded-[24px] h-12 px-8 bg-primary dark:bg-primary text-white text-base font-bold hover:bg-[#0e9f6e] dark:hover:bg-primary/80 transition-colors shadow-sm flex gap-2"
                 onClick={() => handlePaid(currentPayment)}
               >
                 <span className="material-symbols-outlined">check_circle</span>
                 <span>Ja, betaald</span>
               </button>
               <button 
-                className="flex-1 max-w-[240px] cursor-pointer items-center justify-center rounded-xl h-12 px-8 bg-transparent border-2 border-gray-200 dark:border-border-dark text-[#6B7280] dark:text-text-secondary text-base font-bold hover:bg-gray-50 dark:hover:bg-[#222] hover:border-gray-300 dark:hover:border-[#3a3a3a] transition-colors flex gap-2"
+                className="flex-1 max-w-[240px] cursor-pointer items-center justify-center rounded-[24px] h-12 px-8 bg-transparent border-2 border-gray-200 dark:border-border-dark text-[#6B7280] dark:text-text-secondary text-base font-bold hover:bg-gray-50 dark:hover:bg-[#222] hover:border-gray-300 dark:hover:border-[#3a3a3a] transition-colors flex gap-2"
                 onClick={() => handleNotPaid(currentPayment)}
               >
                 <span className="material-symbols-outlined">cancel</span>
@@ -401,7 +401,7 @@ export default function VasteLastenCheck() {
               </div>
 
               {/* Warning Banner */}
-              <div className="mb-6 flex items-start gap-3 bg-red-50 dark:bg-danger/10 border-l-4 border-red-500 dark:border-danger rounded-lg p-4">
+              <div className="mb-6 flex items-start gap-3 bg-red-50 dark:bg-danger/10 border-l-4 border-red-500 dark:border-danger rounded-[24px] p-4">
                 <span className="material-symbols-outlined text-red-500 dark:text-danger shrink-0">error</span>
                 <p className="text-red-500 dark:text-danger text-sm font-bold pt-0.5">
                   Je hebt een betaling gemist. Laten we kijken hoe we dit oplossen.
@@ -409,7 +409,7 @@ export default function VasteLastenCheck() {
               </div>
 
               {/* Financial Overview */}
-              <div className="flex flex-col gap-3 mb-6 bg-[#F9FAFB] dark:bg-[#111] rounded-xl p-5 border dark:border-border-dark">
+              <div className="flex flex-col gap-3 mb-6 bg-[#F9FAFB] dark:bg-[#111] rounded-[24px] p-5 border dark:border-border-dark">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-[#1F2937] dark:text-white">
                     <div className="size-6 bg-green-100 dark:bg-[#11221c] rounded-full flex items-center justify-center text-primary">
@@ -448,7 +448,7 @@ export default function VasteLastenCheck() {
                       <span className="material-symbols-outlined text-[#6B7280] dark:text-text-secondary">savings</span>
                     </div>
                     <select 
-                      className="block w-full pl-10 pr-10 py-3.5 text-base border border-gray-200 dark:border-border-dark bg-white dark:bg-[#222] text-[#1F2937] dark:text-white rounded-xl focus:ring-primary focus:border-primary dark:focus:border-primary appearance-none cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors"
+                      className="block w-full pl-10 pr-10 py-3.5 text-base border border-gray-200 dark:border-border-dark bg-white dark:bg-[#222] text-[#1F2937] dark:text-white rounded-[24px] focus:ring-primary focus:border-primary dark:focus:border-primary appearance-none cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors"
                       onChange={(e) => {
                         if (e.target.value) {
                           handleSolutionSelect('potje', e.target.value);
@@ -470,7 +470,7 @@ export default function VasteLastenCheck() {
 
                 {/* Reserve Button */}
                 <button 
-                  className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border ${
+                  className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-[24px] border ${
                     selectedSolution === 'reserve' 
                       ? 'border-primary dark:border-primary bg-primary/10 dark:bg-primary/10' 
                       : 'border-gray-200 dark:border-border-dark hover:bg-gray-50 dark:hover:bg-[#222] hover:border-primary dark:hover:border-primary'
@@ -483,7 +483,7 @@ export default function VasteLastenCheck() {
 
                 {/* Deferral Button */}
                 <button 
-                  className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border ${
+                  className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-[24px] border ${
                     selectedSolution === 'uitstel' 
                       ? 'border-primary dark:border-primary bg-primary/10 dark:bg-primary/10' 
                       : 'border-gray-200 dark:border-border-dark hover:bg-gray-50 dark:hover:bg-[#222] hover:border-primary dark:hover:border-primary'
@@ -505,7 +505,7 @@ export default function VasteLastenCheck() {
               {/* Footer Actions */}
               <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-100 dark:border-border-dark">
                 <button 
-                  className="px-6 py-3 rounded-xl text-[#6B7280] dark:text-text-secondary font-bold text-sm hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                  className="px-6 py-3 rounded-[24px] text-[#6B7280] dark:text-text-secondary font-bold text-sm hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
                   onClick={() => {
                     setShowPaymentModal(false);
                     setSelectedPayment(null);
@@ -516,7 +516,7 @@ export default function VasteLastenCheck() {
                   Annuleren
                 </button>
                 <button 
-                  className={`px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 ${
+                  className={`px-6 py-3 rounded-[24px] font-bold text-sm flex items-center gap-2 ${
                     selectedSolution 
                       ? 'bg-primary dark:bg-primary text-white hover:bg-[#0e9f6e] dark:hover:bg-primary/80' 
                       : 'bg-gray-200 dark:bg-primary/20 text-gray-400 dark:text-primary/50 cursor-not-allowed'

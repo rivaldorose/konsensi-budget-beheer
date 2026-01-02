@@ -137,7 +137,7 @@ export default function PrivacyPolicy() {
         <div className="flex flex-col items-center justify-center gap-6 mb-12">
           <button
             onClick={handleAccept}
-            className="flex items-center justify-center w-full max-w-[480px] h-[52px] bg-primary hover:bg-primary-dark text-white text-base font-bold rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
+            className="flex items-center justify-center w-full max-w-[480px] h-[52px] bg-primary hover:bg-primary-dark text-white text-base font-bold rounded-[24px] transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
           >
             Ik begrijp en ga akkoord
           </button>

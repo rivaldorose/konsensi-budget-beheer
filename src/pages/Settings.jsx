@@ -228,7 +228,7 @@ export default function Settings() {
             <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a2c26] rounded-[24px] lg:rounded-[24px] shadow-soft dark:shadow-soft border border-[#E5E7EB] dark:border-[#2A3F36] p-4 lg:p-6 flex flex-col sticky top-24">
               <nav className="flex flex-col gap-2">
                 <a 
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('Settings') 
                       ? 'bg-primary/10 text-primary' 
                       : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
@@ -241,7 +241,7 @@ export default function Settings() {
                   <span className={`text-sm ${isActiveRoute('Settings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Mijn Profiel</span>
                 </a>
                 <a 
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('SecuritySettings')
                       ? 'bg-primary/10 text-primary'
                       : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
@@ -254,7 +254,7 @@ export default function Settings() {
                   <span className={`text-sm ${isActiveRoute('SecuritySettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Account & Beveiliging</span>
                 </a>
                 <a 
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('NotificationSettings')
                       ? 'bg-primary/10 text-primary'
                       : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
@@ -267,7 +267,7 @@ export default function Settings() {
                   <span className={`text-sm ${isActiveRoute('NotificationSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Notificaties</span>
                 </a>
                 <a 
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('DisplaySettings')
                       ? 'bg-primary/10 text-primary'
                       : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
@@ -280,7 +280,7 @@ export default function Settings() {
                   <span className={`text-sm ${isActiveRoute('DisplaySettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>App Voorkeuren</span>
                 </a>
                 <a 
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('VTLBSettings')
                       ? 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
                       : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
@@ -293,7 +293,7 @@ export default function Settings() {
                   <span className={`text-sm ${isActiveRoute('VTLBSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>VTLB Berekening</span>
                 </a>
                 <a 
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('Privacy')
                       ? 'bg-primary/10 text-primary'
                       : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
@@ -309,7 +309,7 @@ export default function Settings() {
                   <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Hulp & Support</h3>
                 </div>
                 <a 
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('HelpSupport')
                       ? 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
                       : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
@@ -322,7 +322,7 @@ export default function Settings() {
                   <span className={`text-sm ${isActiveRoute('HelpSupport') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Help Center</span>
                 </a>
                 <a 
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('FAQSettings')
                       ? 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
                       : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
@@ -335,14 +335,14 @@ export default function Settings() {
                   <span className={`text-sm ${isActiveRoute('FAQSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Veelgestelde Vragen</span>
                 </a>
                 <a 
-                  className="group flex items-center gap-4 px-4 py-3 rounded-xl text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white transition-all"
+                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white transition-all"
                   href={createPageUrl('TermsOfService')}
                 >
                   <span className="material-symbols-outlined">description</span>
                   <span className="font-medium text-sm group-hover:font-semibold">Algemene Voorwaarden</span>
                 </a>
                 <a 
-                  className="group flex items-center gap-4 px-4 py-3 rounded-xl text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white transition-all"
+                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white transition-all"
                   href={createPageUrl('PrivacyPolicy')}
                 >
                   <span className="material-symbols-outlined">policy</span>

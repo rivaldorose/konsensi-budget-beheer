@@ -498,7 +498,7 @@ export default function BudgetPlan() {
                                         return (
                                             <div 
                                                 key={tx.id}
-                          className="flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-[#222] transition-colors border border-transparent hover:border-gray-100 dark:hover:border-[#2a2a2a] group"
+                          className="flex items-center justify-between p-4 rounded-[24px] hover:bg-gray-50 dark:hover:bg-[#222] transition-colors border border-transparent hover:border-gray-100 dark:hover:border-[#2a2a2a] group"
                         >
                           <div className="flex items-center gap-4">
                             <div 

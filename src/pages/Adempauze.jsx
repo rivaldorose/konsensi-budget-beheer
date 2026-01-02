@@ -269,7 +269,7 @@ export default function Adempauze() {
               Je hebt nu de rust om je situatie op orde te brengen. Neem de tijd voor jezelf en je financiële gezondheid.
             </p>
             <button 
-              className="bg-white dark:bg-white text-success dark:text-success hover:bg-white/95 dark:hover:bg-white/90 transition-colors font-display font-semibold text-sm px-6 py-2.5 rounded-lg shadow-sm whitespace-nowrap w-full md:w-auto flex items-center justify-center gap-2 group-hover:scale-105 duration-200"
+              className="bg-white dark:bg-white text-success dark:text-success hover:bg-white/95 dark:hover:bg-white/90 transition-colors font-display font-semibold text-sm px-6 py-2.5 rounded-[24px] shadow-sm whitespace-nowrap w-full md:w-auto flex items-center justify-center gap-2 group-hover:scale-105 duration-200"
               onClick={handleDeactivate}
             >
               <span>Deactiveer Adempauze</span>
@@ -292,7 +292,7 @@ export default function Adempauze() {
                   return (
                     <div key={index} className="flex flex-col items-center gap-2 group cursor-pointer">
                       <button 
-                        className={`w-full aspect-square max-w-[80px] rounded-xl border-2 ${
+                        className={`w-full aspect-square max-w-[80px] rounded-[24px] border-2 ${
                           isSelected 
                             ? 'border-success dark:border-success bg-accent dark:bg-success/20 shadow-sm scale-110 ring-2 ring-accent dark:ring-success ring-offset-2' 
                             : 'border-gray-200 dark:border-[#2A3F36] hover:border-success dark:hover:border-success hover:bg-accent/30 dark:hover:bg-success/10 hover:scale-105'
@@ -339,7 +339,7 @@ export default function Adempauze() {
                   { icon: 'edit_note', title: 'Schrijf het op', text: 'Schrijf je gedachten van je af in een dagboek.' }
                 ].map((tip, index) => (
                   <div key={index} className="bg-gray-50 dark:bg-[#1a2c26]-elevated rounded-2xl p-5 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-lg transition-all duration-200 group cursor-pointer border dark:border-[#2A3F36]">
-                    <div className="bg-white dark:bg-[#1a2c26] w-10 h-10 rounded-lg flex items-center justify-center mb-3 shadow-sm text-primary dark:text-success group-hover:text-success dark:group-hover:text-success transition-colors border dark:border-[#2A3F36]">
+                    <div className="bg-white dark:bg-[#1a2c26] w-10 h-10 rounded-[24px] flex items-center justify-center mb-3 shadow-sm text-primary dark:text-success group-hover:text-success dark:group-hover:text-success transition-colors border dark:border-[#2A3F36]">
                       <span className="material-symbols-outlined">{tip.icon}</span>
                 </div>
                     <h3 className="font-display font-semibold text-[17px] text-text-main dark:text-white mb-1">{tip.title}</h3>
@@ -434,7 +434,7 @@ export default function Adempauze() {
                 })}
               </div>
               <button 
-                className="w-full bg-info dark:bg-info hover:bg-info/90 dark:hover:bg-info/80 text-white font-display font-semibold text-sm py-3 rounded-xl transition-colors shadow-sm"
+                className="w-full bg-info dark:bg-info hover:bg-info/90 dark:hover:bg-info/80 text-white font-display font-semibold text-sm py-3 rounded-[24px] transition-colors shadow-sm"
                 onClick={() => window.location.href = createPageUrl('Dashboard')}
               >
                 Bekijk Actieplan

@@ -223,10 +223,10 @@ export default function WorkSchedule() {
             <h2 className="font-display font-extrabold text-3xl md:text-4xl text-[#131d0c] dark:text-text-primary">Werkrooster & Inkomsten</h2>
             <p className="text-gray-500 dark:text-text-secondary font-medium text-lg">Houd je uren en inkomsten bij.</p>
           </div>
-          <div className="flex items-center bg-white dark:bg-bg-card rounded-xl shadow-soft dark:shadow-soft-dark p-1 border border-border-subtle dark:border-border-base">
+          <div className="flex items-center bg-white dark:bg-bg-card rounded-[24px] shadow-soft dark:shadow-soft-dark p-1 border border-border-subtle dark:border-border-base">
             <button 
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="size-10 flex items-center justify-center rounded-lg hover:bg-gray-50 dark:hover:bg-bg-card-elevated text-gray-600 dark:text-text-secondary transition-colors"
+              className="size-10 flex items-center justify-center rounded-[24px] hover:bg-gray-50 dark:hover:bg-bg-card-elevated text-gray-600 dark:text-text-secondary transition-colors"
             >
               <span className="material-symbols-outlined">chevron_left</span>
             </button>
@@ -236,7 +236,7 @@ export default function WorkSchedule() {
             </div>
             <button 
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="size-10 flex items-center justify-center rounded-lg hover:bg-gray-50 dark:hover:bg-bg-card-elevated text-gray-600 dark:text-text-secondary transition-colors"
+              className="size-10 flex items-center justify-center rounded-[24px] hover:bg-gray-50 dark:hover:bg-bg-card-elevated text-gray-600 dark:text-text-secondary transition-colors"
             >
               <span className="material-symbols-outlined">chevron_right</span>
             </button>
@@ -319,21 +319,21 @@ export default function WorkSchedule() {
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setShowEmployersModal(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 dark:border-border-base bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-bg-card text-sm font-bold text-[#131d0c] dark:text-text-primary shadow-sm transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-[24px] border border-gray-200 dark:border-border-base bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-bg-card text-sm font-bold text-[#131d0c] dark:text-text-primary shadow-sm transition-all"
             >
               <span className="material-symbols-outlined text-[18px]">business_center</span>
               Mijn Werkgevers
             </button>
             <button 
               onClick={() => setShowPayslipModal(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 dark:border-border-base bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-bg-card text-sm font-bold text-[#131d0c] dark:text-text-primary shadow-sm transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-[24px] border border-gray-200 dark:border-border-base bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-bg-card text-sm font-bold text-[#131d0c] dark:text-text-primary shadow-sm transition-all"
             >
               <span className="material-symbols-outlined text-[18px]">upload_file</span>
               Loonstrook
             </button>
             <button 
               onClick={() => handleAddWorkDay()}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-dark dark:bg-konsensi-green dark:hover:bg-konsensi-green-light text-sm font-bold text-secondary dark:text-bg-base shadow-sm transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-[24px] bg-primary hover:bg-primary-dark dark:bg-konsensi-green dark:hover:bg-konsensi-green-light text-sm font-bold text-secondary dark:text-bg-base shadow-sm transition-all"
             >
               <span className="material-symbols-outlined text-[20px]">add</span>
               Werkdag
@@ -390,7 +390,7 @@ export default function WorkSchedule() {
                   </div>
                   
                   {workDay && (
-                    <div className={`mt-2 w-full p-2 rounded-lg ${getStatusColor(workDay.status)} flex flex-col gap-0.5 shadow-sm`}>
+                    <div className={`mt-2 w-full p-2 rounded-[24px] ${getStatusColor(workDay.status)} flex flex-col gap-0.5 shadow-sm`}>
                       {workDay.employer && (
                         <div className="flex items-center gap-1">
                           <span className={`size-1.5 rounded-full ${
@@ -481,7 +481,7 @@ export default function WorkSchedule() {
               {employers.length > 0 ? (
                 <div className="space-y-2">
                   {employers.map((emp, idx) => (
-                    <div key={idx} className="flex items-center justify-between bg-gray-50 dark:bg-bg-card-elevated px-3 py-2 rounded-lg">
+                    <div key={idx} className="flex items-center justify-between bg-gray-50 dark:bg-bg-card-elevated px-3 py-2 rounded-[24px]">
                       <span className="font-medium text-[#131d0c] dark:text-text-primary">{emp}</span>
                       <button
                         onClick={async () => {
@@ -504,7 +504,7 @@ export default function WorkSchedule() {
                 <input
                   type="text"
                   placeholder="Nieuwe werkgever toevoegen..."
-                  className="w-full px-3 py-2 border border-gray-200 dark:border-border-accent rounded-lg bg-white dark:bg-bg-card-elevated text-[#131d0c] dark:text-text-primary"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-border-accent rounded-[24px] bg-white dark:bg-bg-card-elevated text-[#131d0c] dark:text-text-primary"
                   onKeyPress={async (e) => {
                     if (e.key === 'Enter' && e.target.value.trim()) {
                       const newEmployer = e.target.value.trim();
@@ -523,7 +523,7 @@ export default function WorkSchedule() {
             <div className="p-5 border-t border-gray-100 dark:border-border-base bg-gray-50/50 dark:bg-bg-card-elevated/20 flex items-center justify-end">
               <button 
                 onClick={() => setShowEmployersModal(false)}
-                className="bg-primary dark:bg-konsensi-green hover:bg-primary-dark dark:hover:bg-konsensi-green-light text-secondary dark:text-bg-base text-sm font-bold px-6 py-2.5 rounded-xl shadow-sm transition-all"
+                className="bg-primary dark:bg-konsensi-green hover:bg-primary-dark dark:hover:bg-konsensi-green-light text-secondary dark:text-bg-base text-sm font-bold px-6 py-2.5 rounded-[24px] shadow-sm transition-all"
               >
                 Sluiten
               </button>

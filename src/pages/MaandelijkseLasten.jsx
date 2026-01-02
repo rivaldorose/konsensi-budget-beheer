@@ -291,7 +291,7 @@ export default function MaandelijkseLastenPage() {
                 <div className="flex items-center gap-3">
                     <button 
                         onClick={() => setShowQuickAddModal(true)}
-                        className="group flex items-center justify-center h-11 px-5 rounded-xl border-2 border-gray-200 bg-transparent text-primary-dark font-bold text-sm hover:border-primary-dark hover:bg-white transition-all"
+                        className="group flex items-center justify-center h-11 px-5 rounded-[24px] border-2 border-gray-200 bg-transparent text-primary-dark font-bold text-sm hover:border-primary-dark hover:bg-white transition-all"
                     >
                         <span className="material-symbols-outlined text-[20px] mr-2 group-hover:scale-110 transition-transform text-accent-orange">bolt</span>
                         Snel kiezen
@@ -310,7 +310,7 @@ export default function MaandelijkseLastenPage() {
                             });
                             setShowFormModal(true);
                         }}
-                        className="flex items-center justify-center h-11 px-6 rounded-xl bg-[#B2FF78] hover:bg-[#a0f065] text-primary-dark font-bold text-sm shadow-soft hover:shadow-hover transition-all transform hover:-translate-y-0.5"
+                        className="flex items-center justify-center h-11 px-6 rounded-[24px] bg-[#B2FF78] hover:bg-[#a0f065] text-primary-dark font-bold text-sm shadow-soft hover:shadow-hover transition-all transform hover:-translate-y-0.5"
                     >
                         + Toevoegen
                     </button>
@@ -365,19 +365,19 @@ export default function MaandelijkseLastenPage() {
                     <>
                         {/* Stats Mini-Pills */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                            <div className="bg-blue-50/50 rounded-xl p-3 flex flex-col items-center justify-center text-center">
+                            <div className="bg-blue-50/50 rounded-[24px] p-3 flex flex-col items-center justify-center text-center">
                                 <span className="text-gray-500 text-xs font-semibold uppercase">Gem. Vast</span>
                                 <span className="text-primary-dark font-bold text-lg">{formatCurrency(yearStats.avgFixed, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-orange-50/50 rounded-xl p-3 flex flex-col items-center justify-center text-center">
+                            <div className="bg-orange-50/50 rounded-[24px] p-3 flex flex-col items-center justify-center text-center">
                                 <span className="text-gray-500 text-xs font-semibold uppercase">Gem. Onverwacht</span>
                                 <span className="text-primary-dark font-bold text-lg">{formatCurrency(yearStats.avgUnexpected, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-purple-50/50 rounded-xl p-3 flex flex-col items-center justify-center text-center">
+                            <div className="bg-purple-50/50 rounded-[24px] p-3 flex flex-col items-center justify-center text-center">
                                 <span className="text-gray-500 text-xs font-semibold uppercase">Gem. Totaal</span>
                                 <span className="text-primary-dark font-bold text-lg">{formatCurrency(yearStats.avgTotal, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-gray-50 rounded-xl p-3 flex flex-col items-center justify-center text-center">
+                            <div className="bg-gray-50 rounded-[24px] p-3 flex flex-col items-center justify-center text-center">
                                 <span className="text-gray-500 text-xs font-semibold uppercase">Totaal Jaar</span>
                                 <span className="text-primary-dark font-bold text-lg">{formatCurrency(yearStats.totalYear, { decimals: 0 })}</span>
                             </div>
@@ -405,7 +405,7 @@ export default function MaandelijkseLastenPage() {
                             {data.items.map((cost) => (
                                 <div 
                                     key={cost.id} 
-                                    className="group flex items-center justify-between p-4 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200 cursor-pointer"
+                                    className="group flex items-center justify-between p-4 rounded-[24px] hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200 cursor-pointer"
                                     onClick={() => handleEdit(cost)}
                                 >
                                     <div className="flex items-center gap-4">
@@ -472,7 +472,7 @@ export default function MaandelijkseLastenPage() {
                                 });
                                 setShowFormModal(true);
                             }}
-                            className="px-6 py-2.5 rounded-xl bg-[#B2FF78] hover:bg-[#a0f065] text-primary-dark font-bold shadow-soft hover:shadow-hover transition-all"
+                            className="px-6 py-2.5 rounded-[24px] bg-[#B2FF78] hover:bg-[#a0f065] text-primary-dark font-bold shadow-soft hover:shadow-hover transition-all"
                         >
                             + Voeg eerste vaste last toe
                         </button>
@@ -500,7 +500,7 @@ export default function MaandelijkseLastenPage() {
                             <div className="flex flex-col gap-2">
                                 <label className="text-sm font-bold text-gray-700">Naam</label>
                                 <input
-                                    className="w-full h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                                    className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
                                     placeholder="Bijv. Netflix"
                                     type="text"
                                     value={formData.name}
@@ -512,7 +512,7 @@ export default function MaandelijkseLastenPage() {
                                 <div className="flex flex-col gap-2">
                                     <label className="text-sm font-bold text-gray-700">Bedrag (€)</label>
                                     <input
-                                        className="w-full h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                                        className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
                                         placeholder="0.00"
                                         type="number"
                                         step="0.01"
@@ -524,7 +524,7 @@ export default function MaandelijkseLastenPage() {
                                 <div className="flex flex-col gap-2">
                                     <label className="text-sm font-bold text-gray-700">Betaaldag</label>
                                     <input
-                                        className="w-full h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                                        className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
                                         max="31"
                                         min="1"
                                         placeholder="DD"
@@ -538,7 +538,7 @@ export default function MaandelijkseLastenPage() {
                             <div className="flex flex-col gap-2">
                                 <label className="text-sm font-bold text-gray-700">Categorie</label>
                                 <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                                    <SelectTrigger className="w-full h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-700">
+                                    <SelectTrigger className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-700">
                                         <SelectValue placeholder="Selecteer categorie" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -557,7 +557,7 @@ export default function MaandelijkseLastenPage() {
                                 <div className="flex flex-col gap-2">
                                     <label className="text-sm font-bold text-gray-700">Startdatum</label>
                                     <input
-                                        className="w-full h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-500"
+                                        className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-500"
                                         type="date"
                                         value={formData.start_date}
                                         onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
@@ -568,7 +568,7 @@ export default function MaandelijkseLastenPage() {
                                         Einddatum <span className="font-normal text-gray-400">(optioneel)</span>
                                     </label>
                                     <input
-                                        className="w-full h-12 rounded-xl border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-500"
+                                        className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-500"
                                         type="date"
                                         value={formData.end_date}
                                         onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
@@ -580,13 +580,13 @@ export default function MaandelijkseLastenPage() {
                             <button
                                 type="button"
                                 onClick={handleFormClose}
-                                className="px-6 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-bold hover:bg-white hover:shadow-sm transition-all text-sm"
+                                className="px-6 py-2.5 rounded-[24px] border border-gray-300 text-gray-700 font-bold hover:bg-white hover:shadow-sm transition-all text-sm"
                             >
                                 Annuleren
                             </button>
                             <button
                                 type="submit"
-                                className="px-6 py-2.5 rounded-xl bg-primary-dark text-white font-bold hover:bg-opacity-90 shadow-soft hover:shadow-lg transition-all text-sm"
+                                className="px-6 py-2.5 rounded-[24px] bg-primary-dark text-white font-bold hover:bg-opacity-90 shadow-soft hover:shadow-lg transition-all text-sm"
                             >
                                 {editingCost ? 'Opslaan' : 'Toevoegen'}
                             </button>

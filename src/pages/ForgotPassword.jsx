@@ -104,7 +104,7 @@ export default function ForgotPassword() {
             <label className="block text-sm font-semibold text-gray-700 dark:text-[#a1a1a1] mb-2" htmlFor="email">
               E-mailadres
             </label>
-            <div className="group relative flex items-center w-full rounded-xl bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] transition-all duration-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20">
+            <div className="group relative flex items-center w-full rounded-[24px] bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] transition-all duration-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20">
               <div className="pl-4 text-gray-400 dark:text-gray-500">
                 <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
                   mail
@@ -125,7 +125,7 @@ export default function ForgotPassword() {
 
           {/* Submit Button */}
           <button
-            className="w-full mt-8 bg-primary hover:bg-[#34d399] active:bg-[#059669] text-black font-display font-semibold text-base py-4 px-6 rounded-xl shadow-[0_4px_12px_rgba(16,185,129,0.2)] flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full mt-8 bg-primary hover:bg-[#34d399] active:bg-[#059669] text-black font-display font-semibold text-base py-4 px-6 rounded-[24px] shadow-[0_4px_12px_rgba(16,185,129,0.2)] flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             type="submit"
             disabled={loading}
           >

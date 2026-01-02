@@ -129,7 +129,7 @@ export default function FAQPage() {
                     <AccordionItem 
                       key={`${faq.id}-${index}`} 
                       value={`${category}-${faq.id}-${index}`}
-                      className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow"
+                      className="bg-white rounded-[24px] shadow-sm border hover:shadow-md transition-shadow"
                     >
                       <AccordionTrigger className="text-left text-base font-semibold text-gray-800 hover:no-underline px-4 py-4">
                         {question}
@@ -148,7 +148,7 @@ export default function FAQPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 bg-gray-50 rounded-lg">
+        <div className="text-center py-16 bg-gray-50 rounded-[24px]">
           <p className="text-gray-600">{t('faq.noResults')}</p>
         </div>
       )}

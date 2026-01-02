@@ -119,7 +119,7 @@ export default function EmailSent() {
           <button
             onClick={handleResend}
             disabled={resending || !email}
-            className="w-full group flex items-center justify-center gap-3 bg-gray-100 dark:bg-[#2a2a2a] hover:bg-gray-200 dark:hover:bg-[#3a3a3a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl py-[14px] px-4 transition-all duration-200 mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full group flex items-center justify-center gap-3 bg-gray-100 dark:bg-[#2a2a2a] hover:bg-gray-200 dark:hover:bg-[#3a3a3a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] py-[14px] px-4 transition-all duration-200 mb-4 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="material-symbols-outlined text-[20px] text-gray-500 dark:text-[#a1a1a1] group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
               refresh

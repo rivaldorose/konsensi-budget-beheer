@@ -218,7 +218,7 @@ export default function SignUp() {
                   <span className="material-symbols-outlined text-[20px]">person</span>
                 </div>
                 <input
-                  className="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3.5 pl-11 pr-4 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary focus:bg-white dark:focus:bg-gray-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                  className="block w-full rounded-[24px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3.5 pl-11 pr-4 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary focus:bg-white dark:focus:bg-gray-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                   id="fullname"
                   placeholder="Voor- en achternaam"
                   type="text"
@@ -239,7 +239,7 @@ export default function SignUp() {
                   <span className="material-symbols-outlined text-[20px]">mail</span>
                 </div>
                 <input
-                  className="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3.5 pl-11 pr-4 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary focus:bg-white dark:focus:bg-gray-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                  className="block w-full rounded-[24px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3.5 pl-11 pr-4 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary focus:bg-white dark:focus:bg-gray-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                   id="email"
                   placeholder="naam@voorbeeld.nl"
                   type="email"
@@ -260,7 +260,7 @@ export default function SignUp() {
                   <span className="material-symbols-outlined text-[20px]">lock</span>
                 </div>
                 <input
-                  className="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3.5 pl-11 pr-11 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary focus:bg-white dark:focus:bg-gray-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                  className="block w-full rounded-[24px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3.5 pl-11 pr-11 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary focus:bg-white dark:focus:bg-gray-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                   id="password"
                   placeholder="••••••••"
                   type={showPassword ? 'text' : 'password'}
@@ -305,7 +305,7 @@ export default function SignUp() {
                   <span className="material-symbols-outlined text-[20px]">lock</span>
                 </div>
                 <input
-                  className="block w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3.5 pl-11 pr-11 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary focus:bg-white dark:focus:bg-gray-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
+                  className="block w-full rounded-[24px] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-3.5 pl-11 pr-11 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary focus:bg-white dark:focus:bg-gray-700 focus:ring-4 focus:ring-primary/10 transition-all outline-none"
                   id="confirm-password"
                   placeholder="••••••••"
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -362,7 +362,7 @@ export default function SignUp() {
 
             {/* Submit Button */}
             <button
-              className="group flex w-full items-center justify-center gap-3 rounded-xl bg-primary px-6 py-4 text-white shadow-button transition-all hover:bg-primary-hover hover:scale-[1.02] active:bg-primary-active active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group flex w-full items-center justify-center gap-3 rounded-[24px] bg-primary px-6 py-4 text-white shadow-button transition-all hover:bg-primary-hover hover:scale-[1.02] active:bg-primary-active active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               type="submit"
               disabled={loading}
             >

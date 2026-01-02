@@ -11,7 +11,7 @@ export default function Feedback() {
                 <h1 className="text-2xl font-bold text-gray-900">💬 Feedback & Suggesties</h1>
             </div>
 
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+            <div className="bg-green-50 border border-green-200 rounded-[24px] p-4">
                 <p className="text-sm text-green-800">
                     <strong>Help ons Konsensi te verbeteren!</strong> Meld bugs, deel feedback of vraag nieuwe functies aan. 
                     Je kunt anoniem of met je naam feedback geven. We lezen alles en werken eraan!

@@ -269,7 +269,7 @@ export default function OnboardingNew() {
           <button
             onClick={handleBack}
             disabled={step === 1}
-            className="px-6 py-3 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#2a2a2a] transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 rounded-[24px] text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#2a2a2a] transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Terug
           </button>
@@ -393,7 +393,7 @@ function IncomeStep({ formData, setFormData, darkMode }) {
             {incomes.length > 1 && (
               <button
                 onClick={() => removeIncome(index)}
-                className="absolute top-4 right-4 p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                className="absolute top-4 right-4 p-2 rounded-[24px] text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-all"
               >
                 <span className="material-symbols-outlined text-[20px]">delete</span>
               </button>
@@ -406,7 +406,7 @@ function IncomeStep({ formData, setFormData, darkMode }) {
                   value={income.description}
                   onChange={(e) => updateIncome(index, 'description', e.target.value)}
                   placeholder="bijv. Salaris, Zorgtoeslag"
-                  className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                  className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                 />
               </div>
               <div className="md:col-span-2">
@@ -418,7 +418,7 @@ function IncomeStep({ formData, setFormData, darkMode }) {
                     value={income.amount}
                     onChange={(e) => updateIncome(index, 'amount', e.target.value)}
                     placeholder="0.00"
-                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                   />
                 </div>
               </div>
@@ -428,7 +428,7 @@ function IncomeStep({ formData, setFormData, darkMode }) {
                   <select
                     value={income.frequency}
                     onChange={(e) => updateIncome(index, 'frequency', e.target.value)}
-                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
+                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] px-4 py-3 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
                   >
                     <option value="monthly">Maandelijks</option>
                     <option value="weekly">Wekelijks</option>
@@ -444,7 +444,7 @@ function IncomeStep({ formData, setFormData, darkMode }) {
                   <select
                     value={income.payment_date}
                     onChange={(e) => updateIncome(index, 'payment_date', e.target.value)}
-                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
+                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] px-4 py-3 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
                   >
                     <option value="1">1e van de maand</option>
                     <option value="25">25e van de maand</option>
@@ -519,7 +519,7 @@ function MonthlyCostsStep({ formData, setFormData, darkMode }) {
             {costs.length > 1 && (
               <button
                 onClick={() => removeCost(index)}
-                className="absolute top-4 right-4 p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-all"
+                className="absolute top-4 right-4 p-2 rounded-[24px] text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-all"
               >
                 <span className="material-symbols-outlined text-[20px]">delete</span>
               </button>
@@ -532,7 +532,7 @@ function MonthlyCostsStep({ formData, setFormData, darkMode }) {
                   value={cost.name}
                   onChange={(e) => updateCost(index, 'name', e.target.value)}
                   placeholder="bijv. Huur woning"
-                  className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                  className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                 />
               </div>
               <div>
@@ -544,7 +544,7 @@ function MonthlyCostsStep({ formData, setFormData, darkMode }) {
                     value={cost.amount}
                     onChange={(e) => updateCost(index, 'amount', e.target.value)}
                     placeholder="0.00"
-                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                   />
                 </div>
               </div>
@@ -554,7 +554,7 @@ function MonthlyCostsStep({ formData, setFormData, darkMode }) {
                   <select
                     value={cost.category}
                     onChange={(e) => updateCost(index, 'category', e.target.value)}
-                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
+                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] px-4 py-3 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
                   >
                     {categories.map(cat => (
                       <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -569,7 +569,7 @@ function MonthlyCostsStep({ formData, setFormData, darkMode }) {
                   <select
                     value={cost.payment_date}
                     onChange={(e) => updateCost(index, 'payment_date', e.target.value)}
-                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
+                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] px-4 py-3 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
                   >
                     <option value="1">1e van de maand</option>
                     <option value="25">25e van de maand</option>
@@ -792,7 +792,7 @@ function DebtsAddStep({ formData, setFormData, darkMode }) {
             {debts.length > 1 && (
               <button
                 onClick={() => removeDebt(index)}
-                className="absolute top-3 right-3 p-2 rounded-lg text-[#6b7280] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all"
+                className="absolute top-3 right-3 p-2 rounded-[24px] text-[#6b7280] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all"
               >
                 <span className="material-symbols-outlined text-[20px]">delete</span>
               </button>
@@ -807,7 +807,7 @@ function DebtsAddStep({ formData, setFormData, darkMode }) {
                     value={debt.creditor}
                     onChange={(e) => updateDebt(index, 'creditor', e.target.value)}
                     placeholder="bijv. DUO, CJIB, Energieleverancier"
-                    className="block w-full pl-10 pr-3 py-2.5 bg-[#1a1a1a] border border-[#3a3a3a] rounded-xl text-white placeholder-[#525252] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
+                    className="block w-full pl-10 pr-3 py-2.5 bg-[#1a1a1a] border border-[#3a3a3a] rounded-[24px] text-white placeholder-[#525252] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
                   />
                 </div>
               </div>
@@ -820,7 +820,7 @@ function DebtsAddStep({ formData, setFormData, darkMode }) {
                     value={debt.total_amount}
                     onChange={(e) => updateDebt(index, 'total_amount', e.target.value)}
                     placeholder="0.00"
-                    className="block w-full pl-10 pr-3 py-2.5 bg-[#1a1a1a] border border-[#3a3a3a] rounded-xl text-white placeholder-[#525252] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
+                    className="block w-full pl-10 pr-3 py-2.5 bg-[#1a1a1a] border border-[#3a3a3a] rounded-[24px] text-white placeholder-[#525252] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
                   />
                 </div>
               </div>
@@ -833,7 +833,7 @@ function DebtsAddStep({ formData, setFormData, darkMode }) {
                     value={debt.monthly_payment}
                     onChange={(e) => updateDebt(index, 'monthly_payment', e.target.value)}
                     placeholder="0.00"
-                    className="block w-full pl-10 pr-3 py-2.5 bg-[#1a1a1a] border border-[#3a3a3a] rounded-xl text-white placeholder-[#525252] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
+                    className="block w-full pl-10 pr-3 py-2.5 bg-[#1a1a1a] border border-[#3a3a3a] rounded-[24px] text-white placeholder-[#525252] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
                   />
                 </div>
               </div>
@@ -844,7 +844,7 @@ function DebtsAddStep({ formData, setFormData, darkMode }) {
                   <select
                     value={debt.payment_date}
                     onChange={(e) => updateDebt(index, 'payment_date', e.target.value)}
-                    className="block w-full pl-10 pr-10 py-2.5 bg-[#1a1a1a] border border-[#3a3a3a] rounded-xl text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none text-sm cursor-pointer"
+                    className="block w-full pl-10 pr-10 py-2.5 bg-[#1a1a1a] border border-[#3a3a3a] rounded-[24px] text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none text-sm cursor-pointer"
                   >
                     <option value="1">1e van de maand</option>
                     <option value="15">15e van de maand</option>
@@ -860,7 +860,7 @@ function DebtsAddStep({ formData, setFormData, darkMode }) {
 
         <button
           onClick={addDebt}
-          className="w-full group flex items-center justify-center gap-2 py-4 px-4 bg-transparent border-2 border-dashed border-[#3a3a3a] rounded-xl text-[#a1a1a1] hover:text-primary hover:border-primary hover:bg-primary/5 transition-all"
+          className="w-full group flex items-center justify-center gap-2 py-4 px-4 bg-transparent border-2 border-dashed border-[#3a3a3a] rounded-[24px] text-[#a1a1a1] hover:text-primary hover:border-primary hover:bg-primary/5 transition-all"
         >
           <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">add</span>
           <span className="font-medium">Nog één toevoegen</span>

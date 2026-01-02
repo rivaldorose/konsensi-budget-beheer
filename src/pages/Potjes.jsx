@@ -326,7 +326,7 @@ export default function Potjes() {
           </div>
           <h2 className="text-2xl font-bold text-[#131d0c] dark:text-text-primary mb-2">Fout bij laden</h2>
           <p className="text-gray-600 dark:text-text-secondary mb-6 max-w-md">{error}</p>
-          <button onClick={fetchData} className="bg-primary dark:bg-primary-green text-secondary dark:text-dark-bg font-bold px-6 py-3 rounded-xl shadow-sm transition-all">
+          <button onClick={fetchData} className="bg-primary dark:bg-primary-green text-secondary dark:text-dark-bg font-bold px-6 py-3 rounded-[24px] shadow-sm transition-all">
             Opnieuw proberen
           </button>
         </div>
@@ -393,7 +393,7 @@ export default function Potjes() {
             </button>
             <button 
             onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#B2FF78] dark:bg-primary-green text-brand-dark dark:text-dark-bg hover:bg-[#a3eb6d] dark:hover:bg-light-green transition-colors font-bold text-sm shadow-sm group"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-[24px] bg-[#B2FF78] dark:bg-primary-green text-brand-dark dark:text-dark-bg hover:bg-[#a3eb6d] dark:hover:bg-light-green transition-colors font-bold text-sm shadow-sm group"
             >
               <span className="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">add</span>
               <span>Potje Toevoegen</span>
@@ -635,7 +635,7 @@ export default function Potjes() {
                       <>
                         <button 
                           onClick={() => handleOpenDeposit(potje)}
-                          className="flex-1 bg-[#B2FF78] dark:bg-primary-green hover:bg-[#a3eb6d] dark:hover:bg-light-green text-brand-dark dark:text-dark-bg py-2.5 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                          className="flex-1 bg-[#B2FF78] dark:bg-primary-green hover:bg-[#a3eb6d] dark:hover:bg-light-green text-brand-dark dark:text-dark-bg py-2.5 rounded-[24px] font-bold text-sm transition-colors flex items-center justify-center gap-2"
                         >
                           <span className="material-symbols-outlined text-[18px]">sync_alt</span> Storten
                         </button>

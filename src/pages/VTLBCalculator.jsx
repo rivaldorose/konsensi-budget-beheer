@@ -162,15 +162,15 @@ export default function VTLBCalculator() {
             <div className="flex flex-1 justify-end items-center gap-4">
               <div className="flex items-center gap-2">
                 <button 
-                  className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#e7f3ef] dark:bg-[#234832] hover:bg-[#cfe7df] dark:hover:bg-primary/20 text-[#0d1b17] dark:text-white transition-colors"
+                  className="flex items-center justify-center w-10 h-10 rounded-[24px] bg-[#e7f3ef] dark:bg-[#234832] hover:bg-[#cfe7df] dark:hover:bg-primary/20 text-[#0d1b17] dark:text-white transition-colors"
                   onClick={toggleTheme}
                 >
                   <span className="material-symbols-outlined text-[20px]">contrast</span>
                 </button>
-                <button className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#e7f3ef] dark:bg-[#234832] hover:bg-[#cfe7df] dark:hover:bg-primary/20 text-[#0d1b17] dark:text-white transition-colors">
+                <button className="flex items-center justify-center w-10 h-10 rounded-[24px] bg-[#e7f3ef] dark:bg-[#234832] hover:bg-[#cfe7df] dark:hover:bg-primary/20 text-[#0d1b17] dark:text-white transition-colors">
                   <span className="material-symbols-outlined text-[20px]">language</span>
                 </button>
-                <button className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#e7f3ef] dark:bg-[#234832] hover:bg-[#cfe7df] dark:hover:bg-primary/20 text-[#0d1b17] dark:text-white transition-colors">
+                <button className="flex items-center justify-center w-10 h-10 rounded-[24px] bg-[#e7f3ef] dark:bg-[#234832] hover:bg-[#cfe7df] dark:hover:bg-primary/20 text-[#0d1b17] dark:text-white transition-colors">
                   <span className="material-symbols-outlined text-[20px]">settings</span>
                 </button>
               </div>
@@ -218,18 +218,18 @@ export default function VTLBCalculator() {
               {/* Section 1: Inkomsten */}
               <section>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 dark:size-8 bg-[#e7f3ef] dark:bg-primary/20 rounded-lg dark:rounded-full text-primary">
+                  <div className="p-2 dark:size-8 bg-[#e7f3ef] dark:bg-primary/20 rounded-[24px] dark:rounded-full text-primary">
                     <span className="material-symbols-outlined dark:text-[20px]">account_balance_wallet</span>
                   </div>
                   <h3 className="text-text-main dark:text-white text-xl font-bold">Inkomsten</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:gap-5">
                   {/* Read-only Field */}
-                  <div className="flex flex-col gap-2 opacity-80 dark:flex-row dark:items-center dark:justify-between dark:p-4 dark:rounded-xl dark:bg-white/5 dark:border dark:border-transparent">
+                  <div className="flex flex-col gap-2 opacity-80 dark:flex-row dark:items-center dark:justify-between dark:p-4 dark:rounded-[24px] dark:bg-white/5 dark:border dark:border-transparent">
                     <label className="text-text-sub dark:text-text-muted text-sm font-semibold">
                       Vast inkomen <span className="font-normal text-xs text-gray-400 dark:opacity-70">(uit je profiel)</span>
                     </label>
-                    <div className="w-full h-[56px] dark:h-auto px-4 rounded-xl bg-gray-50 dark:bg-transparent border border-transparent flex items-center justify-between">
+                    <div className="w-full h-[56px] dark:h-auto px-4 rounded-[24px] bg-gray-50 dark:bg-transparent border border-transparent flex items-center justify-between">
                       <span className="text-text-main dark:hidden font-medium">Salaris & Toeslagen</span>
                       <span className="text-primary dark:text-primary font-bold font-mono text-lg dark:text-lg">
                         {formatCurrency(calculation.totalIncome - formData.projectedIncome)}
@@ -244,7 +244,7 @@ export default function VTLBCalculator() {
                         <span className="text-gray-400 dark:text-text-muted dark:material-symbols-outlined font-bold dark:group-focus-within:text-primary dark:transition-colors">€</span>
                       </div>
                       <input 
-                        className="form-input block w-full h-[56px] dark:py-3.5 pl-10 dark:pl-12 pr-4 rounded-xl border border-gray-200 dark:border-border-subtle bg-[#f9fafb] dark:bg-background-input text-text-main dark:text-white font-semibold dark:font-medium placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:border-primary dark:focus:border-primary/50 focus:ring-1 dark:focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-background-input transition-all shadow-sm dark:shadow-inner text-lg dark:text-lg" 
+                        className="form-input block w-full h-[56px] dark:py-3.5 pl-10 dark:pl-12 pr-4 rounded-[24px] border border-gray-200 dark:border-border-subtle bg-[#f9fafb] dark:bg-background-input text-text-main dark:text-white font-semibold dark:font-medium placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:border-primary dark:focus:border-primary/50 focus:ring-1 dark:focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-background-input transition-all shadow-sm dark:shadow-inner text-lg dark:text-lg" 
                         placeholder="0.00" 
                         type="number" 
                         value={formData.projectedIncome || ''}
@@ -264,18 +264,18 @@ export default function VTLBCalculator() {
               {/* Section 2: Uitgaven */}
               <section>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 dark:size-8 bg-red-50 dark:bg-danger/20 rounded-lg dark:rounded-full text-red-500 dark:text-danger">
+                  <div className="p-2 dark:size-8 bg-red-50 dark:bg-danger/20 rounded-[24px] dark:rounded-full text-red-500 dark:text-danger">
                     <span className="material-symbols-outlined dark:text-[20px]">payments</span>
                   </div>
                   <h3 className="text-text-main dark:text-white text-xl font-bold">Uitgaven</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 dark:gap-5">
                   {/* Read-only Field */}
-                  <div className="flex flex-col gap-2 opacity-80 dark:flex-row dark:items-center dark:justify-between dark:p-4 dark:rounded-xl dark:bg-white/5 dark:border dark:border-transparent">
+                  <div className="flex flex-col gap-2 opacity-80 dark:flex-row dark:items-center dark:justify-between dark:p-4 dark:rounded-[24px] dark:bg-white/5 dark:border dark:border-transparent">
                     <label className="text-text-sub dark:text-text-muted text-sm font-semibold">
                       Vaste lasten <span className="font-normal text-xs text-gray-400 dark:opacity-70">(uit je profiel)</span>
                     </label>
-                    <div className="w-full h-[56px] dark:h-auto px-4 rounded-xl bg-gray-50 dark:bg-transparent border border-transparent flex items-center justify-between">
+                    <div className="w-full h-[56px] dark:h-auto px-4 rounded-[24px] bg-gray-50 dark:bg-transparent border border-transparent flex items-center justify-between">
                       <span className="text-text-main dark:hidden font-medium">Huur, G/W/L, Verzekering</span>
                       <span className="text-red-500 dark:text-danger font-bold font-mono text-lg dark:text-lg">
                         - {formatCurrency(calculation.fixedCosts)}
@@ -283,11 +283,11 @@ export default function VTLBCalculator() {
                     </div>
                   </div>
                   {/* Read-only Field */}
-                  <div className="flex flex-col gap-2 opacity-80 dark:flex-row dark:items-center dark:justify-between dark:p-4 dark:rounded-xl dark:bg-white/5 dark:border dark:border-transparent">
+                  <div className="flex flex-col gap-2 opacity-80 dark:flex-row dark:items-center dark:justify-between dark:p-4 dark:rounded-[24px] dark:bg-white/5 dark:border dark:border-transparent">
                     <label className="text-text-sub dark:text-text-muted text-sm font-semibold">
                       Betalingsregelingen <span className="font-normal text-xs text-gray-400 dark:opacity-70">(uit je profiel)</span>
                     </label>
-                    <div className="w-full h-[56px] dark:h-auto px-4 rounded-xl bg-gray-50 dark:bg-transparent border border-transparent flex items-center justify-between">
+                    <div className="w-full h-[56px] dark:h-auto px-4 rounded-[24px] bg-gray-50 dark:bg-transparent border border-transparent flex items-center justify-between">
                       <span className="text-text-main dark:hidden font-medium">Lopende afspraken</span>
                       <span className="text-red-500 dark:text-danger font-bold font-mono text-lg dark:text-lg">
                         - {formatCurrency(calculation.currentArrangements)}
@@ -306,7 +306,7 @@ export default function VTLBCalculator() {
               {/* Section 3: Woonsituatie */}
               <section>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 dark:size-8 bg-blue-50 dark:bg-white/10 rounded-lg dark:rounded-full text-blue-600 dark:text-white">
+                  <div className="p-2 dark:size-8 bg-blue-50 dark:bg-white/10 rounded-[24px] dark:rounded-full text-blue-600 dark:text-white">
                     <span className="material-symbols-outlined dark:text-[20px]">real_estate_agent</span>
                   </div>
                   <h3 className="text-text-main dark:text-white text-xl font-bold">Jouw woonsituatie</h3>
@@ -317,7 +317,7 @@ export default function VTLBCalculator() {
                     <label className="text-text-main dark:text-text-muted text-sm font-bold dark:font-semibold dark:ml-1">Type huishouden</label>
                     <div className="relative">
                       <select 
-                        className="form-select block w-full h-[56px] dark:py-3.5 pl-4 pr-10 rounded-xl border border-gray-200 dark:border-border-subtle bg-[#f9fafb] dark:bg-background-input text-text-main dark:text-white font-medium dark:font-medium focus:border-primary dark:focus:border-primary/50 focus:ring-1 dark:focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-background-input cursor-pointer shadow-sm dark:appearance-none" 
+                        className="form-select block w-full h-[56px] dark:py-3.5 pl-4 pr-10 rounded-[24px] border border-gray-200 dark:border-border-subtle bg-[#f9fafb] dark:bg-background-input text-text-main dark:text-white font-medium dark:font-medium focus:border-primary dark:focus:border-primary/50 focus:ring-1 dark:focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-background-input cursor-pointer shadow-sm dark:appearance-none" 
                         value={formData.householdType}
                         onChange={(e) => setFormData({...formData, householdType: e.target.value})}
                       >
@@ -333,7 +333,7 @@ export default function VTLBCalculator() {
                   {/* Number Input */}
                   <div className="flex flex-col gap-2">
                     <label className="text-text-main dark:text-text-muted text-sm font-bold dark:font-semibold dark:ml-1">Aantal kinderen</label>
-                    <div className="flex items-center h-[56px] dark:h-auto border border-gray-200 dark:border-border-subtle rounded-xl bg-[#f9fafb] dark:bg-background-input overflow-hidden focus-within:ring-1 dark:focus-within:ring-2 focus-within:ring-primary focus-within:border-primary dark:focus-within:border-primary/50 shadow-sm">
+                    <div className="flex items-center h-[56px] dark:h-auto border border-gray-200 dark:border-border-subtle rounded-[24px] bg-[#f9fafb] dark:bg-background-input overflow-hidden focus-within:ring-1 dark:focus-within:ring-2 focus-within:ring-primary focus-within:border-primary dark:focus-within:border-primary/50 shadow-sm">
                       <button 
                         className="px-4 h-full dark:py-3.5 text-gray-500 dark:text-text-muted hover:text-primary dark:hover:text-primary hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                         onClick={() => setFormData({...formData, numberOfChildren: Math.max(0, formData.numberOfChildren - 1)})}
@@ -367,7 +367,7 @@ export default function VTLBCalculator() {
                       <span className="text-gray-400 dark:text-text-muted dark:material-symbols-outlined font-bold dark:group-focus-within:text-primary dark:transition-colors">€</span>
                     </div>
                     <input 
-                      className="form-input block w-full h-[56px] dark:py-3.5 pl-10 dark:pl-12 pr-4 rounded-xl border border-gray-200 dark:border-border-subtle bg-[#f9fafb] dark:bg-background-input text-text-main dark:text-white font-semibold dark:font-medium placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:border-primary dark:focus:border-primary/50 focus:ring-1 dark:focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-background-input transition-all shadow-sm dark:shadow-inner" 
+                      className="form-input block w-full h-[56px] dark:py-3.5 pl-10 dark:pl-12 pr-4 rounded-[24px] border border-gray-200 dark:border-border-subtle bg-[#f9fafb] dark:bg-background-input text-text-main dark:text-white font-semibold dark:font-medium placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:border-primary dark:focus:border-primary/50 focus:ring-1 dark:focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-background-input transition-all shadow-sm dark:shadow-inner" 
                       placeholder="0.00" 
                       type="number" 
                       value={formData.rentMortgage || ''}
@@ -398,7 +398,7 @@ export default function VTLBCalculator() {
               {/* Save Button (Dark Mode) */}
               <div className="mt-8 dark:mt-8 pt-6 dark:pt-6 border-t dark:border-t-primary/20 w-full dark:block hidden">
                 <button 
-                  className="w-full bg-primary dark:bg-primary hover:bg-primary-dark dark:hover:bg-primary-hover text-white dark:text-background-page font-extrabold dark:font-extrabold text-lg py-4 px-8 rounded-xl shadow-lg dark:shadow-lg hover:shadow-primary/20 dark:hover:shadow-primary/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2"
+                  className="w-full bg-primary dark:bg-primary hover:bg-primary-dark dark:hover:bg-primary-hover text-white dark:text-background-page font-extrabold dark:font-extrabold text-lg py-4 px-8 rounded-[24px] shadow-lg dark:shadow-lg hover:shadow-primary/20 dark:hover:shadow-primary/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2"
                   onClick={handleSave}
                 >
                   <span className="material-symbols-outlined">save</span>
@@ -411,7 +411,7 @@ export default function VTLBCalculator() {
           {/* Bottom Actions (Light Mode) */}
           <div className="mt-8 mb-12 dark:hidden">
             <button 
-              className="w-full bg-primary hover:bg-primary-dark text-white font-bold text-lg h-14 rounded-xl shadow-lg shadow-primary/20 transition-all transform active:scale-[0.99] flex items-center justify-center gap-2"
+              className="w-full bg-primary hover:bg-primary-dark text-white font-bold text-lg h-14 rounded-[24px] shadow-lg shadow-primary/20 transition-all transform active:scale-[0.99] flex items-center justify-center gap-2"
               onClick={handleSave}
             >
               <span className="material-symbols-outlined">save</span>

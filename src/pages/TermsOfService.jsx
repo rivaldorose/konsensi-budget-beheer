@@ -154,7 +154,7 @@ export default function TermsOfService() {
         <div className="mt-12 mb-8 flex flex-col items-center justify-center gap-6">
           <button
             onClick={handleAccept}
-            className="bg-primary hover:bg-primary-dark text-white text-base font-medium py-4 px-10 rounded-xl shadow-lg shadow-primary/25 transition-all duration-200 transform hover:scale-[1.01] active:scale-[0.99] w-full sm:w-auto min-w-[280px]"
+            className="bg-primary hover:bg-primary-dark text-white text-base font-medium py-4 px-10 rounded-[24px] shadow-lg shadow-primary/25 transition-all duration-200 transform hover:scale-[1.01] active:scale-[0.99] w-full sm:w-auto min-w-[280px]"
           >
             Ik begrijp en ga akkoord
           </button>
