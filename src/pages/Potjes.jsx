@@ -664,7 +664,7 @@ export default function Potjes() {
             onClick={() => setShowModal(true)}
               className="rounded-card border-2 border-dashed border-gray-300 dark:border-[#3a3a3a] bg-gray-50/50 dark:bg-transparent hover:bg-[#B2FF78]/10 dark:hover:bg-primary-green/10 hover:border-[#B2FF78] dark:hover:border-primary-green transition-all duration-300 flex flex-col items-center justify-center p-6 min-h-[300px] group cursor-pointer gap-4"
             >
-              <div className="w-16 h-16 rounded-full bg-white dark:bg-dark-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-gray-200 dark:border-dark-border">
+              <div className="w-16 h-16 rounded-full bg-white dark:bg-[#1a2c26] shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#E5E7EB] dark:border-[#2A3F36]">
                 <span className="material-symbols-outlined text-brand-dark dark:text-primary-green text-3xl">add</span>
               </div>
               <div className="text-center">

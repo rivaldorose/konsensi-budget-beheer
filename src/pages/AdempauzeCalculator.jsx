@@ -161,7 +161,7 @@ export default function AdempauzeCalculator() {
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark text-text-body dark:text-white flex flex-col">
       {/* Header */}
-      <header className="bg-primary dark:bg-dark-card h-16 shadow-[0_2px_4px_rgba(0,0,0,0.1)] dark:border-b dark:border-dark-border sticky top-0 z-50">
+      <header className="bg-primary dark:bg-[#1a2c26] h-16 shadow-[0_2px_4px_rgba(0,0,0,0.1)] dark:border-b dark:border-[#2A3F36] sticky top-0 z-50">
         <div className="h-full max-w-[1400px] mx-auto px-4 lg:px-8 flex items-center justify-between">
           {/* Left: Logo */}
           <div className="flex items-center gap-2">
@@ -226,7 +226,7 @@ export default function AdempauzeCalculator() {
           </p>
         </div>
 
-        <div className="w-full bg-white dark:bg-dark-card rounded-3xl border border-[#E5E7EB] dark:border-dark-border shadow-soft dark:shadow-lg overflow-hidden">
+        <div className="w-full bg-white dark:bg-[#1a2c26] rounded-3xl border border-[#E5E7EB] dark:border-[#2A3F36] shadow-soft dark:shadow-lg overflow-hidden">
           <div className="p-8">
             {/* Jouw Inkomen Section */}
             <div className="mb-8">
@@ -241,7 +241,7 @@ export default function AdempauzeCalculator() {
                     <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-lg">euro</span>
                   </div>
                   <input 
-                    className="w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] dark:bg-dark-card-elevated border border-[#E5E7EB] dark:border-dark-border rounded-[24px] text-[#1F2937] dark:text-white font-body text-[16px] focus:ring-0 focus:border-success dark:focus:border-success focus:bg-white dark:focus:bg-dark-card focus:shadow-sm transition-all outline-none" 
+                    className="w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] dark:bg-[#1a2c26]-elevated border border-[#E5E7EB] dark:border-[#2A3F36] rounded-[24px] text-[#1F2937] dark:text-white font-body text-[16px] focus:ring-0 focus:border-success dark:focus:border-success focus:bg-white dark:focus:bg-dark-card focus:shadow-sm transition-all outline-none" 
                     placeholder="0.00" 
                     type="number"
                     value={formData.nettoIncome || ''}
@@ -255,7 +255,7 @@ export default function AdempauzeCalculator() {
               </button>
             </div>
 
-            <hr className="border-gray-100 dark:border-dark-border my-8" />
+            <hr className="border-gray-100 dark:border-[#2A3F36] my-8" />
 
             {/* Jouw Situatie & Essentiële Kosten Section */}
             <div>
@@ -269,7 +269,7 @@ export default function AdempauzeCalculator() {
                       <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-lg">euro</span>
                     </div>
                     <input 
-                      className="w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] dark:bg-dark-card-elevated border border-[#E5E7EB] dark:border-dark-border rounded-[24px] text-[#1F2937] dark:text-white font-body text-[16px] focus:ring-0 focus:border-success dark:focus:border-success focus:bg-white dark:focus:bg-dark-card focus:shadow-sm transition-all outline-none" 
+                      className="w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] dark:bg-[#1a2c26]-elevated border border-[#E5E7EB] dark:border-[#2A3F36] rounded-[24px] text-[#1F2937] dark:text-white font-body text-[16px] focus:ring-0 focus:border-success dark:focus:border-success focus:bg-white dark:focus:bg-dark-card focus:shadow-sm transition-all outline-none" 
                       placeholder="0.00" 
                       type="number" 
                       value={formData.rentMortgage || ''}
@@ -286,7 +286,7 @@ export default function AdempauzeCalculator() {
                       <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-lg">euro</span>
                     </div>
                     <input 
-                      className="w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] dark:bg-dark-card-elevated border border-[#E5E7EB] dark:border-dark-border rounded-[24px] text-[#1F2937] dark:text-white font-body text-[16px] focus:ring-0 focus:border-success dark:focus:border-success focus:bg-white dark:focus:bg-dark-card focus:shadow-sm transition-all outline-none" 
+                      className="w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] dark:bg-[#1a2c26]-elevated border border-[#E5E7EB] dark:border-[#2A3F36] rounded-[24px] text-[#1F2937] dark:text-white font-body text-[16px] focus:ring-0 focus:border-success dark:focus:border-success focus:bg-white dark:focus:bg-dark-card focus:shadow-sm transition-all outline-none" 
                       placeholder="0.00" 
                       type="number" 
                       value={formData.healthInsurance || ''}
@@ -303,7 +303,7 @@ export default function AdempauzeCalculator() {
                       <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-lg">euro</span>
                     </div>
                     <input 
-                      className="w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] dark:bg-dark-card-elevated border border-[#E5E7EB] dark:border-dark-border rounded-[24px] text-[#1F2937] dark:text-white font-body text-[16px] focus:ring-0 focus:border-success dark:focus:border-success focus:bg-white dark:focus:bg-dark-card focus:shadow-sm transition-all outline-none" 
+                      className="w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] dark:bg-[#1a2c26]-elevated border border-[#E5E7EB] dark:border-[#2A3F36] rounded-[24px] text-[#1F2937] dark:text-white font-body text-[16px] focus:ring-0 focus:border-success dark:focus:border-success focus:bg-white dark:focus:bg-dark-card focus:shadow-sm transition-all outline-none" 
                       placeholder="0.00" 
                       type="number" 
                       value={formData.otherFixedCosts || ''}
@@ -320,7 +320,7 @@ export default function AdempauzeCalculator() {
                       <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-lg">group</span>
                     </div>
                     <input 
-                      className="w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] dark:bg-dark-card-elevated border border-[#E5E7EB] dark:border-dark-border rounded-[24px] text-[#1F2937] dark:text-white font-body text-[16px] focus:ring-0 focus:border-success dark:focus:border-success focus:bg-white dark:focus:bg-dark-card focus:shadow-sm transition-all outline-none" 
+                      className="w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] dark:bg-[#1a2c26]-elevated border border-[#E5E7EB] dark:border-[#2A3F36] rounded-[24px] text-[#1F2937] dark:text-white font-body text-[16px] focus:ring-0 focus:border-success dark:focus:border-success focus:bg-white dark:focus:bg-dark-card focus:shadow-sm transition-all outline-none" 
                       placeholder="1" 
                       type="number" 
                       min="1"
@@ -338,7 +338,7 @@ export default function AdempauzeCalculator() {
                       <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-lg">child_care</span>
                     </div>
                     <input 
-                      className="w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] dark:bg-dark-card-elevated border border-[#E5E7EB] dark:border-dark-border rounded-[24px] text-[#1F2937] dark:text-white font-body text-[16px] focus:ring-0 focus:border-success dark:focus:border-success focus:bg-white dark:focus:bg-dark-card focus:shadow-sm transition-all outline-none" 
+                      className="w-full pl-11 pr-4 py-3.5 bg-[#F9FAFB] dark:bg-[#1a2c26]-elevated border border-[#E5E7EB] dark:border-[#2A3F36] rounded-[24px] text-[#1F2937] dark:text-white font-body text-[16px] focus:ring-0 focus:border-success dark:focus:border-success focus:bg-white dark:focus:bg-dark-card focus:shadow-sm transition-all outline-none" 
                       placeholder="0" 
                       type="number" 
                       min="0"
@@ -370,7 +370,7 @@ export default function AdempauzeCalculator() {
             </div>
             <div className="flex flex-col sm:flex-row justify-between gap-4 mt-6">
               <button 
-                className="px-6 py-4 rounded-[24px] border border-[#E5E7EB] dark:border-dark-border bg-white dark:bg-dark-card text-success dark:text-success font-display font-semibold text-sm hover:bg-[#F3F4F6] dark:hover:bg-dark-card-elevated transition-colors w-full sm:w-auto"
+                className="px-6 py-4 rounded-[24px] border border-[#E5E7EB] dark:border-[#2A3F36] bg-white dark:bg-[#1a2c26] text-success dark:text-success font-display font-semibold text-sm hover:bg-[#F3F4F6] dark:hover:bg-dark-card-elevated transition-colors w-full sm:w-auto"
                 onClick={() => window.location.href = createPageUrl('Adempauze')}
               >
                 Terug naar Adempauze
