@@ -247,10 +247,10 @@ export default function VasteLastenCheck() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
-          <p className="text-gray-600 dark:text-gray-400 text-sm mt-4">Laden...</p>
+          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-primary dark:border-primary"></div>
+          <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm mt-4">Laden...</p>
         </div>
       </div>
     );
@@ -259,7 +259,7 @@ export default function VasteLastenCheck() {
   const currentPayment = duePayments[0] || null;
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark text-[#0d1b17] dark:text-white font-display antialiased overflow-x-hidden flex flex-col">
+    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#0d1b17] dark:text-white font-display antialiased overflow-x-hidden flex flex-col">
       {/* Global Header */}
       <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e7f3ef] dark:border-b-[#2a2a2a] bg-white dark:bg-[#11221c] px-10 py-3 relative z-30">
         <div className="flex items-center gap-4 text-[#0d1b17] dark:text-white">
@@ -330,7 +330,7 @@ export default function VasteLastenCheck() {
 
         {/* Main Check Card */}
         {currentPayment && (
-          <div className="w-full max-w-[800px] bg-white dark:bg-surface-dark rounded-[24px] p-8 shadow-soft dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-border-dark">
+          <div className="w-full max-w-[800px] bg-white dark:bg-[#1a2c26] rounded-[24px] p-8 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36]">
             {/* Card Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-4">
