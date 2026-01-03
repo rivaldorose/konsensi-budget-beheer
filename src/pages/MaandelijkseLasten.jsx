@@ -365,21 +365,21 @@ export default function MaandelijkseLastenPage() {
                     <>
                         {/* Stats Mini-Pills */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                            <div className="bg-blue-50/50 rounded-[24px] p-3 flex flex-col items-center justify-center text-center">
-                                <span className="text-gray-500 text-xs font-semibold uppercase">Gem. Vast</span>
-                                <span className="text-primary-dark font-bold text-lg">{formatCurrency(yearStats.avgFixed, { decimals: 0 })}</span>
+                            <div className="bg-blue-50/50 dark:bg-blue-500/10 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-blue-100 dark:border-blue-500/20">
+                                <span className="text-[#6B7280] dark:text-[#9CA3AF] text-xs font-semibold uppercase">Gem. Vast</span>
+                                <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.avgFixed, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-orange-50/50 rounded-[24px] p-3 flex flex-col items-center justify-center text-center">
-                                <span className="text-gray-500 text-xs font-semibold uppercase">Gem. Onverwacht</span>
-                                <span className="text-primary-dark font-bold text-lg">{formatCurrency(yearStats.avgUnexpected, { decimals: 0 })}</span>
+                            <div className="bg-orange-50/50 dark:bg-orange-500/10 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-orange-100 dark:border-orange-500/20">
+                                <span className="text-[#6B7280] dark:text-[#9CA3AF] text-xs font-semibold uppercase">Gem. Onverwacht</span>
+                                <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.avgUnexpected, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-purple-50/50 rounded-[24px] p-3 flex flex-col items-center justify-center text-center">
-                                <span className="text-gray-500 text-xs font-semibold uppercase">Gem. Totaal</span>
-                                <span className="text-primary-dark font-bold text-lg">{formatCurrency(yearStats.avgTotal, { decimals: 0 })}</span>
+                            <div className="bg-purple-50/50 dark:bg-purple-500/10 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-purple-100 dark:border-purple-500/20">
+                                <span className="text-[#6B7280] dark:text-[#9CA3AF] text-xs font-semibold uppercase">Gem. Totaal</span>
+                                <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.avgTotal, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-gray-50 rounded-[24px] p-3 flex flex-col items-center justify-center text-center">
-                                <span className="text-gray-500 text-xs font-semibold uppercase">Totaal Jaar</span>
-                                <span className="text-primary-dark font-bold text-lg">{formatCurrency(yearStats.totalYear, { decimals: 0 })}</span>
+                            <div className="bg-gray-50 dark:bg-[#2A3F36] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-gray-200 dark:border-[#2A3F36]">
+                                <span className="text-[#6B7280] dark:text-[#9CA3AF] text-xs font-semibold uppercase">Totaal Jaar</span>
+                                <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.totalYear, { decimals: 0 })}</span>
                             </div>
                         </div>
 
@@ -394,12 +394,12 @@ export default function MaandelijkseLastenPage() {
             {/* Expense Categories */}
             <div className="flex flex-col gap-6">
             {Object.entries(costsByCategory).map(([category, data]) => (
-                    <div key={category} className="bg-surface-white rounded-2xl p-6 shadow-soft" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-                            <h4 className="text-primary-dark font-display text-lg font-bold flex items-center gap-2">
+                    <div key={category} className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36]">
+                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-[#2A3F36]">
+                            <h4 className="text-[#1F2937] dark:text-white text-lg font-bold flex items-center gap-2">
                                 {categoryEmojis[category] || '📦'} {categoryLabels[category] || category}
                             </h4>
-                            <span className="text-primary-dark font-display text-2xl font-bold">{formatCurrency(data.total)}</span>
+                            <span className="text-[#1F2937] dark:text-white text-2xl font-bold">{formatCurrency(data.total)}</span>
                         </div>
                         <div className="flex flex-col gap-3">
                             {data.items.map((cost) => (
@@ -413,8 +413,8 @@ export default function MaandelijkseLastenPage() {
                                             {categoryEmojis[category] || '📦'}
                                         </div>
                                         <div>
-                                            <p className="text-primary-dark font-bold text-sm">{cost.name}</p>
-                                            <p className="text-gray-400 text-xs">
+                                            <p className="text-[#1F2937] dark:text-white font-bold text-sm">{cost.name}</p>
+                                            <p className="text-[#6B7280] dark:text-[#9CA3AF] text-xs">
                                                 Betaaldag: {cost.payment_date}
                                                 {cost.start_date && (
                                                     <span className="flex items-center gap-1">
@@ -426,14 +426,14 @@ export default function MaandelijkseLastenPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-6">
-                                        <span className="font-bold text-primary-dark">{formatCurrency(cost.amount)}</span>
+                                        <span className="font-bold text-[#1F2937] dark:text-white">{formatCurrency(cost.amount)}</span>
                                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button 
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleEdit(cost);
                                                 }}
-                                                className="size-8 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-100 text-gray-500 hover:text-primary-dark"
+                                                className="size-8 rounded-full bg-white dark:bg-[#1a2c26] border border-gray-200 dark:border-[#2A3F36] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] hover:text-[#1F2937] dark:hover:text-white"
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">edit</span>
                                             </button>
@@ -455,9 +455,9 @@ export default function MaandelijkseLastenPage() {
                 ))}
 
                 {activeCosts.length === 0 && (
-                    <div className="bg-surface-white rounded-2xl p-12 shadow-soft flex flex-col items-center justify-center text-center">
-                        <span className="material-symbols-outlined text-6xl text-gray-300 mb-4">receipt_long</span>
-                        <p className="text-gray-500 text-lg font-medium mb-4">Nog geen vaste lasten toegevoegd</p>
+                    <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-12 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col items-center justify-center text-center">
+                        <span className="material-symbols-outlined text-6xl text-[#9CA3AF] dark:text-[#6B7280] mb-4">receipt_long</span>
+                        <p className="text-[#6B7280] dark:text-[#9CA3AF] text-lg font-medium mb-4">Nog geen vaste lasten toegevoegd</p>
                         <button 
                             onClick={() => {
                                 setEditingCost(null);
