@@ -194,7 +194,7 @@ export default function OnboardingNew() {
   };
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex items-center justify-center p-4">
       {/* Theme Toggle */}
       <div className="absolute top-6 right-6 z-20">
         <label aria-label="Switch theme" className="relative inline-flex items-center cursor-pointer select-none">

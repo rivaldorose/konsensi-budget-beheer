@@ -185,14 +185,14 @@ export default function WorkSchedule() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400 dark:border-gray-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-bg-base text-[#131d0c] dark:text-text-primary font-body antialiased">
+    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white font-body antialiased">
       {/* Theme Toggle */}
       <div className="fixed top-6 right-6 lg:top-8 lg:right-8 z-20">
         <label aria-label="Switch theme" className="relative inline-flex items-center cursor-pointer select-none">

@@ -60,7 +60,7 @@ export default function EmailSent() {
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-[#0a0a0a] min-h-screen flex items-center justify-center p-4 transition-colors duration-300 relative">
+    <div className="bg-[#F8F8F8] dark:bg-[#0a0a0a] min-h-screen flex items-center justify-center p-4 transition-colors duration-300 relative">
       {/* Theme Toggle - Outside the card, top right */}
       <button
         onClick={toggleTheme}
@@ -78,7 +78,7 @@ export default function EmailSent() {
         </span>
       </button>
 
-      <div className="relative w-full max-w-[480px] bg-white dark:bg-[#1a1a1a] rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-[#2a2a2a] p-12 flex flex-col items-center text-center">
+      <div className="relative w-full max-w-[480px] bg-white dark:bg-[#1a2c26] rounded-[24px] shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] p-12 flex flex-col items-center text-center">
         {/* Logo Section */}
         <div className="flex flex-col items-center gap-1 mb-10">
           <div className="flex items-center gap-2 text-gray-900 dark:text-white">

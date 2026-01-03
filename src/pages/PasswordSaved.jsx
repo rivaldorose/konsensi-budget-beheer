@@ -26,7 +26,7 @@ export default function PasswordSaved() {
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-[#0a0a0a] font-display min-h-screen flex items-center justify-center p-4 transition-colors duration-300 relative">
+    <div className="bg-[#F8F8F8] dark:bg-[#0a0a0a] font-display min-h-screen flex items-center justify-center p-4 transition-colors duration-300 relative">
       {/* Theme Toggle - Outside the card, top right */}
       <button
         onClick={toggleTheme}
@@ -44,7 +44,7 @@ export default function PasswordSaved() {
         </span>
       </button>
 
-      <main className="w-full max-w-[480px] bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-[24px] shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] px-8 py-12 md:p-12 flex flex-col items-center relative overflow-hidden">
+      <main className="w-full max-w-[480px] bg-white dark:bg-[#1a2c26] border border-gray-100 dark:border-[#2A3F36] rounded-[24px] shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] px-8 py-12 md:p-12 flex flex-col items-center relative overflow-hidden">
         {/* Header: Logo Section */}
         <header className="flex flex-col items-center gap-2 mb-10">
           <div className="flex items-center">
@@ -67,10 +67,10 @@ export default function PasswordSaved() {
 
         {/* Text Content */}
         <div className="flex flex-col items-center gap-3 mb-8 w-full">
-          <h2 className="text-gray-900 dark:text-white text-[32px] font-bold leading-tight text-center">
+          <h2 className="text-[#1F2937] dark:text-white text-[32px] font-bold leading-tight text-center">
             Wachtwoord succesvol gewijzigd!
           </h2>
-          <p className="text-gray-600 dark:text-[#a1a1a1] text-base font-normal leading-relaxed text-center max-w-[360px]">
+          <p className="text-[#6B7280] dark:text-[#9CA3AF] text-base font-normal leading-relaxed text-center max-w-[360px]">
             Je wachtwoord is veilig bijgewerkt. Je kunt nu inloggen met je nieuwe gegevens.
           </p>
         </div>
@@ -88,7 +88,7 @@ export default function PasswordSaved() {
           </Link>
 
           {/* Reminder Text */}
-          <p className="text-sm text-gray-600 dark:text-[#a1a1a1] italic text-center">
+          <p className="text-sm text-[#6B7280] dark:text-[#9CA3AF] italic text-center">
             Vergeet niet je nieuwe wachtwoord te onthouden!
           </p>
         </div>

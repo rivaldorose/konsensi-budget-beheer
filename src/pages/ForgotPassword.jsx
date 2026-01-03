@@ -57,7 +57,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-[#0a0a0a] min-h-screen flex items-center justify-center p-4 transition-colors duration-300 relative">
+    <div className="bg-[#F8F8F8] dark:bg-[#0a0a0a] min-h-screen flex items-center justify-center p-4 transition-colors duration-300 relative">
       {/* Theme Toggle - Outside the card, top right */}
       <button
         onClick={toggleTheme}
@@ -75,7 +75,7 @@ export default function ForgotPassword() {
         </span>
       </button>
 
-      <main className="w-full max-w-[480px] bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] p-8 md:p-12 relative flex flex-col items-center">
+      <main className="w-full max-w-[480px] bg-white dark:bg-[#1a2c26] border border-gray-100 dark:border-[#2A3F36] rounded-[24px] shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] p-8 md:p-12 relative flex flex-col items-center">
         {/* Logo Section */}
         <div className="flex flex-col items-center gap-1 mb-10">
           <div className="flex items-center mb-1">
@@ -89,10 +89,10 @@ export default function ForgotPassword() {
 
         {/* Header Text */}
         <div className="text-center w-full mb-8">
-          <h1 className="font-display font-bold text-3xl leading-tight text-gray-900 dark:text-white mb-3">
+          <h1 className="font-display font-bold text-3xl leading-tight text-[#1F2937] dark:text-white mb-3">
             Wachtwoord vergeten?
           </h1>
-          <p className="text-base text-gray-600 dark:text-[#a1a1a1] font-normal leading-relaxed px-2">
+          <p className="text-base text-[#6B7280] dark:text-[#9CA3AF] font-normal leading-relaxed px-2">
             Geen probleem! Vul je e-mailadres in en we sturen je een link om je wachtwoord opnieuw in te stellen.
           </p>
         </div>

@@ -110,7 +110,7 @@ export default function VTLBSettings() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
           <p className="text-gray-600 dark:text-gray-400 text-sm mt-4">Laden...</p>
@@ -120,7 +120,7 @@ export default function VTLBSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark">
+    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a]">
       {/* Header */}
       <header className="bg-primary shadow-md w-full h-16 flex items-center justify-center px-4 md:px-8 z-50 sticky top-0">
         <div className="w-full max-w-[1400px] flex items-center justify-between">

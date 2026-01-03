@@ -130,7 +130,7 @@ export default function VTLBCalculator() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background-light dark:bg-background-page flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
           <p className="text-gray-600 dark:text-gray-400 text-sm mt-4">Laden...</p>
@@ -140,7 +140,7 @@ export default function VTLBCalculator() {
   }
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-page text-text-main dark:text-white antialiased flex flex-col">
+    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white antialiased flex flex-col">
       {/* Top Navigation Bar */}
       <div className="relative w-full bg-[#f8fcfa] dark:bg-[#112218] border-b border-[#e7f3ef] dark:border-[#234832]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
