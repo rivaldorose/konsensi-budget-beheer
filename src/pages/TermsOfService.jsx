@@ -32,7 +32,7 @@ export default function TermsOfService() {
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark text-gray-900 dark:text-white font-display transition-colors duration-200 antialiased min-h-screen w-full flex flex-col items-center py-10 px-4 md:px-8">
+    <div className="bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white font-display transition-colors duration-200 antialiased min-h-screen w-full flex flex-col items-center py-10 px-4 md:px-8">
       <div className="w-full max-w-[1000px]">
         <header className="mb-8 md:mb-12">
           <div className="flex items-center justify-between gap-4 mb-3">
@@ -46,7 +46,7 @@ export default function TermsOfService() {
                   arrow_back
                 </span>
               </button>
-              <h1 className="text-2xl md:text-[32px] font-bold tracking-tight text-gray-900 dark:text-white leading-tight">
+              <h1 className="text-2xl md:text-[32px] font-bold tracking-tight text-[#1F2937] dark:text-white leading-tight">
                 Algemene Voorwaarden
               </h1>
             </div>
@@ -66,33 +66,33 @@ export default function TermsOfService() {
               </span>
             </button>
           </div>
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 pl-0 md:pl-12">
+          <p className="text-sm font-medium text-[#6B7280] dark:text-[#9CA3AF] pl-0 md:pl-12">
             Laatst bijgewerkt op: 30 december 2025
           </p>
         </header>
 
-        <main className="bg-white dark:bg-[#182823] rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-[#2A4037] p-6 md:p-10 lg:p-12 overflow-hidden">
+        <main className="bg-white dark:bg-[#1a2c26] rounded-[24px] shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] p-6 md:p-10 lg:p-12 overflow-hidden">
           <section className="mb-10">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-[#1F2937] dark:text-white mb-4 flex items-center gap-2">
               <span className="text-primary opacity-80">1.</span>
               Introductie
             </h2>
-            <p className="text-[15px] leading-[1.7] text-gray-600 dark:text-gray-300">
+            <p className="text-[15px] leading-[1.7] text-[#6B7280] dark:text-[#9CA3AF]">
               Welkom bij Konsensi Budgetbeheer. Door gebruik te maken van onze diensten ga je akkoord met de onderstaande algemene voorwaarden. Lees deze zorgvuldig door voordat je onze website of applicatie gebruikt.
             </p>
           </section>
 
           <section className="mb-10">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-[#1F2937] dark:text-white mb-4 flex items-center gap-2">
               <span className="text-primary opacity-80">2.</span>
               Definities
             </h2>
-            <ul className="space-y-3 text-[15px] leading-[1.7] text-gray-600 dark:text-gray-300 list-disc list-inside marker:text-primary">
+            <ul className="space-y-3 text-[15px] leading-[1.7] text-[#6B7280] dark:text-[#9CA3AF] list-disc list-inside marker:text-primary">
               <li>
-                <strong className="font-medium text-gray-800 dark:text-gray-200">Diensten:</strong> De online financiële diensten en tools aangeboden door Konsensi.
+                <strong className="font-medium text-[#1F2937] dark:text-white">Diensten:</strong> De online financiële diensten en tools aangeboden door Konsensi.
               </li>
               <li>
-                <strong className="font-medium text-gray-800 dark:text-gray-200">Gebruiker:</strong> Iedere natuurlijke persoon die gebruik maakt van de Diensten.
+                <strong className="font-medium text-[#1F2937] dark:text-white">Gebruiker:</strong> Iedere natuurlijke persoon die gebruik maakt van de Diensten.
               </li>
             </ul>
           </section>

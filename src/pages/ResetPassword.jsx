@@ -111,7 +111,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="bg-gray-100 dark:bg-[#0a0a0a] min-h-screen flex items-center justify-center p-4 transition-colors duration-300 relative">
+    <div className="bg-[#F8F8F8] dark:bg-[#0a0a0a] min-h-screen flex items-center justify-center p-4 transition-colors duration-300 relative">
       {/* Theme Toggle - Outside the card, top right */}
       <button
         onClick={toggleTheme}
@@ -129,7 +129,7 @@ export default function ResetPassword() {
         </span>
       </button>
 
-      <div className="w-full max-w-[480px] bg-white dark:bg-[#1a1a1a] rounded-[24px] shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-[#2a2a2a] p-8 md:p-12 relative flex flex-col items-center">
+      <div className="w-full max-w-[480px] bg-white dark:bg-[#1a2c26] rounded-[24px] shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] p-8 md:p-12 relative flex flex-col items-center">
         {/* Logo Section */}
         <div className="flex flex-col items-center gap-1 mb-10">
           <div className="flex items-center">
@@ -143,10 +143,10 @@ export default function ResetPassword() {
 
         {/* Headings */}
         <div className="w-full text-center mb-8">
-          <h2 className="text-gray-900 dark:text-white text-[32px] font-bold leading-tight mb-3">
+          <h2 className="text-[#1F2937] dark:text-white text-[32px] font-bold leading-tight mb-3">
             Nieuw wachtwoord instellen
           </h2>
-          <p className="text-gray-600 dark:text-[#a1a1a1] text-base leading-normal">
+          <p className="text-[#6B7280] dark:text-[#9CA3AF] text-base leading-normal">
             Kies een nieuw, sterk wachtwoord voor je account.
           </p>
         </div>

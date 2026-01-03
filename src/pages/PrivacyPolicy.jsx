@@ -32,7 +32,7 @@ export default function PrivacyPolicy() {
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white antialiased min-h-screen flex flex-col items-center py-8 px-4 sm:px-8 overflow-x-hidden">
+    <div className="bg-[#F8F8F8] dark:bg-[#0a0a0a] font-display text-[#1F2937] dark:text-white antialiased min-h-screen flex flex-col items-center py-8 px-4 sm:px-8 overflow-x-hidden">
       <div className="w-full max-w-[1000px] flex flex-col">
         <header className="mb-8">
           <div className="flex items-center justify-between mb-2">
@@ -43,7 +43,7 @@ export default function PrivacyPolicy() {
               >
                 <span className="material-symbols-outlined text-[24px]">arrow_back</span>
               </button>
-              <h1 className="text-gray-900 dark:text-white text-3xl sm:text-4xl font-bold tracking-tight">
+              <h1 className="text-[#1F2937] dark:text-white text-3xl sm:text-4xl font-bold tracking-tight">
                 Privacybeleid
               </h1>
             </div>
@@ -68,35 +68,35 @@ export default function PrivacyPolicy() {
               </div>
             </label>
           </div>
-          <p className="text-gray-500 dark:text-gray-400 text-sm font-medium pl-12">
+          <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm font-medium pl-12">
             Laatst bijgewerkt op: 30 december 2025
           </p>
         </header>
 
-        <div className="bg-white dark:bg-[#1a2c26] rounded-2xl shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-[#2a3c36] p-8 sm:p-10 mb-12">
+        <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] p-8 sm:p-10 mb-12">
           <section className="mb-8">
-            <h2 className="text-gray-900 dark:text-white text-xl font-semibold mb-4">1. Introductie</h2>
-            <p className="text-gray-600 dark:text-gray-300 text-[15px] leading-relaxed">
+            <h2 className="text-[#1F2937] dark:text-white text-xl font-semibold mb-4">1. Introductie</h2>
+            <p className="text-[#6B7280] dark:text-[#9CA3AF] text-[15px] leading-relaxed">
               Konsensi hecht grote waarde aan de bescherming van uw persoonsgegevens. In dit Privacybeleid leggen we uit welke gegevens we verzamelen en waarom.
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-gray-900 dark:text-white text-xl font-semibold mb-4">2. Welke gegevens verzamelen wij?</h2>
-            <ul className="list-disc pl-5 space-y-2 text-gray-600 dark:text-gray-300 text-[15px] leading-relaxed">
+            <h2 className="text-[#1F2937] dark:text-white text-xl font-semibold mb-4">2. Welke gegevens verzamelen wij?</h2>
+            <ul className="list-disc pl-5 space-y-2 text-[#6B7280] dark:text-[#9CA3AF] text-[15px] leading-relaxed">
               <li>
-                <strong className="font-medium text-gray-900 dark:text-gray-200">Persoonsgegevens:</strong> Naam, e-mailadres, telefoonnummer, adres, financiële gegevens (inkomen, uitgaven, schulden).
+                <strong className="font-medium text-[#1F2937] dark:text-white">Persoonsgegevens:</strong> Naam, e-mailadres, telefoonnummer, adres, financiële gegevens (inkomen, uitgaven, schulden).
               </li>
               <li>
-                <strong className="font-medium text-gray-900 dark:text-gray-200">Gebruiksgegevens:</strong> Informatie over hoe u onze Diensten gebruikt (IP-adres, browsertype, bezochte pagina's).
+                <strong className="font-medium text-[#1F2937] dark:text-white">Gebruiksgegevens:</strong> Informatie over hoe u onze Diensten gebruikt (IP-adres, browsertype, bezochte pagina's).
               </li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-gray-900 dark:text-white text-xl font-semibold mb-4">3. Hoe gebruiken wij uw gegevens?</h2>
-            <h3 className="text-gray-800 dark:text-gray-200 text-lg font-medium mb-2">3.1. Diensten leveren</h3>
-            <p className="text-gray-600 dark:text-gray-300 text-[15px] leading-relaxed">
+            <h2 className="text-[#1F2937] dark:text-white text-xl font-semibold mb-4">3. Hoe gebruiken wij uw gegevens?</h2>
+            <h3 className="text-[#1F2937] dark:text-white text-lg font-medium mb-2">3.1. Diensten leveren</h3>
+            <p className="text-[#6B7280] dark:text-[#9CA3AF] text-[15px] leading-relaxed">
               Voor het aanbieden en verbeteren van onze budgetbeheer- en schuldhulpdiensten.
             </p>
           </section>
