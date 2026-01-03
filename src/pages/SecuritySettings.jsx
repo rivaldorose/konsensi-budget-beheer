@@ -122,7 +122,7 @@ export default function SecuritySettings() {
   );
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark">
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a]">
       {/* Header */}
       <header className="bg-primary shadow-md w-full h-16 flex items-center justify-center px-4 md:px-8 z-50 sticky top-0">
         <div className="w-full max-w-[1400px] flex items-center justify-between">
