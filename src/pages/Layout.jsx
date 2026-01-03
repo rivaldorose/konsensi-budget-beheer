@@ -934,7 +934,7 @@ function LayoutWithProvider({ children, currentPageName }) {
               <img 
                 src="/logo%20header.png" 
                 alt="Konsensi Logo" 
-                className="h-10 w-auto"
+                className="h-14 w-auto"
                 onError={(e) => {
                   // Fallback to regular logo if header logo fails
                   e.target.src = "/logo.png";
@@ -1123,7 +1123,7 @@ function LayoutWithProvider({ children, currentPageName }) {
             <img 
               src="/logo%20header.png" 
               alt="Konsensi Logo" 
-              className="h-8 w-auto"
+              className="h-12 w-auto"
               onError={(e) => {
                 // Fallback to regular logo if header logo fails
                 e.target.src = "/logo.png";
