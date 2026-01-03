@@ -16,8 +16,8 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- Automatically detects user_id column or uses provided column name
 -- ============================================
 CREATE OR REPLACE FUNCTION create_standard_rls_policies(
-  table_name TEXT,
-  user_id_column TEXT DEFAULT NULL
+  p_table_name TEXT,
+  p_user_id_column TEXT DEFAULT NULL
 )
 RETURNS void AS $$
 DECLARE
@@ -25,15 +25,15 @@ DECLARE
   column_exists BOOLEAN;
 BEGIN
   -- Enable RLS
-  EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', table_name);
+  EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', p_table_name);
   
   -- Auto-detect user column if not provided
-  IF user_id_column IS NULL THEN
+  IF p_user_id_column IS NULL THEN
     -- Check for common user column names
     SELECT EXISTS (
       SELECT 1 FROM information_schema.columns 
       WHERE table_schema = 'public' 
-      AND table_name = create_standard_rls_policies.table_name 
+      AND table_name = p_table_name 
       AND column_name = 'user_id'
     ) INTO column_exists;
     
@@ -44,23 +44,23 @@ BEGIN
       SELECT EXISTS (
         SELECT 1 FROM information_schema.columns 
         WHERE table_schema = 'public' 
-        AND table_name = create_standard_rls_policies.table_name 
+        AND table_name = p_table_name 
         AND column_name = 'id'
       ) INTO column_exists;
       
-      IF column_exists AND create_standard_rls_policies.table_name = 'users' THEN
+      IF column_exists AND p_table_name = 'users' THEN
         actual_user_column := 'id';
       ELSE
         -- Try to find a column that references auth.users
         SELECT column_name INTO actual_user_column
         FROM information_schema.columns
         WHERE table_schema = 'public'
-        AND table_name = create_standard_rls_policies.table_name
+        AND table_name = p_table_name
         AND column_name IN ('user_id', 'created_by', 'owner_id')
         LIMIT 1;
         
         IF actual_user_column IS NULL THEN
-          RAISE EXCEPTION 'Table % does not have a user_id, id, created_by, or owner_id column', table_name;
+          RAISE EXCEPTION 'Table % does not have a user_id, id, created_by, or owner_id column', p_table_name;
         END IF;
       END IF;
     END IF;
@@ -69,8 +69,8 @@ BEGIN
     SELECT EXISTS (
       SELECT 1 FROM information_schema.columns 
       WHERE table_schema = 'public' 
-      AND table_name = create_standard_rls_policies.table_name 
-      AND column_name = user_id_column
+      AND table_name = p_table_name 
+      AND column_name = p_user_id_column
     ) INTO column_exists;
     
     IF NOT column_exists THEN
@@ -78,49 +78,49 @@ BEGIN
       SELECT EXISTS (
         SELECT 1 FROM information_schema.columns 
         WHERE table_schema = 'public' 
-        AND table_name = create_standard_rls_policies.table_name 
+        AND table_name = p_table_name 
         AND column_name = 'user_id'
       ) INTO column_exists;
       
       IF column_exists THEN
         actual_user_column := 'user_id';
-        RAISE NOTICE 'Column % does not exist in table %, using user_id instead', user_id_column, table_name;
+        RAISE NOTICE 'Column % does not exist in table %, using user_id instead', p_user_id_column, p_table_name;
       ELSE
-        RAISE EXCEPTION 'Column % does not exist in table % and no user_id column found', user_id_column, table_name;
+        RAISE EXCEPTION 'Column % does not exist in table % and no user_id column found', p_user_id_column, p_table_name;
       END IF;
     ELSE
-      actual_user_column := user_id_column;
+      actual_user_column := p_user_id_column;
     END IF;
   END IF;
   
   -- Drop existing policies if they exist
-  EXECUTE format('DROP POLICY IF EXISTS "Users can read own %I" ON %I', table_name, table_name);
-  EXECUTE format('DROP POLICY IF EXISTS "Users can insert own %I" ON %I', table_name, table_name);
-  EXECUTE format('DROP POLICY IF EXISTS "Users can update own %I" ON %I', table_name, table_name);
-  EXECUTE format('DROP POLICY IF EXISTS "Users can delete own %I" ON %I', table_name, table_name);
+  EXECUTE format('DROP POLICY IF EXISTS "Users can read own %I" ON %I', p_table_name, p_table_name);
+  EXECUTE format('DROP POLICY IF EXISTS "Users can insert own %I" ON %I', p_table_name, p_table_name);
+  EXECUTE format('DROP POLICY IF EXISTS "Users can update own %I" ON %I', p_table_name, p_table_name);
+  EXECUTE format('DROP POLICY IF EXISTS "Users can delete own %I" ON %I', p_table_name, p_table_name);
   
   -- SELECT policy
   EXECUTE format(
     'CREATE POLICY "Users can read own %I" ON %I FOR SELECT USING (auth.uid() = %I)',
-    table_name, table_name, actual_user_column
+    p_table_name, p_table_name, actual_user_column
   );
   
   -- INSERT policy
   EXECUTE format(
     'CREATE POLICY "Users can insert own %I" ON %I FOR INSERT WITH CHECK (auth.uid() = %I)',
-    table_name, table_name, actual_user_column
+    p_table_name, p_table_name, actual_user_column
   );
   
   -- UPDATE policy
   EXECUTE format(
     'CREATE POLICY "Users can update own %I" ON %I FOR UPDATE USING (auth.uid() = %I) WITH CHECK (auth.uid() = %I)',
-    table_name, table_name, actual_user_column, actual_user_column
+    p_table_name, p_table_name, actual_user_column, actual_user_column
   );
   
   -- DELETE policy
   EXECUTE format(
     'CREATE POLICY "Users can delete own %I" ON %I FOR DELETE USING (auth.uid() = %I)',
-    table_name, table_name, actual_user_column
+    p_table_name, p_table_name, actual_user_column
   );
 END;
 $$ LANGUAGE plpgsql;
