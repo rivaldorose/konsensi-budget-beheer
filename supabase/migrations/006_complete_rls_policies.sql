@@ -13,15 +13,85 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ============================================
 -- HELPER FUNCTION: Create standard RLS policies for a table
+-- Automatically detects user_id column or uses provided column name
 -- ============================================
 CREATE OR REPLACE FUNCTION create_standard_rls_policies(
   table_name TEXT,
-  user_id_column TEXT DEFAULT 'user_id'
+  user_id_column TEXT DEFAULT NULL
 )
 RETURNS void AS $$
+DECLARE
+  actual_user_column TEXT;
+  column_exists BOOLEAN;
 BEGIN
   -- Enable RLS
   EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', table_name);
+  
+  -- Auto-detect user column if not provided
+  IF user_id_column IS NULL THEN
+    -- Check for common user column names
+    SELECT EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_schema = 'public' 
+      AND table_name = create_standard_rls_policies.table_name 
+      AND column_name = 'user_id'
+    ) INTO column_exists;
+    
+    IF column_exists THEN
+      actual_user_column := 'user_id';
+    ELSE
+      -- Check for 'id' column (for users table)
+      SELECT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = create_standard_rls_policies.table_name 
+        AND column_name = 'id'
+      ) INTO column_exists;
+      
+      IF column_exists AND create_standard_rls_policies.table_name = 'users' THEN
+        actual_user_column := 'id';
+      ELSE
+        -- Try to find a column that references auth.users
+        SELECT column_name INTO actual_user_column
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+        AND table_name = create_standard_rls_policies.table_name
+        AND column_name IN ('user_id', 'created_by', 'owner_id')
+        LIMIT 1;
+        
+        IF actual_user_column IS NULL THEN
+          RAISE EXCEPTION 'Table % does not have a user_id, id, created_by, or owner_id column', table_name;
+        END IF;
+      END IF;
+    END IF;
+  ELSE
+    -- Verify the provided column exists
+    SELECT EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_schema = 'public' 
+      AND table_name = create_standard_rls_policies.table_name 
+      AND column_name = user_id_column
+    ) INTO column_exists;
+    
+    IF NOT column_exists THEN
+      -- Try to auto-detect instead of failing
+      SELECT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = create_standard_rls_policies.table_name 
+        AND column_name = 'user_id'
+      ) INTO column_exists;
+      
+      IF column_exists THEN
+        actual_user_column := 'user_id';
+        RAISE NOTICE 'Column % does not exist in table %, using user_id instead', user_id_column, table_name;
+      ELSE
+        RAISE EXCEPTION 'Column % does not exist in table % and no user_id column found', user_id_column, table_name;
+      END IF;
+    ELSE
+      actual_user_column := user_id_column;
+    END IF;
+  END IF;
   
   -- Drop existing policies if they exist
   EXECUTE format('DROP POLICY IF EXISTS "Users can read own %I" ON %I', table_name, table_name);
@@ -32,25 +102,25 @@ BEGIN
   -- SELECT policy
   EXECUTE format(
     'CREATE POLICY "Users can read own %I" ON %I FOR SELECT USING (auth.uid() = %I)',
-    table_name, table_name, user_id_column
+    table_name, table_name, actual_user_column
   );
   
   -- INSERT policy
   EXECUTE format(
     'CREATE POLICY "Users can insert own %I" ON %I FOR INSERT WITH CHECK (auth.uid() = %I)',
-    table_name, table_name, user_id_column
+    table_name, table_name, actual_user_column
   );
   
   -- UPDATE policy
   EXECUTE format(
     'CREATE POLICY "Users can update own %I" ON %I FOR UPDATE USING (auth.uid() = %I) WITH CHECK (auth.uid() = %I)',
-    table_name, table_name, user_id_column, user_id_column
+    table_name, table_name, actual_user_column, actual_user_column
   );
   
   -- DELETE policy
   EXECUTE format(
     'CREATE POLICY "Users can delete own %I" ON %I FOR DELETE USING (auth.uid() = %I)',
-    table_name, table_name, user_id_column
+    table_name, table_name, actual_user_column
   );
 END;
 $$ LANGUAGE plpgsql;
@@ -200,10 +270,85 @@ BEGIN
 END $$;
 
 -- Debt_status_history table
+-- Check what column it uses for user ownership (might be debt_id or user_id)
 DO $$
+DECLARE
+  has_user_id BOOLEAN;
+  has_debt_id BOOLEAN;
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'debt_status_history') THEN
-    PERFORM create_standard_rls_policies('debt_status_history', 'user_id');
+    -- Check if table has user_id column
+    SELECT EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_schema = 'public' 
+      AND table_name = 'debt_status_history' 
+      AND column_name = 'user_id'
+    ) INTO has_user_id;
+    
+    -- Check if table has debt_id column (might reference debts table which has user_id)
+    SELECT EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_schema = 'public' 
+      AND table_name = 'debt_status_history' 
+      AND column_name = 'debt_id'
+    ) INTO has_debt_id;
+    
+    ALTER TABLE debt_status_history ENABLE ROW LEVEL SECURITY;
+    
+    IF has_user_id THEN
+      -- Has direct user_id column
+      PERFORM create_standard_rls_policies('debt_status_history', 'user_id');
+    ELSIF has_debt_id AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'debts') THEN
+      -- Use debt_id to join with debts table to get user_id
+      DROP POLICY IF EXISTS "Users can read own debt_status_history" ON debt_status_history;
+      CREATE POLICY "Users can read own debt_status_history" ON debt_status_history
+        FOR SELECT USING (
+          EXISTS (
+            SELECT 1 FROM debts 
+            WHERE debts.id = debt_status_history.debt_id 
+            AND debts.user_id = auth.uid()
+          )
+        );
+      
+      DROP POLICY IF EXISTS "Users can insert own debt_status_history" ON debt_status_history;
+      CREATE POLICY "Users can insert own debt_status_history" ON debt_status_history
+        FOR INSERT WITH CHECK (
+          EXISTS (
+            SELECT 1 FROM debts 
+            WHERE debts.id = debt_status_history.debt_id 
+            AND debts.user_id = auth.uid()
+          )
+        );
+      
+      DROP POLICY IF EXISTS "Users can update own debt_status_history" ON debt_status_history;
+      CREATE POLICY "Users can update own debt_status_history" ON debt_status_history
+        FOR UPDATE USING (
+          EXISTS (
+            SELECT 1 FROM debts 
+            WHERE debts.id = debt_status_history.debt_id 
+            AND debts.user_id = auth.uid()
+          )
+        ) WITH CHECK (
+          EXISTS (
+            SELECT 1 FROM debts 
+            WHERE debts.id = debt_status_history.debt_id 
+            AND debts.user_id = auth.uid()
+          )
+        );
+      
+      DROP POLICY IF EXISTS "Users can delete own debt_status_history" ON debt_status_history;
+      CREATE POLICY "Users can delete own debt_status_history" ON debt_status_history
+        FOR DELETE USING (
+          EXISTS (
+            SELECT 1 FROM debts 
+            WHERE debts.id = debt_status_history.debt_id 
+            AND debts.user_id = auth.uid()
+          )
+        );
+    ELSE
+      -- Skip this table if we can't determine ownership
+      RAISE NOTICE 'Skipping debt_status_history: no user_id or debt_id column found';
+    END IF;
   END IF;
 END $$;
 
