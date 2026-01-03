@@ -114,22 +114,22 @@ DECLARE
     'variable_income_entries',
     'notification_rules'
   ];
-  table_name TEXT;
+  tbl_name TEXT;
   table_exists BOOLEAN;
 BEGIN
-  FOREACH table_name IN ARRAY tables
+  FOREACH tbl_name IN ARRAY tables
   LOOP
     -- Check if table exists
     SELECT EXISTS (
       SELECT 1 FROM information_schema.tables
       WHERE table_schema = 'public'
-      AND table_name = table_name
+      AND table_name = tbl_name
     ) INTO table_exists;
 
     IF table_exists THEN
-      PERFORM add_user_id_column(table_name);
+      PERFORM add_user_id_column(tbl_name);
     ELSE
-      RAISE NOTICE 'Table % does not exist, skipping', table_name;
+      RAISE NOTICE 'Table % does not exist, skipping', tbl_name;
     END IF;
   END LOOP;
 END $$;
