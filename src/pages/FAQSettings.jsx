@@ -105,7 +105,7 @@ export default function FAQSettings() {
   });
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark">
+    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a]">
       {/* Header */}
       <header className="bg-primary shadow-md w-full h-16 flex items-center justify-center px-4 md:px-8 z-50 sticky top-0">
         <div className="w-full max-w-[1400px] flex items-center justify-between">
@@ -338,7 +338,7 @@ export default function FAQSettings() {
                       <span className="material-symbols-outlined">search</span>
                     </div>
                     <input 
-                      className="block w-full rounded-[24px] border-none bg-background-light dark:bg-border-dark py-4 pl-12 pr-4 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-primary/50 text-base" 
+                      className="block w-full rounded-[24px] border-none bg-white dark:bg-[#1a2c26] border border-gray-100 dark:border-[#2A3F36] py-4 pl-12 pr-4 text-[#1F2937] dark:text-white placeholder:text-[#6B7280] dark:placeholder:text-[#9CA3AF] focus:ring-2 focus:ring-primary/50 text-base" 
                       placeholder="Zoek naar een vraag..." 
                       type="text"
                       value={searchTerm}
@@ -355,7 +355,7 @@ export default function FAQSettings() {
                       className={`flex-shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-transform hover:scale-105 ${
                         selectedCategory === category
                           ? 'bg-primary text-white shadow-md shadow-primary/20'
-                          : 'bg-background-light dark:bg-border-dark text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-card hover:text-gray-900 dark:hover:text-white'
+                          : 'bg-white dark:bg-[#1a2c26] border border-gray-100 dark:border-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-[#1F2937] dark:hover:text-white'
                       }`}
                     >
                       {category}
@@ -374,7 +374,7 @@ export default function FAQSettings() {
                   >
                     <summary className="flex cursor-pointer list-none items-center justify-between p-6 transition-colors hover:bg-gray-50/50 dark:hover:bg-dark-card">
                       <span className="text-gray-900 dark:text-white text-lg font-bold">{faq.question}</span>
-                      <div className="flex items-center justify-center size-8 rounded-full bg-background-light dark:bg-border-dark text-gray-500 dark:text-gray-400 transition-transform duration-300 group-open:rotate-180 group-open:bg-primary/10 dark:group-open:bg-primary/20 group-open:text-primary">
+                      <div className="flex items-center justify-center size-8 rounded-full bg-white dark:bg-[#1a2c26] border border-gray-100 dark:border-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] transition-transform duration-300 group-open:rotate-180 group-open:bg-primary/10 dark:group-open:bg-primary/20 group-open:text-primary">
                         <span className="material-symbols-outlined">expand_more</span>
                       </div>
                     </summary>
