@@ -57,7 +57,7 @@ export default function VTLBCalculator() {
       setUser(userData);
 
       // Load fixed costs
-      const costs = await MonthlyCost.filter({ created_by: userData.email });
+      const costs = await MonthlyCost.filter({ user_id: userData.id });
       const totalFixedCosts = costs.reduce((sum, cost) => sum + parseFloat(cost.amount || 0), 0);
 
       // Calculate initial values

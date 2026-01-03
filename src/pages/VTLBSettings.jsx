@@ -56,7 +56,7 @@ export default function VTLBSettings() {
       setUser(userData);
 
       // Calculate VTLB from user data
-      const costs = await MonthlyCost.filter({ created_by: userData.email });
+      const costs = await MonthlyCost.filter({ user_id: userData.id });
       
       // Calculate total fixed income
       const incomeData = await User.me();

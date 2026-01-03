@@ -109,7 +109,7 @@ export default function BudgetPlan() {
             const { startDate, endDate } = getPeriodBounds();
 
             // Load income
-            const incomeData = await Income.filter({ created_by: userData.email });
+            const incomeData = await Income.filter({ user_id: userData.id });
             const filteredIncome = incomeData.filter(income => {
                 if (income.income_type === 'vast') {
                     if (income.is_active === false) return false;
@@ -138,9 +138,9 @@ export default function BudgetPlan() {
             }, 0);
 
             // Load monthly costs
-            const monthlyCostsData = await MonthlyCost.filter({ 
+            const monthlyCostsData = await MonthlyCost.filter({
                 status: 'actief',
-                created_by: userData.email 
+                user_id: userData.id
             });
             
             const today = new Date(selectedMonth);
@@ -155,9 +155,9 @@ export default function BudgetPlan() {
             );
 
             // Load debts
-            const debtsData = await Debt.filter({ 
+            const debtsData = await Debt.filter({
                 status: 'betalingsregeling',
-                created_by: userData.email 
+                user_id: userData.id
             });
             
             const filteredDebts = debtsData.filter(debt => {
@@ -173,7 +173,7 @@ export default function BudgetPlan() {
             setDebts(filteredDebts);
 
             // Load transactions
-            const transactionsData = await Transaction.filter({ created_by: userData.email });
+            const transactionsData = await Transaction.filter({ user_id: userData.id });
             const filteredTransactions = transactionsData.filter(tx => {
                 const txDate = new Date(tx.date);
                 return txDate >= startDate && txDate <= endDate;
@@ -239,7 +239,7 @@ export default function BudgetPlan() {
             setTransactions(allTransactions);
 
             // Load pots
-            const potsData = await Pot.filter({ created_by: userData.email });
+            const potsData = await Pot.filter({ user_id: userData.id });
             const expensePots = potsData.filter(p => p.pot_type === 'expense');
             
             const potColors = {

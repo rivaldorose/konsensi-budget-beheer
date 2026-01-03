@@ -29,7 +29,7 @@ export default function SecuritySettings() {
       try {
         const userData = await User.me();
         setUser(userData);
-        const existing = await SecuritySettingsEntity.filter({ created_by: userData.email });
+        const existing = await SecuritySettingsEntity.filter({ user_id: userData.id });
         if (existing.length > 0) {
           const s = existing[0];
           setSettings(s);
@@ -66,7 +66,7 @@ export default function SecuritySettings() {
       if (settings?.id) {
         await SecuritySettingsEntity.update(settings.id, data);
       } else {
-        const created = await SecuritySettingsEntity.create({ ...data, created_by: user.email });
+        const created = await SecuritySettingsEntity.create({ ...data, user_id: user.id });
         setSettings(created);
       }
       toast({ title: 'Instellingen opgeslagen' });
@@ -85,7 +85,7 @@ export default function SecuritySettings() {
       if (settings?.id) {
         await SecuritySettingsEntity.update(settings.id, data);
       } else {
-        const created = await SecuritySettingsEntity.create({ ...data, created_by: user.email });
+        const created = await SecuritySettingsEntity.create({ ...data, user_id: user.id });
         setSettings(created);
       }
       toast({ title: 'Instellingen opgeslagen' });

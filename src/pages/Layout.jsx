@@ -244,7 +244,7 @@ function LayoutWithProvider({ children, currentPageName }) {
       if (showConfirmModal && user) {
         try {
           const { Pot } = await import('@/api/entities');
-          const pots = await Pot.filter({ created_by: user.email });
+          const pots = await Pot.filter({ user_id: user.id });
           setAvailablePots(pots.filter(p => p.pot_type === 'expense'));
         } catch (error) {
           console.error('Error loading pots:', error);

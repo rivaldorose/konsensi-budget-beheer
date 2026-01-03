@@ -62,7 +62,7 @@ export default function WorkSchedule() {
       const monthStart = startOfMonth(currentMonth);
       const monthEnd = endOfMonth(currentMonth);
 
-      const allWorkDays = await WorkDay.filter({ created_by: currentUser.email });
+      const allWorkDays = await WorkDay.filter({ user_id: currentUser.id });
       const filtered = allWorkDays.filter(day => {
         const dayDate = new Date(day.date);
         return dayDate >= monthStart && dayDate <= monthEnd;

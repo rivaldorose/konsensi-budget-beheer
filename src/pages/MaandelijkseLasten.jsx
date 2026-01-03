@@ -59,9 +59,7 @@ export default function MaandelijkseLastenPage() {
             setUser(userData);
             
             const userFilter = { user_id: userData.id };
-            const costsData = await MonthlyCost.filter(userFilter).catch(() => 
-                MonthlyCost.filter({ created_by: userData.email }, '-payment_date', 100)
-            );
+            const costsData = await MonthlyCost.filter(userFilter);
             setCosts(costsData);
         } catch (error) {
             console.error('Error loading data:', error);

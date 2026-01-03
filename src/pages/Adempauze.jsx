@@ -60,13 +60,13 @@ export default function Adempauze() {
       setUser(userData);
 
       // Load income
-      const incomes = await Income.filter({ created_by: userData.email });
+      const incomes = await Income.filter({ user_id: userData.id });
       const monthlyIncome = incomes
         .filter(i => i.income_type === 'vast' && i.is_active !== false)
         .reduce((sum, i) => sum + (i.monthly_equivalent || i.amount || 0), 0);
 
       // Load debts
-      const debts = await Debt.filter({ created_by: userData.email });
+      const debts = await Debt.filter({ user_id: userData.id });
       const activeDebts = debts.filter(d => d.status !== 'afbetaald');
       const totalDebt = activeDebts.reduce((sum, d) => sum + ((d.amount || 0) - (d.amount_paid || 0)), 0);
 
