@@ -83,21 +83,21 @@ export default function FAQPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-4xl mx-auto">
+    <div className="p-4 md:p-8 max-w-4xl mx-auto bg-[#F8F8F8] dark:bg-[#0a0a0a] min-h-screen">
       <div className="flex items-center gap-4 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => window.location.href = createPageUrl('HelpSupport')}>
+        <Button variant="ghost" size="icon" onClick={() => window.location.href = createPageUrl('HelpSupport')} className="text-[#6B7280] dark:text-[#9CA3AF] hover:text-[#1F2937] dark:hover:text-white">
           <ChevronLeft className="w-5 h-5"/>
         </Button>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{t('help.faqTitle')}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-[#1F2937] dark:text-white">{t('help.faqTitle')}</h1>
       </div>
 
       <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#6B7280] dark:text-[#9CA3AF] w-5 h-5" />
         <Input
           placeholder={t('faq.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 h-12 text-base"
+          className="pl-10 h-12 text-base bg-white dark:bg-[#1a2c26] border-gray-200 dark:border-[#2A3F36] text-[#1F2937] dark:text-white"
         />
       </div>
 
