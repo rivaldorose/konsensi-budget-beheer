@@ -122,12 +122,12 @@ const dashboardTranslations = {
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [gamificationData, setGamificationData] = useState({
-    level: 9,
-    currentXP: 2025,
-    totalXP: 2562,
+    level: 1,
+    currentXP: 0,
+    totalXP: 100,
     badges: [],
-    dailyMotivation: "Kleine stappen leiden tot grote resultaten.",
-    weekGoalPercentage: 89,
+    dailyMotivation: "",
+    weekGoalPercentage: 0,
   });
   const [dashboardData, setDashboardData] = useState({
     userName: '',
@@ -490,12 +490,12 @@ export default function Dashboard() {
       ]);
 
       setGamificationData({
-        level: levelData?.level || 9,
-        currentXP: levelData?.current_xp || 2025,
-        totalXP: levelData?.xp_to_next_level || 2562,
+        level: levelData?.level || 1,
+        currentXP: levelData?.current_xp || 0,
+        totalXP: levelData?.xp_to_next_level || 100,
         badges: (badges || []).map(b => b?.badge_type).filter(Boolean),
-        dailyMotivation: motivation?.quote || "Kleine stappen leiden tot grote resultaten.",
-        weekGoalPercentage: weekGoal?.percentage || 89,
+        dailyMotivation: motivation?.quote || "",
+        weekGoalPercentage: weekGoal?.percentage || 0,
       });
     } catch (error) {
       console.error("Error loading gamification data:", error);
@@ -659,18 +659,18 @@ export default function Dashboard() {
           />
         )}
 
-        {/* Startgids Widget for new users */}
-      {user && !user.onboarding_completed && 
-       allIncomes.length === 0 && allMonthlyCosts.length === 0 && debts.length === 0 && pots.length === 0 && (
-        <StartgidsWidget 
-          allIncomes={allIncomes}
-          allMonthlyCosts={allMonthlyCosts}
-          allDebts={debts}
-          allPots={pots}
-          user={user}
-          onRefresh={loadDashboardData}
-        />
-      )}
+        {/* Startgids Widget for new users or empty state */}
+        {user && 
+         allIncomes.length === 0 && allMonthlyCosts.length === 0 && debts.length === 0 && pots.length === 0 && (
+          <StartgidsWidget 
+            allIncomes={allIncomes}
+            allMonthlyCosts={allMonthlyCosts}
+            allDebts={debts}
+            allPots={pots}
+            user={user}
+            onRefresh={loadDashboardData}
+          />
+        )}
 
         {/* Debt Journey Chart - Only show if there's debt data */}
         {(remainingDebt > 0 || totalPaidAllTime > 0) && (
@@ -710,10 +710,39 @@ export default function Dashboard() {
           <FinancialOverview {...financialBreakdownData} />
         )}
 
-        {/* Gamification Stats - Only show if user has data */}
-        {user && (totalIncome > 0 || totalExpenses > 0) && (
-          <GamificationStats daysOnTrack={7} savingsPotAmount={12.5} />
-        )}
+        {/* Gamification Stats - Only show if user has data and stats are available */}
+        {user && (totalIncome > 0 || totalExpenses > 0) && (() => {
+          // Calculate days on track based on payment consistency
+          const daysOnTrack = (() => {
+            if (!allPayments || allPayments.length === 0) return 0;
+            // Simple calculation: count days since first payment
+            const sortedPayments = [...allPayments].sort((a, b) => {
+              const dateA = a?.payment_date ? new Date(a.payment_date) : new Date(0);
+              const dateB = b?.payment_date ? new Date(b.payment_date) : new Date(0);
+              return dateA - dateB;
+            });
+            const firstPayment = sortedPayments[0];
+            if (!firstPayment?.payment_date) return 0;
+            try {
+              const firstDate = new Date(firstPayment.payment_date);
+              if (isNaN(firstDate.getTime())) return 0;
+              const daysDiff = Math.floor((new Date() - firstDate) / (1000 * 60 * 60 * 24));
+              return Math.max(0, Math.min(daysDiff, 30)); // Cap at 30 days, minimum 0
+            } catch {
+              return 0;
+            }
+          })();
+          
+          // Calculate savings pot amount from pots
+          const savingsPotAmount = (pots || []).reduce((sum, pot) => {
+            return sum + (Number(pot?.current_amount) || 0);
+          }, 0);
+          
+          // Only show if there's meaningful data
+          if (daysOnTrack === 0 && savingsPotAmount === 0) return null;
+          
+          return <GamificationStats daysOnTrack={daysOnTrack} savingsPotAmount={savingsPotAmount} />;
+        })()}
 
         {/* Upcoming Payments - Only show if there are upcoming payments */}
         {upcomingPaymentsData.length > 0 && (
