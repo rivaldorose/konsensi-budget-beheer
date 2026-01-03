@@ -263,37 +263,37 @@ export default function MaandelijkseLastenPage() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
+            <div className="flex items-center justify-center min-h-[400px] bg-[#F8F8F8] dark:bg-[#0a0a0a]">
+                <div className="w-8 h-8 border-4 border-dashed rounded-full animate-spin border-primary dark:border-primary"></div>
             </div>
         );
     }
 
     return (
-        <main className="flex-grow w-full max-w-[1440px] mx-auto px-6 md:px-8 py-8 flex flex-col gap-8">
+        <main className="flex-grow w-full max-w-[1600px] mx-auto px-6 md:px-8 py-8 flex flex-col gap-8 bg-[#F8F8F8] dark:bg-[#0a0a0a] min-h-screen">
             {/* Page Header */}
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-3">
-                        <h1 className="text-primary-dark font-display text-3xl md:text-4xl font-extrabold tracking-tight">
+                        <h1 className="text-[#1F2937] dark:text-white text-3xl md:text-4xl font-extrabold tracking-tight">
                             💳 Maandelijkse Lasten
                         </h1>
                         <button
                             onClick={() => setShowInfoModal(true)}
-                            className="text-gray-400 hover:text-primary-dark transition-colors"
+                            className="text-[#6B7280] dark:text-[#9CA3AF] hover:text-[#1F2937] dark:hover:text-white transition-colors"
                             title="Info"
                         >
                             <span className="material-symbols-outlined text-[24px]">help</span>
                         </button>
                     </div>
-                    <p className="text-gray-500 font-body text-base">Beheer je vaste maandelijkse uitgaven</p>
+                    <p className="text-[#6B7280] dark:text-[#9CA3AF] text-base">Beheer je vaste maandelijkse uitgaven</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button 
                         onClick={() => setShowQuickAddModal(true)}
-                        className="group flex items-center justify-center h-11 px-5 rounded-[24px] border-2 border-gray-200 bg-transparent text-primary-dark font-bold text-sm hover:border-primary-dark hover:bg-white transition-all"
+                        className="group flex items-center justify-center h-11 px-5 rounded-[24px] border-2 border-gray-200 dark:border-[#2A3F36] bg-transparent text-[#1F2937] dark:text-white font-bold text-sm hover:border-primary hover:bg-white dark:hover:bg-[#1a2c26] transition-all"
                     >
-                        <span className="material-symbols-outlined text-[20px] mr-2 group-hover:scale-110 transition-transform text-accent-orange">bolt</span>
+                        <span className="material-symbols-outlined text-[20px] mr-2 group-hover:scale-110 transition-transform text-primary">bolt</span>
                         Snel kiezen
                     </button>
                     <button 
@@ -310,7 +310,7 @@ export default function MaandelijkseLastenPage() {
                             });
                             setShowFormModal(true);
                         }}
-                        className="flex items-center justify-center h-11 px-6 rounded-[24px] bg-[#B2FF78] hover:bg-[#a0f065] text-primary-dark font-bold text-sm shadow-soft hover:shadow-hover transition-all transform hover:-translate-y-0.5"
+                        className="flex items-center justify-center h-11 px-6 rounded-[24px] bg-primary hover:bg-[#059669] text-white font-bold text-sm shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] hover:shadow-lg transition-all transform hover:-translate-y-0.5"
                     >
                         + Toevoegen
                     </button>
@@ -320,42 +320,42 @@ export default function MaandelijkseLastenPage() {
             {/* Statistics Cards Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Card 1: Totaal per maand */}
-                <div className="bg-surface-white rounded-2xl p-6 shadow-soft flex flex-col gap-1 relative overflow-hidden group hover:shadow-hover transition-shadow" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                    <div className="absolute top-6 right-6 size-10 rounded-full bg-blue-50 flex items-center justify-center text-accent-blue group-hover:scale-110 transition-transform">
+                <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
+                    <div className="absolute top-6 right-6 size-10 rounded-full bg-blue-50 dark:bg-blue-500/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                         <span className="material-symbols-outlined">payments</span>
                     </div>
-                    <p className="text-gray-500 text-sm font-medium">Totaal per maand</p>
-                    <p className="text-primary-dark font-display text-3xl font-bold tracking-tight">{formatCurrency(totalMonthly)}</p>
+                    <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm font-medium">Totaal per maand</p>
+                    <p className="text-[#1F2937] dark:text-white text-3xl font-bold tracking-tight">{formatCurrency(totalMonthly)}</p>
                 </div>
 
                 {/* Card 2: Actieve lasten */}
-                <div className="bg-surface-white rounded-2xl p-6 shadow-soft flex flex-col gap-1 relative overflow-hidden group hover:shadow-hover transition-shadow" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                    <div className="absolute top-6 right-6 size-10 rounded-full bg-green-50 flex items-center justify-center text-primary-dark group-hover:scale-110 transition-transform">
+                <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
+                    <div className="absolute top-6 right-6 size-10 rounded-full bg-green-50 dark:bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                         <span className="material-symbols-outlined">assignment</span>
                     </div>
-                    <p className="text-gray-500 text-sm font-medium">Actieve lasten</p>
-                    <p className="text-primary-dark font-display text-3xl font-bold tracking-tight">{activeCosts.length}</p>
+                    <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm font-medium">Actieve lasten</p>
+                    <p className="text-[#1F2937] dark:text-white text-3xl font-bold tracking-tight">{activeCosts.length}</p>
                 </div>
 
                 {/* Card 3: Nog te betalen */}
-                <div className="bg-surface-white rounded-2xl p-6 shadow-soft flex flex-col gap-1 relative overflow-hidden group hover:shadow-hover transition-shadow" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                    <div className="absolute top-6 right-6 size-10 rounded-full bg-orange-50 flex items-center justify-center text-accent-orange group-hover:scale-110 transition-transform">
+                <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
+                    <div className="absolute top-6 right-6 size-10 rounded-full bg-orange-50 dark:bg-orange-500/20 flex items-center justify-center text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform">
                         <span className="material-symbols-outlined">trending_up</span>
                     </div>
-                    <p className="text-gray-500 text-sm font-medium">Nog te betalen</p>
-                    <p className="text-primary-dark font-display text-3xl font-bold tracking-tight">{formatCurrency(totalUpcoming)}</p>
+                    <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm font-medium">Nog te betalen</p>
+                    <p className="text-[#1F2937] dark:text-white text-3xl font-bold tracking-tight">{formatCurrency(totalUpcoming)}</p>
                 </div>
             </div>
 
             {/* Year Overview Chart Card */}
-            <div className="bg-surface-white rounded-2xl p-8 shadow-soft w-full" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-8 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] w-full">
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-primary-dark font-display text-xl font-bold flex items-center gap-2">
+                    <h3 className="text-[#1F2937] dark:text-white text-xl font-bold flex items-center gap-2">
                         📊 Overzicht Vaste Lasten
                     </h3>
                     <button 
                         onClick={() => setShowYearOverview(!showYearOverview)}
-                        className="text-gray-400 hover:text-primary-dark"
+                        className="text-[#6B7280] dark:text-[#9CA3AF] hover:text-[#1F2937] dark:hover:text-white"
                     >
                         <span className="material-symbols-outlined">{showYearOverview ? 'expand_less' : 'expand_more'}</span>
                     </button>
