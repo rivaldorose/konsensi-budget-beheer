@@ -1556,6 +1556,7 @@ function LayoutWithProvider({ children, currentPageName }) {
           </div>
         )}
       </div>
+      </div>
     </div>
   );
 }
