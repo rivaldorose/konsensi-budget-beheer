@@ -931,11 +931,11 @@ function LayoutWithProvider({ children, currentPageName }) {
           <div className="w-full max-w-[1400px] flex items-center justify-between">
             {/* Logo & Brand */}
             <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3 text-white">
-              <span className="material-symbols-outlined text-3xl text-primary">forest</span>
-              <div className="flex flex-col md:flex-row md:items-baseline md:gap-1 leading-tight font-display">
-                <span className="font-extrabold text-xl tracking-tight">KONSENSI</span>
-                <span className="font-medium text-sm text-[#a1a1a1] dark:text-[#a1a1a1]">Budgetbeheer</span>
-              </div>
+              <img 
+                src="/logo header.png" 
+                alt="Konsensi Logo" 
+                className="h-10 w-auto"
+              />
             </Link>
 
             {/* Navigation Links */}
@@ -1116,11 +1116,11 @@ function LayoutWithProvider({ children, currentPageName }) {
         {/* Mobile Header - New Konsensi Design */}
         <nav className="md:hidden w-full bg-[#0a0a0a] dark:bg-[#0a0a0a] h-16 px-4 flex items-center justify-between sticky top-0 z-50 border-b border-[#2a2a2a] dark:border-[#2a2a2a]">
           <Link to={createPageUrl('Dashboard')} className="flex items-center gap-2 text-white">
-            <span className="material-symbols-outlined text-2xl text-primary">forest</span>
-            <div className="flex flex-col leading-tight">
-              <span className="font-extrabold text-lg tracking-tight">KONSENSI</span>
-              <span className="font-medium text-[10px] text-[#a1a1a1] dark:text-[#a1a1a1]">Budgetbeheer</span>
-            </div>
+            <img 
+              src="/logo header.png" 
+              alt="Konsensi Logo" 
+              className="h-8 w-auto"
+            />
           </Link>
 
           <div className="flex items-center gap-2">
