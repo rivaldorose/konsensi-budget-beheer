@@ -161,9 +161,9 @@ export default function SignUp() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col lg:flex-row bg-white dark:bg-background-dark">
+    <div className="flex min-h-screen w-full flex-col lg:flex-row bg-[#F8F8F8] dark:bg-[#0a0a0a]">
       {/* LEFT SIDE: Form Section */}
-      <div className="relative flex w-full lg:w-1/2 flex-col justify-center overflow-y-auto bg-white dark:bg-[#0a0a0a] shadow-subtle px-6 py-10 lg:px-20 lg:py-16 z-10">
+      <div className="relative flex w-full lg:w-1/2 flex-col justify-center overflow-y-auto bg-white dark:bg-[#1a2c26] shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] px-6 py-10 lg:px-20 lg:py-16 z-10">
         {/* Theme Toggle */}
         <div className="absolute top-6 right-6 lg:top-8 lg:right-8 z-20">
           <label aria-label="Switch theme" className="relative inline-flex items-center cursor-pointer select-none">

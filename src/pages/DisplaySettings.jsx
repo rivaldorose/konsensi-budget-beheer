@@ -104,17 +104,17 @@ export default function DisplaySettings() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
-          <p className="text-gray-600 dark:text-gray-400 text-sm mt-4">Laden...</p>
+          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-primary dark:border-primary"></div>
+          <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm mt-4">Laden...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark">
+    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a]">
       {/* Header */}
       <header className="bg-primary shadow-md w-full h-16 flex items-center justify-center px-4 md:px-8 z-50 sticky top-0">
         <div className="w-full max-w-[1400px] flex items-center justify-between">
@@ -165,7 +165,7 @@ export default function DisplaySettings() {
                 <span className="material-symbols-outlined text-[#0d1b17] dark:text-secondary text-3xl">settings</span>
                 <h1 className="text-[#0d1b17] dark:text-white text-3xl md:text-4xl font-black tracking-tight">Instellingen</h1>
               </div>
-              <p className="text-gray-600 dark:text-gray-400 text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
+              <p className="text-[#6B7280] dark:text-[#9CA3AF] text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
             </div>
             <button 
               className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a2c26] text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors shadow-sm"

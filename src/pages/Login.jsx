@@ -161,9 +161,9 @@ export default function Login() {
   };
 
   return (
-    <div className="relative flex min-h-screen w-full flex-row overflow-hidden bg-background-light dark:bg-background-dark">
+    <div className="relative flex min-h-screen w-full flex-row overflow-hidden bg-[#F8F8F8] dark:bg-[#0a0a0a]">
       {/* Left Side - Login Form */}
-      <div className="relative flex w-full flex-col justify-center bg-white dark:bg-surface-dark px-8 py-12 shadow-soft lg:w-1/2 lg:px-20 xl:px-24 z-10">
+      <div className="relative flex w-full flex-col justify-center bg-white dark:bg-[#1a2c26] px-8 py-12 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] lg:w-1/2 lg:px-20 xl:px-24 z-10">
         {/* Theme Toggle */}
         <div className="absolute top-6 right-6 lg:top-8 lg:right-8 z-20">
           <label aria-label="Switch theme" className="relative inline-flex items-center cursor-pointer select-none">
