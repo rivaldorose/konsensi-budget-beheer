@@ -253,32 +253,51 @@ export default function Dashboard() {
         filterWithFallback(Transaction, userFilter),
       ]);
 
-      // Sort payments by date descending
-      allPayments.sort((a, b) => {
-        const dateA = new Date(a.payment_date || a.created_at);
-        const dateB = new Date(b.payment_date || b.created_at);
-        return dateB - dateA;
-      });
+      // Sort payments by date descending (with null safety)
+      if (Array.isArray(allPayments)) {
+        allPayments.sort((a, b) => {
+          const dateA = a?.payment_date || a?.created_at;
+          const dateB = b?.payment_date || b?.created_at;
+          if (!dateA && !dateB) return 0;
+          if (!dateA) return 1;
+          if (!dateB) return -1;
+          return new Date(dateB) - new Date(dateA);
+        });
+      } else {
+        allPayments = [];
+      }
 
-      // Sort transactions by date descending and limit to 200
-      allTransactions.sort((a, b) => {
-        const dateA = new Date(a.date || a.created_at);
-        const dateB = new Date(b.date || b.created_at);
-        return dateB - dateA;
-      });
-      allTransactions = allTransactions.slice(0, 200);
+      // Sort transactions by date descending and limit to 200 (with null safety)
+      if (Array.isArray(allTransactions)) {
+        allTransactions.sort((a, b) => {
+          const dateA = a?.date || a?.created_at;
+          const dateB = b?.date || b?.created_at;
+          if (!dateA && !dateB) return 0;
+          if (!dateA) return 1;
+          if (!dateB) return -1;
+          return new Date(dateB) - new Date(dateA);
+        });
+        allTransactions = allTransactions.slice(0, 200);
+      } else {
+        allTransactions = [];
+      }
 
       const incomeData = incomeService.processIncomeData(allIncomes, now);
       const monthlyCostsResult = monthlyCostService.processMonthlyCostsData(allMonthlyCosts);
       
       const monthStart = getStartOfMonth(now);
       const monthEnd = getEndOfMonth(now);
-      const paidThisMonth = allPayments
+      const paidThisMonth = (allPayments || [])
         .filter(p => {
-          const pDate = new Date(p.payment_date);
-          return pDate >= monthStart && pDate <= monthEnd;
+          if (!p?.payment_date) return false;
+          try {
+            const pDate = new Date(p.payment_date);
+            return !isNaN(pDate.getTime()) && pDate >= monthStart && pDate <= monthEnd;
+          } catch {
+            return false;
+          }
         })
-        .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+        .reduce((sum, p) => sum + (Number(p?.amount) || 0), 0);
 
       const activeDebtPaymentsResult = debtService.getActiveArrangementPayments(allDebts);
 
@@ -287,11 +306,11 @@ export default function Dashboard() {
       const totalFixedCosts = Number(monthlyCostsResult?.total) || 0;
       const activeDebtPaymentsSum = Number(activeDebtPaymentsResult?.total) || 0;
 
-      const remainingDebts = allDebts.filter(d => d.status !== 'afbetaald');
-      const remainingDebt = remainingDebts.reduce((sum, d) => sum + ((Number(d.amount) || 0) - (Number(d.amount_paid) || 0)), 0);
+      const remainingDebts = (allDebts || []).filter(d => d?.status !== 'afbetaald');
+      const remainingDebt = remainingDebts.reduce((sum, d) => sum + ((Number(d?.amount) || 0) - (Number(d?.amount_paid) || 0)), 0);
 
-      const totalPaidAllTime = allPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
-      const totalOriginalDebt = allDebts.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+      const totalPaidAllTime = (allPayments || []).reduce((sum, p) => sum + (Number(p?.amount) || 0), 0);
+      const totalOriginalDebt = (allDebts || []).reduce((sum, d) => sum + (Number(d?.amount) || 0), 0);
       
       let progressPercentage = 0;
       if (totalOriginalDebt > 0) {
@@ -304,12 +323,17 @@ export default function Dashboard() {
       const paidPerMonthKey = t('dashboard.paidPerMonth');
       const monthlyGraphData = last6Months.map(monthStart => {
         const monthEnd = getEndOfMonth(monthStart);
-        const monthlyTotal = allPayments
+        const monthlyTotal = (allPayments || [])
           .filter(p => {
-            const pDate = new Date(p.payment_date);
-            return pDate >= monthStart && pDate <= monthEnd;
+            if (!p?.payment_date) return false;
+            try {
+              const pDate = new Date(p.payment_date);
+              return !isNaN(pDate.getTime()) && pDate >= monthStart && pDate <= monthEnd;
+            } catch {
+              return false;
+            }
           })
-          .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+          .reduce((sum, p) => sum + (Number(p?.amount) || 0), 0);
         const monthName = new Intl.DateTimeFormat(language || 'nl', { month: 'short' }).format(monthStart);
         return {
           name: monthName,
@@ -322,12 +346,17 @@ export default function Dashboard() {
       const weeklyGraphData = last12Weeks.map(weekStart => {
         const weekEnd = getEndOfWeek(weekStart);
         const weekNumber = getWeekNumber(weekStart);
-        const weeklyTotal = allPayments
+        const weeklyTotal = (allPayments || [])
           .filter(p => {
-            const pDate = new Date(p.payment_date);
-            return pDate >= weekStart && pDate <= weekEnd;
+            if (!p?.payment_date) return false;
+            try {
+              const pDate = new Date(p.payment_date);
+              return !isNaN(pDate.getTime()) && pDate >= weekStart && pDate <= weekEnd;
+            } catch {
+              return false;
+            }
           })
-          .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+          .reduce((sum, p) => sum + (Number(p?.amount) || 0), 0);
         return {
           name: `Wk ${weekNumber}`,
           [paidPerMonthKey]: weeklyTotal,
@@ -337,7 +366,7 @@ export default function Dashboard() {
       const avgMonthlyPayment = monthlyGraphData.reduce((sum, data) => sum + (data[paidPerMonthKey] || 0), 0) / (monthlyGraphData.filter(d => d[paidPerMonthKey] > 0).length || 1);
       const monthsUntilFree = avgMonthlyPayment > 0 && remainingDebt > 0 ? Math.ceil(remainingDebt / avgMonthlyPayment) : 0;
 
-      const totalPotjesBudget = pots.reduce((sum, p) => sum + (Number(p.monthly_budget) || 0), 0);
+      const totalPotjesBudget = (pots || []).reduce((sum, p) => sum + (Number(p?.monthly_budget) || 0), 0);
       const freeToSpend = Math.max(0, fixedIncomeForBreakdown - totalFixedCosts - activeDebtPaymentsSum - totalPotjesBudget);
       const newBreakdownData = [];
       if (totalFixedCosts > 0) newBreakdownData.push({ name: t('financialBreakdown.fixedCosts'), value: totalFixedCosts });
@@ -386,19 +415,24 @@ export default function Dashboard() {
       }
 
       const startOfCurrentMonth = getStartOfMonth(now);
-      const needsCheckIn = allMonthlyCosts.some(cost => {
-          if (!cost.is_active) return false;
+      const needsCheckIn = (allMonthlyCosts || []).some(cost => {
+          if (!cost?.is_active) return false;
 
-          const paymentDay = cost.payment_date;
+          const paymentDay = cost?.payment_date;
           if (!paymentDay) return false;
 
-          let dueDateForCurrentMonth = new Date(now.getFullYear(), now.getMonth(), paymentDay);
+          try {
+            let dueDateForCurrentMonth = new Date(now.getFullYear(), now.getMonth(), paymentDay);
+            if (isNaN(dueDateForCurrentMonth.getTime())) return false;
 
-          if (dueDateForCurrentMonth <= now) {
-              const lastCheckedInDate = cost.last_checked_in_date ? new Date(cost.last_checked_in_date) : null;
-              if (!lastCheckedInDate || lastCheckedInDate < startOfCurrentMonth) {
-                  return true;
-              }
+            if (dueDateForCurrentMonth <= now) {
+                const lastCheckedInDate = cost?.last_checked_in_date ? new Date(cost.last_checked_in_date) : null;
+                if (!lastCheckedInDate || isNaN(lastCheckedInDate.getTime()) || lastCheckedInDate < startOfCurrentMonth) {
+                    return true;
+                }
+            }
+          } catch {
+            return false;
           }
           return false;
       });
@@ -449,7 +483,7 @@ export default function Dashboard() {
     if (user?.id) {
       loadGamificationData();
     }
-  }, [user, loadGamificationData]);
+  }, [user?.id, loadGamificationData]);
 
   const loadGamificationData = useCallback(async () => {
     if (!user?.id) return;
@@ -463,17 +497,18 @@ export default function Dashboard() {
       ]);
 
       setGamificationData({
-        level: levelData.level || 9,
-        currentXP: levelData.current_xp || 2025,
-        totalXP: levelData.xp_to_next_level || 2562,
-        badges: badges.map(b => b.badge_type),
-        dailyMotivation: motivation.quote || "Kleine stappen leiden tot grote resultaten.",
+        level: levelData?.level || 9,
+        currentXP: levelData?.current_xp || 2025,
+        totalXP: levelData?.xp_to_next_level || 2562,
+        badges: (badges || []).map(b => b?.badge_type).filter(Boolean),
+        dailyMotivation: motivation?.quote || "Kleine stappen leiden tot grote resultaten.",
         weekGoalPercentage: weekGoal?.percentage || 89,
       });
     } catch (error) {
       console.error("Error loading gamification data:", error);
+      // Don't throw - gamification data is not critical
     }
-  }, [language]);
+  }, [user?.id, language]);
 
   const today = new Date();
   const formattedDate = (() => {
@@ -547,12 +582,18 @@ export default function Dashboard() {
       const monthEnd = getEndOfMonth(monthDate);
       const monthStart = getStartOfMonth(monthDate);
       
-      const monthlyTotal = dashboardData.allPayments
-        ?.filter(p => {
-          const pDate = new Date(p.payment_date || p.created_at);
-          return pDate >= monthStart && pDate <= monthEnd;
+      const monthlyTotal = (dashboardData.allPayments || [])
+        .filter(p => {
+          const dateStr = p?.payment_date || p?.created_at;
+          if (!dateStr) return false;
+          try {
+            const pDate = new Date(dateStr);
+            return !isNaN(pDate.getTime()) && pDate >= monthStart && pDate <= monthEnd;
+          } catch {
+            return false;
+          }
         })
-        .reduce((sum, p) => sum + (Number(p.amount) || 0), 0) || 0;
+        .reduce((sum, p) => sum + (Number(p?.amount) || 0), 0) || 0;
       
       return {
         month: new Intl.DateTimeFormat("nl-NL", { month: "short" }).format(monthDate),
