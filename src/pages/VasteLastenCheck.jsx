@@ -60,7 +60,7 @@ export default function VasteLastenCheck() {
       setUser(userData);
 
       // Load monthly costs
-      const costs = await MonthlyCost.filter({ created_by: userData.email });
+      const costs = await MonthlyCost.filter({ user_id: userData.id });
       
       // Get today's date
       const today = new Date();
@@ -101,7 +101,7 @@ export default function VasteLastenCheck() {
       }
 
       // Load income for next payment
-      const incomes = await Income.filter({ created_by: userData.email });
+      const incomes = await Income.filter({ user_id: userData.id });
       const nextIncome = incomes
         .filter(i => i.income_type === 'vast' && i.is_active !== false)
         .reduce((sum, i) => sum + (i.monthly_equivalent || i.amount || 0), 0);
@@ -120,7 +120,7 @@ export default function VasteLastenCheck() {
       });
 
       // Load potjes
-      const userPotjes = await Pot.filter({ created_by: userData.email });
+      const userPotjes = await Pot.filter({ user_id: userData.id });
       setPotjes(userPotjes);
 
     } catch (error) {

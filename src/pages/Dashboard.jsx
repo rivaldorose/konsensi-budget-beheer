@@ -216,22 +216,18 @@ export default function Dashboard() {
       }
       setUser(currentUser);
       
-      // Try user_id first, fallback to created_by
+      // Use user_id for all queries
       const userFilter = { user_id: currentUser.id };
-      const userFilterFallback = { created_by: currentUser.id };
 
       const now = new Date();
 
-      // Helper to filter with fallback
+      // Helper to filter with error handling
       const filterWithFallback = async (Entity, filter) => {
         try {
           return await Entity.filter(filter);
-        } catch {
-          try {
-            return await Entity.filter(userFilterFallback);
-          } catch {
-            return [];
-          }
+        } catch (error) {
+          console.error(`Error filtering ${Entity.name || 'entity'}:`, error);
+          return [];
         }
       };
 
@@ -482,16 +478,6 @@ export default function Dashboard() {
     }
   }, [t, toast, language]);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, [loadDashboardData]);
-
-  useEffect(() => {
-    if (user?.id) {
-      loadGamificationData();
-    }
-  }, [user?.id, loadGamificationData]);
-
   const loadGamificationData = useCallback(async () => {
     if (!user?.id) return;
     
@@ -516,6 +502,16 @@ export default function Dashboard() {
       // Don't throw - gamification data is not critical
     }
   }, [user?.id, language]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
+
+  useEffect(() => {
+    if (user?.id) {
+      loadGamificationData();
+    }
+  }, [user?.id, loadGamificationData]);
 
   const today = new Date();
   const formattedDate = (() => {

@@ -72,7 +72,7 @@ export default function PaymentAnalysisModal({ isOpen, onClose, unpaidItem, curr
       const existingStatus = await PaymentStatus.filter({
         cost_id: unpaidItem.id,
         month: currentMonth,
-        created_by: user.email
+        user_id: user.id
       });
 
       if (existingStatus.length > 0) {
@@ -90,7 +90,7 @@ export default function PaymentAnalysisModal({ isOpen, onClose, unpaidItem, curr
           postponed_to_date: format(newDate, 'yyyy-MM-dd'),
           due_date: format(new Date(), 'yyyy-MM-dd'), // Assuming due_date is current date if postponed
           notes: `Uitgesteld via analyse. ${potsToAdjust.length > 0 ? `${potsToAdjust.length} potjes aangepast.` : ''}`,
-          created_by: user.email
+          user_id: user.id
         });
       }
 
@@ -114,8 +114,7 @@ export default function PaymentAnalysisModal({ isOpen, onClose, unpaidItem, curr
         priority: 'high',
         is_read: false,
         link: '/VasteLastenCheck',
-        created_by: user.email,
-        created_date: format(newDate, 'yyyy-MM-dd') // Notification for the new payment date
+        user_id: user.id
       });
 
       return results;

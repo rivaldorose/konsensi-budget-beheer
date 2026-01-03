@@ -23,9 +23,9 @@ export default function PostponedPaymentTracker() {
   });
 
   const { data: paymentStatuses = [] } = useQuery({
-    queryKey: ['paymentStatuses', user?.email],
-    queryFn: () => PaymentStatus.filter({ created_by: user.email }),
-    enabled: !!user,
+    queryKey: ['paymentStatuses', user?.id],
+    queryFn: () => PaymentStatus.filter({ user_id: user.id }),
+    enabled: !!user?.id,
     staleTime: 1 * 60 * 1000,
   });
 
