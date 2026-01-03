@@ -842,10 +842,14 @@ function LayoutWithProvider({ children, currentPageName }) {
     <div className={`theme-light flex min-h-screen bg-gray-50 font-sans antialiased ${isAnyModalOpen ? 'overflow-hidden' : ''}`} dir={languages.find(l => l.code === language)?.rtl ? 'rtl' : 'ltr'}>
       <style>{`
         :root {
-          --konsensi-primary: #386641;
-          --konsensi-accent: #b2ff78;
-          --konsensi-accent-light: #f0ffdf;
-          --konsensi-primary-dark: #2A4B30;
+          --konsensi-primary: #10b77f;
+          --konsensi-accent: #34d399;
+          --konsensi-accent-light: #d1fae5;
+          --konsensi-primary-dark: #059669;
+          --konsensi-dark: #10221c;
+          --konsensi-card: #1a2c26;
+          --konsensi-card-elevated: #2A3F36;
+          --konsensi-border: #2A3F36;
         }
         .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 72px; background: white; border-top: 1px solid #E5E7EB; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); z-index: 1000; }
         .nav-item-mobile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; min-width: 64px; cursor: pointer; transition: all 0.2s ease; text-decoration: none; color: #6B7280; }
