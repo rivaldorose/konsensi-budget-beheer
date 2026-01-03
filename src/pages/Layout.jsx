@@ -92,6 +92,28 @@ function LayoutWithProvider({ children, currentPageName }) {
   const { t, language, changeLanguage } = useTranslation();
   const { toast } = useToast();
   const { startPageTour, startFullOnboarding } = useTour();
+  
+  // Dark mode state
+  const [darkMode, setDarkMode] = React.useState(() => {
+    // Check localStorage first, then system preference
+    const saved = localStorage.getItem('darkMode');
+    if (saved !== null) return saved === 'true';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  // Apply dark mode to document
+  React.useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('darkMode', darkMode.toString());
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
 
   // Check if we're on auth pages or error pages (case-insensitive, handle trailing slashes)
   const currentPath = location.pathname.toLowerCase().replace(/\/$/, '');
@@ -892,176 +914,194 @@ function LayoutWithProvider({ children, currentPageName }) {
       `}</style>
 
       <div className="flex-grow flex flex-col w-full">
-        {/* Desktop Header */}
-        <header className="desktop-header w-full bg-[#11221c] dark:bg-[#0f0f0f] border-b border-[#23483c] dark:border-[#2a2a2a] sticky top-0 z-50 px-6 lg:px-10 py-3 flex items-center justify-between max-w-[1600px] mx-auto transition-all duration-300">
-          <div className="flex items-center gap-4 text-white">
-            <Link to={createPageUrl('Dashboard')} className="flex items-center">
-              <img 
-                src="/logo.png" 
-                alt="Konsensi Logo" 
-                className="h-10 w-auto"
-              />
+        {/* Desktop Header - New Konsensi Design */}
+        <nav className="w-full bg-[#0a0a0a] dark:bg-[#0a0a0a] h-16 px-8 flex items-center justify-center sticky top-0 z-50 border-b border-[#2a2a2a] dark:border-[#2a2a2a]">
+          <div className="w-full max-w-[1400px] flex items-center justify-between">
+            {/* Logo & Brand */}
+            <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3 text-white">
+              <span className="material-symbols-outlined text-3xl text-primary">forest</span>
+              <div className="flex flex-col md:flex-row md:items-baseline md:gap-1 leading-tight font-display">
+                <span className="font-extrabold text-xl tracking-tight">KONSENSI</span>
+                <span className="font-medium text-sm text-[#a1a1a1] dark:text-[#a1a1a1]">Budgetbeheer</span>
+              </div>
             </Link>
-          </div>
-          
-          <div className="flex-1 flex justify-end items-center gap-8">
-            <nav className="hidden lg:flex items-center gap-8">
-                            <Link
-                to={createPageUrl('Dashboard')} 
-                className={`text-sm font-medium leading-normal transition-colors ${
-                  currentPageName === 'Dashboard' 
-                    ? 'text-primary font-bold relative after:content-[""] after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-1 after:bg-primary after:rounded-t-md' 
-                    : 'text-gray-400 hover:text-white'
+
+            {/* Navigation Links */}
+            <div className="hidden md:flex items-center gap-4">
+              <Link 
+                to={createPageUrl('Dashboard')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  currentPageName === 'Dashboard'
+                    ? 'text-white'
+                    : 'text-[#a1a1a1] hover:text-white'
                 }`}
               >
                 Dashboard
-                            </Link>
-                  <Link
-                to={createPageUrl('BudgetPlan')} 
-                className={`text-sm font-medium leading-normal transition-colors ${
-                  currentPageName === 'BudgetPlan' 
-                    ? 'text-primary font-bold relative after:content-[""] after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-1 after:bg-primary after:rounded-t-md' 
-                    : 'text-gray-400 hover:text-white'
+              </Link>
+              <Link 
+                to={createPageUrl('BudgetPlan')}
+                className={`px-6 py-2 text-sm font-bold rounded-full shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-colors ${
+                  currentPageName === 'BudgetPlan'
+                    ? 'bg-primary text-black'
+                    : 'text-[#a1a1a1] hover:text-white'
                 }`}
               >
-                Budgetplan
-                  </Link>
-                  <Link
-                to={createPageUrl('Potjes')} 
-                className={`text-sm font-medium leading-normal transition-colors ${
-                  currentPageName === 'Potjes' 
-                    ? 'text-primary font-bold relative after:content-[""] after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-1 after:bg-primary after:rounded-t-md' 
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Potjes
-                  </Link>
-                  <Link
-                to={createPageUrl('Debts')} 
-                className={`text-sm font-medium leading-normal transition-colors ${
-                  currentPageName === 'Debts' 
-                    ? 'text-primary font-bold relative after:content-[""] after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-1 after:bg-primary after:rounded-t-md' 
-                    : 'text-gray-400 hover:text-white'
+                Balans
+              </Link>
+              <Link 
+                to={createPageUrl('Debts')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  currentPageName === 'Debts'
+                    ? 'text-white'
+                    : 'text-[#a1a1a1] hover:text-white'
                 }`}
               >
                 Schulden
-                  </Link>
-            </nav>
+              </Link>
+            </div>
 
-          <div className="flex items-center gap-3">
-                            {/* Desktop Help Button */}
-                            <PageHelpButton 
-                              pageName={currentPageName} 
-                              onClick={() => startPageTour(currentPageName)} 
-                            />
+            {/* Right Side Actions */}
+            <div className="flex items-center gap-4">
+              {/* Theme Toggle */}
+              <div className="flex items-center bg-[#2a2a2a] dark:bg-[#2a2a2a] rounded-full p-1 border border-[#3a3a3a] dark:border-[#3a3a3a]">
+                <button 
+                  aria-label="Switch to light mode" 
+                  onClick={() => setDarkMode(false)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+                    !darkMode 
+                      ? 'bg-[#3a3a3a] text-primary shadow-sm border border-white/5' 
+                      : 'text-[#6b7280] hover:text-white'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">light_mode</span>
+                </button>
+                <button 
+                  aria-label="Current theme: Dark mode" 
+                  onClick={() => setDarkMode(true)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${
+                    darkMode 
+                      ? 'bg-[#3a3a3a] text-primary shadow-sm border border-white/5' 
+                      : 'text-[#6b7280] hover:text-white'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[20px]" style={{fontVariationSettings: "'FILL' 1"}}>dark_mode</span>
+                </button>
+              </div>
 
-                             {user && (user.monthly_income === 0 || (user.monthly_income > 0 && user.monthly_income < 1626)) && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => window.location.href = createPageUrl('Adempauze')}
-                                className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                              >
-                                <Heart className="w-5 h-5 mr-2" fill="currentColor" />
-                                <span className="hidden md:inline">{t('nav.adempauze')}</span>
-                              </Button>
-                            )}
+              {/* Settings Button */}
+              <Link 
+                to={createPageUrl('Settings')}
+                className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
+                title="Instellingen"
+              >
+                <span className="material-symbols-outlined text-[22px]">settings</span>
+              </Link>
 
-            {notificationsEnabled && (
+              {/* User Profile */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative size-10 flex items-center justify-center rounded-xl bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border border-[#2a2a2a] transition-colors">
-                    <Bell className="w-5 h-5" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80 md:w-96">
-                  <div className="flex items-center justify-between p-3 border-b">
-                    <DropdownMenuLabel className="text-base font-semibold p-0">{t('notifications.title')}</DropdownMenuLabel>
-                    {unreadCount > 0 && (
-                      <Button
-                        variant="link"
-                        size="sm"
-                        onClick={handleMarkAllAsRead}
-                        className="text-xs h-7 text-[var(--konsensi-primary)]"
-                      >
-                        {t('notifications.markAllRead')}
-                      </Button>
-                    )}
+                  <div className="flex items-center gap-3 cursor-pointer group">
+                    <span className="hidden xl:block text-sm font-medium text-white group-hover:text-primary transition-colors">
+                      {user?.voornaam || user?.full_name || user?.name || user?.email?.split('@')[0] || 'Gebruiker'}
+                    </span>
+                    <div 
+                      className="w-9 h-9 rounded-full bg-cover bg-center border border-[#3a3a3a] dark:border-[#3a3a3a] group-hover:border-primary transition-all"
+                      style={user?.profielfoto_url ? { backgroundImage: `url(${user.profielfoto_url})` } : {}}
+                    >
+                      {!user?.profielfoto_url && (
+                        <div className="w-full h-full flex items-center justify-center bg-primary text-black font-bold text-sm rounded-full">
+                          {user?.voornaam?.[0]?.toUpperCase() || user?.full_name?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'G'}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  
-                  {notifications.length === 0 ? (
-                    <div className="p-8 text-center text-gray-500 text-sm">
-                      <Bell className="w-8 h-8 mx-auto text-gray-300 mb-2" />
-                      {t('notifications.noNew')}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-[#1a1a1a] border border-[#2a2a2a]">
+                  <DropdownMenuLabel className="text-white">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium capitalize">{user?.voornaam || user?.full_name || user?.name || user?.email?.split('@')[0] || 'Gebruiker'}</span>
+                      <span className="text-xs text-[#a1a1a1]">{user?.email}</span>
                     </div>
-                  ) : (
-                    <div className="max-h-96 overflow-y-auto">
-                      {Object.entries(groupedNotifications).map(([group, notifs]) => (
-                        notifs.length > 0 && (
-                          <div key={group}>
-                            <p className="text-xs font-semibold text-gray-500 px-3 pt-3 pb-1 uppercase">
-                              {group === 'today' ? t('common.today') : group === 'yesterday' ? t('common.yesterday') : t('common.earlier')}
-                            </p>
-                            {notifs.map((notif) => (
-                              <DropdownMenuItem
-                                key={notif.id}
-                                className="p-3 cursor-pointer hover:bg-gray-50 data-[highlighted]:bg-gray-50"
-                                onClick={() => {
-                                  if (!notif.is_read) handleMarkAsRead(notif.id);
-                                  if (notif.link) window.location.href = notif.link;
-                                }}
-                              >
-                                <div className="flex gap-3 w-full items-start">
-                                  <div className={`flex-shrink-0 mt-1 ${!notif.is_read ? 'text-[var(--konsensi-primary)]' : 'text-gray-400'}`}>
-                                    {getNotificationIcon(notif.type)}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className={`text-sm ${!notif.is_read ? 'font-semibold text-gray-900' : 'font-normal text-gray-700'}`}>
-                                      {notif.title}
-                                    </p>
-                                    <p className="text-xs text-gray-500">{notif.message}</p>
-                                    <p className="text-xs text-gray-400 mt-1">{getTimeAgo(notif.created_date)}</p>
-                                  </div>
-                                  {!notif.is_read && (
-                                    <div className="w-2.5 h-2.5 bg-[var(--konsensi-primary)] rounded-full flex-shrink-0 mt-1.5 ml-2"></div>
-                                  )}
-                                </div>
-                              </DropdownMenuItem>
-                            ))}
-                          </div>
-                        )
-                      ))}
-                    </div>
-                  )}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+                  <DropdownMenuItem onClick={() => window.location.href = createPageUrl('Settings')} className="text-white hover:bg-[#2a2a2a]">
+                    <UserCircle className="w-4 h-4 mr-2" />
+                    {t('profile.accountDetails')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.location.href = createPageUrl('Settings')} className="text-white hover:bg-[#2a2a2a]">
+                    <Settings className="w-4 h-4 mr-2" />
+                    {t('nav.settings')}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-400 hover:bg-[#2a2a2a]">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    {t('profile.logout')}
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            )}
+            </div>
+          </div>
+        </nav>
 
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="size-10 flex items-center justify-center rounded-xl bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border border-[#2a2a2a] transition-colors"
-              onClick={() => window.location.href = createPageUrl('Settings')}
+        {/* Mobile Header - New Konsensi Design */}
+        <nav className="md:hidden w-full bg-[#0a0a0a] dark:bg-[#0a0a0a] h-16 px-4 flex items-center justify-between sticky top-0 z-50 border-b border-[#2a2a2a] dark:border-[#2a2a2a]">
+          <Link to={createPageUrl('Dashboard')} className="flex items-center gap-2 text-white">
+            <span className="material-symbols-outlined text-2xl text-primary">forest</span>
+            <div className="flex flex-col leading-tight">
+              <span className="font-extrabold text-lg tracking-tight">KONSENSI</span>
+              <span className="font-medium text-[10px] text-[#a1a1a1] dark:text-[#a1a1a1]">Budgetbeheer</span>
+            </div>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <div className="flex items-center bg-[#2a2a2a] dark:bg-[#2a2a2a] rounded-full p-0.5 border border-[#3a3a3a] dark:border-[#3a3a3a]">
+              <button 
+                aria-label="Switch to light mode" 
+                onClick={() => setDarkMode(false)}
+                className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${
+                  !darkMode 
+                    ? 'bg-[#3a3a3a] text-primary' 
+                    : 'text-[#6b7280]'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px]">light_mode</span>
+              </button>
+              <button 
+                aria-label="Switch to dark mode" 
+                onClick={() => setDarkMode(true)}
+                className={`w-7 h-7 flex items-center justify-center rounded-full transition-all ${
+                  darkMode 
+                    ? 'bg-[#3a3a3a] text-primary' 
+                    : 'text-[#6b7280]'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>dark_mode</span>
+              </button>
+            </div>
+
+            {/* Settings Button */}
+            <Link 
+              to={createPageUrl('Settings')}
+              className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
+              title="Instellingen"
             >
-              <Settings className="w-5 h-5" />
-            </Button>
+              <span className="material-symbols-outlined text-[20px]">settings</span>
+            </Link>
 
+            {/* User Profile */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="size-10 rounded-full border-2 border-[#2a2a2a] bg-cover bg-center bg-no-repeat cursor-pointer overflow-hidden" 
+                <div 
+                  className="w-9 h-9 rounded-full bg-cover bg-center border border-[#3a3a3a] dark:border-[#3a3a3a] cursor-pointer"
                   style={user?.profielfoto_url ? { backgroundImage: `url(${user.profielfoto_url})` } : {}}
                 >
                   {!user?.profielfoto_url && (
-                    <div className="w-full h-full flex items-center justify-center bg-primary text-white font-bold text-sm">
-                        {user?.voornaam?.[0]?.toUpperCase() || user?.full_name?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'G'}
+                    <div className="w-full h-full flex items-center justify-center bg-primary text-black font-bold text-xs rounded-full">
+                      {user?.voornaam?.[0]?.toUpperCase() || user?.full_name?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'G'}
                     </div>
                   )}
-                </button>
+                </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 bg-[#1a1a1a] border border-[#2a2a2a]">
                 <DropdownMenuLabel className="text-white">
@@ -1087,131 +1127,7 @@ function LayoutWithProvider({ children, currentPageName }) {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        </div>
-        </header>
-
-        {/* Mobile Header */}
-        <header className="md:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#23483c] dark:border-[#2a2a2a] bg-[#11221c] dark:bg-[#0f0f0f] px-4">
-                                      <Link to={createPageUrl('Dashboard')} className="flex items-center">
-            <img 
-              src="/logo.png" 
-              alt="Konsensi Logo" 
-              className="h-10 w-auto"
-            />
-                                      </Link>
-
-            <div className="flex items-center gap-2">
-                                  {/* Help Button voor pagina tour */}
-                                  <PageHelpButton 
-                                    pageName={currentPageName} 
-                                    onClick={() => startPageTour(currentPageName)} 
-                                  />
-
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="h-9 w-9">
-                                        <span className="text-lg">{languages.find(l => l.code === language)?.flag}</span>
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>{t('common.chooseLanguage')}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {languages.map((lang) => (
-                      <DropdownMenuItem 
-                        key={lang.code} 
-                        onSelect={async () => {
-                          try {
-                            await User.updateMe({ language_preference: lang.code });
-                            changeLanguage(lang.code);
-                            window.location.reload();
-                          } catch (error) {
-                            console.error('Error saving language:', error);
-                          }
-                        }}
-                        className={language === lang.code ? 'bg-gray-100 font-semibold' : ''}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{lang.flag}</span>
-                          <span>{lang.name}</span>
-                          {language === lang.code && <Check className="ml-auto h-4 w-4 text-[var(--konsensi-primary)]" />}
-                        </div>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {notificationsEnabled && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="relative h-9 w-9 bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border border-[#2a2a2a] rounded-xl">
-                        <Bell className="w-5 h-5" />
-                        {unreadCount > 0 && (
-                          <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center">
-                            {unreadCount}
-                          </span>
-                        )}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-80">
-                        <div className="flex items-center justify-between p-3 border-b">
-                          <DropdownMenuLabel className="p-0">{t('notifications.title')}</DropdownMenuLabel>
-                          {unreadCount > 0 && (
-                            <Button
-                              variant="link"
-                              size="sm"
-                              onClick={handleMarkAllAsRead}
-                              className="text-xs h-7 text-[var(--konsensi-primary)]"
-                            >
-                              {t('notifications.markAllRead')}
-                            </Button>
-                          )}
-                        </div>
-                        {notifications.length === 0 ? ( <div className="p-8 text-center text-gray-500 text-sm"> <Bell className="w-8 h-8 mx-auto text-gray-300 mb-2" /> {t('notifications.noNew')} </div>) : ( <div className="max-h-96 overflow-y-auto"> {Object.entries(groupedNotifications).map(([group, notifs]) => ( notifs.length > 0 && ( <div key={group}> <p className="text-xs font-semibold text-gray-500 px-3 pt-3 pb-1 uppercase"> {group === 'today' ? t('common.today') : group === 'yesterday' ? t('common.yesterday') : t('common.earlier')} </p> {notifs.map((notif) => ( <DropdownMenuItem key={notif.id} className="p-3 cursor-pointer hover:bg-gray-50 data-[highlighted]:bg-gray-50" onClick={() => { if (!notif.is_read) handleMarkAsRead(notif.id); if (notif.link) window.location.href = notif.link; }} > <div className="flex gap-3 w-full items-start"> <div className={`flex-shrink-0 mt-1 ${!notif.is_read ? 'text-[var(--konsensi-primary)]' : 'text-gray-400'}`}> {getNotificationIcon(notif.type)} </div> <div className="flex-1 min-w-0"> <p className={`text-sm ${!notif.is_read ? 'font-semibold text-gray-900' : 'font-normal text-gray-700'}`}> {notif.title} </p> <p className="text-xs text-gray-500">{notif.message}</p> <p className="text-xs text-gray-400 mt-1">{getTimeAgo(notif.created_date)}</p> </div> {!notif.is_read && ( <div className="w-2.5 h-2.5 bg-[var(--konsensi-primary)] rounded-full flex-shrink-0 mt-1.5 ml-2"></div> )} </div> </DropdownMenuItem> ))} </div> ) ))} </div> )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
-
-                <Button variant="ghost" size="icon" className="h-9 w-9 bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border border-[#2a2a2a] rounded-xl" onClick={() => window.location.href = createPageUrl('Settings')}>
-                  <Settings className="w-5 h-5" />
-                                      </Button>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="size-9 rounded-full border-2 border-[#2a2a2a] bg-cover bg-center bg-no-repeat cursor-pointer overflow-hidden" 
-                      style={user?.profielfoto_url ? { backgroundImage: `url(${user.profielfoto_url})` } : {}}
-                    >
-                      {!user?.profielfoto_url && (
-                        <div className="w-full h-full flex items-center justify-center bg-primary text-white font-bold text-xs">
-                          {user?.voornaam?.[0]?.toUpperCase() || user?.full_name?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'G'}
-                        </div>
-                      )}
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 bg-[#1a1a1a] border border-[#2a2a2a]">
-                    <DropdownMenuLabel className="text-white">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium capitalize">{user?.voornaam || user?.full_name || user?.name || user?.email?.split('@')[0] || 'Gebruiker'}</span>
-                        <span className="text-xs text-[#a1a1a1]">{user?.email}</span>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-[#2a2a2a]" />
-                    <DropdownMenuItem onClick={() => window.location.href = createPageUrl('Settings')} className="text-white hover:bg-[#2a2a2a]">
-                      <UserCircle className="w-4 h-4 mr-2" />
-                      {t('profile.accountDetails')}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => window.location.href = createPageUrl('Settings')} className="text-white hover:bg-[#2a2a2a]">
-                      <Settings className="w-4 h-4 mr-2" />
-                      {t('nav.settings')}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-[#2a2a2a]" />
-                    <DropdownMenuItem onClick={handleLogout} className="text-red-400 hover:bg-[#2a2a2a]">
-                      <LogOut className="w-4 h-4 mr-2" />
-                      {t('profile.logout')}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                                  </div>
-                              </header>
+        </nav>
         
         {/* Main Content */}
         <div className="main-content-wrapper mobile-content md:pt-16 transition-all duration-300">
