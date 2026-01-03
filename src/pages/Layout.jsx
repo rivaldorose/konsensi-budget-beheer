@@ -353,9 +353,9 @@ function LayoutWithProvider({ children, currentPageName }) {
               // Fallback to created_by if user_id doesn't work
               try {
                 existingChecks = await MonthlyCheck.filter({ 
-                    month: currentMonthStr,
-                    created_by: user.email 
-                });
+                month: currentMonthStr,
+                created_by: user.email 
+            });
               } catch (fallbackError) {
                 console.error('Error loading monthly checks:', fallbackError);
                 existingChecks = [];
@@ -826,7 +826,7 @@ function LayoutWithProvider({ children, currentPageName }) {
       </div>
     );
   }
-
+  
   // If on login/onboarding page, render without sidebar/header
   if (isAuthPage) {
     return (
@@ -862,14 +862,14 @@ function LayoutWithProvider({ children, currentPageName }) {
         .fab:active { transform: scale(0.95); }
         .fab.dragging { transform: scale(1.1); box-shadow: 0 8px 30px rgba(56, 102, 65, 0.5); }
         .fab svg { width: 28px; height: 28px; color: white; pointer-events: none; }
-        .mobile-header { position: sticky; top: 0; z-index: 40; background: white; border-bottom: 1px solid #E5E7EB; padding: 12px 16px; }
+        .mobile-header { position: sticky; top: 0; z-index: 40; background: #11221c; border-bottom: 1px solid #23483c; padding: 12px 16px; }
         .mobile-content { padding-bottom: 88px; min-height: 100vh; }
         @media (min-width: 768px) {
           .mobile-bottom-nav, .mobile-header, .fab-button { display: none; }
           .mobile-content { padding-bottom: 0; min-height: auto; }
         }
         @media (min-width: 768px) {
-          .desktop-header { display: flex !important; position: sticky; top: 0; z-index: 40; }
+          .desktop-header { display: flex !important; position: sticky; top: 0; z-index: 50; }
           .main-content-wrapper { width: 100%; overflow-x: hidden; }
         }
         .add-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 2000; animation: fadeIn 0.2s ease; }
@@ -889,10 +889,61 @@ function LayoutWithProvider({ children, currentPageName }) {
 
       <div className="flex-grow flex flex-col w-full">
         {/* Desktop Header */}
-        <header className="desktop-header bg-white border-b border-gray-200 px-4 md:px-6 h-16 flex items-center justify-between gap-4 transition-all duration-300">
-          <div className="flex-1"></div>
+        <header className="desktop-header w-full bg-[#11221c] dark:bg-[#0f0f0f] border-b border-[#23483c] dark:border-[#2a2a2a] sticky top-0 z-50 px-6 lg:px-10 py-3 flex items-center justify-between max-w-[1600px] mx-auto transition-all duration-300">
+          <div className="flex items-center gap-4 text-white">
+            <div className="size-8 text-primary">
+              <svg className="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
+              </svg>
+                                        </div>
+            <h2 className="text-white text-xl font-bold leading-tight tracking-tight">Konsensi</h2>
+                      </div>
+          
+          <div className="flex-1 flex justify-end items-center gap-8">
+            <nav className="hidden lg:flex items-center gap-8">
+                            <Link
+                to={createPageUrl('Dashboard')} 
+                className={`text-sm font-medium leading-normal transition-colors ${
+                  currentPageName === 'Dashboard' 
+                    ? 'text-primary font-bold relative after:content-[""] after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-1 after:bg-primary after:rounded-t-md' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Dashboard
+                            </Link>
+                  <Link
+                to={createPageUrl('BudgetPlan')} 
+                className={`text-sm font-medium leading-normal transition-colors ${
+                  currentPageName === 'BudgetPlan' 
+                    ? 'text-primary font-bold relative after:content-[""] after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-1 after:bg-primary after:rounded-t-md' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Budgetplan
+                  </Link>
+                  <Link
+                to={createPageUrl('Potjes')} 
+                className={`text-sm font-medium leading-normal transition-colors ${
+                  currentPageName === 'Potjes' 
+                    ? 'text-primary font-bold relative after:content-[""] after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-1 after:bg-primary after:rounded-t-md' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Potjes
+                  </Link>
+                  <Link
+                to={createPageUrl('Debts')} 
+                className={`text-sm font-medium leading-normal transition-colors ${
+                  currentPageName === 'Debts' 
+                    ? 'text-primary font-bold relative after:content-[""] after:absolute after:bottom-[-20px] after:left-0 after:w-full after:h-1 after:bg-primary after:rounded-t-md' 
+                    : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Schulden
+                  </Link>
+            </nav>
 
-          <div className="flex items-center gap-2 md:gap-4">
+          <div className="flex items-center gap-3">
                             {/* Desktop Help Button */}
                             <PageHelpButton 
                               pageName={currentPageName} 
@@ -914,8 +965,8 @@ function LayoutWithProvider({ children, currentPageName }) {
             {notificationsEnabled && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative">
-                    <Bell className="w-5 h-5 text-gray-600" />
+                  <Button variant="ghost" size="icon" className="relative size-10 flex items-center justify-center rounded-xl bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border border-[#2a2a2a] transition-colors">
+                    <Bell className="w-5 h-5" />
                     {unreadCount > 0 && (
                       <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center">
                         {unreadCount}
@@ -986,48 +1037,45 @@ function LayoutWithProvider({ children, currentPageName }) {
               </DropdownMenu>
             )}
 
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="size-10 flex items-center justify-center rounded-xl bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border border-[#2a2a2a] transition-colors"
+              onClick={() => window.location.href = createPageUrl('Settings')}
+            >
+              <Settings className="w-5 h-5" />
+            </Button>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2">
-                  <Avatar className="w-8 h-8">
-                    {user?.profielfoto_url ? (
-                      <AvatarImage src={user.profielfoto_url} />
-                    ) : (
-                      <AvatarFallback style={{ backgroundColor: 'var(--konsensi-accent-light)', color: 'var(--konsensi-primary)' }}>
+                <button className="size-10 rounded-full border-2 border-[#2a2a2a] bg-cover bg-center bg-no-repeat cursor-pointer overflow-hidden" 
+                  style={user?.profielfoto_url ? { backgroundImage: `url(${user.profielfoto_url})` } : {}}
+                >
+                  {!user?.profielfoto_url && (
+                    <div className="w-full h-full flex items-center justify-center bg-primary text-white font-bold text-sm">
                         {user?.voornaam?.[0]?.toUpperCase() || user?.full_name?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'G'}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <span className="text-sm font-medium text-gray-900 hidden md:block capitalize">
-                    {(() => {
-                      // #region agent log
-                      const displayName = user?.voornaam || user?.full_name || user?.name || user?.email?.split('@')[0] || 'Gebruiker';
-                      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:951',message:'Header rendering user name',data:{displayName,userEmail:user?.email,userVoornaam:user?.voornaam,userFullName:user?.full_name,userName:user?.name,hasUser:!!user},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'M'})}).catch(()=>{});
-                      // #endregion
-                      return displayName;
-                    })()}
-                  </span>
-                  <ChevronDown className="w-4 h-4 text-gray-500 hidden md:block" />
-                </Button>
+                    </div>
+                  )}
+                </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
+              <DropdownMenuContent align="end" className="w-56 bg-[#1a1a1a] border border-[#2a2a2a]">
+                <DropdownMenuLabel className="text-white">
                   <div className="flex flex-col">
                     <span className="text-sm font-medium capitalize">{user?.voornaam || user?.full_name || user?.name || user?.email?.split('@')[0] || 'Gebruiker'}</span>
-                    <span className="text-xs text-gray-500">{user?.email}</span>
+                    <span className="text-xs text-[#a1a1a1]">{user?.email}</span>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => window.location.href = createPageUrl('Settings')}>
+                <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+                <DropdownMenuItem onClick={() => window.location.href = createPageUrl('Settings')} className="text-white hover:bg-[#2a2a2a]">
                   <UserCircle className="w-4 h-4 mr-2" />
                   {t('profile.accountDetails')}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => window.location.href = createPageUrl('Settings')}>
+                <DropdownMenuItem onClick={() => window.location.href = createPageUrl('Settings')} className="text-white hover:bg-[#2a2a2a]">
                   <Settings className="w-4 h-4 mr-2" />
                   {t('nav.settings')}
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+                <DropdownMenuItem onClick={handleLogout} className="text-red-400 hover:bg-[#2a2a2a]">
                   <LogOut className="w-4 h-4 mr-2" />
                   {t('profile.logout')}
                 </DropdownMenuItem>
@@ -1037,17 +1085,14 @@ function LayoutWithProvider({ children, currentPageName }) {
         </header>
 
         {/* Mobile Header */}
-                      <header className="md:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-white px-4">
+        <header className="md:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#23483c] dark:border-[#2a2a2a] bg-[#11221c] dark:bg-[#0f0f0f] px-4">
                                       <Link to={createPageUrl('Dashboard')} className="flex items-center gap-2">
-                                          <img
-                                            src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68dab075b0ca9b98841bfa1b/61e2744e7_KonsensiBudgetbeheer_Primaire_Beeldmerk3.png"
-                                            alt="Konsensi"
-                                            className="w-8 h-8"
-                                          />
-                                          <span className="font-bold text-lg text-[var(--konsensi-primary)]">konsensi</span>
-                                          <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-amber-100 text-amber-700 rounded" title="We werken dagelijks aan verbeteringen. Soms kunnen er fouten optreden.">
-                                            BETA
-                                          </span>
+            <div className="size-8 text-primary">
+              <svg className="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
+              </svg>
+            </div>
+            <span className="font-bold text-lg text-white">Konsensi</span>
                                       </Link>
 
             <div className="flex items-center gap-2">
@@ -1093,8 +1138,8 @@ function LayoutWithProvider({ children, currentPageName }) {
                 {notificationsEnabled && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="relative h-9 w-9">
-                        <Bell className="w-5 h-5 text-gray-600" />
+                      <Button variant="ghost" size="icon" className="relative h-9 w-9 bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border border-[#2a2a2a] rounded-xl">
+                        <Bell className="w-5 h-5" />
                         {unreadCount > 0 && (
                           <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center">
                             {unreadCount}
@@ -1121,9 +1166,45 @@ function LayoutWithProvider({ children, currentPageName }) {
                   </DropdownMenu>
                 )}
 
-                <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => window.location.href = createPageUrl('Settings')}>
-                                          <Settings className="w-5 h-5 text-gray-600" />
+                <Button variant="ghost" size="icon" className="h-9 w-9 bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border border-[#2a2a2a] rounded-xl" onClick={() => window.location.href = createPageUrl('Settings')}>
+                  <Settings className="w-5 h-5" />
                                       </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="size-9 rounded-full border-2 border-[#2a2a2a] bg-cover bg-center bg-no-repeat cursor-pointer overflow-hidden" 
+                      style={user?.profielfoto_url ? { backgroundImage: `url(${user.profielfoto_url})` } : {}}
+                    >
+                      {!user?.profielfoto_url && (
+                        <div className="w-full h-full flex items-center justify-center bg-primary text-white font-bold text-xs">
+                          {user?.voornaam?.[0]?.toUpperCase() || user?.full_name?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'G'}
+                        </div>
+                      )}
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 bg-[#1a1a1a] border border-[#2a2a2a]">
+                    <DropdownMenuLabel className="text-white">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium capitalize">{user?.voornaam || user?.full_name || user?.name || user?.email?.split('@')[0] || 'Gebruiker'}</span>
+                        <span className="text-xs text-[#a1a1a1]">{user?.email}</span>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+                    <DropdownMenuItem onClick={() => window.location.href = createPageUrl('Settings')} className="text-white hover:bg-[#2a2a2a]">
+                      <UserCircle className="w-4 h-4 mr-2" />
+                      {t('profile.accountDetails')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => window.location.href = createPageUrl('Settings')} className="text-white hover:bg-[#2a2a2a]">
+                      <Settings className="w-4 h-4 mr-2" />
+                      {t('nav.settings')}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+                    <DropdownMenuItem onClick={handleLogout} className="text-red-400 hover:bg-[#2a2a2a]">
+                      <LogOut className="w-4 h-4 mr-2" />
+                      {t('profile.logout')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                                   </div>
                               </header>
         
