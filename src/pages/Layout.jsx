@@ -366,12 +366,21 @@ function LayoutWithProvider({ children, currentPageName }) {
 
             // Load monthly checks for current month
             let existingChecks = [];
+            // #region agent log
+            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:370',message:'loading monthly checks',data:{month:currentMonthStr,userId:user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
             try {
               existingChecks = await MonthlyCheck.filter({ 
                   month: currentMonthStr,
                   user_id: user.id 
               });
+              // #region agent log
+              fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:373',message:'monthly checks success',data:{checksLength:existingChecks?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+              // #endregion
             } catch (error) {
+              // #region agent log
+              fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:375',message:'monthly checks error',data:{errorCode:error?.code,errorMessage:error?.message,errorHint:error?.hint},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+              // #endregion
               console.error('Error loading monthly checks:', error);
               existingChecks = [];
             }
@@ -385,19 +394,36 @@ function LayoutWithProvider({ children, currentPageName }) {
             }
 
             // Load monthly costs and debts
+            // #region agent log
+            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:388',message:'loading monthly costs and debts',data:{userId:user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
             const [monthlyCosts, debts] = await Promise.all([
               (async () => {
                 try {
-                  return await MonthlyCost.filter({ status: 'actief', user_id: user.id });
+                  const result = await MonthlyCost.filter({ status: 'actief', user_id: user.id });
+                  // #region agent log
+                  fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:391',message:'monthly costs success',data:{costsLength:result?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                  // #endregion
+                  return result;
                 } catch (error) {
+                  // #region agent log
+                  fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:393',message:'monthly costs error',data:{errorCode:error?.code,errorMessage:error?.message,errorHint:error?.hint},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                  // #endregion
                   console.error('Error loading monthly costs:', error);
                   return [];
                 }
               })(),
               (async () => {
                 try {
-                  return await Debt.filter({ status: 'betalingsregeling', user_id: user.id });
+                  const result = await Debt.filter({ status: 'betalingsregeling', user_id: user.id });
+                  // #region agent log
+                  fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:399',message:'debts success',data:{debtsLength:result?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                  // #endregion
+                  return result;
                 } catch (error) {
+                  // #region agent log
+                  fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:401',message:'debts error',data:{errorCode:error?.code,errorMessage:error?.message,errorHint:error?.hint},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                  // #endregion
                   console.error('Error loading debts:', error);
                   return [];
                 }
@@ -642,14 +668,26 @@ function LayoutWithProvider({ children, currentPageName }) {
 
 
   const fetchNotifications = React.useCallback(async () => {
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:658',message:'fetchNotifications called',data:{hasUserId:!!user?.id,userId:user?.id,notificationsEnabled},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    
     if (!user?.id || !notificationsEnabled) return;
     
     try {
       const allNotifications = await Notification.filter({ user_id: user.id }, '-created_date', 50);
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:665',message:'notifications query success',data:{notificationsLength:allNotifications?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      
       setNotifications(allNotifications || []);
       const unread = (allNotifications || []).filter(n => !n.is_read).length;
       setUnreadCount(unread);
     } catch (error) {
+      // #region agent log
+      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:671',message:'notifications query error',data:{errorCode:error?.code,errorMessage:error?.message,errorHint:error?.hint,errorDetails:error?.details},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       console.warn("Notifications unavailable, disabling feature:", error);
       setNotificationsEnabled(false);
       setNotifications([]);

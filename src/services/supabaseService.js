@@ -25,6 +25,10 @@ export const supabaseService = {
   },
 
   async filter(table, filters = {}) {
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'supabaseService.js:27',message:'filter called',data:{table,filters},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+    
     let query = supabase.from(table).select('*')
     
     // Apply filters
@@ -38,7 +42,16 @@ export const supabaseService = {
       }
     })
     
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'supabaseService.js:40',message:'before query execution',data:{table,filters},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+    
     const { data, error } = await query
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'supabaseService.js:42',message:'query result',data:{table,hasError:!!error,errorCode:error?.code,errorMessage:error?.message,errorHint:error?.hint,dataLength:data?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
+    
     if (error) throw error
     return data || []
   },
