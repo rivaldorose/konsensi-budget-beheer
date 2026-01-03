@@ -1086,6 +1086,7 @@ function LayoutWithProvider({ children, currentPageName }) {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+        </div>
         </header>
 
         {/* Mobile Header */}
