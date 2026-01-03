@@ -932,9 +932,13 @@ function LayoutWithProvider({ children, currentPageName }) {
             {/* Logo & Brand */}
             <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3 text-white">
               <img 
-                src="/logo header.png" 
+                src="/logo%20header.png" 
                 alt="Konsensi Logo" 
                 className="h-10 w-auto"
+                onError={(e) => {
+                  // Fallback to regular logo if header logo fails
+                  e.target.src = "/logo.png";
+                }}
               />
             </Link>
 
@@ -1117,9 +1121,13 @@ function LayoutWithProvider({ children, currentPageName }) {
         <nav className="md:hidden w-full bg-[#0a0a0a] dark:bg-[#0a0a0a] h-16 px-4 flex items-center justify-between sticky top-0 z-50 border-b border-[#2a2a2a] dark:border-[#2a2a2a]">
           <Link to={createPageUrl('Dashboard')} className="flex items-center gap-2 text-white">
             <img 
-              src="/logo header.png" 
+              src="/logo%20header.png" 
               alt="Konsensi Logo" 
               className="h-8 w-auto"
+              onError={(e) => {
+                // Fallback to regular logo if header logo fails
+                e.target.src = "/logo.png";
+              }}
             />
           </Link>
 
