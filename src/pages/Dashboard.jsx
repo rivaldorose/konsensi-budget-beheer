@@ -400,7 +400,14 @@ export default function Dashboard() {
               });
           });
 
-          upcomingCosts.sort((a, b) => a.next_due_date.getTime() - b.next_due_date.getTime());
+          upcomingCosts.sort((a, b) => {
+            if (!a?.next_due_date || !b?.next_due_date) return 0;
+            try {
+              return a.next_due_date.getTime() - b.next_due_date.getTime();
+            } catch {
+              return 0;
+            }
+          });
           
           const nextUpcomingCostItem = upcomingCosts[0];
 
