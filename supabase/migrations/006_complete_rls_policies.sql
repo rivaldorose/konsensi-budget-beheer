@@ -60,7 +60,9 @@ BEGIN
         LIMIT 1;
         
         IF actual_user_column IS NULL THEN
-          RAISE EXCEPTION 'Table % does not have a user_id, id, created_by, or owner_id column', p_table_name;
+          -- Skip this table - it doesn't have a user ownership column
+          RAISE NOTICE 'Skipping table %: no user_id, id, created_by, or owner_id column found', p_table_name;
+          RETURN;
         END IF;
       END IF;
     END IF;
@@ -86,7 +88,9 @@ BEGIN
         actual_user_column := 'user_id';
         RAISE NOTICE 'Column % does not exist in table %, using user_id instead', p_user_id_column, p_table_name;
       ELSE
-        RAISE EXCEPTION 'Column % does not exist in table % and no user_id column found', p_user_id_column, p_table_name;
+        -- Skip this table - cannot determine ownership
+        RAISE NOTICE 'Skipping table %: column % does not exist and no user_id column found', p_table_name, p_user_id_column;
+        RETURN;
       END IF;
     ELSE
       actual_user_column := p_user_id_column;
@@ -511,18 +515,57 @@ BEGIN
 END $$;
 
 -- Research_questions table
+-- Check if it has user_id, if not treat as public/global data
 DO $$
+DECLARE
+  has_user_id BOOLEAN;
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'research_questions') THEN
-    PERFORM create_standard_rls_policies('research_questions', 'user_id');
+    -- Check if table has user_id column
+    SELECT EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_schema = 'public' 
+      AND table_name = 'research_questions' 
+      AND column_name = 'user_id'
+    ) INTO has_user_id;
+    
+    IF has_user_id THEN
+      PERFORM create_standard_rls_policies('research_questions', 'user_id');
+    ELSE
+      -- Treat as public/global data - all authenticated users can read
+      ALTER TABLE research_questions ENABLE ROW LEVEL SECURITY;
+      
+      DROP POLICY IF EXISTS "Anyone can read research questions" ON research_questions;
+      CREATE POLICY "Anyone can read research questions" ON research_questions
+        FOR SELECT USING (auth.role() = 'authenticated');
+      
+      -- No INSERT, UPDATE, or DELETE policies - managed by admins
+      RAISE NOTICE 'research_questions treated as public data (no user_id column)';
+    END IF;
   END IF;
 END $$;
 
 -- User_responses table
+-- Check if it has user_id, if not skip
 DO $$
+DECLARE
+  has_user_id BOOLEAN;
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'user_responses') THEN
-    PERFORM create_standard_rls_policies('user_responses', 'user_id');
+    -- Check if table has user_id column
+    SELECT EXISTS (
+      SELECT 1 FROM information_schema.columns 
+      WHERE table_schema = 'public' 
+      AND table_name = 'user_responses' 
+      AND column_name = 'user_id'
+    ) INTO has_user_id;
+    
+    IF has_user_id THEN
+      PERFORM create_standard_rls_policies('user_responses', 'user_id');
+    ELSE
+      -- Skip if no user_id
+      RAISE NOTICE 'Skipping user_responses: no user_id column found';
+    END IF;
   END IF;
 END $$;
 
