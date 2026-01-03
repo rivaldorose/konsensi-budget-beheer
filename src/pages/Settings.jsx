@@ -146,62 +146,6 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a]">
-      {/* Header */}
-      <header className="bg-primary shadow-md w-full h-16 flex items-center justify-center px-4 md:px-8 z-50 sticky top-0">
-        <div className="w-full max-w-[1400px] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="size-8 flex items-center justify-center text-white">
-              <span className="material-symbols-outlined text-3xl">forest</span>
-            </div>
-            <h2 className="text-white text-lg font-bold tracking-tight">KONSENSI Budgetbeheer</h2>
-          </div>
-          <nav className="hidden md:flex items-center gap-2">
-            <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('Dashboard')}>Dashboard</a>
-            <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('BudgetPlan')}>Balans</a>
-            <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('Debts')}>Schulden</a>
-            <a className="px-5 py-2 bg-primary/10 text-primary rounded-full text-sm font-bold shadow-sm" href={createPageUrl('Settings')}>Instellingen</a>
-          </nav>
-          <div className="flex items-center gap-4">
-            <label className="relative inline-flex items-center cursor-pointer mr-2">
-              <input 
-                className="sr-only peer" 
-                type="checkbox" 
-                checked={darkMode}
-                onChange={toggleTheme}
-              />
-              <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-white/20 flex items-center justify-between px-1.5">
-                <span className="material-symbols-outlined text-[16px] text-yellow-300 z-10 select-none">light_mode</span>
-                <span className="material-symbols-outlined text-[16px] text-white/80 z-10 select-none">dark_mode</span>
-              </div>
-            </label>
-            <button className="text-white/80 hover:text-white transition-colors p-1">
-              <span className="material-symbols-outlined">search</span>
-            </button>
-            <div className="hidden sm:flex items-center justify-center bg-purple-badge text-white px-3 py-1 rounded-full text-xs font-bold shadow-sm">
-              Level 9
-            </div>
-            <div className="flex items-center gap-3 pl-2 border-l border-white/10">
-              <span className="text-white text-sm font-medium hidden sm:block">{user?.voornaam || 'Rivaldo'}</span>
-              <div 
-                className="size-9 rounded-full bg-cover bg-center border-2 border-white/20"
-                style={{
-                  backgroundImage: user?.profielfoto_url 
-                    ? `url(${user.profielfoto_url})` 
-                    : 'none',
-                  backgroundColor: user?.profielfoto_url ? 'transparent' : '#8B5CF6'
-                }}
-              >
-                {!user?.profielfoto_url && (
-                  <div className="w-full h-full flex items-center justify-center text-white font-bold">
-                    {(user?.voornaam?.[0] || user?.email?.[0] || 'R').toUpperCase()}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="flex-1 flex justify-center py-8 px-4 sm:px-6 md:px-8">
         <div className="w-full max-w-[1400px] flex flex-col gap-6">

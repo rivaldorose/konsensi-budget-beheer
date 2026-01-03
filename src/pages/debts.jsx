@@ -411,7 +411,7 @@ export default function Debts() {
   }
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-dark-bg text-[#131d0c] dark:text-white font-body antialiased">
+    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white font-body antialiased">
       {/* Theme Toggle */}
       <div className="fixed top-6 right-6 lg:top-8 lg:right-8 z-20">
         <label aria-label="Switch theme" className="relative inline-flex items-center cursor-pointer select-none">

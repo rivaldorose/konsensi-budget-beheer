@@ -653,13 +653,15 @@ export default function Dashboard() {
           badges={gamificationData.badges}
         />
 
-        {/* Stat Cards */}
-        <StatCards
-          totalIncome={totalIncome}
-          totalExpenses={totalExpenses}
-          totalPaidThisMonth={totalPaidThisMonth}
-          currentMonth={new Date()}
-        />
+        {/* Stat Cards - Only show if there's data */}
+        {(totalIncome > 0 || totalExpenses > 0 || totalPaidThisMonth > 0) && (
+          <StatCards
+            totalIncome={totalIncome}
+            totalExpenses={totalExpenses}
+            totalPaidThisMonth={totalPaidThisMonth}
+            currentMonth={new Date()}
+          />
+        )}
 
         {/* Startgids Widget for new users */}
       {user && !user.onboarding_completed && 
@@ -674,46 +676,56 @@ export default function Dashboard() {
         />
       )}
 
-        {/* Debt Journey Chart */}
-        <DebtJourneyChart
-          monthlyData={monthlyChartData}
-          totalPaid={totalPaidAllTime}
-          progressPercentage={progressPercentage}
-        />
+        {/* Debt Journey Chart - Only show if there's debt data */}
+        {(remainingDebt > 0 || totalPaidAllTime > 0) && (
+          <DebtJourneyChart
+            monthlyData={monthlyChartData}
+            totalPaid={totalPaidAllTime}
+            progressPercentage={progressPercentage}
+          />
+        )}
                   </div>
 
       {/* Right Column */}
       <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
-        {/* Total Remaining Debt Card */}
-        <div className="bg-gradient-to-br from-primary to-[#059669] text-white rounded-[24px] p-6 md:p-8 shadow-[0_8px_24px_rgba(16,183,127,0.3)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-10">
-            <span className="material-symbols-outlined text-[120px]">description</span>
-          </div>
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-white/15 backdrop-blur-md rounded-full border border-white/10">
-                <span className="material-symbols-outlined text-white">account_balance_wallet</span>
-              </div>
-              <p className="text-white/90 font-bold text-sm uppercase tracking-wider">Totale Restschuld</p>
+        {/* Total Remaining Debt Card - Only show if there's debt */}
+        {remainingDebt > 0 && (
+          <div className="bg-gradient-to-br from-primary to-[#059669] text-white rounded-[24px] p-6 md:p-8 shadow-[0_8px_24px_rgba(16,183,127,0.3)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-10">
+              <span className="material-symbols-outlined text-[120px]">description</span>
             </div>
-            <p className="text-4xl md:text-5xl font-extrabold mb-2 text-white">
-              {formatCurrency(remainingDebt || 0, { decimals: 0 })}
-            </p>
-            <p className="text-sm text-white/80">Geen paniek, we komen er samen uit.</p>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-2 bg-white/15 backdrop-blur-md rounded-full border border-white/10">
+                  <span className="material-symbols-outlined text-white">account_balance_wallet</span>
+                </div>
+                <p className="text-white/90 font-bold text-sm uppercase tracking-wider">Totale Restschuld</p>
+              </div>
+              <p className="text-4xl md:text-5xl font-extrabold mb-2 text-white">
+                {formatCurrency(remainingDebt || 0, { decimals: 0 })}
+              </p>
+              <p className="text-sm text-white/80">Geen paniek, we komen er samen uit.</p>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Financial Overview */}
-        <FinancialOverview {...financialBreakdownData} />
+        {/* Financial Overview - Only show if there's financial data */}
+        {(financialBreakdownData.totalIncome > 0 || financialBreakdownData.fixedCosts > 0 || financialBreakdownData.paymentPlans > 0 || financialBreakdownData.pots > 0) && (
+          <FinancialOverview {...financialBreakdownData} />
+        )}
 
-        {/* Gamification Stats */}
-        <GamificationStats daysOnTrack={7} savingsPotAmount={12.5} />
+        {/* Gamification Stats - Only show if user has data */}
+        {user && (totalIncome > 0 || totalExpenses > 0) && (
+          <GamificationStats daysOnTrack={7} savingsPotAmount={12.5} />
+        )}
 
-        {/* Upcoming Payments */}
-        <UpcomingPayments payments={upcomingPaymentsData} />
+        {/* Upcoming Payments - Only show if there are upcoming payments */}
+        {upcomingPaymentsData.length > 0 && (
+          <UpcomingPayments payments={upcomingPaymentsData} />
+        )}
 
-        {/* Dashboard Alerts */}
-        <DashboardAlerts alerts={[]} />
+        {/* Dashboard Alerts - Only show if there are alerts */}
+        {/* <DashboardAlerts alerts={[]} /> */}
                         </div>
 
       {/* Footer */}

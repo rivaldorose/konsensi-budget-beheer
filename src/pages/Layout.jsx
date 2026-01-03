@@ -895,13 +895,15 @@ function LayoutWithProvider({ children, currentPageName }) {
         {/* Desktop Header */}
         <header className="desktop-header w-full bg-[#11221c] dark:bg-[#0f0f0f] border-b border-[#23483c] dark:border-[#2a2a2a] sticky top-0 z-50 px-6 lg:px-10 py-3 flex items-center justify-between max-w-[1600px] mx-auto transition-all duration-300">
           <div className="flex items-center gap-4 text-white">
-            <div className="size-8 text-primary">
-              <svg className="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
-              </svg>
-                                        </div>
-            <h2 className="text-white text-xl font-bold leading-tight tracking-tight">Konsensi</h2>
-                      </div>
+            <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3">
+              <img 
+                src="/logo.png" 
+                alt="Konsensi Logo" 
+                className="h-8 w-auto"
+              />
+              <h2 className="text-white text-xl font-bold leading-tight tracking-tight">Konsensi</h2>
+            </Link>
+          </div>
           
           <div className="flex-1 flex justify-end items-center gap-8">
             <nav className="hidden lg:flex items-center gap-8">
@@ -1092,11 +1094,11 @@ function LayoutWithProvider({ children, currentPageName }) {
         {/* Mobile Header */}
         <header className="md:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#23483c] dark:border-[#2a2a2a] bg-[#11221c] dark:bg-[#0f0f0f] px-4">
                                       <Link to={createPageUrl('Dashboard')} className="flex items-center gap-2">
-            <div className="size-8 text-primary">
-              <svg className="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z" fill="currentColor"></path>
-              </svg>
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="Konsensi Logo" 
+              className="h-8 w-auto"
+            />
             <span className="font-bold text-lg text-white">Konsensi</span>
                                       </Link>
 
