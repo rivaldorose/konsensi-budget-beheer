@@ -319,7 +319,7 @@ export default function Potjes() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background-light dark:bg-dark-bg text-[#131d0c] dark:text-text-primary font-body">
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white font-body">
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
           <div className="w-20 h-20 bg-status-red/10 dark:bg-accent-red/10 rounded-full flex items-center justify-center mb-4">
             <span className="material-symbols-outlined text-status-red dark:text-accent-red !text-[40px]">warning</span>
@@ -336,7 +336,7 @@ export default function Potjes() {
 
   if (!totalIncome || totalIncome === 0) {
     return (
-      <div className="min-h-screen bg-background-light dark:bg-dark-bg text-[#131d0c] dark:text-text-primary font-body">
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white font-body">
       <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
           <div className="w-20 h-20 bg-status-orange/10 dark:bg-accent-orange/10 rounded-full flex items-center justify-center mb-4">
             <span className="material-symbols-outlined text-status-orange dark:text-accent-orange !text-[40px]">warning</span>

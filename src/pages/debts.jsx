@@ -355,7 +355,7 @@ export default function Debts() {
 
   if (debts.length === 0) {
     return (
-      <div className="min-h-screen bg-background-light dark:bg-dark-bg text-[#131d0c] dark:text-white font-body">
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white font-body">
         <div className="fixed top-6 right-6 lg:top-8 lg:right-8 z-20">
           <label aria-label="Switch theme" className="relative inline-flex items-center cursor-pointer select-none">
             <input className="sr-only" id="theme-toggle" type="checkbox" checked={darkMode} onChange={toggleTheme} />
@@ -388,7 +388,7 @@ export default function Debts() {
   const allPaidOff = debts.every(d => d.status === 'afbetaald');
   if (allPaidOff) {
     return (
-      <div className="min-h-screen bg-background-light dark:bg-dark-bg text-[#131d0c] dark:text-white font-body">
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white font-body">
         <div className="fixed top-6 right-6 lg:top-8 lg:right-8 z-20">
           <label aria-label="Switch theme" className="relative inline-flex items-center cursor-pointer select-none">
             <input className="sr-only" id="theme-toggle" type="checkbox" checked={darkMode} onChange={toggleTheme} />
