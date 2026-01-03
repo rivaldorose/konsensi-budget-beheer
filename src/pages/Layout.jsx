@@ -950,25 +950,74 @@ function LayoutWithProvider({ children, currentPageName }) {
               >
                 Dashboard
               </Link>
+              
+              {/* Balans Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1 ${
+                      isBalansActive()
+                        ? 'text-white'
+                        : 'text-[#a1a1a1] hover:text-white'
+                    }`}
+                  >
+                    Balans
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-[#1a1a1a] border border-[#2a2a2a]">
+                  <DropdownMenuItem asChild>
+                    <Link 
+                      to={createPageUrl('Income')}
+                      className="text-white hover:bg-[#2a2a2a] flex items-center gap-2"
+                    >
+                      <TrendingUp className="w-4 h-4" />
+                      Inkomen
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link 
+                      to={createPageUrl('MaandelijkseLasten')}
+                      className="text-white hover:bg-[#2a2a2a] flex items-center gap-2"
+                    >
+                      <Receipt className="w-4 h-4" />
+                      Uitgaven
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
               <Link 
                 to={createPageUrl('BudgetPlan')}
-                className={`px-6 py-2 text-sm font-bold rounded-full shadow-[0_0_20px_rgba(16,185,129,0.15)] transition-colors ${
-                  currentPageName === 'BudgetPlan'
-                    ? 'bg-primary text-black'
-                    : 'text-[#a1a1a1] hover:text-white'
-                }`}
-              >
-                Balans
-              </Link>
-              <Link 
-                to={createPageUrl('Debts')}
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
-                  currentPageName === 'Debts'
+                  currentPageName === 'BudgetPlan'
                     ? 'text-white'
                     : 'text-[#a1a1a1] hover:text-white'
                 }`}
               >
-                Schulden
+                Budgetplan
+              </Link>
+              
+              <Link 
+                to={createPageUrl('Potjes')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  currentPageName === 'Potjes'
+                    ? 'text-white'
+                    : 'text-[#a1a1a1] hover:text-white'
+                }`}
+              >
+                Potjes
+              </Link>
+              
+              <Link 
+                to={createPageUrl('CentVoorCent')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  currentPageName === 'CentVoorCent'
+                    ? 'text-white'
+                    : 'text-[#a1a1a1] hover:text-white'
+                }`}
+              >
+                Cent voor cent
               </Link>
             </div>
 
@@ -1000,13 +1049,22 @@ function LayoutWithProvider({ children, currentPageName }) {
                 </button>
               </div>
 
-              {/* Settings Button */}
+              {/* Adem Pauze (Heart Icon) */}
+              <Link 
+                to={createPageUrl('Adempauze')}
+                className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
+                title="Adem pauze"
+              >
+                <Heart className="w-5 h-5" />
+              </Link>
+
+              {/* Settings Button (Gear Icon) */}
               <Link 
                 to={createPageUrl('Settings')}
                 className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
                 title="Instellingen"
               >
-                <span className="material-symbols-outlined text-[22px]">settings</span>
+                <Settings className="w-5 h-5" />
               </Link>
 
               {/* User Profile */}
@@ -1092,13 +1150,22 @@ function LayoutWithProvider({ children, currentPageName }) {
               </button>
             </div>
 
-            {/* Settings Button */}
+            {/* Adem Pauze (Heart Icon) */}
+            <Link 
+              to={createPageUrl('Adempauze')}
+              className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
+              title="Adem pauze"
+            >
+              <Heart className="w-5 h-5" />
+            </Link>
+
+            {/* Settings Button (Gear Icon) */}
             <Link 
               to={createPageUrl('Settings')}
               className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
               title="Instellingen"
             >
-              <span className="material-symbols-outlined text-[20px]">settings</span>
+              <Settings className="w-5 h-5" />
             </Link>
 
             {/* User Profile */}
