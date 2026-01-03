@@ -895,13 +895,12 @@ function LayoutWithProvider({ children, currentPageName }) {
         {/* Desktop Header */}
         <header className="desktop-header w-full bg-[#11221c] dark:bg-[#0f0f0f] border-b border-[#23483c] dark:border-[#2a2a2a] sticky top-0 z-50 px-6 lg:px-10 py-3 flex items-center justify-between max-w-[1600px] mx-auto transition-all duration-300">
           <div className="flex items-center gap-4 text-white">
-            <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3">
+            <Link to={createPageUrl('Dashboard')} className="flex items-center">
               <img 
                 src="/logo.png" 
                 alt="Konsensi Logo" 
-                className="h-8 w-auto"
+                className="h-10 w-auto"
               />
-              <h2 className="text-white text-xl font-bold leading-tight tracking-tight">Konsensi</h2>
             </Link>
           </div>
           
@@ -1093,13 +1092,12 @@ function LayoutWithProvider({ children, currentPageName }) {
 
         {/* Mobile Header */}
         <header className="md:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#23483c] dark:border-[#2a2a2a] bg-[#11221c] dark:bg-[#0f0f0f] px-4">
-                                      <Link to={createPageUrl('Dashboard')} className="flex items-center gap-2">
+                                      <Link to={createPageUrl('Dashboard')} className="flex items-center">
             <img 
               src="/logo.png" 
               alt="Konsensi Logo" 
-              className="h-8 w-auto"
+              className="h-10 w-auto"
             />
-            <span className="font-bold text-lg text-white">Konsensi</span>
                                       </Link>
 
             <div className="flex items-center gap-2">
