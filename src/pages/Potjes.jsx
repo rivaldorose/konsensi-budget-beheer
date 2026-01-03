@@ -311,7 +311,7 @@ export default function Potjes() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background-light dark:bg-dark-bg flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400 dark:border-gray-600"></div>
       </div>
     );

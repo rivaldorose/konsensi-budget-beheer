@@ -23,7 +23,7 @@ export default function Maintenance() {
   }, [darkMode]);
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col items-center justify-center p-4 bg-background-light dark:bg-app-bg font-display text-[#1F2937] dark:text-white antialiased">
+    <div className="relative flex min-h-screen w-full flex-col items-center justify-center p-4 bg-[#F8F8F8] dark:bg-[#0a0a0a] font-display text-[#1F2937] dark:text-white antialiased">
       {/* Main Content Card */}
       <main className="w-full max-w-[600px] bg-white dark:bg-[#1C1C1E] rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.06)] border border-[#E5E7EB] dark:border-[#333] p-8 md:p-12 flex flex-col items-center text-center">
         {/* Icon */}

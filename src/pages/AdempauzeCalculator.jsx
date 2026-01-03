@@ -149,7 +149,7 @@ export default function AdempauzeCalculator() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
           <p className="text-gray-600 dark:text-gray-400 text-sm mt-4">Laden...</p>
@@ -159,7 +159,7 @@ export default function AdempauzeCalculator() {
   }
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark text-text-body dark:text-white flex flex-col">
+    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white flex flex-col">
       {/* Header */}
       <header className="bg-primary dark:bg-[#1a2c26] h-16 shadow-[0_2px_4px_rgba(0,0,0,0.1)] dark:border-b dark:border-[#2A3F36] sticky top-0 z-50">
         <div className="h-full max-w-[1400px] mx-auto px-4 lg:px-8 flex items-center justify-between">

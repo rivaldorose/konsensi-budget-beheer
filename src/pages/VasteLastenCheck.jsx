@@ -383,7 +383,7 @@ export default function VasteLastenCheck() {
         {/* Payment Modal */}
         {showPaymentModal && selectedPayment && (
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-[#0d1b17]/40 dark:bg-black/40 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="w-full max-w-[600px] bg-white dark:bg-surface-dark rounded-[24px] p-8 shadow-modal dark:shadow-[0_8px_40px_rgba(0,0,0,0.8)] border border-gray-100 dark:border-border-dark flex flex-col relative">
+            <div className="w-full max-w-[600px] bg-white dark:bg-[#1a2c26] rounded-[24px] p-8 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col relative">
               {/* Modal Header */}
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-[#1F2937] dark:text-white text-xl font-bold">Waarmee betaal je {selectedPayment.name}?</h2>
@@ -428,7 +428,7 @@ export default function VasteLastenCheck() {
                   </div>
                   <span className="text-red-500 dark:text-danger font-bold text-sm">{formatCurrency(-financialOverview.otherExpenses)}</span>
                 </div>
-                <div className="h-px bg-gray-200 dark:bg-border-dark my-1"></div>
+                <div className="h-px bg-gray-200 dark:bg-[#2A3F36] my-1"></div>
                 <div className="flex items-center justify-between">
                   <span className="text-[#1F2937] dark:text-white text-base font-bold">Beschikbaar na je salaris</span>
                   <span className={`font-extrabold text-base ${financialOverview.availableAfterSalary < 0 ? 'text-red-500 dark:text-danger' : 'text-primary dark:text-primary'}`}>

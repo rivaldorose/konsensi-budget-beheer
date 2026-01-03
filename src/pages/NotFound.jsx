@@ -24,7 +24,7 @@ export default function NotFound() {
   }, [darkMode]);
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background-light dark:bg-background-dark font-display text-[#0d1b17] dark:text-white antialiased">
+    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-[#F8F8F8] dark:bg-[#0a0a0a] font-display text-[#0d1b17] dark:text-white antialiased">
       {/* Top Navigation Bar */}
       <div className="w-full flex justify-center border-b border-solid border-[#e7f3ef] dark:border-[#1E2D28] bg-white/50 dark:bg-[#10221c]/50 backdrop-blur-sm fixed top-0 z-50">
         <div className="layout-content-container flex flex-col max-w-[960px] flex-1 px-4 sm:px-10">
