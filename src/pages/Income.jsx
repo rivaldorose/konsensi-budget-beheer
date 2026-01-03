@@ -225,43 +225,43 @@ export default function IncomePage() {
     };
 
     return (
-        <main className="flex-1 flex justify-center w-full px-4 py-8">
-            <div className="w-full max-w-[1400px] flex flex-col gap-8">
+        <main className="flex-1 flex justify-center w-full px-4 py-8 bg-[#F8F8F8] dark:bg-[#0a0a0a] min-h-screen">
+            <div className="w-full max-w-[1600px] flex flex-col gap-8">
                 {/* Page Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center gap-3">
-                        <h1 className="text-[#3D6456] text-3xl font-extrabold tracking-tight">Inkomen</h1>
+                        <h1 className="text-[#1F2937] dark:text-white text-3xl font-extrabold tracking-tight">Inkomen</h1>
                         <button 
                             onClick={() => setShowInfoModal(true)}
-                            className="text-[#3D6456]/60 hover:text-[#3D6456] transition-colors"
+                            className="text-[#6B7280] dark:text-[#9CA3AF] hover:text-[#1F2937] dark:hover:text-white transition-colors"
                         >
                             <span className="material-symbols-outlined">help</span>
                         </button>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                         <Link to={createPageUrl('WorkSchedule')}>
-                            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 transition-all text-sm font-medium bg-white">
+                            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]">
                                 <span className="material-symbols-outlined text-[18px]">calendar_month</span>
                                 <span>Werkschema</span>
                             </button>
                         </Link>
                         <button 
                             onClick={() => setShowScanModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 transition-all text-sm font-medium bg-white"
+                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]"
                         >
                             <span className="material-symbols-outlined text-[18px]">photo_camera</span>
                             <span>Scan Afschrift</span>
                         </button>
                         <button 
                             onClick={() => setShowWorkStatusModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 transition-all text-sm font-medium bg-white"
+                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]"
                         >
                             <span className="material-symbols-outlined text-[18px]">work</span>
                             <span>Status</span>
                         </button>
                         <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                            <SelectTrigger className="flex items-center gap-2 pl-4 pr-3 py-2 rounded-full bg-white border border-gray-200 text-[#3D6456] hover:border-[#b4ff7a] transition-all text-sm font-bold shadow-sm w-auto min-w-[180px]">
-                                <span className="material-symbols-outlined text-[#b4ff7a]">calendar_month</span>
+                            <SelectTrigger className="flex items-center gap-2 pl-4 pr-3 py-2 rounded-full bg-white dark:bg-[#1a2c26] border border-gray-200 dark:border-[#2A3F36] text-[#1F2937] dark:text-white hover:border-primary transition-all text-sm font-bold shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] w-auto min-w-[180px]">
+                                <span className="material-symbols-outlined text-primary">calendar_month</span>
                                 <SelectValue>{currentMonthLabel}</SelectValue>
                                 <span className="material-symbols-outlined text-[20px]">arrow_drop_down</span>
                             </SelectTrigger>
@@ -281,19 +281,19 @@ export default function IncomePage() {
                     {/* Left Column (65% on Desktop) */}
                     <div className="lg:col-span-8 flex flex-col gap-6">
                         {/* 1. SUMMARY CARD */}
-                        <div className="gradient-card rounded-[24px] p-6 shadow-soft relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #b4ff7a 0%, #ecf4e6 100%)' }}>
-                            <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/20 rounded-full blur-3xl pointer-events-none"></div>
+                        <div className="bg-gradient-to-br from-primary to-[#059669] rounded-[24px] p-6 md:p-8 shadow-[0_8px_24px_rgba(16,183,127,0.3)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] relative overflow-hidden">
+                            <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/10 dark:bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 gap-6">
                                 {/* Left Section */}
                                 <div className="flex flex-col gap-4 flex-1">
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
-                                            <div className="p-1 rounded-full bg-[#3D6456]/10">
-                                                <span className="material-symbols-outlined text-[#3D6456] text-[16px]">bolt</span>
+                                            <div className="p-1 rounded-full bg-white/15 backdrop-blur-md border border-white/10">
+                                                <span className="material-symbols-outlined text-white text-[16px]">bolt</span>
                                             </div>
-                                            <span className="text-sm font-medium text-[#3D6456]/80">Vast inkomen (per maand)</span>
+                                            <span className="text-sm font-medium text-white/90">Vast inkomen (per maand)</span>
                                         </div>
-                                        <span className="text-3xl font-extrabold text-[#3D6456]">{formatCurrency(totalFixed)}</span>
+                                        <span className="text-3xl font-extrabold text-white">{formatCurrency(totalFixed)}</span>
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
