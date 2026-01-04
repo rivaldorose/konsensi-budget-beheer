@@ -356,7 +356,7 @@ function LayoutWithProvider({ children, currentPageName }) {
     const checkInVisibility = async () => {
         try {
             const today = new Date();
-            const currentMonthStr = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit' }).format(today);
+            const currentMonthStr = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(today.getFullYear(), today.getMonth(), 1));
             const currentDay = today.getDate();
 
             console.log('=== CHECK-IN DEBUG ===');

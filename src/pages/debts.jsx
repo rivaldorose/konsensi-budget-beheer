@@ -119,7 +119,7 @@ export default function Debts() {
       const data = await Debt.filter({ user_id: userData.id }, '-created_date');
       setDebts(data);
       
-      const strategies = await DebtStrategy.filter({ user_id: userData.id, is_active: true });
+      const strategies = await DebtStrategy.filter({ user_id: userData.id });
       if (strategies.length > 0) {
         setActiveStrategy(strategies[0]);
         const schedule = await DebtPayoffSchedule.filter({ strategy_id: strategies[0].id });
