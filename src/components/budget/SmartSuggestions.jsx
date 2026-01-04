@@ -80,6 +80,7 @@ export default function SmartSuggestions({ userEmail, totalIncome }) {
             thirtyDaysAgo.setDate(now.getDate() - 30);
             
             const recentTransactions = transactions.filter(tx => {
+                if (!tx || !tx.date) return false;
                 const txDate = new Date(tx.date);
                 return tx.type === 'expense' && txDate >= thirtyDaysAgo;
             });

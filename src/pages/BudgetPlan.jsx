@@ -175,12 +175,13 @@ export default function BudgetPlan() {
             // Load transactions
             const transactionsData = await Transaction.filter({ user_id: userData.id });
             const filteredTransactions = transactionsData.filter(tx => {
+                if (!tx || !tx.date) return false;
                 const txDate = new Date(tx.date);
                 return txDate >= startDate && txDate <= endDate;
             });
-            
+
             const periodExpenses = filteredTransactions
-                .filter(tx => tx.type === 'expense')
+                .filter(tx => tx && tx.type === 'expense')
                 .reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
 
             const expensesTotal = monthlyCostsTotal + debtPaymentsTotal + periodExpenses;
@@ -225,7 +226,7 @@ export default function BudgetPlan() {
                     date: debt.payment_plan_date,
                     category: 'Betalingsregeling'
                 })),
-                ...filteredTransactions.filter(tx => tx.type === 'expense').map(tx => ({
+                ...filteredTransactions.filter(tx => tx && tx.type === 'expense').map(tx => ({
                     id: `tx-${tx.id}`,
                     type: 'expense',
                     description: tx.description || 'Uitgave',
@@ -252,7 +253,7 @@ export default function BudgetPlan() {
             
             // Calculate category breakdown
             const categoryMap = {};
-            allTransactions.filter(tx => tx.type === 'expense').forEach(tx => {
+            allTransactions.filter(tx => tx && tx.type === 'expense').forEach(tx => {
                 const cat = tx.category || 'Overig';
                 if (!categoryMap[cat]) {
                     categoryMap[cat] = { amount: 0, budget: 0 };
@@ -321,14 +322,15 @@ export default function BudgetPlan() {
     };
 
     const filteredTransactions = transactions.filter(tx => {
+        if (!tx) return false;
         if (transactionFilter === 'Inkomen' && tx.type !== 'income') return false;
         if (transactionFilter === 'Uitgaven' && tx.type !== 'expense') return false;
         if (transactionFilter === 'Betalingsregelingen' && tx.category !== 'Betalingsregeling') return false;
-        
+
         if (searchTerm) {
             const searchLower = searchTerm.toLowerCase();
-            return tx.description.toLowerCase().includes(searchLower) || 
-                   tx.category.toLowerCase().includes(searchLower);
+            return (tx.description || '').toLowerCase().includes(searchLower) ||
+                   (tx.category || '').toLowerCase().includes(searchLower);
         }
         
         return true;
@@ -711,6 +713,7 @@ export default function BudgetPlan() {
                         </div>
                     ) : (
                             filteredTransactions.map((tx) => {
+                                if (!tx) return null;
                                 const isIncome = tx.type === 'income';
                                 const categoryColor = getCategoryColor(tx.category, tx.type);
                                 const icon = getCategoryIcon(tx.category);

@@ -164,11 +164,12 @@ export default function Potjes() {
 
       const spendingsMap = {};
       allPots.forEach(pot => {
-        if (pot.pot_type === 'expense') { 
+        if (pot.pot_type === 'expense') {
           const potTransactions = allTransactions.filter(tx => {
+            if (!tx || !tx.date) return false;
             const txDate = new Date(tx.date);
             const isInMonth = txDate >= monthStart && txDate <= monthEnd;
-            const isExpense = tx.type === 'expense'; 
+            const isExpense = tx.type === 'expense';
             const categoryMatches = tx.category === pot.name;
             return isInMonth && isExpense && categoryMatches;
           });
