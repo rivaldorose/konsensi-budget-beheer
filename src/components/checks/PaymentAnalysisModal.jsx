@@ -36,26 +36,26 @@ export default function PaymentAnalysisModal({ isOpen, onClose, unpaidItem, curr
   });
 
   const { data: incomes = [] } = useQuery({
-    queryKey: ['incomes', user?.email],
-    queryFn: () => Income.filter({ created_by: user.email }),
+    queryKey: ['incomes', user?.id],
+    queryFn: () => Income.filter({ user_id: user.id }),
     enabled: !!user,
   });
 
   const { data: costs = [] } = useQuery({
-    queryKey: ['monthlyCosts', user?.email],
-    queryFn: () => MonthlyCost.filter({ created_by: user.email, status: 'actief' }),
+    queryKey: ['monthlyCosts', user?.id],
+    queryFn: () => MonthlyCost.filter({ user_id: user.id, status: 'actief' }),
     enabled: !!user,
   });
 
   const { data: debts = [] } = useQuery({
-    queryKey: ['debts', user?.email],
-    queryFn: () => Debt.filter({ created_by: user.email, status: 'betalingsregeling' }),
+    queryKey: ['debts', user?.id],
+    queryFn: () => Debt.filter({ user_id: user.id, status: 'betalingsregeling' }),
     enabled: !!user,
   });
 
   const { data: potjes = [] } = useQuery({
-    queryKey: ['pots', user?.email],
-    queryFn: () => Pot.filter({ created_by: user.email }),
+    queryKey: ['pots', user?.id],
+    queryFn: () => Pot.filter({ user_id: user.id }),
     enabled: !!user,
   });
 

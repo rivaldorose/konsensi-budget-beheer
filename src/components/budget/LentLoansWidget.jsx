@@ -34,7 +34,7 @@ export default function LentLoansWidget({ userEmail }) {
   const loadLoans = async () => {
     try {
       const user = await User.me();
-      const allLoans = await Loan.filter({ created_by: user.email, type: 'lent' });
+      const allLoans = await Loan.filter({ user_id: user.id, type: 'lent' });
       setLentLoans(allLoans.sort((a, b) => new Date(b.loan_date) - new Date(a.loan_date)));
       setLoading(false);
     } catch (error) {

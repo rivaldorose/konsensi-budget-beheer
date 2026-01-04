@@ -43,7 +43,7 @@ export default function GamificationWidget({ compact = false, onViewAll }) {
             }
 
             // Load recent achievements (last 3)
-            const allAchievements = await Achievement.filter({ created_by: user.email });
+            const allAchievements = await Achievement.filter({ user_id: user.id });
             const recentAchievements = allAchievements
                 .filter(a => a.is_unlocked)
                 .sort((a, b) => new Date(b.unlocked_at || 0) - new Date(a.unlocked_at || 0))

@@ -26,8 +26,10 @@ export default function BudgetAllocationSliders({
   }, [userEmail]);
 
   const loadPots = async () => {
-    if (!userEmail) return;
-    const potsData = await Pot.filter({ created_by: userEmail, pot_type: 'expense' });
+    const { User } = await import('@/api/entities');
+    const user = await User.me();
+    if (!user) return;
+    const potsData = await Pot.filter({ user_id: user.id, pot_type: 'expense' });
     setPots(potsData);
     
     // Initialize allocations from current budgets

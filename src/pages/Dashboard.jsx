@@ -248,7 +248,7 @@ export default function Dashboard() {
         filterWithFallback(Debt, userFilter),
         filterWithFallback(DebtPayment, userFilter),
         filterWithFallback(Pot, userFilter),
-        filterWithFallback(DebtStrategy, { ...userFilter, is_active: true }),
+        filterWithFallback(DebtStrategy, userFilter),
         filterWithFallback(Transaction, userFilter),
       ]);
       
@@ -553,6 +553,66 @@ export default function Dashboard() {
     }
   }, [user?.id, loadGamificationData]);
 
+  // Prepare data for components - useMemo hooks must be before early returns
+  const monthlyChartData = useMemo(() => {
+    const last6Months = Array.from({ length: 6 }, (_, i) => {
+      const monthDate = subMonths(new Date(), 5 - i);
+      const monthEnd = getEndOfMonth(monthDate);
+      const monthStart = getStartOfMonth(monthDate);
+
+      const monthlyTotal = (dashboardData.allPayments || [])
+        .filter(p => {
+          const dateStr = p?.payment_date || p?.created_at;
+          if (!dateStr) return false;
+          try {
+            const pDate = new Date(dateStr);
+            return !isNaN(pDate.getTime()) && pDate >= monthStart && pDate <= monthEnd;
+          } catch {
+            return false;
+          }
+        })
+        .reduce((sum, p) => sum + (Number(p?.amount) || 0), 0) || 0;
+
+      return {
+        month: new Intl.DateTimeFormat("nl-NL", { month: "short" }).format(monthDate),
+        amount: monthlyTotal,
+      };
+    });
+    return last6Months;
+  }, [dashboardData.allPayments]);
+
+  const upcomingPaymentsData = useMemo(() => {
+    const payments = [];
+    const nextCost = dashboardData.nextCost;
+    const nextPayment = dashboardData.nextPayment;
+    if (nextCost) {
+      payments.push({
+        type: "fixed_cost",
+        name: nextCost.name,
+        amount: nextCost.amount,
+        date: nextCost.date,
+      });
+    }
+    if (nextPayment) {
+      payments.push({
+        type: "debt",
+        name: nextPayment.name,
+        amount: nextPayment.amount,
+        date: nextPayment.date,
+      });
+    }
+    return payments;
+  }, [dashboardData.nextCost, dashboardData.nextPayment]);
+
+  const financialBreakdownData = useMemo(() => {
+    return {
+      totalIncome: dashboardData.totalIncome || 0,
+      fixedCosts: dashboardData.totalExpenses || 0,
+      paymentPlans: dashboardData.activeDebtPaymentsSum || 0,
+      pots: dashboardData.totalPotjesBudget || 0,
+    };
+  }, [dashboardData.totalIncome, dashboardData.totalExpenses, dashboardData.activeDebtPaymentsSum, dashboardData.totalPotjesBudget]);
+
   const today = new Date();
   const formattedDate = (() => {
     try {
@@ -617,64 +677,6 @@ export default function Dashboard() {
       return '';
     }
   })();
-
-  // Prepare data for new components
-  const monthlyChartData = useMemo(() => {
-    const last6Months = Array.from({ length: 6 }, (_, i) => {
-      const monthDate = subMonths(new Date(), 5 - i);
-      const monthEnd = getEndOfMonth(monthDate);
-      const monthStart = getStartOfMonth(monthDate);
-      
-      const monthlyTotal = (dashboardData.allPayments || [])
-        .filter(p => {
-          const dateStr = p?.payment_date || p?.created_at;
-          if (!dateStr) return false;
-          try {
-            const pDate = new Date(dateStr);
-            return !isNaN(pDate.getTime()) && pDate >= monthStart && pDate <= monthEnd;
-          } catch {
-            return false;
-          }
-        })
-        .reduce((sum, p) => sum + (Number(p?.amount) || 0), 0) || 0;
-      
-      return {
-        month: new Intl.DateTimeFormat("nl-NL", { month: "short" }).format(monthDate),
-        amount: monthlyTotal,
-      };
-    });
-    return last6Months;
-  }, [dashboardData.allPayments]);
-
-  const upcomingPaymentsData = useMemo(() => {
-    const payments = [];
-    if (nextCost) {
-      payments.push({
-        type: "fixed_cost",
-        name: nextCost.name,
-        amount: nextCost.amount,
-        date: nextCost.date,
-      });
-    }
-    if (nextPayment) {
-      payments.push({
-        type: "debt",
-        name: nextPayment.name,
-        amount: nextPayment.amount,
-        date: nextPayment.date,
-      });
-    }
-    return payments;
-  }, [nextCost, nextPayment]);
-
-  const financialBreakdownData = useMemo(() => {
-    return {
-      totalIncome: totalIncome,
-      fixedCosts: totalExpenses,
-      paymentPlans: dashboardData.activeDebtPaymentsSum || 0,
-      pots: dashboardData.totalPotjesBudget || 0,
-    };
-  }, [totalIncome, totalExpenses, dashboardData]);
 
   return (
     <div className="flex-grow max-w-[1600px] mx-auto w-full p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 bg-[#F8F8F8] dark:bg-[#0a0a0a] min-h-screen">

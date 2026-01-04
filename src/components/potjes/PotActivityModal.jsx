@@ -22,7 +22,7 @@ export default function PotActivityModal({ pot, isOpen, onClose, spent, onTransa
     setLoading(true);
     try {
       const user = await User.me();
-      const allTransactions = await Transaction.filter({ created_by: user.email });
+      const allTransactions = await Transaction.filter({ user_id: user.id });
       
       const monthStart = startOfMonth(new Date());
       const monthEnd = endOfMonth(new Date());

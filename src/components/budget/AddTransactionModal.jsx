@@ -59,7 +59,10 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
 
     const loadPots = async () => {
         try {
-            const potsData = await Pot.filter({ created_by: userEmail });
+            const { User } = await import('@/api/entities');
+            const user = await User.me();
+            if (!user) return;
+            const potsData = await Pot.filter({ user_id: user.id });
             setPots(potsData.filter(p => p.pot_type === 'expense'));
         } catch (error) {
             console.error('Error loading pots:', error);
