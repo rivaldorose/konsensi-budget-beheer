@@ -100,7 +100,7 @@ export default function Potjes() {
     try {
       const userData = await User.me();
       setUser(userData);
-      const userFilter = { created_by: userData.email };
+      const userFilter = { user_id: userData.id };
       
       let [allPots, allIncomes, allCosts, allDebts, allTransactions] = await Promise.all([
         Pot.filter(userFilter),

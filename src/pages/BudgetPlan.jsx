@@ -109,7 +109,7 @@ export default function BudgetPlan() {
             const { startDate, endDate } = getPeriodBounds();
 
             // Load income
-            const incomeData = await Income.filter({ created_by: userData.email });
+            const incomeData = await Income.filter({ user_id: userData.id });
             const filteredIncome = incomeData.filter(income => {
                 if (income.income_type === 'vast') {
                     if (income.is_active === false) return false;

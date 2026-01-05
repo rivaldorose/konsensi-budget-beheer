@@ -56,13 +56,13 @@ export default function AdempauzeCalculator() {
       setUser(userData);
 
       // Load income
-      const incomes = await Income.filter({ created_by: userData.email });
+      const incomes = await Income.filter({ user_id: userData.id });
       const monthlyIncome = incomes
         .filter(i => i.income_type === 'vast' && i.is_active !== false)
         .reduce((sum, i) => sum + (i.monthly_equivalent || i.amount || 0), 0);
 
       // Load fixed costs
-      const costs = await MonthlyCost.filter({ created_by: userData.email });
+      const costs = await MonthlyCost.filter({ user_id: userData.id });
       const healthInsurance = costs.find(c => c.category === 'zorgverzekering' || c.name?.toLowerCase().includes('zorg'))?.amount || 0;
       const rentMortgage = costs.find(c => c.category === 'huisvesting' || c.name?.toLowerCase().includes('huur') || c.name?.toLowerCase().includes('hypotheek'))?.amount || 0;
       const otherFixedCosts = costs

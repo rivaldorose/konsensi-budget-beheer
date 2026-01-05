@@ -75,11 +75,11 @@ export default function CentVoorCent() {
       const extraIncome = 0; // Would need to fetch from extra income sources
 
       // Load fixed costs
-      const costs = await MonthlyCost.filter({ created_by: userData.email });
+      const costs = await MonthlyCost.filter({ user_id: userData.id });
       const totalFixedCosts = costs.reduce((sum, cost) => sum + parseFloat(cost.amount || 0), 0);
 
       // Load pots budget
-      const pots = await Pot.filter({ created_by: userData.email });
+      const pots = await Pot.filter({ user_id: userData.id });
       const totalPotsBudget = pots.reduce((sum, pot) => sum + parseFloat(pot.target_amount || 0), 0);
 
       // Calculate totals

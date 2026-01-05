@@ -565,9 +565,9 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a]">
+      <div className="flex items-center justify-center min-h-screen bg-konsensi-bg dark:bg-bg-main">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary dark:border-primary"></div>
+          <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary dark:border-konsensi-primary"></div>
         </div>
       </div>
     );
@@ -575,12 +575,12 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] p-4">
-        <div className="text-center p-8 md:p-12 bg-white dark:bg-[#1a2c26] rounded-[24px] shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] max-w-sm w-full">
-          <XCircle className="w-16 h-16 text-[#EF4444] mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-[#1F2937] dark:text-white">{t('common.error')}</h2>
-          <p className="text-[#6B7280] dark:text-[#9CA3AF] mt-2">{t('dashboard.errorLoading')}</p>
-          <Button onClick={loadDashboardData} className="mt-4 bg-primary hover:bg-primary-dark text-white">Probeer opnieuw</Button>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-konsensi-bg dark:bg-bg-main p-4">
+        <div className="text-center p-8 md:p-12 bg-white dark:bg-card-bg rounded-[24px] shadow-soft dark:shadow-soft-dark border border-gray-100 dark:border-border-main max-w-sm w-full">
+          <XCircle className="w-16 h-16 text-accent-red mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-konsensi-dark dark:text-white">{t('common.error')}</h2>
+          <p className="text-gray-500 dark:text-text-secondary mt-2">{t('dashboard.errorLoading')}</p>
+          <Button onClick={loadDashboardData} className="mt-4 bg-primary dark:bg-konsensi-primary hover:bg-primary-dark dark:hover:bg-konsensi-hover text-white dark:text-black">Probeer opnieuw</Button>
         </div>
       </div>
     );
@@ -677,7 +677,7 @@ export default function Dashboard() {
   }, [totalIncome, totalExpenses, dashboardData]);
 
   return (
-    <div className="flex-grow max-w-[1600px] mx-auto w-full p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 bg-[#F8F8F8] dark:bg-[#0a0a0a] min-h-screen">
+    <main className="flex-grow max-w-[1440px] mx-auto w-full p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 bg-konsensi-bg dark:bg-bg-main min-h-screen">
       {/* Left Column */}
       <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
         {/* Welcome Card */}
@@ -726,21 +726,19 @@ export default function Dashboard() {
       <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
         {/* Total Remaining Debt Card - Only show if there's debt */}
         {remainingDebt > 0 && (
-          <div className="bg-gradient-to-br from-primary to-[#059669] text-white rounded-[24px] p-6 md:p-8 shadow-[0_8px_24px_rgba(16,183,127,0.3)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-10">
-              <span className="material-symbols-outlined text-[120px]">description</span>
+          <div className="bg-konsensi-dark dark:bg-card-bg text-white dark:text-white rounded-[2rem] p-6 shadow-soft dark:shadow-soft-dark relative overflow-hidden border border-gray-100 dark:border-border-main">
+            <div className="absolute top-0 right-0 p-8 opacity-10 dark:opacity-5 pointer-events-none">
+              <span className="material-symbols-outlined text-[120px] text-white">description</span>
             </div>
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 bg-white/15 backdrop-blur-md rounded-full border border-white/10">
-                  <span className="material-symbols-outlined text-white">account_balance_wallet</span>
+                <div className="p-2 bg-white/10 dark:bg-card-elevated rounded-full border border-white/20 dark:border-border-accent">
+                  <span className="material-symbols-outlined text-primary dark:text-konsensi-primary">account_balance_wallet</span>
                 </div>
-                <p className="text-white/90 font-bold text-sm uppercase tracking-wider">Totale Restschuld</p>
+                <p className="text-primary dark:text-konsensi-primary font-bold text-sm">Totale Restschuld</p>
               </div>
-              <p className="text-4xl md:text-5xl font-extrabold mb-2 text-white">
-                {formatCurrency(remainingDebt || 0, { decimals: 0 })}
-              </p>
-              <p className="text-sm text-white/80">Geen paniek, we komen er samen uit.</p>
+              <p className="font-header text-4xl font-extrabold mb-2">{formatCurrency(remainingDebt || 0, { decimals: 0 })}</p>
+              <p className="text-sm text-white/70 dark:text-text-secondary">Geen paniek, we komen er samen uit.</p>
             </div>
           </div>
         )}
@@ -807,6 +805,6 @@ export default function Dashboard() {
         isOpen={showAchievementsModal} 
         onClose={() => setShowAchievementsModal(false)} 
       />
-    </div>
+    </main>
   );
 }

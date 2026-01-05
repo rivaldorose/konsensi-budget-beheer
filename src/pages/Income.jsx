@@ -68,14 +68,10 @@ export default function IncomePage() {
             setUser(userData);
             
             const userFilter = { user_id: userData.id };
-            const incomeData = await Income.filter(userFilter).catch(() => 
-                Income.filter({ created_by: userData.email }, '-created_date', 100)
-            );
+            const incomeData = await Income.filter(userFilter, '-created_date', 100);
             setIncomes(incomeData);
             
-            const variableData = await VariableIncomeEntry.filter(userFilter).catch(() =>
-                VariableIncomeEntry.filter({ created_by: userData.email }, '-created_date', 500)
-            );
+            const variableData = await VariableIncomeEntry.filter(userFilter, '-created_date', 500);
             setVariableEntries(variableData);
         } catch (error) {
             console.error('Error loading data:', error);

@@ -116,10 +116,10 @@ export default function Debts() {
     try {
       const userData = await User.me();
       setUser(userData);
-      const data = await Debt.filter({ created_by: userData.email }, '-created_date');
+      const data = await Debt.filter({ user_id: userData.id }, '-created_date');
       setDebts(data);
       
-      const strategies = await DebtStrategy.filter({ created_by: userData.email, is_active: true });
+      const strategies = await DebtStrategy.filter({ user_id: userData.id });
       if (strategies.length > 0) {
         setActiveStrategy(strategies[0]);
         const schedule = await DebtPayoffSchedule.filter({ strategy_id: strategies[0].id });
@@ -137,7 +137,7 @@ export default function Debts() {
       }
       
       try {
-        const allPayments = await DebtPayment.filter({ created_by: userData.email });
+        const allPayments = await DebtPayment.filter({ user_id: userData.id });
         const totalPaid = allPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
         setTotalPaidAllTime(totalPaid);
         setPaymentCount(allPayments.length);
@@ -215,7 +215,7 @@ export default function Debts() {
       if (scannedData.case_number) {
         const existingDebts = await Debt.filter({ 
           case_number: scannedData.case_number,
-          created_by: user.email 
+          user_id: user.id 
         });
 
         if (existingDebts.length > 0) {
