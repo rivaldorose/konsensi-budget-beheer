@@ -120,6 +120,7 @@ const dashboardTranslations = {
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
+  const [debtVisible, setDebtVisible] = useState(true); // For toggling debt visibility
   const [gamificationData, setGamificationData] = useState({
     level: 1,
     currentXP: 0,
@@ -714,14 +715,26 @@ export default function Dashboard() {
             <span className="material-symbols-outlined text-[120px] text-white">description</span>
           </div>
           <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 bg-white/10 dark:bg-card-elevated rounded-full border border-transparent dark:border-border-accent">
-                <span className="material-symbols-outlined text-primary dark:text-konsensi-primary">account_balance_wallet</span>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-white/10 dark:bg-card-elevated rounded-full border border-transparent dark:border-border-accent">
+                  <span className="material-symbols-outlined text-primary dark:text-konsensi-primary">account_balance_wallet</span>
+                </div>
+                <p className="text-primary dark:text-konsensi-primary font-bold text-sm">Totale Restschuld</p>
               </div>
-              <p className="text-primary dark:text-konsensi-primary font-bold text-sm">Totale Restschuld</p>
+              {/* Eye icon to toggle visibility */}
+              <button
+                onClick={() => setDebtVisible(!debtVisible)}
+                className="p-2 hover:bg-white/10 dark:hover:bg-card-elevated rounded-full transition-colors"
+                aria-label={debtVisible ? "Verberg bedrag" : "Toon bedrag"}
+              >
+                <span className="material-symbols-outlined text-white dark:text-text-secondary text-xl">
+                  {debtVisible ? "visibility" : "visibility_off"}
+                </span>
+              </button>
             </div>
             <p className="font-header text-4xl font-extrabold mb-2">
-              {formatCurrency(remainingDebt || 13653, { decimals: 0 })}
+              {debtVisible ? formatCurrency(remainingDebt || 0, { decimals: 0 }) : "€ •••••"}
             </p>
             <p className="text-sm text-white/70 dark:text-text-secondary">Geen paniek, we komen er samen uit.</p>
           </div>
