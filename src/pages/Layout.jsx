@@ -370,18 +370,21 @@ function LayoutWithProvider({ children, currentPageName }) {
             fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:370',message:'loading monthly checks',data:{month:currentMonthStr,userId:user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
             // #endregion
             try {
-              existingChecks = await MonthlyCheck.filter({ 
-                  month: currentMonthStr,
-                  user_id: user.id 
-              });
-              // #region agent log
-              fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:373',message:'monthly checks success',data:{checksLength:existingChecks?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-              // #endregion
+              // Only try to load if MonthlyCheck is available
+              if (MonthlyCheck && typeof MonthlyCheck.filter === 'function') {
+                existingChecks = await MonthlyCheck.filter({
+                    month: currentMonthStr,
+                    user_id: user.id
+                });
+                // #region agent log
+                fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:373',message:'monthly checks success',data:{checksLength:existingChecks?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                // #endregion
+              }
             } catch (error) {
               // #region agent log
               fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:375',message:'monthly checks error',data:{errorCode:error?.code,errorMessage:error?.message,errorHint:error?.hint},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
               // #endregion
-              console.error('Error loading monthly checks:', error);
+              console.warn('Monthly checks not available (table may not exist yet):', error.message);
               existingChecks = [];
             }
             
