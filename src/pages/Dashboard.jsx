@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import { formatCurrency } from "@/components/utils/formatters";
 import { XCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import StartgidsWidget from "../components/dashboard/StartgidsWidget";
 import AchievementsModal from "@/components/gamification/AchievementsModal";
 import PersonalizedAdviceWidget from "@/components/dashboard/PersonalizedAdviceWidget";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
