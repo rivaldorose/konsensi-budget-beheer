@@ -876,7 +876,7 @@ function LayoutWithProvider({ children, currentPageName }) {
   const isAnyModalOpen = showAddModal || showLoanModal || showScanBonModal || showConfirmModal;
 
   return (
-    <div className={`theme-light flex min-h-screen bg-gray-50 font-sans antialiased ${isAnyModalOpen ? 'overflow-hidden' : ''}`} dir={languages.find(l => l.code === language)?.rtl ? 'rtl' : 'ltr'}>
+    <div className={`flex min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] font-sans antialiased transition-colors duration-200 ${isAnyModalOpen ? 'overflow-hidden' : ''}`} dir={languages.find(l => l.code === language)?.rtl ? 'rtl' : 'ltr'}>
       <style>{`
         :root {
           --konsensi-primary: #10b77f;
