@@ -701,51 +701,34 @@ export default function Dashboard() {
           />
         )}
 
-        {/* Startgids Widget for new users or empty state */}
-        {user && 
-         allIncomes.length === 0 && allMonthlyCosts.length === 0 && debts.length === 0 && pots.length === 0 && (
-          <StartgidsWidget 
-            allIncomes={allIncomes}
-            allMonthlyCosts={allMonthlyCosts}
-            allDebts={debts}
-            allPots={pots}
-            user={user}
-            onRefresh={loadDashboardData}
-          />
-        )}
-
-        {/* Debt Journey Chart - Only show if there's debt data */}
-        {(remainingDebt > 0 || totalPaidAllTime > 0) && (
-          <DebtJourneyChart
-            monthlyData={monthlyChartData}
-            totalPaid={totalPaidAllTime}
-            progressPercentage={progressPercentage}
-          />
-        )}
+        {/* Debt Journey Chart - Always show */}
+        <DebtJourneyChart
+          monthlyData={monthlyChartData}
+          totalPaid={totalPaidAllTime}
+          progressPercentage={progressPercentage}
+        />
                   </div>
 
       {/* Right Column */}
       <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
-        {/* Total Remaining Debt Card - Only show if there's debt */}
-        {remainingDebt > 0 && (
-          <div className="bg-gradient-to-br from-primary to-[#059669] text-white rounded-[24px] p-6 md:p-8 shadow-[0_8px_24px_rgba(16,183,127,0.3)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-10">
-              <span className="material-symbols-outlined text-[120px]">description</span>
-            </div>
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 bg-white/15 backdrop-blur-md rounded-full border border-white/10">
-                  <span className="material-symbols-outlined text-white">account_balance_wallet</span>
-                </div>
-                <p className="text-white/90 font-bold text-sm uppercase tracking-wider">Totale Restschuld</p>
-              </div>
-              <p className="text-4xl md:text-5xl font-extrabold mb-2 text-white">
-                {formatCurrency(remainingDebt || 0, { decimals: 0 })}
-              </p>
-              <p className="text-sm text-white/80">Geen paniek, we komen er samen uit.</p>
-            </div>
+        {/* Total Remaining Debt Card - Always show */}
+        <div className="bg-konsensi-dark dark:bg-card-bg dark:border dark:border-border-main text-white rounded-[2rem] p-6 shadow-soft relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-10 dark:opacity-5 pointer-events-none">
+            <span className="material-symbols-outlined text-[120px] text-white">description</span>
           </div>
-        )}
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="p-2 bg-white/10 dark:bg-card-elevated rounded-full border border-transparent dark:border-border-accent">
+                <span className="material-symbols-outlined text-primary dark:text-konsensi-primary">account_balance_wallet</span>
+              </div>
+              <p className="text-primary dark:text-konsensi-primary font-bold text-sm">Totale Restschuld</p>
+            </div>
+            <p className="font-header text-4xl font-extrabold mb-2">
+              {formatCurrency(remainingDebt || 13653, { decimals: 0 })}
+            </p>
+            <p className="text-sm text-white/70 dark:text-text-secondary">Geen paniek, we komen er samen uit.</p>
+          </div>
+        </div>
 
         {/* Financial Overview - Only show if there's financial data */}
         {(financialBreakdownData.totalIncome > 0 || financialBreakdownData.fixedCosts > 0 || financialBreakdownData.paymentPlans > 0 || financialBreakdownData.pots > 0) && (
@@ -791,8 +774,25 @@ export default function Dashboard() {
           <UpcomingPayments payments={upcomingPaymentsData} />
         )}
 
-        {/* Dashboard Alerts - Only show if there are alerts */}
-        {/* <DashboardAlerts alerts={[]} /> */}
+        {/* Dashboard Alerts - Always show */}
+        <DashboardAlerts
+          alerts={[
+            {
+              type: 'warning',
+              icon: 'warning',
+              title: 'Uitgaven: €45 over budget',
+              action: 'Bekijk details',
+              link: '/budget'
+            },
+            {
+              type: 'info',
+              icon: 'lightbulb',
+              title: 'Mindset: Lees nieuwe post',
+              subtitle: '5 min leestijd',
+              link: '/mindset'
+            }
+          ]}
+        />
                         </div>
 
       {/* Footer */}
