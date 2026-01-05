@@ -33,8 +33,7 @@ export default function WelcomeCard({ user, level = 9, currentXP = 2025, totalXP
               Schuld Sloper
             </span>
             <span className="px-3 py-1 bg-[#FFD700]/20 dark:bg-konsensi-bg-green text-[#B8860B] dark:text-konsensi-primary rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1 dark:border dark:border-konsensi-primary/20">
-              Elite Status{" "}
-              <span className="material-symbols-outlined text-[14px]">verified</span>
+              Elite Status ⭐
             </span>
           </div>
         </div>

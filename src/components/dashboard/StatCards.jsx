@@ -15,7 +15,7 @@ export default function StatCards({ totalIncome, totalExpenses, totalPaidThisMon
             <span className="material-symbols-outlined">calendar_month</span>
           </div>
           <span className="text-[10px] font-bold bg-gray-100 dark:bg-card-elevated px-2 py-1 rounded-full text-gray-500 dark:text-text-secondary dark:border dark:border-border-main">
-            Dec 2025
+            {formattedMonth}
           </span>
         </div>
         <div>
@@ -33,7 +33,7 @@ export default function StatCards({ totalIncome, totalExpenses, totalPaidThisMon
             <span className="material-symbols-outlined">payments</span>
           </div>
           <span className="text-[10px] font-bold bg-gray-100 dark:bg-card-elevated px-2 py-1 rounded-full text-gray-500 dark:text-text-secondary dark:border dark:border-border-main">
-            Dec 2025
+            {formattedMonth}
           </span>
         </div>
         <div>
