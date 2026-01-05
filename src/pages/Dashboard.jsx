@@ -747,7 +747,7 @@ export default function Dashboard() {
         {(() => {
           // Calculate days on track based on payment consistency
           const daysOnTrack = (() => {
-            if (!allPayments || allPayments.length === 0) return 7; // Default to 7 if no data
+            if (!allPayments || allPayments.length === 0) return 0; // Show 0 if no data
             // Simple calculation: count days since first payment
             const sortedPayments = [...allPayments].sort((a, b) => {
               const dateA = a?.payment_date ? new Date(a.payment_date) : new Date(0);
@@ -755,22 +755,21 @@ export default function Dashboard() {
               return dateA - dateB;
             });
             const firstPayment = sortedPayments[0];
-            if (!firstPayment?.payment_date) return 7; // Default to 7 if no valid payment
+            if (!firstPayment?.payment_date) return 0; // Show 0 if no valid payment
             try {
               const firstDate = new Date(firstPayment.payment_date);
-              if (isNaN(firstDate.getTime())) return 7;
+              if (isNaN(firstDate.getTime())) return 0;
               const daysDiff = Math.floor((new Date() - firstDate) / (1000 * 60 * 60 * 24));
-              return Math.max(1, Math.min(daysDiff, 30)); // Cap at 30 days, minimum 1
+              return Math.max(0, Math.min(daysDiff, 30)); // Cap at 30 days, minimum 0
             } catch {
-              return 7;
+              return 0;
             }
           })();
 
           // Calculate savings pot amount from pots
-          const calculatedAmount = (pots || []).reduce((sum, pot) => {
+          const savingsPotAmount = (pots || []).reduce((sum, pot) => {
             return sum + (Number(pot?.current_amount) || 0);
-          }, 0);
-          const savingsPotAmount = calculatedAmount > 0 ? calculatedAmount : 12.5; // Default to 12.5 if no pots
+          }, 0); // Show €0 if no pots
 
           return <GamificationStats daysOnTrack={daysOnTrack} savingsPotAmount={savingsPotAmount} />;
         })()}

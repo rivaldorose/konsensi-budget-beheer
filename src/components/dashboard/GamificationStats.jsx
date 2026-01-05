@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function GamificationStats({ daysOnTrack = 7, savingsPotAmount = 12.5 }) {
+export default function GamificationStats({ daysOnTrack = 0, savingsPotAmount = 0 }) {
   return (
     <div className="grid grid-cols-2 gap-4">
       {/* Days On Track */}
