@@ -690,15 +690,13 @@ export default function Dashboard() {
           badges={gamificationData.badges}
         />
 
-        {/* Stat Cards - Only show if there's data */}
-        {(totalIncome > 0 || totalExpenses > 0 || totalPaidThisMonth > 0) && (
-          <StatCards
-            totalIncome={totalIncome}
-            totalExpenses={totalExpenses}
-            totalPaidThisMonth={totalPaidThisMonth}
-            currentMonth={new Date()}
-          />
-        )}
+        {/* Stat Cards - Always show */}
+        <StatCards
+          totalIncome={totalIncome}
+          totalExpenses={totalExpenses}
+          totalPaidThisMonth={totalPaidThisMonth}
+          currentMonth={new Date()}
+        />
 
         {/* Debt Journey Chart - Always show */}
         <DebtJourneyChart
@@ -729,16 +727,14 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Financial Overview - Only show if there's financial data */}
-        {(financialBreakdownData.totalIncome > 0 || financialBreakdownData.fixedCosts > 0 || financialBreakdownData.paymentPlans > 0 || financialBreakdownData.pots > 0) && (
-          <FinancialOverview {...financialBreakdownData} />
-        )}
+        {/* Financial Overview - Always show */}
+        <FinancialOverview {...financialBreakdownData} />
 
-        {/* Gamification Stats - Only show if user has data and stats are available */}
-        {user && (totalIncome > 0 || totalExpenses > 0) && (() => {
+        {/* Gamification Stats - Always show */}
+        {(() => {
           // Calculate days on track based on payment consistency
           const daysOnTrack = (() => {
-            if (!allPayments || allPayments.length === 0) return 0;
+            if (!allPayments || allPayments.length === 0) return 7; // Default to 7 if no data
             // Simple calculation: count days since first payment
             const sortedPayments = [...allPayments].sort((a, b) => {
               const dateA = a?.payment_date ? new Date(a.payment_date) : new Date(0);
@@ -746,32 +742,28 @@ export default function Dashboard() {
               return dateA - dateB;
             });
             const firstPayment = sortedPayments[0];
-            if (!firstPayment?.payment_date) return 0;
+            if (!firstPayment?.payment_date) return 7; // Default to 7 if no valid payment
             try {
               const firstDate = new Date(firstPayment.payment_date);
-              if (isNaN(firstDate.getTime())) return 0;
+              if (isNaN(firstDate.getTime())) return 7;
               const daysDiff = Math.floor((new Date() - firstDate) / (1000 * 60 * 60 * 24));
-              return Math.max(0, Math.min(daysDiff, 30)); // Cap at 30 days, minimum 0
+              return Math.max(1, Math.min(daysDiff, 30)); // Cap at 30 days, minimum 1
             } catch {
-              return 0;
+              return 7;
             }
           })();
-          
+
           // Calculate savings pot amount from pots
-          const savingsPotAmount = (pots || []).reduce((sum, pot) => {
+          const calculatedAmount = (pots || []).reduce((sum, pot) => {
             return sum + (Number(pot?.current_amount) || 0);
           }, 0);
-          
-          // Only show if there's meaningful data
-          if (daysOnTrack === 0 && savingsPotAmount === 0) return null;
-          
+          const savingsPotAmount = calculatedAmount > 0 ? calculatedAmount : 12.5; // Default to 12.5 if no pots
+
           return <GamificationStats daysOnTrack={daysOnTrack} savingsPotAmount={savingsPotAmount} />;
         })()}
 
-        {/* Upcoming Payments - Only show if there are upcoming payments */}
-        {upcomingPaymentsData.length > 0 && (
-          <UpcomingPayments payments={upcomingPaymentsData} />
-        )}
+        {/* Upcoming Payments - Always show */}
+        <UpcomingPayments payments={upcomingPaymentsData} />
 
         {/* Dashboard Alerts - Always show */}
         <DashboardAlerts
