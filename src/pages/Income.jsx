@@ -322,10 +322,10 @@ export default function IncomePage() {
                         </div>
 
                         {/* 2. JAAROVERZICHT CARD */}
-                        <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center gap-2">
-                                    <div className="bg-[#b4ff7a] dark:bg-konsensi-bg-green p-1.5 rounded-[24px]">
+                                    <div className="bg-[#b4ff7a] dark:bg-konsensi-bg-green p-1.5 rounded-lg">
                                         <span className="material-symbols-outlined text-[#3D6456] dark:text-konsensi-primary text-[20px]">target</span>
                                     </div>
                                     <h3 className="text-lg font-bold text-[#3D6456] dark:text-white">Jaaroverzicht Inkomsten</h3>
@@ -337,24 +337,24 @@ export default function IncomePage() {
                                     <span className="material-symbols-outlined">{showYearOverview ? 'expand_less' : 'expand_more'}</span>
                                 </button>
                             </div>
-                            
+
                             {showYearOverview && (
                                 <>
                                     {/* Stats Row */}
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-[24px] border border-blue-100 dark:border-blue-800/30">
+                                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/30">
                                             <span className="text-xs font-medium text-blue-600 dark:text-blue-400 block mb-1">Gem. Vast</span>
                                             <span className="text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.avgFixed)}</span>
                                         </div>
-                                        <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-[24px] border border-green-100 dark:border-green-800/30">
+                                        <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800/30">
                                             <span className="text-xs font-medium text-green-600 dark:text-green-400 block mb-1">Gem. Extra</span>
                                             <span className="text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.avgExtra)}</span>
                                         </div>
-                                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-[24px] border border-purple-100 dark:border-purple-800/30">
+                                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800/30">
                                             <span className="text-xs font-medium text-purple-600 dark:text-purple-400 block mb-1">Gem. Totaal</span>
                                             <span className="text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.avgTotal)}</span>
                                         </div>
-                                        <div className="p-3 bg-gray-50 dark:bg-card-elevated rounded-[24px] border border-gray-100 dark:border-border-main">
+                                        <div className="p-3 bg-gray-50 dark:bg-card-elevated rounded-xl border border-gray-100 dark:border-border-main">
                                             <span className="text-xs font-medium text-gray-500 dark:text-text-secondary block mb-1">Totaal Jaar</span>
                                             <span className="text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.totalYear)}</span>
                                         </div>
@@ -416,7 +416,7 @@ export default function IncomePage() {
                         </div>
 
                         {/* 3. VAST INKOMEN LIST CARD */}
-                        <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <div className="flex justify-between items-center mb-6">
                                 <div>
                                     <h3 className="text-lg font-bold text-[#3D6456] dark:text-white flex items-center gap-2">
@@ -498,7 +498,7 @@ export default function IncomePage() {
                         </div>
 
                         {/* 4. EXTRA INKOMEN CARD */}
-                        <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <div className="mb-6">
                                 <h3 className="text-lg font-bold text-[#3D6456] dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[#b4ff7a] dark:text-konsensi-primary">redeem</span>
@@ -507,7 +507,7 @@ export default function IncomePage() {
                                 <p className="text-sm text-gray-400 dark:text-text-secondary font-medium mt-1">Eenmalige inkomsten in {currentMonthLabel}</p>
                             </div>
                             {extraIncomeThisMonth.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-100 dark:border-border-main rounded-[24px] bg-gray-50/50 dark:bg-card-elevated/50">
+                                <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-100 dark:border-border-main rounded-xl bg-gray-50/50 dark:bg-card-elevated/50">
                                     <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-card-elevated flex items-center justify-center mb-4">
                                         <span className="material-symbols-outlined text-gray-300 dark:text-text-tertiary text-3xl">savings</span>
                                     </div>
@@ -524,7 +524,7 @@ export default function IncomePage() {
                                         {extraIncomeThisMonth.map((income) => (
                                             <div
                                                 key={income.id}
-                                                className="flex items-center justify-between p-4 rounded-[24px] border border-gray-100 dark:border-border-main hover:border-[#b4ff7a] dark:hover:border-konsensi-primary hover:bg-[#fafcf8] dark:hover:bg-card-elevated transition-all group"
+                                                className="flex items-center justify-between p-4 rounded-xl border border-gray-100 dark:border-border-main hover:border-[#b4ff7a] dark:hover:border-konsensi-primary hover:bg-[#fafcf8] dark:hover:bg-card-elevated transition-all group"
                                             >
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-12 h-12 rounded-full bg-[#ecf4e6] dark:bg-konsensi-bg-green flex items-center justify-center text-[#3D6456] dark:text-konsensi-primary">
@@ -572,10 +572,10 @@ export default function IncomePage() {
                     {/* Right Column (35% on Desktop) */}
                     <div className="lg:col-span-4 flex flex-col gap-6">
                         {/* 1. Quick Stats / Calendar */}
-                        <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] flex flex-col gap-4" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] flex flex-col gap-4" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <h3 className="text-sm font-bold text-gray-400 dark:text-text-secondary uppercase tracking-wider">Selecteer periode</h3>
                             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                                <SelectTrigger className="w-full flex items-center justify-between px-4 py-3 rounded-[24px] bg-[#fafcf8] dark:bg-card-elevated border border-gray-200 dark:border-border-main text-[#3D6456] dark:text-white font-bold shadow-sm hover:border-[#b4ff7a] dark:hover:border-konsensi-primary transition-all">
+                                <SelectTrigger className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-[#fafcf8] dark:bg-card-elevated border border-gray-200 dark:border-border-main text-[#3D6456] dark:text-white font-bold shadow-sm hover:border-[#b4ff7a] dark:hover:border-konsensi-primary transition-all">
                                     <div className="flex items-center gap-3">
                                         <span className="material-symbols-outlined text-[#b4ff7a] dark:text-konsensi-primary">calendar_month</span>
                                         <SelectValue>{currentMonthLabel}</SelectValue>
@@ -597,7 +597,7 @@ export default function IncomePage() {
                                         const prevMonth = new Date(parseInt(year), parseInt(month) - 2, 1);
                                         setSelectedMonth(`${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`);
                                     }}
-                                    className="p-2 text-xs font-bold text-center rounded-[24px] bg-gray-50 dark:bg-card-elevated hover:bg-[#ecf4e6] dark:hover:bg-konsensi-bg-green text-gray-500 dark:text-text-secondary hover:text-[#3D6456] dark:hover:text-konsensi-primary transition-colors"
+                                    className="p-2 text-xs font-bold text-center rounded-lg bg-gray-50 dark:bg-card-elevated hover:bg-[#ecf4e6] dark:hover:bg-konsensi-bg-green text-gray-500 dark:text-text-secondary hover:text-[#3D6456] dark:hover:text-konsensi-primary transition-colors"
                                 >
                                     Vorige Maand
                                 </button>
@@ -607,7 +607,7 @@ export default function IncomePage() {
                                         const nextMonth = new Date(parseInt(year), parseInt(month), 1);
                                         setSelectedMonth(`${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`);
                                     }}
-                                    className="p-2 text-xs font-bold text-center rounded-[24px] bg-gray-50 dark:bg-card-elevated hover:bg-[#ecf4e6] dark:hover:bg-konsensi-bg-green text-gray-500 dark:text-text-secondary hover:text-[#3D6456] dark:hover:text-konsensi-primary transition-colors"
+                                    className="p-2 text-xs font-bold text-center rounded-lg bg-gray-50 dark:bg-card-elevated hover:bg-[#ecf4e6] dark:hover:bg-konsensi-bg-green text-gray-500 dark:text-text-secondary hover:text-[#3D6456] dark:hover:text-konsensi-primary transition-colors"
                                 >
                                     Volgende Maand
                                 </button>
@@ -615,7 +615,7 @@ export default function IncomePage() {
                         </div>
 
                         {/* 2. Scan Action Card */}
-                        <div className="bg-[#fafcf8] dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-[#2a2a2a] flex flex-col items-center text-center" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-[#fafcf8] dark:bg-[#1a1a1a] rounded-xl p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-[#2a2a2a] flex flex-col items-center text-center" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <div className="w-16 h-16 rounded-full bg-white dark:bg-card-elevated shadow-sm flex items-center justify-center mb-4 text-[#3D6456] dark:text-konsensi-primary">
                                 <span className="material-symbols-outlined text-3xl">document_scanner</span>
                             </div>
@@ -632,7 +632,7 @@ export default function IncomePage() {
                         </div>
 
                         {/* 3. Tips Card */}
-                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-[24px] p-6 border border-blue-100 dark:border-blue-800/30 relative overflow-hidden">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 border border-blue-100 dark:border-blue-800/30 relative overflow-hidden">
                             <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-9xl text-blue-100 dark:text-blue-900/30 opacity-50 rotate-12">lightbulb</span>
                             <div className="relative z-10">
                                 <div className="flex items-center gap-2 mb-3">
@@ -646,10 +646,10 @@ export default function IncomePage() {
                         </div>
 
                         {/* Status Summary Mini Card */}
-                        <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-5 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <h3 className="font-bold text-[#3D6456] dark:text-white mb-4 text-sm">Huidige Status</h3>
                             <div className="flex items-center gap-3">
-                                <div className="bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 p-2 rounded-[24px]">
+                                <div className="bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 p-2 rounded-lg">
                                     <span className="material-symbols-outlined">work_history</span>
                                 </div>
                                 <div>
