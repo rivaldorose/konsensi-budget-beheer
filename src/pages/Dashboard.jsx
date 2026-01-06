@@ -804,17 +804,48 @@ export default function Dashboard() {
 
         {/* Gamification Stats - Always show */}
         {(() => {
-          // Calculate days on track based on app usage/consistency
-          // This should ideally track actual login days, but for now we use account age
+          // Calculate days on track based on unique login days
           const daysOnTrack = (() => {
-            if (!user?.created_at) return 0; // Show 0 if no user data
             try {
-              const accountCreated = new Date(user.created_at);
-              if (isNaN(accountCreated.getTime())) return 0;
-              const daysSinceCreation = Math.floor((new Date() - accountCreated) / (1000 * 60 * 60 * 24));
-              // For now, assume user is consistent if they have any activity
-              // This can be improved with actual login tracking
-              return Math.max(0, Math.min(daysSinceCreation, 365)); // Cap at 365 days
+              // Get today's date as a string (YYYY-MM-DD)
+              const today = new Date().toISOString().split('T')[0];
+
+              // Get stored values from localStorage
+              const lastLoginDate = localStorage.getItem('lastLoginDate');
+              let loginStreak = parseInt(localStorage.getItem('loginStreak') || '0');
+
+              // If this is the first time or no last login date
+              if (!lastLoginDate) {
+                loginStreak = 1;
+                localStorage.setItem('loginStreak', '1');
+                localStorage.setItem('lastLoginDate', today);
+                return 1;
+              }
+
+              // If already logged in today, return current streak
+              if (lastLoginDate === today) {
+                return loginStreak;
+              }
+
+              // Calculate days difference
+              const lastDate = new Date(lastLoginDate);
+              const currentDate = new Date(today);
+              const daysDifference = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24));
+
+              // If logged in yesterday, increment streak
+              if (daysDifference === 1) {
+                loginStreak += 1;
+              }
+              // If more than 1 day gap, reset streak to 1
+              else if (daysDifference > 1) {
+                loginStreak = 1;
+              }
+
+              // Update localStorage
+              localStorage.setItem('loginStreak', loginStreak.toString());
+              localStorage.setItem('lastLoginDate', today);
+
+              return Math.max(0, Math.min(loginStreak, 365)); // Cap at 365 days
             } catch {
               return 0;
             }
