@@ -382,7 +382,7 @@ export default function MaandelijkseLastenPage() {
                         </div>
 
                         {/* Chart Area */}
-                        <div className="w-full h-[280px] relative">
+                        <div className="w-full h-[280px] relative overflow-hidden">
                             <MonthlyCostsChart allMonthlyCosts={costs} allUnexpectedCosts={[]} />
                         </div>
                     </>
