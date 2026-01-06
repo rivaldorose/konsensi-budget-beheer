@@ -1006,7 +1006,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                 Budgetplan
               </Link>
               
-              <Link 
+              <Link
                 to={createPageUrl('Potjes')}
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
                   currentPageName === 'Potjes'
@@ -1016,8 +1016,19 @@ function LayoutWithProvider({ children, currentPageName }) {
               >
                 Potjes
               </Link>
-              
-              <Link 
+
+              <Link
+                to={createPageUrl('Debts')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  currentPageName === 'Debts'
+                    ? 'text-white'
+                    : 'text-[#a1a1a1] hover:text-white'
+                }`}
+              >
+                Betaalachterstanden
+              </Link>
+
+              <Link
                 to={createPageUrl('CentVoorCent')}
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
                   currentPageName === 'CentVoorCent'
