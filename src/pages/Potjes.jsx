@@ -99,30 +99,51 @@ export default function Potjes() {
     setError(null);
     try {
       const userData = await User.me();
+      if (!userData || !userData.id) {
+        throw new Error('Gebruikersgegevens niet gevonden');
+      }
       setUser(userData);
       const userFilter = { user_id: userData.id };
-      
+
+      console.log('Fetching potjes data for user:', userData.id);
+
       // Use Promise.allSettled to handle partial failures gracefully
       const results = await Promise.allSettled([
-        Pot.filter(userFilter),
-        Income.filter(userFilter),
-        MonthlyCost.filter(userFilter),
-        Debt.filter(userFilter),
-        Transaction.filter(userFilter)
+        Pot.filter(userFilter).catch(err => { console.error('Pot.filter error:', err); return []; }),
+        Income.filter(userFilter).catch(err => { console.error('Income.filter error:', err); return []; }),
+        MonthlyCost.filter(userFilter).catch(err => { console.error('MonthlyCost.filter error:', err); return []; }),
+        Debt.filter(userFilter).catch(err => { console.error('Debt.filter error:', err); return []; }),
+        Transaction.filter(userFilter).catch(err => { console.error('Transaction.filter error:', err); return []; })
       ]);
 
-      let allPots = results[0].status === 'fulfilled' ? results[0].value : [];
-      let allIncomes = results[1].status === 'fulfilled' ? results[1].value : [];
-      let allCosts = results[2].status === 'fulfilled' ? results[2].value : [];
-      let allDebts = results[3].status === 'fulfilled' ? results[3].value : [];
-      let allTransactions = results[4].status === 'fulfilled' ? results[4].value : [];
+      console.log('Promise.allSettled results:', results.map((r, i) => ({
+        index: i,
+        status: r.status,
+        hasValue: r.status === 'fulfilled' && r.value,
+        isArray: Array.isArray(r.status === 'fulfilled' ? r.value : null),
+        length: Array.isArray(r.status === 'fulfilled' ? r.value : null) ? r.value.length : 0
+      })));
+
+      let allPots = results[0].status === 'fulfilled' && results[0].value ? results[0].value : [];
+      let allIncomes = results[1].status === 'fulfilled' && results[1].value ? results[1].value : [];
+      let allCosts = results[2].status === 'fulfilled' && results[2].value ? results[2].value : [];
+      let allDebts = results[3].status === 'fulfilled' && results[3].value ? results[3].value : [];
+      let allTransactions = results[4].status === 'fulfilled' && results[4].value ? results[4].value : [];
 
       // Ensure all values are arrays and filter out any null/undefined items
-      allPots = Array.isArray(allPots) ? allPots.filter(item => item) : [];
-      allIncomes = Array.isArray(allIncomes) ? allIncomes.filter(item => item) : [];
-      allCosts = Array.isArray(allCosts) ? allCosts.filter(item => item) : [];
-      allDebts = Array.isArray(allDebts) ? allDebts.filter(item => item) : [];
-      allTransactions = Array.isArray(allTransactions) ? allTransactions.filter(item => item) : [];
+      allPots = Array.isArray(allPots) ? allPots.filter(item => item && typeof item === 'object') : [];
+      allIncomes = Array.isArray(allIncomes) ? allIncomes.filter(item => item && typeof item === 'object') : [];
+      allCosts = Array.isArray(allCosts) ? allCosts.filter(item => item && typeof item === 'object') : [];
+      allDebts = Array.isArray(allDebts) ? allDebts.filter(item => item && typeof item === 'object') : [];
+      allTransactions = Array.isArray(allTransactions) ? allTransactions.filter(item => item && typeof item === 'object') : [];
+
+      console.log('Filtered data counts:', {
+        pots: allPots.length,
+        incomes: allIncomes.length,
+        costs: allCosts.length,
+        debts: allDebts.length,
+        transactions: allTransactions.length
+      });
 
       const hasBadHabits = allPots.some(p => p.name === 'Bad Habits');
       if (!hasBadHabits) {
@@ -265,7 +286,11 @@ export default function Potjes() {
   }, [fetchData]);
 
   const totalAllocated = useMemo(() => {
-    return potjes.reduce((sum, pot) => sum + (parseFloat(pot.monthly_budget) || 0), 0);
+    if (!Array.isArray(potjes)) return 0;
+    return potjes.reduce((sum, pot) => {
+      if (!pot || typeof pot !== 'object') return sum;
+      return sum + (parseFloat(pot.monthly_budget) || 0);
+    }, 0);
   }, [potjes]);
 
   const fixedCostsAndArrangements = vtblData ? (vtblData.vasteLasten + vtblData.huidigeRegelingen) : 0;
@@ -273,7 +298,9 @@ export default function Potjes() {
   const remaining = availableForPots - totalAllocated;
 
   const sortedPotjes = useMemo(() => {
-    return [...potjes].sort((a, b) => {
+    if (!Array.isArray(potjes)) return [];
+    return [...potjes].filter(p => p && typeof p === 'object').sort((a, b) => {
+      if (!a || !b) return 0;
       if (a.pot_type !== b.pot_type) {
         return a.pot_type === 'savings' ? -1 : 1;
       }
@@ -285,22 +312,33 @@ export default function Potjes() {
   }, [potjes]);
 
   const potjesChartData = useMemo(() => {
-    const categoryMap = {};
-    potjes.filter(p => p.pot_type === 'expense' && p.category).forEach(pot => {
-      if (!categoryMap[pot.category]) {
-        categoryMap[pot.category] = {
-          category: pot.category,
-          label: NIBUD_LABELS[pot.category] || pot.category,
-          budget: 0,
-          spent: 0,
-          nibud_advice: totalIncome * (NIBUD_PERCENTAGES[pot.category] || 0) / 100,
-          nibud_percentage: NIBUD_PERCENTAGES[pot.category] || 0
-        };
+    try {
+      if (!Array.isArray(potjes) || !potjeSpendings || typeof potjeSpendings !== 'object') {
+        return [];
       }
-      categoryMap[pot.category].budget += pot.monthly_budget || 0;
-      categoryMap[pot.category].spent += potjeSpendings[pot.id] || 0;
-    });
-    return Object.values(categoryMap).filter(c => c.budget > 0 || c.spent > 0);
+      const categoryMap = {};
+      potjes
+        .filter(p => p && typeof p === 'object' && p.pot_type === 'expense' && p.category)
+        .forEach(pot => {
+          if (!pot.category) return;
+          if (!categoryMap[pot.category]) {
+            categoryMap[pot.category] = {
+              category: pot.category,
+              label: NIBUD_LABELS[pot.category] || pot.category,
+              budget: 0,
+              spent: 0,
+              nibud_advice: totalIncome * (NIBUD_PERCENTAGES[pot.category] || 0) / 100,
+              nibud_percentage: NIBUD_PERCENTAGES[pot.category] || 0
+            };
+          }
+          categoryMap[pot.category].budget += pot.monthly_budget || 0;
+          categoryMap[pot.category].spent += potjeSpendings[pot.id] || 0;
+        });
+      return Object.values(categoryMap).filter(c => c && (c.budget > 0 || c.spent > 0));
+    } catch (err) {
+      console.error('Error calculating potjesChartData:', err);
+      return [];
+    }
   }, [potjes, potjeSpendings, totalIncome]);
 
   const handleSelectPot = useCallback((pot) => {
