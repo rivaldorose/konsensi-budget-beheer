@@ -22,22 +22,8 @@ export default function DashboardFooter({
           </div>
         </div>
 
-        {/* Week Goal & Next Action */}
+        {/* Next Action */}
         <div className="flex items-center gap-6 w-full sm:w-auto">
-          {/* Week Goal Progress */}
-          <div className="hidden lg:block w-48">
-            <div className="flex justify-between text-xs font-bold text-gray-500 dark:text-text-secondary mb-1">
-              <span>Weekdoel</span>
-              <span>{weekGoalPercentage}%</span>
-            </div>
-            <div className="h-2 bg-gray-100 dark:bg-card-elevated rounded-full overflow-hidden border border-transparent dark:border-border-main">
-              <div
-                className="h-full bg-konsensi-dark dark:bg-konsensi-primary rounded-full transition-all duration-300"
-                style={{ width: `${weekGoalPercentage}%` }}
-              ></div>
-            </div>
-          </div>
-
           {/* Next Action Button */}
           <Button
             onClick={onNextAction || (() => window.location.href = createPageUrl("VasteLastenCheck"))}

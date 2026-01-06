@@ -196,65 +196,6 @@ export default function CentVoorCent() {
 
   return (
     <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] font-display text-[#1F2937] dark:text-white antialiased">
-      {/* Top Navigation Bar */}
-      <nav className="bg-primary-dark dark:bg-[#1a2c26] w-full h-16 shadow-md dark:border-b dark:border-[#2A3F36] sticky top-0 z-50">
-        <div className="max-w-[1400px] mx-auto h-full px-4 lg:px-8 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-white text-3xl">forest</span>
-            <h1 className="text-white font-bold text-xl tracking-wide hidden sm:block">
-              KONSENSI <span className="font-normal opacity-80">Budgetbeheer</span>
-            </h1>
-          </div>
-          {/* Nav Items (Desktop) */}
-          <div className="hidden md:flex items-center gap-8">
-            <a className="text-white text-sm font-medium hover:text-primary transition-colors" href={createPageUrl('Dashboard')}>Dashboard</a>
-            <a className="text-white text-sm font-medium hover:text-primary transition-colors border-b-2 border-primary pb-0.5" href={createPageUrl('BudgetPlan')}>Balans</a>
-            <a className="text-white text-sm font-medium hover:text-primary transition-colors" href={createPageUrl('debts')}>Schulden</a>
-            <a className="text-white text-sm font-medium hover:text-primary transition-colors" href={createPageUrl('Settings')}>Instellingen</a>
-          </div>
-          {/* Right Actions */}
-          <div className="flex items-center gap-4">
-            <button className="text-white hover:text-primary p-1">
-              <span className="material-symbols-outlined">search</span>
-            </button>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                className="sr-only peer" 
-                type="checkbox" 
-                checked={darkMode}
-                onChange={toggleTheme}
-              />
-              <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-white/20 flex items-center justify-between px-1.5">
-                <span className="material-symbols-outlined text-[16px] text-yellow-300 z-10 select-none">light_mode</span>
-                <span className="material-symbols-outlined text-[16px] text-white/80 z-10 select-none">dark_mode</span>
-              </div>
-            </label>
-            <div className="flex items-center gap-3 bg-white/10 rounded-full px-1 py-1 pr-4">
-              <div className="relative">
-                <div 
-                  className="size-8 rounded-full bg-cover bg-center border-2 border-white"
-                  style={{
-                    backgroundImage: user?.profielfoto_url 
-                      ? `url(${user.profielfoto_url})` 
-                      : 'none',
-                    backgroundColor: user?.profielfoto_url ? 'transparent' : '#8B5CF6'
-                  }}
-                >
-                  {!user?.profielfoto_url && (
-                    <div className="w-full h-full flex items-center justify-center text-white font-bold">
-                      {(user?.voornaam?.[0] || user?.email?.[0] || 'R').toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <div className="absolute -bottom-1 -right-1 bg-[#8B5CF6] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-primary-dark">Lvl 9</div>
-              </div>
-              <span className="text-white text-sm font-semibold">{user?.voornaam || 'Gebruiker'}</span>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Main Content Wrapper */}
       <main className="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-8">
         {/* Header Section */}
