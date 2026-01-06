@@ -933,15 +933,15 @@ export default function Debts() {
               <div className="bg-gray-50 dark:bg-[#2a2a2a] rounded-xl p-4 space-y-2">
               <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-[#a1a1a1]">Je inkomen</span>
-                  <span className="font-medium text-[#131d0c] dark:text-white">€ 2.000</span>
+                  <span className="font-medium text-[#131d0c] dark:text-white">{formatCurrency(user?.monthly_income || 0)}</span>
               </div>
               <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-[#a1a1a1]">Min: VTLB (levensonderhoud)</span>
-                  <span className="font-medium text-red-600 dark:text-red-400">- € 1.500</span>
+                  <span className="font-medium text-red-600 dark:text-red-400">- {formatCurrency((user?.monthly_income || 0) - availableBudget)}</span>
               </div>
                 <div className="border-t border-gray-200 dark:border-[#2a2a2a] pt-2 flex justify-between">
                   <span className="font-medium text-[#131d0c] dark:text-white">= Afloscapaciteit</span>
-                  <span className="font-bold text-blue-600 dark:text-blue-400">€ 500</span>
+                  <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(availableBudget)}</span>
               </div>
             </div>
               <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">
