@@ -134,109 +134,67 @@ const MonthlyCostsChart = ({ allMonthlyCosts = [], allUnexpectedCosts = [] }) =>
   };
 
   return (
-    <Card className="bg-white shadow-sm rounded-xl border-none">
-      <Accordion type="single" collapsible defaultValue="item-1">
-        <AccordionItem value="item-1" className="border-b-0">
-          <AccordionTrigger className="p-5 hover:no-underline">
-            <CardHeader className="p-0 text-left">
-              <CardTitle className="text-base font-medium flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
-                Jaaroverzicht Vaste Lasten
-              </CardTitle>
-            </CardHeader>
-          </AccordionTrigger>
-          <AccordionContent className="px-5 pb-5">
-            {/* Statistieken */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-              <div className="bg-blue-50 rounded-lg p-3">
-                <p className="text-xs text-blue-700 mb-1">Gem. Vast</p>
-                <p className="text-lg font-bold text-blue-800">
-                  {formatCurrency(stats.avgVast, { decimals: 0 })}
-                </p>
-              </div>
-              <div className="bg-orange-50 rounded-lg p-3">
-                <p className="text-xs text-orange-700 mb-1">Gem. Onverwacht</p>
-                <p className="text-lg font-bold text-orange-800">
-                  {formatCurrency(stats.avgOnverwacht, { decimals: 0 })}
-                </p>
-              </div>
-              <div className="bg-purple-50 rounded-lg p-3">
-                <p className="text-xs text-purple-700 mb-1">Gem. Totaal</p>
-                <p className="text-lg font-bold text-purple-800">
-                  {formatCurrency(stats.avgTotaal, { decimals: 0 })}
-                </p>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-3">
-                <p className="text-xs text-gray-700 mb-1">Totaal Jaar</p>
-                <p className="text-lg font-bold text-gray-800">
-                  {formatCurrency(stats.totalYear, { decimals: 0 })}
-                </p>
-              </div>
-            </div>
+    <div className="bg-white dark:bg-transparent rounded-xl p-5">
+      {/* Grafiek */}
+      <div style={{ width: '100%', height: 300 }} className="bg-white dark:bg-white rounded-xl p-4">
+        <ResponsiveContainer>
+          <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorVast" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+              </linearGradient>
+              <linearGradient id="colorOnverwacht" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#f97316" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis
+              dataKey="month"
+              stroke="#9ca3af"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              stroke="#9ca3af"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(value) => formatCurrency(value, { decimals: 0 })}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend
+              wrapperStyle={{ paddingTop: '20px' }}
+              iconType="circle"
+            />
+            <Area
+              type="monotone"
+              dataKey="vast"
+              name="Vaste Lasten"
+              stackId="1"
+              stroke="#3b82f6"
+              fillOpacity={1}
+              fill="url(#colorVast)"
+            />
+            <Area
+              type="monotone"
+              dataKey="onverwacht"
+              name="Onverwachte Kosten"
+              stackId="1"
+              stroke="#f97316"
+              fillOpacity={1}
+              fill="url(#colorOnverwacht)"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
 
-            {/* Grafiek */}
-            <div style={{ width: '100%', height: 300 }}>
-              <ResponsiveContainer>
-                <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorVast" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorOnverwacht" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis 
-                    dataKey="month" 
-                    stroke="#9ca3af" 
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis 
-                    stroke="#9ca3af" 
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(value) => formatCurrency(value, { decimals: 0 })}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  <Legend 
-                    wrapperStyle={{ paddingTop: '20px' }}
-                    iconType="circle"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="vast"
-                    name="Vaste Lasten"
-                    stackId="1"
-                    stroke="#3b82f6"
-                    fillOpacity={1}
-                    fill="url(#colorVast)"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="onverwacht"
-                    name="Onverwachte Kosten"
-                    stackId="1"
-                    stroke="#f97316"
-                    fillOpacity={1}
-                    fill="url(#colorOnverwacht)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            <p className="text-xs text-gray-500 text-center mt-4">
-              Gebaseerd op de laatste 12 maanden
-            </p>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-    </Card>
+      <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
+        Gebaseerd op de laatste 12 maanden
+      </p>
+    </div>
   );
 };
 
