@@ -165,13 +165,17 @@ export default function Potjes() {
       const spendingsMap = {};
       allPots.forEach(pot => {
         if (pot.pot_type === 'expense') {
-          const potTransactions = allTransactions.filter(tx => {
-            if (!tx || !tx.date) return false;
-            const txDate = new Date(tx.date);
-            const isInMonth = txDate >= monthStart && txDate <= monthEnd;
-            const isExpense = tx.type === 'expense';
-            const categoryMatches = tx.category === pot.name;
-            return isInMonth && isExpense && categoryMatches;
+          const potTransactions = (allTransactions || []).filter(tx => {
+            if (!tx || !tx.date || !tx.type) return false;
+            try {
+              const txDate = new Date(tx.date);
+              const isInMonth = txDate >= monthStart && txDate <= monthEnd;
+              const isExpense = tx.type === 'expense';
+              const categoryMatches = tx.category === pot.name;
+              return isInMonth && isExpense && categoryMatches;
+            } catch (err) {
+              return false;
+            }
           });
           const totalSpent = potTransactions.reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
           spendingsMap[pot.id] = totalSpent;
