@@ -277,19 +277,19 @@ export default function IncomePage() {
                     {/* Left Column (65% on Desktop) */}
                     <div className="lg:col-span-8 flex flex-col gap-6">
                         {/* 1. SUMMARY CARD */}
-                        <div className="bg-gradient-to-br from-primary to-[#059669] rounded-[24px] p-6 md:p-8 shadow-[0_8px_24px_rgba(16,183,127,0.3)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] relative overflow-hidden">
-                            <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/10 dark:bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
+                        <div className="rounded-xl p-6 md:p-8 shadow-soft relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #b4ff7a 0%, #ecf4e6 100%)' }}>
+                            <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/20 rounded-full blur-3xl pointer-events-none"></div>
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 gap-6">
                                 {/* Left Section */}
                                 <div className="flex flex-col gap-4 flex-1">
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
-                                            <div className="p-1 rounded-full bg-white/15 backdrop-blur-md border border-white/10">
-                                                <span className="material-symbols-outlined text-white text-[16px]">bolt</span>
+                                            <div className="p-1 rounded-full bg-[#3D6456]/10">
+                                                <span className="material-symbols-outlined text-[#3D6456] text-[16px]">bolt</span>
                                             </div>
-                                            <span className="text-sm font-medium text-white/90">Vast inkomen (per maand)</span>
+                                            <span className="text-sm font-medium text-[#3D6456]/80">Vast inkomen (per maand)</span>
                                         </div>
-                                        <span className="text-3xl font-extrabold text-white">{formatCurrency(totalFixed)}</span>
+                                        <span className="text-3xl font-extrabold text-[#3D6456]">{formatCurrency(totalFixed)}</span>
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
@@ -310,7 +310,7 @@ export default function IncomePage() {
                                 </div>
                             </div>
                             {/* Info Banner */}
-                            <div className="mt-6 bg-[#3D6456]/5 rounded-[24px] p-4 flex items-start gap-3 border border-[#3D6456]/10 relative z-10">
+                            <div className="mt-6 bg-[#3D6456]/5 rounded-lg p-4 flex items-start gap-3 border border-[#3D6456]/10 relative z-10">
                                 <span className="material-symbols-outlined text-[#3D6456]">lightbulb</span>
                                 <div>
                                     <h4 className="font-bold text-[#3D6456] text-sm">Je vaste maandinkomen: {formatCurrency(totalFixed)}</h4>
