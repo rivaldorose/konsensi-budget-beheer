@@ -363,20 +363,20 @@ export default function MaandelijkseLastenPage() {
                     <>
                         {/* Stats Mini-Pills */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                            <div className="bg-blue-50/50 dark:bg-[#1e3a5f] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-blue-100 dark:border-[#2a4a6f]">
-                                <span className="text-[#6B7280] dark:text-[#93b7e3] text-xs font-semibold uppercase">Gem. Vast</span>
+                            <div className="bg-blue-50/50 dark:bg-blue-500/20 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-blue-100 dark:border-blue-500/30">
+                                <span className="text-[#6B7280] dark:text-blue-300 text-xs font-semibold uppercase">Gem. Vast</span>
                                 <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.avgFixed, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-orange-50/50 dark:bg-[#4a3520] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-orange-100 dark:border-[#5a4530]">
-                                <span className="text-[#6B7280] dark:text-[#d4a574] text-xs font-semibold uppercase">Gem. Onverwacht</span>
+                            <div className="bg-orange-50/50 dark:bg-orange-500/20 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-orange-100 dark:border-orange-500/30">
+                                <span className="text-[#6B7280] dark:text-orange-300 text-xs font-semibold uppercase">Gem. Onverwacht</span>
                                 <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.avgUnexpected, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-purple-50/50 dark:bg-[#3a2754] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-purple-100 dark:border-[#4a3764]">
-                                <span className="text-[#6B7280] dark:text-[#b89fd8] text-xs font-semibold uppercase">Gem. Totaal</span>
+                            <div className="bg-purple-50/50 dark:bg-purple-500/20 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-purple-100 dark:border-purple-500/30">
+                                <span className="text-[#6B7280] dark:text-purple-300 text-xs font-semibold uppercase">Gem. Totaal</span>
                                 <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.avgTotal, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-gray-50 dark:bg-[#2a3a34] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-gray-200 dark:border-[#3a4a44]">
-                                <span className="text-[#6B7280] dark:text-[#9CA3AF] text-xs font-semibold uppercase">Totaal Jaar</span>
+                            <div className="bg-gray-50 dark:bg-emerald-500/20 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-gray-200 dark:border-emerald-500/30">
+                                <span className="text-[#6B7280] dark:text-emerald-300 text-xs font-semibold uppercase">Totaal Jaar</span>
                                 <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.totalYear, { decimals: 0 })}</span>
                             </div>
                         </div>
