@@ -681,6 +681,33 @@ export default function Dashboard() {
     }
   })();
 
+  // Calculate dynamic motivational message based on user's progress
+  const motivationalMessage = (() => {
+    // If no debt data, encourage starting
+    if (remainingDebt === 0 && totalPaidAllTime === 0) {
+      return "Klaar voor een frisse start!";
+    }
+
+    // If debt is completely paid off
+    if (remainingDebt === 0 && totalPaidAllTime > 0) {
+      return "Gefeliciteerd! Je hebt het gehaald!";
+    }
+
+    // Based on progress percentage
+    if (progressPercentage < 20) {
+      return "Een goed begin is het halve werk!";
+    } else if (progressPercentage >= 20 && progressPercentage < 50) {
+      return "Elke stap telt, blijf doorgaan!";
+    } else if (progressPercentage >= 50 && progressPercentage < 80) {
+      return "Je maakt geweldige vooruitgang!";
+    } else if (progressPercentage >= 80) {
+      return "Houd vol! Je bent er bijna.";
+    }
+
+    // Fallback
+    return "Een goed begin is het halve werk!";
+  })();
+
   return (
     <div className="flex-grow max-w-[1600px] mx-auto w-full p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 bg-[#F8F8F8] dark:bg-[#0a0a0a] min-h-screen">
       {/* Left Column */}
@@ -692,6 +719,7 @@ export default function Dashboard() {
           currentXP={gamificationData.currentXP}
           totalXP={gamificationData.totalXP}
           badges={gamificationData.badges}
+          motivationalMessage={motivationalMessage}
         />
 
         {/* Stat Cards - Always show */}

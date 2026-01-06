@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function WelcomeCard({ user, level = 9, currentXP = 2025, totalXP = 2562, badges = [] }) {
+export default function WelcomeCard({ user, level = 9, currentXP = 2025, totalXP = 2562, badges = [], motivationalMessage = "Een goed begin is het halve werk!" }) {
   const today = new Date();
   // Format: "Dinsdag 30 December 2025"
   const formattedDate = new Intl.DateTimeFormat("nl-NL", {
@@ -53,7 +53,7 @@ export default function WelcomeCard({ user, level = 9, currentXP = 2025, totalXP
       <div className="bg-white/60 dark:bg-card-elevated/40 backdrop-blur-sm rounded-2xl p-5 border border-white dark:border-border-main relative z-10">
         <div className="flex justify-between items-end mb-2">
           <div>
-            <p className="font-bold text-konsensi-dark dark:text-white">Houd vol! Je bent er bijna.</p>
+            <p className="font-bold text-konsensi-dark dark:text-white">{motivationalMessage}</p>
             <p className="text-xs text-konsensi-dark/60 dark:text-text-secondary mt-0.5">
               Volgende beloning: Rentevrije maand 🎉
             </p>
