@@ -708,6 +708,33 @@ export default function Dashboard() {
     return "Een goed begin is het halve werk!";
   })();
 
+  // Calculate dynamic user title based on progress
+  const userTitle = (() => {
+    // If no debt data
+    if (remainingDebt === 0 && totalPaidAllTime === 0) {
+      return "Financiële Starter";
+    }
+
+    // If debt is completely paid off
+    if (remainingDebt === 0 && totalPaidAllTime > 0) {
+      return "Schuldenvrij Held";
+    }
+
+    // Based on progress percentage
+    if (progressPercentage < 20) {
+      return "Schuld Tackler";
+    } else if (progressPercentage >= 20 && progressPercentage < 50) {
+      return "Budget Bewaker";
+    } else if (progressPercentage >= 50 && progressPercentage < 80) {
+      return "Schuld Sloper";
+    } else if (progressPercentage >= 80) {
+      return "Vrijheids Jager";
+    }
+
+    // Fallback
+    return "Schuld Sloper";
+  })();
+
   return (
     <div className="flex-grow max-w-[1600px] mx-auto w-full p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 bg-[#F8F8F8] dark:bg-[#0a0a0a] min-h-screen">
       {/* Left Column */}
@@ -720,6 +747,7 @@ export default function Dashboard() {
           totalXP={gamificationData.totalXP}
           badges={gamificationData.badges}
           motivationalMessage={motivationalMessage}
+          userTitle={userTitle}
         />
 
         {/* Stat Cards - Always show */}
