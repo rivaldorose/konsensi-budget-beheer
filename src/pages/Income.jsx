@@ -322,7 +322,7 @@ export default function IncomePage() {
                         </div>
 
                         {/* 2. JAAROVERZICHT CARD */}
-                        <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center gap-2">
                                     <div className="bg-[#b4ff7a] dark:bg-konsensi-bg-green p-1.5 rounded-[24px]">
@@ -416,7 +416,7 @@ export default function IncomePage() {
                         </div>
 
                         {/* 3. VAST INKOMEN LIST CARD */}
-                        <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <div className="flex justify-between items-center mb-6">
                                 <div>
                                     <h3 className="text-lg font-bold text-[#3D6456] dark:text-white flex items-center gap-2">
@@ -498,7 +498,7 @@ export default function IncomePage() {
                         </div>
 
                         {/* 4. EXTRA INKOMEN CARD */}
-                        <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <div className="mb-6">
                                 <h3 className="text-lg font-bold text-[#3D6456] dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[#b4ff7a] dark:text-konsensi-primary">redeem</span>
@@ -572,7 +572,7 @@ export default function IncomePage() {
                     {/* Right Column (35% on Desktop) */}
                     <div className="lg:col-span-4 flex flex-col gap-6">
                         {/* 1. Quick Stats / Calendar */}
-                        <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col gap-4" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] flex flex-col gap-4" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <h3 className="text-sm font-bold text-gray-400 dark:text-text-secondary uppercase tracking-wider">Selecteer periode</h3>
                             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
                                 <SelectTrigger className="w-full flex items-center justify-between px-4 py-3 rounded-[24px] bg-[#fafcf8] dark:bg-card-elevated border border-gray-200 dark:border-border-main text-[#3D6456] dark:text-white font-bold shadow-sm hover:border-[#b4ff7a] dark:hover:border-konsensi-primary transition-all">
@@ -615,7 +615,7 @@ export default function IncomePage() {
                         </div>
 
                         {/* 2. Scan Action Card */}
-                        <div className="bg-[#fafcf8] dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-[#2A3F36] flex flex-col items-center text-center" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-[#fafcf8] dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-[#2a2a2a] flex flex-col items-center text-center" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <div className="w-16 h-16 rounded-full bg-white dark:bg-card-elevated shadow-sm flex items-center justify-center mb-4 text-[#3D6456] dark:text-konsensi-primary">
                                 <span className="material-symbols-outlined text-3xl">document_scanner</span>
                             </div>
@@ -646,7 +646,7 @@ export default function IncomePage() {
                         </div>
 
                         {/* Status Summary Mini Card */}
-                        <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-5 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-5 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <h3 className="font-bold text-[#3D6456] dark:text-white mb-4 text-sm">Huidige Status</h3>
                             <div className="flex items-center gap-3">
                                 <div className="bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 p-2 rounded-[24px]">
