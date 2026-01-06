@@ -289,7 +289,7 @@ export default function MaandelijkseLastenPage() {
                 <div className="flex items-center gap-3">
                     <button 
                         onClick={() => setShowQuickAddModal(true)}
-                        className="group flex items-center justify-center h-11 px-5 rounded-[24px] border-2 border-gray-200 dark:border-[#2A3F36] bg-transparent text-[#1F2937] dark:text-white font-bold text-sm hover:border-primary hover:bg-white dark:hover:bg-[#1a2c26] transition-all"
+                        className="group flex items-center justify-center h-11 px-5 rounded-[24px] border-2 border-gray-200 dark:border-[#2a2a2a] bg-transparent text-[#1F2937] dark:text-white font-bold text-sm hover:border-primary hover:bg-white dark:hover:bg-[#2a2a2a] transition-all"
                     >
                         <span className="material-symbols-outlined text-[20px] mr-2 group-hover:scale-110 transition-transform text-primary">bolt</span>
                         Snel kiezen
@@ -318,7 +318,7 @@ export default function MaandelijkseLastenPage() {
             {/* Statistics Cards Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Card 1: Totaal per maand */}
-                <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
+                <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
                     <div className="absolute top-6 right-6 size-10 rounded-full bg-blue-50 dark:bg-blue-500/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                         <span className="material-symbols-outlined">payments</span>
                     </div>
@@ -327,7 +327,7 @@ export default function MaandelijkseLastenPage() {
                 </div>
 
                 {/* Card 2: Actieve lasten */}
-                <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
+                <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
                     <div className="absolute top-6 right-6 size-10 rounded-full bg-green-50 dark:bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                         <span className="material-symbols-outlined">assignment</span>
                     </div>
@@ -336,7 +336,7 @@ export default function MaandelijkseLastenPage() {
                 </div>
 
                 {/* Card 3: Nog te betalen */}
-                <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
+                <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
                     <div className="absolute top-6 right-6 size-10 rounded-full bg-orange-50 dark:bg-orange-500/20 flex items-center justify-center text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform">
                         <span className="material-symbols-outlined">trending_up</span>
                     </div>
@@ -346,7 +346,7 @@ export default function MaandelijkseLastenPage() {
             </div>
 
             {/* Year Overview Chart Card */}
-            <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-8 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] w-full">
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-8 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] w-full">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-[#1F2937] dark:text-white text-xl font-bold flex items-center gap-2">
                         📊 Overzicht Vaste Lasten
@@ -392,8 +392,8 @@ export default function MaandelijkseLastenPage() {
             {/* Expense Categories */}
             <div className="flex flex-col gap-6">
             {Object.entries(costsByCategory).map(([category, data]) => (
-                    <div key={category} className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36]">
-                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-[#2A3F36]">
+                    <div key={category} className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]">
+                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-[#2a2a2a]">
                             <h4 className="text-[#1F2937] dark:text-white text-lg font-bold flex items-center gap-2">
                                 {categoryEmojis[category] || '📦'} {categoryLabels[category] || category}
                             </h4>
@@ -431,7 +431,7 @@ export default function MaandelijkseLastenPage() {
                                                     e.stopPropagation();
                                                     handleEdit(cost);
                                                 }}
-                                                className="size-8 rounded-full bg-white dark:bg-[#1a2c26] border border-gray-200 dark:border-[#2A3F36] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] hover:text-[#1F2937] dark:hover:text-white"
+                                                className="size-8 rounded-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2a2a2a] text-[#6B7280] dark:text-[#9CA3AF] hover:text-[#1F2937] dark:hover:text-white"
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">edit</span>
                                             </button>
@@ -453,7 +453,7 @@ export default function MaandelijkseLastenPage() {
                 ))}
 
                 {activeCosts.length === 0 && (
-                    <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-12 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col items-center justify-center text-center">
+                    <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-12 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] flex flex-col items-center justify-center text-center">
                         <span className="material-symbols-outlined text-6xl text-[#9CA3AF] dark:text-[#6B7280] mb-4">receipt_long</span>
                         <p className="text-[#6B7280] dark:text-[#9CA3AF] text-lg font-medium mb-4">Nog geen vaste lasten toegevoegd</p>
                         <button 
