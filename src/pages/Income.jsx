@@ -236,21 +236,21 @@ export default function IncomePage() {
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                         <Link to={createPageUrl('WorkSchedule')}>
-                            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]">
+                            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-gray-600 dark:text-konsensi-primary hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]">
                                 <span className="material-symbols-outlined text-[18px]">calendar_month</span>
                                 <span>Werkschema</span>
                             </button>
                         </Link>
-                        <button 
+                        <button
                             onClick={() => setShowScanModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]"
+                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-gray-600 dark:text-konsensi-primary hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]"
                         >
                             <span className="material-symbols-outlined text-[18px]">photo_camera</span>
                             <span>Scan Afschrift</span>
                         </button>
-                        <button 
+                        <button
                             onClick={() => setShowWorkStatusModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]"
+                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-gray-600 dark:text-konsensi-primary hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]"
                         >
                             <span className="material-symbols-outlined text-[18px]">work</span>
                             <span>Status</span>
@@ -277,44 +277,44 @@ export default function IncomePage() {
                     {/* Left Column (65% on Desktop) */}
                     <div className="lg:col-span-8 flex flex-col gap-6">
                         {/* 1. SUMMARY CARD */}
-                        <div className="rounded-xl p-6 md:p-8 shadow-soft relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #b4ff7a 0%, #ecf4e6 100%)' }}>
-                            <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/20 rounded-full blur-3xl pointer-events-none"></div>
+                        <div className="rounded-xl p-6 md:p-8 shadow-soft relative overflow-hidden bg-gradient-to-br from-[#b4ff7a] to-[#ecf4e6] dark:from-[#10b981] dark:to-[#059669]">
+                            <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/20 dark:bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 gap-6">
                                 {/* Left Section */}
                                 <div className="flex flex-col gap-4 flex-1">
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
-                                            <div className="p-1 rounded-full bg-[#3D6456]/10">
-                                                <span className="material-symbols-outlined text-[#3D6456] text-[16px]">bolt</span>
+                                            <div className="p-1 rounded-full bg-[#3D6456]/10 dark:bg-white/15 dark:backdrop-blur-md dark:border dark:border-white/10">
+                                                <span className="material-symbols-outlined text-[#3D6456] dark:text-white text-[16px]">bolt</span>
                                             </div>
-                                            <span className="text-sm font-medium text-[#3D6456]/80">Vast inkomen (per maand)</span>
+                                            <span className="text-sm font-medium text-[#3D6456]/80 dark:text-white/90">Vast inkomen (per maand)</span>
                                         </div>
-                                        <span className="text-3xl font-extrabold text-[#3D6456]">{formatCurrency(totalFixed)}</span>
+                                        <span className="text-3xl font-extrabold text-[#3D6456] dark:text-white">{formatCurrency(totalFixed)}</span>
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
-                                            <div className="p-1 rounded-full bg-[#3D6456]/10">
-                                                <span className="material-symbols-outlined text-[#3D6456] text-[16px]">redeem</span>
+                                            <div className="p-1 rounded-full bg-[#3D6456]/10 dark:bg-white/15 dark:backdrop-blur-md dark:border dark:border-white/10">
+                                                <span className="material-symbols-outlined text-[#3D6456] dark:text-white text-[16px]">redeem</span>
                                             </div>
-                                            <span className="text-sm font-medium text-[#3D6456]/80">Extra inkomen deze maand</span>
+                                            <span className="text-sm font-medium text-[#3D6456]/80 dark:text-white/90">Extra inkomen deze maand</span>
                                         </div>
-                                        <span className="text-xl font-bold text-[#3D6456]/70">{formatCurrency(totalExtra)}</span>
+                                        <span className="text-xl font-bold text-[#3D6456]/70 dark:text-white/80">{formatCurrency(totalExtra)}</span>
                                     </div>
                                 </div>
                                 {/* Right Section (Total) */}
                                 <div className="flex flex-col items-end">
-                                    <span className="text-xs font-bold tracking-wider text-[#3D6456] uppercase mb-1 opacity-70">
+                                    <span className="text-xs font-bold tracking-wider text-[#3D6456] dark:text-white uppercase mb-1 opacity-70">
                                         Totaal {currentMonthLabel}
                                     </span>
-                                    <span className="text-5xl font-extrabold text-[#3D6456] tracking-tight">{formatCurrency(totalMonth)}</span>
+                                    <span className="text-5xl font-extrabold text-[#3D6456] dark:text-white tracking-tight">{formatCurrency(totalMonth)}</span>
                                 </div>
                             </div>
                             {/* Info Banner */}
-                            <div className="mt-6 bg-[#3D6456]/5 rounded-lg p-4 flex items-start gap-3 border border-[#3D6456]/10 relative z-10">
-                                <span className="material-symbols-outlined text-[#3D6456]">lightbulb</span>
+                            <div className="mt-6 bg-[#3D6456]/5 dark:bg-white/10 rounded-lg p-4 flex items-start gap-3 border border-[#3D6456]/10 dark:border-white/10 relative z-10">
+                                <span className="material-symbols-outlined text-[#3D6456] dark:text-white">lightbulb</span>
                                 <div>
-                                    <h4 className="font-bold text-[#3D6456] text-sm">Je vaste maandinkomen: {formatCurrency(totalFixed)}</h4>
-                                    <p className="text-xs text-[#3D6456]/80 mt-1 leading-relaxed">
+                                    <h4 className="font-bold text-[#3D6456] dark:text-white text-sm">Je vaste maandinkomen: {formatCurrency(totalFixed)}</h4>
+                                    <p className="text-xs text-[#3D6456]/80 dark:text-white/80 mt-1 leading-relaxed">
                                         Dit is het bedrag dat je maandelijks ontvangt op basis van je huidige instellingen. Wijzigingen in je werkschema worden hier automatisch verwerkt.
                                     </p>
                                 </div>
