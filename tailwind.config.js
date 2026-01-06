@@ -15,7 +15,7 @@ module.exports = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
-  			primary: '#10b77f',
+  			primary: '#10b981',
   			'primary-hover': '#34d399',
   			'primary-active': '#059669',
   			'primary-dark': '#059669',
