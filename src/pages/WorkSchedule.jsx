@@ -6,6 +6,8 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday
 import { nl } from 'date-fns/locale';
 import WorkDayModal from '@/components/workdays/WorkDayModal';
 import PayslipScanModal from '@/components/workdays/PayslipScanModal';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
 export default function WorkSchedule() {
   const [user, setUser] = useState(null);
@@ -17,25 +19,21 @@ export default function WorkSchedule() {
   const [employers, setEmployers] = useState([]);
   const [showPayslipModal, setShowPayslipModal] = useState(false);
   const [showEmployersModal, setShowEmployersModal] = useState(false);
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('theme');
-      if (saved) return saved === 'dark';
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
-  });
   const { toast } = useToast();
 
+  // Check dark mode from localStorage (managed by Layout component)
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [darkMode]);
+    const checkDarkMode = () => {
+      const theme = localStorage.getItem('theme');
+      const isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    };
+    checkDarkMode();
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -117,7 +115,7 @@ export default function WorkSchedule() {
 
   const handleDeleteWorkDay = async (id) => {
     if (!window.confirm('Weet je zeker dat je deze werkdag wilt verwijderen?')) return;
-    
+
     try {
       await WorkDay.delete(id);
       toast({ title: '✅ Verwijderd', description: 'Werkdag verwijderd' });
@@ -126,10 +124,6 @@ export default function WorkSchedule() {
       console.error('Error deleting work day:', error);
       toast({ title: 'Fout', description: 'Kon niet verwijderen', variant: 'destructive' });
     }
-  };
-
-  const toggleTheme = () => {
-    setDarkMode(!darkMode);
   };
 
   // Statistieken berekenen
@@ -193,30 +187,18 @@ export default function WorkSchedule() {
 
   return (
     <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white font-body antialiased">
-      {/* Theme Toggle */}
-      <div className="fixed top-6 right-6 lg:top-8 lg:right-8 z-20">
-        <label aria-label="Switch theme" className="relative inline-flex items-center cursor-pointer select-none">
-          <input
-            className="sr-only"
-            id="theme-toggle"
-            type="checkbox"
-            checked={darkMode}
-            onChange={toggleTheme}
-          />
-          <div className="w-16 h-9 bg-gray-100 dark:bg-gray-800 rounded-full shadow-inner flex items-center justify-between px-1.5 transition-colors duration-300 border border-gray-200 dark:border-gray-700">
-            <span className={`material-symbols-outlined text-[20px] z-10 transition-colors duration-300 ${darkMode ? 'text-gray-400' : 'text-amber-500'}`}>
-              light_mode
-            </span>
-            <span className={`material-symbols-outlined text-[20px] z-10 transition-colors duration-300 ${darkMode ? 'text-brand-dark' : 'text-gray-400'}`}>
-              dark_mode
-            </span>
-            <div className={`toggle-circle absolute left-1 top-1 bg-white dark:bg-gray-700 w-7 h-7 rounded-full shadow-md transition-transform duration-300 border border-gray-100 dark:border-gray-600 ${darkMode ? 'translate-x-7' : ''}`}></div>
-          </div>
-        </label>
-      </div>
-
       {/* Main Content */}
       <main className="flex-1 w-full max-w-[1400px] mx-auto px-4 md:px-8 lg:px-10 py-8 flex flex-col gap-8">
+        {/* Back Button & Header */}
+        <div className="flex items-center gap-4">
+          <Link to={createPageUrl('Income')}>
+            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-border-base bg-white dark:bg-bg-card hover:bg-gray-50 dark:hover:bg-bg-card-elevated transition-all text-sm font-medium text-gray-600 dark:text-text-secondary">
+              <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+              Terug naar Inkomen
+            </button>
+          </Link>
+        </div>
+
         {/* Header & Month Selector */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="flex flex-col gap-1">
