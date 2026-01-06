@@ -21,6 +21,7 @@ import GamificationStats from "@/components/dashboard/GamificationStats";
 import DashboardFooter from "@/components/dashboard/DashboardFooter";
 import { gamificationService } from "@/services/gamificationService";
 import { dashboardService } from "@/services/dashboardService";
+import { getDailyQuote } from "@/utils/dailyQuotes";
 
 const createPageUrl = (pageName) => `/${pageName.toLowerCase()}`;
 
@@ -496,15 +497,17 @@ export default function Dashboard() {
     if (!user?.id) return;
     
     try {
-      const [levelData, badges, motivation, weekGoal] = await Promise.all([
+      const [levelData, badges, weekGoal] = await Promise.all([
         gamificationService.getUserLevel(user.id),
         gamificationService.getUserBadges(user.id),
-        gamificationService.getDailyMotivation(language || 'nl'),
         gamificationService.getWeekGoal(user.id),
       ]);
-      
+
+      // Get daily quote from local function (no API call needed)
+      const dailyQuote = getDailyQuote();
+
       // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:504',message:'gamification data loaded',data:{hasLevelData:!!levelData,hasBadges:!!badges,hasMotivation:!!motivation,hasWeekGoal:!!weekGoal},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:504',message:'gamification data loaded',data:{hasLevelData:!!levelData,hasBadges:!!badges,dailyQuote,hasWeekGoal:!!weekGoal},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
       // #endregion
 
       setGamificationData({
@@ -512,7 +515,7 @@ export default function Dashboard() {
         currentXP: levelData?.current_xp || 0,
         totalXP: levelData?.xp_to_next_level || 100,
         badges: (badges || []).map(b => b?.badge_type).filter(Boolean),
-        dailyMotivation: motivation?.quote || "",
+        dailyMotivation: dailyQuote,
         weekGoalPercentage: weekGoal?.percentage || 0,
       });
     } catch (error) {

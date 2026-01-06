@@ -12,9 +12,6 @@ export default function DashboardFooter({
       <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         {/* Daily Motivation */}
         <div className="flex items-center gap-4 w-full sm:w-auto">
-          <div className="size-12 bg-primary/20 dark:bg-konsensi-bg-green rounded-xl hidden md:flex items-center justify-center text-primary dark:text-konsensi-primary border border-transparent dark:border-konsensi-primary/20">
-            <span className="material-symbols-outlined">format_quote</span>
-          </div>
           <div>
             <p className="text-xs font-bold text-primary dark:text-konsensi-primary uppercase tracking-wider mb-0.5">
               Daily Motivation
