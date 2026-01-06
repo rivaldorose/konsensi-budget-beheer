@@ -125,23 +125,6 @@ export default function SecuritySettings() {
       <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a]">
       <main className="flex-1 flex justify-center py-8 px-4 sm:px-6 md:px-8">
         <div className="w-full max-w-[1400px] flex flex-col gap-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary dark:text-primary text-3xl">settings</span>
-                <h1 className="text-[#0d1b17] dark:text-white text-3xl md:text-4xl font-black tracking-tight">Instellingen</h1>
-              </div>
-              <p className="text-[#6B7280] dark:text-[#9CA3AF] text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
-            </div>
-            <button
-              className="flex items-center gap-2 px-5 py-2 rounded-full border border-[#E5E7EB] dark:border-[#2a2a2a] bg-white dark:bg-[#1a1a1a] text-[#0d1b17] dark:text-white text-sm font-bold hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors shadow-sm"
-              onClick={() => window.location.href = createPageUrl('HelpSupport')}
-            >
-              <span className="material-symbols-outlined text-[20px]">help_outline</span>
-              <span>Hulp</span>
-            </button>
-          </div>
-
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Sidebar */}
             <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2a2a2a] p-4 lg:p-6 flex flex-col sticky top-24">
