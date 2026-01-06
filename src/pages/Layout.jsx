@@ -930,7 +930,7 @@ function LayoutWithProvider({ children, currentPageName }) {
 
       <div className="flex-grow flex flex-col w-full">
         {/* Desktop Header - New Konsensi Design */}
-        <nav className="w-full bg-[#0a0a0a] dark:bg-[#0a0a0a] h-16 px-8 flex items-center justify-center sticky top-0 z-50 border-b border-[#2a2a2a] dark:border-[#2a2a2a]">
+        <nav className="w-full bg-konsensi-dark dark:bg-[#0a0a0a] h-16 px-8 flex items-center justify-center sticky top-0 z-50 border-b border-konsensi-dark/50 dark:border-[#2a2a2a] transition-colors duration-200">
           <div className="w-full max-w-[1400px] flex items-center justify-between">
             {/* Logo & Brand */}
             <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3 text-white">
@@ -1121,7 +1121,7 @@ function LayoutWithProvider({ children, currentPageName }) {
         </nav>
 
         {/* Mobile Header - New Konsensi Design */}
-        <nav className="md:hidden w-full bg-[#0a0a0a] dark:bg-[#0a0a0a] h-16 px-4 flex items-center justify-between sticky top-0 z-50 border-b border-[#2a2a2a] dark:border-[#2a2a2a]">
+        <nav className="md:hidden w-full bg-konsensi-dark dark:bg-[#0a0a0a] h-16 px-4 flex items-center justify-between sticky top-0 z-50 border-b border-konsensi-dark/50 dark:border-[#2a2a2a] transition-colors duration-200">
           <Link to={createPageUrl('Dashboard')} className="flex items-center gap-2 text-white">
             <img 
               src="/logo%20header.png" 
