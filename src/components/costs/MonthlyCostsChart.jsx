@@ -114,16 +114,16 @@ const MonthlyCostsChart = ({ allMonthlyCosts = [], allUnexpectedCosts = [] }) =>
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
-          <p className="font-semibold text-gray-900 mb-2">{payload[0].payload.fullDate}</p>
+        <div className="bg-white dark:bg-[#1a1a1a] p-3 rounded-lg shadow-lg border border-gray-200 dark:border-[#2a2a2a]">
+          <p className="font-semibold text-gray-900 dark:text-white mb-2">{payload[0].payload.fullDate}</p>
           <div className="space-y-1">
-            <p className="text-sm text-blue-600">
+            <p className="text-sm text-blue-600 dark:text-[#3b82f6]">
               Vast: {formatCurrency(payload[0].payload.vast)}
             </p>
-            <p className="text-sm text-orange-600">
+            <p className="text-sm text-orange-600 dark:text-[#f59e0b]">
               Onverwacht: {formatCurrency(payload[0].payload.onverwacht)}
             </p>
-            <p className="text-sm font-bold text-gray-900">
+            <p className="text-sm font-bold text-gray-900 dark:text-white">
               Totaal: {formatCurrency(payload[0].payload.totaal)}
             </p>
           </div>
@@ -133,10 +133,13 @@ const MonthlyCostsChart = ({ allMonthlyCosts = [], allUnexpectedCosts = [] }) =>
     return null;
   };
 
+  // Detect dark mode
+  const isDarkMode = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
   return (
-    <div className="bg-white dark:bg-transparent rounded-xl p-5">
+    <div className="bg-transparent rounded-xl">
       {/* Grafiek */}
-      <div style={{ width: '100%', height: 300 }} className="bg-white dark:bg-white rounded-xl p-4">
+      <div style={{ width: '100%', height: 300 }} className="bg-white dark:bg-[#0a0a0a] rounded-xl p-4">
         <ResponsiveContainer>
           <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
             <defs>
@@ -149,16 +152,16 @@ const MonthlyCostsChart = ({ allMonthlyCosts = [], allUnexpectedCosts = [] }) =>
                 <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-[#2a2a2a]" />
             <XAxis
               dataKey="month"
-              stroke="#9ca3af"
+              className="fill-gray-600 dark:fill-[#a1a1a1]"
               fontSize={12}
               tickLine={false}
               axisLine={false}
             />
             <YAxis
-              stroke="#9ca3af"
+              className="fill-gray-600 dark:fill-[#a1a1a1]"
               fontSize={12}
               tickLine={false}
               axisLine={false}
@@ -191,7 +194,7 @@ const MonthlyCostsChart = ({ allMonthlyCosts = [], allUnexpectedCosts = [] }) =>
         </ResponsiveContainer>
       </div>
 
-      <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-4">
+      <p className="text-xs text-gray-500 dark:text-[#a1a1a1] text-center mt-4">
         Gebaseerd op de laatste 12 maanden
       </p>
     </div>
