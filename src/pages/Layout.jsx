@@ -753,7 +753,7 @@ function LayoutWithProvider({ children, currentPageName }) {
   const handleLogout = React.useCallback(async () => {
     try {
       await User.logout();
-      navigate(createPageUrl('Onboarding'));
+      navigate(createPageUrl('Login'));
     } catch (error) {
       console.error("Error logging out:", error);
     }
