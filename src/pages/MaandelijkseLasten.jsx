@@ -480,25 +480,25 @@ export default function MaandelijkseLastenPage() {
 
             {/* Add/Edit Modal */}
             <Dialog open={showFormModal} onOpenChange={handleFormClose}>
-                <DialogContent className="sm:max-w-[600px] rounded-3xl p-0">
-                    <form className="bg-white rounded-3xl overflow-hidden flex flex-col" onSubmit={handleFormSubmit}>
-                        <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100">
-                            <h3 className="text-xl font-display font-bold text-primary-dark">
+                <DialogContent className="sm:max-w-[600px] rounded-3xl p-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]">
+                    <form className="bg-white dark:bg-[#1a1a1a] rounded-3xl overflow-hidden flex flex-col" onSubmit={handleFormSubmit}>
+                        <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100 dark:border-[#2a2a2a]">
+                            <h3 className="text-xl font-display font-bold text-primary-dark dark:text-white">
                                 {editingCost ? 'Last bewerken' : 'Nieuwe uitgave toevoegen'}
                             </h3>
-                            <button 
+                            <button
                                 type="button"
                                 onClick={handleFormClose}
-                                className="size-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
+                                className="size-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-[#2a2a2a] text-gray-500 dark:text-[#9CA3AF] transition-colors"
                             >
                                 <span className="material-symbols-outlined">close</span>
                             </button>
                         </div>
                         <div className="p-8 flex flex-col gap-6">
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-bold text-gray-700">Naam</label>
+                                <label className="text-sm font-bold text-gray-700 dark:text-white">Naam</label>
                                 <input
-                                    className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                                    className="w-full h-12 rounded-[24px] border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-900 dark:text-white"
                                     placeholder="Bijv. Netflix"
                                     type="text"
                                     value={formData.name}
@@ -508,9 +508,9 @@ export default function MaandelijkseLastenPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-bold text-gray-700">Bedrag (€)</label>
+                                    <label className="text-sm font-bold text-gray-700 dark:text-white">Bedrag (€)</label>
                                     <input
-                                        className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                                        className="w-full h-12 rounded-[24px] border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-900 dark:text-white"
                                         placeholder="0.00"
                                         type="number"
                                         step="0.01"
@@ -520,9 +520,9 @@ export default function MaandelijkseLastenPage() {
                                     />
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-bold text-gray-700">Betaaldag</label>
+                                    <label className="text-sm font-bold text-gray-700 dark:text-white">Betaaldag</label>
                                     <input
-                                        className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                                        className="w-full h-12 rounded-[24px] border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-900 dark:text-white"
                                         max="31"
                                         min="1"
                                         placeholder="DD"
@@ -534,12 +534,12 @@ export default function MaandelijkseLastenPage() {
                                 </div>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-bold text-gray-700">Categorie</label>
+                                <label className="text-sm font-bold text-gray-700 dark:text-white">Categorie</label>
                                 <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                                    <SelectTrigger className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-700">
+                                    <SelectTrigger className="w-full h-12 rounded-[24px] border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-700 dark:text-white">
                                         <SelectValue placeholder="Selecteer categorie" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]">
                                         <SelectItem value="wonen">🏠 Wonen</SelectItem>
                                         <SelectItem value="utilities">⚡ Nutsvoorzieningen</SelectItem>
                                         <SelectItem value="verzekeringen">🛡️ Verzekeringen</SelectItem>
@@ -553,20 +553,20 @@ export default function MaandelijkseLastenPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-bold text-gray-700">Startdatum</label>
+                                    <label className="text-sm font-bold text-gray-700 dark:text-white">Startdatum</label>
                                     <input
-                                        className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-500"
+                                        className="w-full h-12 rounded-[24px] border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-500 dark:text-[#a1a1a1]"
                                         type="date"
                                         value={formData.start_date}
                                         onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
                                     />
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-bold text-gray-700">
-                                        Einddatum <span className="font-normal text-gray-400">(optioneel)</span>
+                                    <label className="text-sm font-bold text-gray-700 dark:text-white">
+                                        Einddatum <span className="font-normal text-gray-400 dark:text-[#6B7280]">(optioneel)</span>
                                     </label>
                                     <input
-                                        className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-500"
+                                        className="w-full h-12 rounded-[24px] border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-500 dark:text-[#a1a1a1]"
                                         type="date"
                                         value={formData.end_date}
                                         onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
@@ -574,17 +574,17 @@ export default function MaandelijkseLastenPage() {
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-gray-50 px-8 py-5 flex justify-end gap-3 border-t border-gray-100">
+                        <div className="bg-gray-50 dark:bg-[#0a0a0a] px-8 py-5 flex justify-end gap-3 border-t border-gray-100 dark:border-[#2a2a2a]">
                             <button
                                 type="button"
                                 onClick={handleFormClose}
-                                className="px-6 py-2.5 rounded-[24px] border border-gray-300 text-gray-700 font-bold hover:bg-white hover:shadow-sm transition-all text-sm"
+                                className="px-6 py-2.5 rounded-[24px] border border-gray-300 dark:border-[#2a2a2a] text-gray-700 dark:text-white font-bold hover:bg-white dark:hover:bg-[#1a1a1a] hover:shadow-sm transition-all text-sm"
                             >
                                 Annuleren
                             </button>
                             <button
                                 type="submit"
-                                className="px-6 py-2.5 rounded-[24px] bg-primary-dark text-white font-bold hover:bg-opacity-90 shadow-soft hover:shadow-lg transition-all text-sm"
+                                className="px-6 py-2.5 rounded-[24px] bg-primary-dark dark:bg-primary text-white dark:text-[#0a0a0a] font-bold hover:bg-opacity-90 shadow-soft hover:shadow-lg transition-all text-sm"
                             >
                                 {editingCost ? 'Opslaan' : 'Toevoegen'}
                             </button>
@@ -595,20 +595,20 @@ export default function MaandelijkseLastenPage() {
 
             {/* Quick Add Modal */}
             <Dialog open={showQuickAddModal} onOpenChange={setShowQuickAddModal}>
-                <DialogContent className="sm:max-w-[600px] rounded-3xl p-0">
-                    <form className="bg-white rounded-3xl overflow-hidden flex flex-col">
-                        <div className="flex items-center gap-4 px-8 py-6 border-b border-gray-100">
+                <DialogContent className="sm:max-w-[600px] rounded-3xl p-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]">
+                    <form className="bg-white dark:bg-[#1a1a1a] rounded-3xl overflow-hidden flex flex-col">
+                        <div className="flex items-center gap-4 px-8 py-6 border-b border-gray-100 dark:border-[#2a2a2a]">
                             <button
                                 type="button"
                                 onClick={() => setShowQuickAddModal(false)}
-                                className="text-gray-400 hover:text-primary-dark transition-colors"
+                                className="text-gray-400 dark:text-[#9CA3AF] hover:text-primary-dark dark:hover:text-primary transition-colors"
                             >
                                 <span className="material-symbols-outlined">arrow_back</span>
                             </button>
-                            <h3 className="text-xl font-display font-bold text-primary-dark">Snel vaste lasten toevoegen</h3>
+                            <h3 className="text-xl font-display font-bold text-primary-dark dark:text-white">Snel vaste lasten toevoegen</h3>
                         </div>
                         <div className="p-8">
-                            <p className="text-gray-500 mb-6 text-sm">Kies een categorie om direct veelvoorkomende vaste lasten toe te voegen.</p>
+                            <p className="text-gray-500 dark:text-[#a1a1a1] mb-6 text-sm">Kies een categorie om direct veelvoorkomende vaste lasten toe te voegen.</p>
                     <CommonCostsSelector 
                         existingCosts={costs}
                         onSelect={async (selectedCosts) => {
