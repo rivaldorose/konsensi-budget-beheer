@@ -482,17 +482,10 @@ export default function MaandelijkseLastenPage() {
             <Dialog open={showFormModal} onOpenChange={handleFormClose}>
                 <DialogContent className="sm:max-w-[600px] rounded-3xl p-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]">
                     <form className="bg-white dark:bg-[#1a1a1a] rounded-3xl overflow-hidden flex flex-col" onSubmit={handleFormSubmit}>
-                        <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100 dark:border-[#2a2a2a]">
+                        <div className="px-8 py-6 border-b border-gray-100 dark:border-[#2a2a2a]">
                             <h3 className="text-xl font-display font-bold text-primary-dark dark:text-white">
                                 {editingCost ? 'Last bewerken' : 'Nieuwe uitgave toevoegen'}
                             </h3>
-                            <button
-                                type="button"
-                                onClick={handleFormClose}
-                                className="size-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-[#2a2a2a] text-gray-500 dark:text-[#9CA3AF] transition-colors"
-                            >
-                                <span className="material-symbols-outlined">close</span>
-                            </button>
                         </div>
                         <div className="p-8 flex flex-col gap-6">
                             <div className="flex flex-col gap-2">
