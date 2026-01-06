@@ -75,15 +75,32 @@ export default function Settings() {
 
   const handleSave = async () => {
     try {
-      await User.updateMyUserData(formData);
+      // Validate form data
+      if (!formData.voornaam || formData.voornaam.trim() === '') {
+        toast({
+          variant: 'destructive',
+          title: 'Naam is verplicht'
+        });
+        return;
+      }
+
+      // Prepare data - only send fields that exist
+      const updateData = {};
+      if (formData.voornaam) updateData.voornaam = formData.voornaam.trim();
+      if (formData.achternaam) updateData.achternaam = formData.achternaam.trim();
+      if (formData.telefoonnummer) updateData.telefoonnummer = formData.telefoonnummer.trim();
+      if (formData.adres) updateData.adres = formData.adres.trim();
+
+      await User.updateMyUserData(updateData);
       toast({ title: 'Profiel succesvol bijgewerkt!' });
       setEditing(false);
-      loadUser();
+      await loadUser();
     } catch (error) {
       console.error("Error updating user:", error);
       toast({
         variant: 'destructive',
-        title: 'Fout bij bijwerken van profiel'
+        title: 'Fout bij bijwerken van profiel',
+        description: error.message || 'Probeer het opnieuw'
       });
     }
   };
@@ -159,7 +176,7 @@ export default function Settings() {
               <p className="text-[#6B7280] dark:text-[#9CA3AF] text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
             </div>
             <button 
-              className="flex items-center gap-2 px-5 py-2 rounded-full border border-[#E5E7EB] dark:border-[#2A3F36] bg-white dark:bg-[#1a2c26] text-[#0d1b17] dark:text-white text-sm font-bold hover:bg-gray-50 dark:hover:bg-[#2A3F36] transition-colors shadow-sm"
+              className="flex items-center gap-2 px-5 py-2 rounded-full border border-[#E5E7EB] dark:border-[#2a2a2a] bg-white dark:bg-[#1a1a1a] text-[#0d1b17] dark:text-white text-sm font-bold hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors shadow-sm"
               onClick={() => window.location.href = createPageUrl('HelpSupport')}
             >
               <span className="material-symbols-outlined text-[20px]">help_outline</span>
@@ -169,13 +186,13 @@ export default function Settings() {
 
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Sidebar Navigation */}
-            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a2c26] rounded-[24px] lg:rounded-[24px] shadow-soft dark:shadow-soft border border-[#E5E7EB] dark:border-[#2A3F36] p-4 lg:p-6 flex flex-col sticky top-24">
+            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] lg:rounded-[24px] shadow-soft dark:shadow-soft border border-[#E5E7EB] dark:border-[#2a2a2a] p-4 lg:p-6 flex flex-col sticky top-24">
               <nav className="flex flex-col gap-2">
-                <a 
+                <a
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
-                    isActiveRoute('Settings') 
-                      ? 'bg-primary/10 text-primary' 
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
+                    isActiveRoute('Settings')
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('Settings')}
                 >
@@ -187,8 +204,8 @@ export default function Settings() {
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('SecuritySettings')
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('SecuritySettings')}
                 >
@@ -200,8 +217,8 @@ export default function Settings() {
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('NotificationSettings')
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('NotificationSettings')}
                 >
@@ -213,8 +230,8 @@ export default function Settings() {
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('DisplaySettings')
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('DisplaySettings')}
                 >
@@ -227,7 +244,7 @@ export default function Settings() {
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('VTLBSettings')
                       ? 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('VTLBSettings')}
                 >
@@ -239,8 +256,8 @@ export default function Settings() {
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('Privacy')
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('Privacy')}
                 >
@@ -256,7 +273,7 @@ export default function Settings() {
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('HelpSupport')
                       ? 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('HelpSupport')}
                 >
@@ -269,7 +286,7 @@ export default function Settings() {
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('FAQSettings')
                       ? 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   href={createPageUrl('FAQSettings')}
                 >
@@ -279,14 +296,14 @@ export default function Settings() {
                   <span className={`text-sm ${isActiveRoute('FAQSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Veelgestelde Vragen</span>
                 </a>
                 <a 
-                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white transition-all"
+                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white transition-all"
                   href={createPageUrl('TermsOfService')}
                 >
                   <span className="material-symbols-outlined">description</span>
                   <span className="font-medium text-sm group-hover:font-semibold">Algemene Voorwaarden</span>
                 </a>
                 <a 
-                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:text-primary dark:hover:text-white transition-all"
+                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white transition-all"
                   href={createPageUrl('PrivacyPolicy')}
                 >
                   <span className="material-symbols-outlined">policy</span>
@@ -296,8 +313,8 @@ export default function Settings() {
             </aside>
 
             {/* Main Content Section */}
-            <section className="w-full lg:w-3/4 bg-white dark:bg-[#1a2c26] rounded-[24px] lg:rounded-[24px] shadow-soft dark:shadow-soft border border-[#E5E7EB] dark:border-[#2A3F36] p-6 md:p-8 lg:p-10">
-                <div className="flex flex-col border-b border-[#E5E7EB] dark:border-[#2A3F36] pb-6 mb-8">
+            <section className="w-full lg:w-3/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] lg:rounded-[24px] shadow-soft dark:shadow-soft border border-[#E5E7EB] dark:border-[#2a2a2a] p-6 md:p-8 lg:p-10">
+                <div className="flex flex-col border-b border-[#E5E7EB] dark:border-[#2a2a2a] pb-6 mb-8">
                 <h2 className="text-[#0d1b17] dark:text-white text-2xl font-bold">Mijn Profiel</h2>
                 <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm md:text-base mt-1">Update je persoonlijke informatie en beheer hoe anderen je zien.</p>
               </div>
@@ -306,7 +323,7 @@ export default function Settings() {
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-10">
                 <div className="relative group cursor-pointer">
                   <div 
-                    className="size-24 md:size-32 rounded-full bg-cover bg-center border-4 border-[#E5E7EB] dark:border-[#2A3F36] shadow-sm"
+                    className="size-24 md:size-32 rounded-full bg-cover bg-center border-4 border-[#E5E7EB] dark:border-[#2a2a2a] shadow-sm"
                     style={{
                       backgroundImage: user?.profielfoto_url ? `url(${user.profielfoto_url})` : 'none',
                       backgroundColor: user?.profielfoto_url ? 'transparent' : '#8B5CF6'
@@ -338,7 +355,7 @@ export default function Settings() {
                   <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm text-center sm:text-left max-w-xs">Upload een nieuwe foto. JPG, GIF of PNG formaat. Maximaal 2MB.</p>
                   <div className="flex gap-3 mt-1">
                     <button 
-                      className="px-5 py-2.5 bg-gray-100 dark:bg-[#2A3F36] hover:bg-gray-200 dark:hover:bg-[#2A3F36] text-[#0d1b17] dark:text-white rounded-full text-sm font-bold transition-colors"
+                      className="px-5 py-2.5 bg-gray-100 dark:bg-[#2A3F36] hover:bg-gray-200 dark:hover:bg-[#2a2a2a] text-[#0d1b17] dark:text-white rounded-full text-sm font-bold transition-colors"
                 onClick={() => document.getElementById('photo-upload').click()}
                 disabled={uploading}
               >
@@ -373,7 +390,7 @@ export default function Settings() {
                         <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">person</span>
                       </div>
                       <input 
-                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2A3F36] focus:border-primary focus:ring focus:ring-primary/20 bg-gray-50 dark:bg-[#2A3F36] text-[#0d1b17] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#9CA3AF] font-medium transition-all"
+                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2a2a2a] focus:border-primary focus:ring focus:ring-primary/20 bg-gray-50 dark:bg-[#2A3F36] text-[#0d1b17] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#9CA3AF] font-medium transition-all"
                         placeholder="Jouw naam" 
                         type="text" 
                     value={formData.voornaam}
@@ -389,7 +406,7 @@ export default function Settings() {
                         <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">mail</span>
                 </div>
                       <input 
-                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2A3F36] focus:border-primary focus:ring focus:ring-primary/20 bg-gray-50 dark:bg-[#2A3F36] text-[#0d1b17] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#9CA3AF] font-medium transition-all"
+                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2a2a2a] focus:border-primary focus:ring focus:ring-primary/20 bg-gray-50 dark:bg-[#2A3F36] text-[#0d1b17] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#9CA3AF] font-medium transition-all"
                         placeholder="jouw@email.nl" 
                     type="email"
                     value={formData.email}
@@ -406,7 +423,7 @@ export default function Settings() {
                         <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">call</span>
                       </div>
                       <input 
-                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2A3F36] focus:border-primary focus:ring focus:ring-primary/20 bg-gray-50 dark:bg-[#2A3F36] text-[#0d1b17] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#9CA3AF] font-medium transition-all"
+                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2a2a2a] focus:border-primary focus:ring focus:ring-primary/20 bg-gray-50 dark:bg-[#2A3F36] text-[#0d1b17] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#9CA3AF] font-medium transition-all"
                         placeholder="+31 6 ..." 
                         type="tel" 
                         value={formData.telefoonnummer}
@@ -422,7 +439,7 @@ export default function Settings() {
                         <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">home</span>
                       </div>
                       <input 
-                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2A3F36] focus:border-primary focus:ring focus:ring-primary/20 bg-gray-50 dark:bg-[#2A3F36] text-[#0d1b17] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#9CA3AF] font-medium transition-all"
+                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2a2a2a] focus:border-primary focus:ring focus:ring-primary/20 bg-gray-50 dark:bg-[#2A3F36] text-[#0d1b17] dark:text-white placeholder-[#9CA3AF] dark:placeholder-[#9CA3AF] font-medium transition-all"
                         placeholder="Straat en huisnummer" 
                         type="text" 
                     value={formData.adres}
@@ -440,14 +457,14 @@ export default function Settings() {
                         <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 text-[20px]">lock</span>
                       </div>
                       <input 
-                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2A3F36] bg-gray-50 dark:bg-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] font-medium cursor-not-allowed"
+                        className="w-full pl-11 pr-4 py-3 rounded-full border border-[#E5E7EB] dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] font-medium cursor-not-allowed"
                         disabled 
                         placeholder="********" 
                         type="password" 
                   />
                 </div>
           <button
-                      className="px-6 py-3 border border-[#E5E7EB] dark:border-[#2A3F36] rounded-full font-bold text-[#0d1b17] dark:text-white hover:bg-gray-50 dark:hover:bg-[#2A3F36] hover:border-[#D1D5DB] dark:hover:border-[#3A4F46] transition-colors whitespace-nowrap"
+                      className="px-6 py-3 border border-[#E5E7EB] dark:border-[#2a2a2a] rounded-full font-bold text-[#0d1b17] dark:text-white hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:border-[#D1D5DB] dark:hover:border-[#3A4F46] transition-colors whitespace-nowrap"
                       type="button"
             onClick={() => window.location.href = createPageUrl('SecuritySettings')}
                     >
@@ -455,7 +472,7 @@ export default function Settings() {
           </button>
               </div>
             </div>
-                <div className="flex items-center justify-end pt-8 mt-4 border-t border-[#E5E7EB] dark:border-[#2A3F36]">
+                <div className="flex items-center justify-end pt-8 mt-4 border-t border-[#E5E7EB] dark:border-[#2a2a2a]">
                   {editing ? (
                     <>
           <button
