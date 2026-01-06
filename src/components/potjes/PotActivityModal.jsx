@@ -18,33 +18,60 @@ export default function PotActivityModal({ pot, isOpen, onClose, spent, onTransa
 
   const loadTransactions = async () => {
     if (!pot || !isOpen) return;
-    
+
     setLoading(true);
     try {
       const user = await User.me();
+      if (!user || !user.id) {
+        throw new Error('User not found');
+      }
+
       const allTransactions = await Transaction.filter({ user_id: user.id });
+
+      // Ensure allTransactions is an array
+      if (!Array.isArray(allTransactions)) {
+        console.error('allTransactions is not an array:', allTransactions);
+        setTransactions([]);
+        setCurrentSpent(0);
+        setLoading(false);
+        return;
+      }
       
       const monthStart = startOfMonth(new Date());
       const monthEnd = endOfMonth(new Date());
       
       // Filter transacties voor dit potje in de huidige maand
-      const potTransactions = allTransactions.filter(tx => {
-        if (!tx || !tx.date) return false;
-        const txDate = new Date(tx.date);
-        const isInMonth = txDate >= monthStart && txDate <= monthEnd;
-        const isExpense = tx.type === 'expense';
-        const categoryMatches = tx.category === pot.name;
+      const potTransactions = (allTransactions || []).filter(tx => {
+        // Comprehensive null/undefined checks
+        if (!tx || typeof tx !== 'object') return false;
+        if (!tx.date || !tx.type || !tx.category) return false;
 
-        return isInMonth && isExpense && categoryMatches;
+        try {
+          const txDate = new Date(tx.date);
+          // Check if date is valid
+          if (isNaN(txDate.getTime())) return false;
+
+          const isInMonth = txDate >= monthStart && txDate <= monthEnd;
+          const isExpense = tx.type === 'expense';
+          const categoryMatches = tx.category === pot.name;
+
+          return isInMonth && isExpense && categoryMatches;
+        } catch (err) {
+          console.error('Error processing transaction in modal:', err, tx);
+          return false;
+        }
       });
       
       // Sorteer op datum (nieuwste eerst)
       potTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-      
+
       setTransactions(potTransactions);
-      
+
       // 🆕 Bereken totaal uitgegeven
-      const totalSpent = potTransactions.reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
+      const totalSpent = potTransactions.reduce((sum, tx) => {
+        const amount = parseFloat(tx?.amount);
+        return sum + (isNaN(amount) ? 0 : amount);
+      }, 0);
       setCurrentSpent(totalSpent);
       
     } catch (error) {

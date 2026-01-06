@@ -102,13 +102,27 @@ export default function Potjes() {
       setUser(userData);
       const userFilter = { user_id: userData.id };
       
-      let [allPots, allIncomes, allCosts, allDebts, allTransactions] = await Promise.all([
+      // Use Promise.allSettled to handle partial failures gracefully
+      const results = await Promise.allSettled([
         Pot.filter(userFilter),
         Income.filter(userFilter),
         MonthlyCost.filter(userFilter),
         Debt.filter(userFilter),
         Transaction.filter(userFilter)
       ]);
+
+      let allPots = results[0].status === 'fulfilled' ? results[0].value : [];
+      let allIncomes = results[1].status === 'fulfilled' ? results[1].value : [];
+      let allCosts = results[2].status === 'fulfilled' ? results[2].value : [];
+      let allDebts = results[3].status === 'fulfilled' ? results[3].value : [];
+      let allTransactions = results[4].status === 'fulfilled' ? results[4].value : [];
+
+      // Ensure all values are arrays and filter out any null/undefined items
+      allPots = Array.isArray(allPots) ? allPots.filter(item => item) : [];
+      allIncomes = Array.isArray(allIncomes) ? allIncomes.filter(item => item) : [];
+      allCosts = Array.isArray(allCosts) ? allCosts.filter(item => item) : [];
+      allDebts = Array.isArray(allDebts) ? allDebts.filter(item => item) : [];
+      allTransactions = Array.isArray(allTransactions) ? allTransactions.filter(item => item) : [];
 
       const hasBadHabits = allPots.some(p => p.name === 'Bad Habits');
       if (!hasBadHabits) {
@@ -164,21 +178,36 @@ export default function Potjes() {
 
       const spendingsMap = {};
       allPots.forEach(pot => {
-        if (pot.pot_type === 'expense') {
-          const potTransactions = (allTransactions || []).filter(tx => {
-            if (!tx || !tx.date || !tx.type) return false;
-            try {
-              const txDate = new Date(tx.date);
-              const isInMonth = txDate >= monthStart && txDate <= monthEnd;
-              const isExpense = tx.type === 'expense';
-              const categoryMatches = tx.category === pot.name;
-              return isInMonth && isExpense && categoryMatches;
-            } catch (err) {
-              return false;
-            }
-          });
-          const totalSpent = potTransactions.reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
-          spendingsMap[pot.id] = totalSpent;
+        if (pot && pot.pot_type === 'expense') {
+          try {
+            const potTransactions = allTransactions.filter(tx => {
+              // Comprehensive null/undefined checks
+              if (!tx || typeof tx !== 'object') return false;
+              if (!tx.date || !tx.type || !tx.category) return false;
+
+              try {
+                const txDate = new Date(tx.date);
+                // Check if date is valid
+                if (isNaN(txDate.getTime())) return false;
+
+                const isInMonth = txDate >= monthStart && txDate <= monthEnd;
+                const isExpense = tx.type === 'expense';
+                const categoryMatches = tx.category === pot.name;
+                return isInMonth && isExpense && categoryMatches;
+              } catch (err) {
+                console.error('Error processing transaction:', err, tx);
+                return false;
+              }
+            });
+            const totalSpent = potTransactions.reduce((sum, tx) => {
+              const amount = parseFloat(tx?.amount);
+              return sum + (isNaN(amount) ? 0 : amount);
+            }, 0);
+            spendingsMap[pot.id] = totalSpent;
+          } catch (err) {
+            console.error('Error calculating spending for pot:', pot?.name, err);
+            spendingsMap[pot.id] = 0;
+          }
         } else {
           spendingsMap[pot.id] = 0;
         }
