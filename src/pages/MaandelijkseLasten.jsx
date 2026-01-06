@@ -363,20 +363,20 @@ export default function MaandelijkseLastenPage() {
                     <>
                         {/* Stats Mini-Pills */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                            <div className="bg-blue-50/50 dark:bg-blue-500/20 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-blue-100 dark:border-blue-500/30">
-                                <span className="text-[#6B7280] dark:text-blue-300 text-xs font-semibold uppercase">Gem. Vast</span>
-                                <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.avgFixed, { decimals: 0 })}</span>
+                            <div className="bg-blue-50/50 dark:bg-[#2a2a2a] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-blue-100 dark:border-[#2a2a2a]">
+                                <span className="text-[#6B7280] dark:text-[#a1a1a1] text-xs font-semibold uppercase">Gem. Vast</span>
+                                <span className="text-[#1F2937] dark:text-[#3b82f6] font-bold text-lg">{formatCurrency(yearStats.avgFixed, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-orange-50/50 dark:bg-orange-500/20 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-orange-100 dark:border-orange-500/30">
-                                <span className="text-[#6B7280] dark:text-orange-300 text-xs font-semibold uppercase">Gem. Onverwacht</span>
-                                <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.avgUnexpected, { decimals: 0 })}</span>
+                            <div className="bg-orange-50/50 dark:bg-[#2a2a2a] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-orange-100 dark:border-[#2a2a2a]">
+                                <span className="text-[#6B7280] dark:text-[#a1a1a1] text-xs font-semibold uppercase">Gem. Onverwacht</span>
+                                <span className="text-[#1F2937] dark:text-[#f59e0b] font-bold text-lg">{formatCurrency(yearStats.avgUnexpected, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-purple-50/50 dark:bg-purple-500/20 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-purple-100 dark:border-purple-500/30">
-                                <span className="text-[#6B7280] dark:text-purple-300 text-xs font-semibold uppercase">Gem. Totaal</span>
-                                <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.avgTotal, { decimals: 0 })}</span>
+                            <div className="bg-purple-50/50 dark:bg-[#2a2a2a] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-purple-100 dark:border-[#2a2a2a]">
+                                <span className="text-[#6B7280] dark:text-[#a1a1a1] text-xs font-semibold uppercase">Gem. Totaal</span>
+                                <span className="text-[#1F2937] dark:text-[#8b5cf6] font-bold text-lg">{formatCurrency(yearStats.avgTotal, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-gray-50 dark:bg-emerald-500/20 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-gray-200 dark:border-emerald-500/30">
-                                <span className="text-[#6B7280] dark:text-emerald-300 text-xs font-semibold uppercase">Totaal Jaar</span>
+                            <div className="bg-gray-50 dark:bg-[#2a2a2a] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-gray-200 dark:border-[#2a2a2a]">
+                                <span className="text-[#6B7280] dark:text-[#a1a1a1] text-xs font-semibold uppercase">Totaal Jaar</span>
                                 <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.totalYear, { decimals: 0 })}</span>
                             </div>
                         </div>
