@@ -17,6 +17,7 @@ import { formatCurrency } from '@/components/utils/formatters';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { getWeeklyIncomeTip } from '@/utils/weeklyIncomeTips';
 
 export default function IncomePage() {
     const { t } = useTranslation();
@@ -637,10 +638,10 @@ export default function IncomePage() {
                             <div className="relative z-10">
                                 <div className="flex items-center gap-2 mb-3">
                                     <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">lightbulb</span>
-                                    <h3 className="font-bold text-blue-800 dark:text-blue-400">Tip van de maand</h3>
+                                    <h3 className="font-bold text-blue-800 dark:text-blue-400">Tip van de week</h3>
                                 </div>
                                 <p className="text-sm text-blue-900/80 dark:text-blue-300/80 leading-relaxed font-medium">
-                                    Vraag je werkgever om je salaris eerder uit te betalen als je grote uitgaven verwacht deze maand.
+                                    {getWeeklyIncomeTip()}
                                 </p>
                             </div>
                         </div>
