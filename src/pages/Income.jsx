@@ -322,17 +322,17 @@ export default function IncomePage() {
                         </div>
 
                         {/* 2. JAAROVERZICHT CARD */}
-                        <div className="bg-white rounded-[24px] p-6 shadow-card border border-gray-100" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <div className="flex justify-between items-center mb-6">
                                 <div className="flex items-center gap-2">
-                                    <div className="bg-[#b4ff7a] p-1.5 rounded-[24px]">
-                                        <span className="material-symbols-outlined text-[#3D6456] text-[20px]">target</span>
+                                    <div className="bg-[#b4ff7a] dark:bg-konsensi-bg-green p-1.5 rounded-[24px]">
+                                        <span className="material-symbols-outlined text-[#3D6456] dark:text-konsensi-primary text-[20px]">target</span>
                                     </div>
-                                    <h3 className="text-lg font-bold text-[#3D6456]">Jaaroverzicht Inkomsten</h3>
+                                    <h3 className="text-lg font-bold text-[#3D6456] dark:text-white">Jaaroverzicht Inkomsten</h3>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => setShowYearOverview(!showYearOverview)}
-                                    className="text-gray-400 hover:text-[#3D6456]"
+                                    className="text-gray-400 dark:text-text-secondary hover:text-[#3D6456] dark:hover:text-konsensi-primary"
                                 >
                                     <span className="material-symbols-outlined">{showYearOverview ? 'expand_less' : 'expand_more'}</span>
                                 </button>
@@ -342,21 +342,21 @@ export default function IncomePage() {
                                 <>
                                     {/* Stats Row */}
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                                        <div className="p-3 bg-blue-50 rounded-[24px] border border-blue-100">
-                                            <span className="text-xs font-medium text-blue-600 block mb-1">Gem. Vast</span>
-                                            <span className="text-lg font-bold text-[#3D6456]">{formatCurrency(yearStats.avgFixed)}</span>
+                                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-[24px] border border-blue-100 dark:border-blue-800/30">
+                                            <span className="text-xs font-medium text-blue-600 dark:text-blue-400 block mb-1">Gem. Vast</span>
+                                            <span className="text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.avgFixed)}</span>
                                         </div>
-                                        <div className="p-3 bg-green-50 rounded-[24px] border border-green-100">
-                                            <span className="text-xs font-medium text-green-600 block mb-1">Gem. Extra</span>
-                                            <span className="text-lg font-bold text-[#3D6456]">{formatCurrency(yearStats.avgExtra)}</span>
+                                        <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-[24px] border border-green-100 dark:border-green-800/30">
+                                            <span className="text-xs font-medium text-green-600 dark:text-green-400 block mb-1">Gem. Extra</span>
+                                            <span className="text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.avgExtra)}</span>
                                         </div>
-                                        <div className="p-3 bg-purple-50 rounded-[24px] border border-purple-100">
-                                            <span className="text-xs font-medium text-purple-600 block mb-1">Gem. Totaal</span>
-                                            <span className="text-lg font-bold text-[#3D6456]">{formatCurrency(yearStats.avgTotal)}</span>
+                                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-[24px] border border-purple-100 dark:border-purple-800/30">
+                                            <span className="text-xs font-medium text-purple-600 dark:text-purple-400 block mb-1">Gem. Totaal</span>
+                                            <span className="text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.avgTotal)}</span>
                                         </div>
-                                        <div className="p-3 bg-gray-50 rounded-[24px] border border-gray-100">
-                                            <span className="text-xs font-medium text-gray-500 block mb-1">Totaal Jaar</span>
-                                            <span className="text-lg font-bold text-[#3D6456]">{formatCurrency(yearStats.totalYear)}</span>
+                                        <div className="p-3 bg-gray-50 dark:bg-card-elevated rounded-[24px] border border-gray-100 dark:border-border-main">
+                                            <span className="text-xs font-medium text-gray-500 dark:text-text-secondary block mb-1">Totaal Jaar</span>
+                                            <span className="text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.totalYear)}</span>
                                         </div>
                                     </div>
                                     {/* Chart Area */}
@@ -416,18 +416,18 @@ export default function IncomePage() {
                         </div>
 
                         {/* 3. VAST INKOMEN LIST CARD */}
-                        <div className="bg-white rounded-[24px] p-6 shadow-card border border-gray-100" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <div className="flex justify-between items-center mb-6">
                                 <div>
-                                    <h3 className="text-lg font-bold text-[#3D6456] flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-[#b4ff7a]">bolt</span>
+                                    <h3 className="text-lg font-bold text-[#3D6456] dark:text-white flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-[#b4ff7a] dark:text-konsensi-primary">bolt</span>
                                         Vast Inkomen
                                     </h3>
-                                    <p className="text-sm text-gray-400 font-medium mt-1">Terugkerend inkomen zoals salaris of uitkering</p>
+                                    <p className="text-sm text-gray-400 dark:text-text-secondary font-medium mt-1">Terugkerend inkomen zoals salaris of uitkering</p>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => handleAddIncome('vast')}
-                                    className="bg-[#ecf4e6] hover:bg-[#b4ff7a] text-[#3D6456] text-sm font-bold px-4 py-2 rounded-full transition-colors flex items-center gap-1"
+                                    className="bg-[#ecf4e6] dark:bg-konsensi-bg-green hover:bg-[#b4ff7a] dark:hover:bg-konsensi-primary text-[#3D6456] dark:text-white text-sm font-bold px-4 py-2 rounded-full transition-colors flex items-center gap-1"
                                 >
                                     <span className="material-symbols-outlined text-[18px]">add</span>
                                     Nieuw Inkomen
@@ -435,7 +435,7 @@ export default function IncomePage() {
                             </div>
                             <div className="flex flex-col gap-3">
                                 {fixedIncomeThisMonth.length === 0 ? (
-                                    <p className="text-gray-500 text-center py-6">Nog geen vast inkomen toegevoegd</p>
+                                    <p className="text-gray-500 dark:text-text-secondary text-center py-6">Nog geen vast inkomen toegevoegd</p>
                                 ) : (
                                     fixedIncomeThisMonth.map((income) => {
                                         const displayAmount = income.is_variable 
@@ -445,25 +445,25 @@ export default function IncomePage() {
                                             : (income.monthly_equivalent || income.amount);
                                         
                                         return (
-                                            <div 
-                                                key={income.id} 
-                                                className="flex items-center justify-between p-4 rounded-[24px] border border-gray-100 hover:border-[#b4ff7a] hover:bg-[#fafcf8] transition-all group"
+                                            <div
+                                                key={income.id}
+                                                className="flex items-center justify-between p-4 rounded-[24px] border border-gray-100 dark:border-border-main hover:border-[#b4ff7a] dark:hover:border-konsensi-primary hover:bg-[#fafcf8] dark:hover:bg-card-elevated transition-all group"
                                             >
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 rounded-full bg-[#ecf4e6] flex items-center justify-center text-[#3D6456]">
+                                                    <div className="w-12 h-12 rounded-full bg-[#ecf4e6] dark:bg-konsensi-bg-green flex items-center justify-center text-[#3D6456] dark:text-konsensi-primary">
                                                         <span className="material-symbols-outlined">
                                                             {income.is_from_work_schedule ? 'work' : 'trending_up'}
                                                         </span>
                                                     </div>
                                                     <div>
-                                                        <h4 className="font-bold text-[#3D6456]">{income.description || 'Werk / Salaris'}</h4>
-                                                        <p className="text-xs text-gray-500">
+                                                        <h4 className="font-bold text-[#3D6456] dark:text-white">{income.description || 'Werk / Salaris'}</h4>
+                                                        <p className="text-xs text-gray-500 dark:text-text-secondary">
                                                             {income.day_of_month ? `Maandelijks op de ${income.day_of_month}e` : 'Maandelijks'}
                                                         </p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-6">
-                                                    <span className="text-lg font-bold text-[#3D6456]">
+                                                    <span className="text-lg font-bold text-[#3D6456] dark:text-white">
                                                         {income.is_from_work_schedule && '~'}
                                                         {formatCurrency(displayAmount)}
                                                     </span>
@@ -498,47 +498,47 @@ export default function IncomePage() {
                         </div>
 
                         {/* 4. EXTRA INKOMEN CARD */}
-                        <div className="bg-white rounded-[24px] p-6 shadow-card border border-gray-100" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <div className="mb-6">
-                                <h3 className="text-lg font-bold text-[#3D6456] flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[#b4ff7a]">redeem</span>
+                                <h3 className="text-lg font-bold text-[#3D6456] dark:text-white flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[#b4ff7a] dark:text-konsensi-primary">redeem</span>
                                     Extra Inkomen
                                 </h3>
-                                <p className="text-sm text-gray-400 font-medium mt-1">Eenmalige inkomsten in {currentMonthLabel}</p>
+                                <p className="text-sm text-gray-400 dark:text-text-secondary font-medium mt-1">Eenmalige inkomsten in {currentMonthLabel}</p>
                             </div>
                             {extraIncomeThisMonth.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-100 rounded-[24px] bg-gray-50/50">
-                                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                                        <span className="material-symbols-outlined text-gray-300 text-3xl">savings</span>
+                                <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-100 dark:border-border-main rounded-[24px] bg-gray-50/50 dark:bg-card-elevated/50">
+                                    <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-card-elevated flex items-center justify-center mb-4">
+                                        <span className="material-symbols-outlined text-gray-300 dark:text-text-tertiary text-3xl">savings</span>
                                     </div>
-                                    <p className="text-gray-400 italic font-medium">Geen extra inkomsten deze maand</p>
-                                    <button 
+                                    <p className="text-gray-400 dark:text-text-secondary italic font-medium">Geen extra inkomsten deze maand</p>
+                                    <button
                                         onClick={() => handleAddIncome('extra')}
-                                        className="mt-4 text-[#3D6456] text-sm font-bold hover:underline"
+                                        className="mt-4 text-[#3D6456] dark:text-konsensi-primary text-sm font-bold hover:underline"
                                     >
                                         + Voeg extra inkomen toe
                                     </button>
                                 </div>
                             ) : (
-                                <div className="flex flex-col gap-3">
-                                    {extraIncomeThisMonth.map((income) => (
-                                        <div 
-                                            key={income.id} 
-                                            className="flex items-center justify-between p-4 rounded-[24px] border border-gray-100 hover:border-[#b4ff7a] hover:bg-[#fafcf8] transition-all group"
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-full bg-[#ecf4e6] flex items-center justify-center text-[#3D6456]">
-                                                    <span className="material-symbols-outlined">redeem</span>
+                                    <div className="flex flex-col gap-3">
+                                        {extraIncomeThisMonth.map((income) => (
+                                            <div
+                                                key={income.id}
+                                                className="flex items-center justify-between p-4 rounded-[24px] border border-gray-100 dark:border-border-main hover:border-[#b4ff7a] dark:hover:border-konsensi-primary hover:bg-[#fafcf8] dark:hover:bg-card-elevated transition-all group"
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-full bg-[#ecf4e6] dark:bg-konsensi-bg-green flex items-center justify-center text-[#3D6456] dark:text-konsensi-primary">
+                                                        <span className="material-symbols-outlined">redeem</span>
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-bold text-[#3D6456] dark:text-white">{income.description}</h4>
+                                                        <p className="text-xs text-gray-500 dark:text-text-secondary">
+                                                            {income.date && new Date(income.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <h4 className="font-bold text-[#3D6456]">{income.description}</h4>
-                                                    <p className="text-xs text-gray-500">
-                                                        {income.date && new Date(income.date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-6">
-                                                <span className="text-lg font-bold text-[#3D6456]">{formatCurrency(income.amount)}</span>
+                                                <div className="flex items-center gap-6">
+                                                    <span className="text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(income.amount)}</span>
                                                 <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button 
                                                         onClick={() => {
@@ -572,12 +572,12 @@ export default function IncomePage() {
                     {/* Right Column (35% on Desktop) */}
                     <div className="lg:col-span-4 flex flex-col gap-6">
                         {/* 1. Quick Stats / Calendar */}
-                        <div className="bg-white rounded-[24px] p-6 shadow-card border border-gray-100 flex flex-col gap-4" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
-                            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Selecteer periode</h3>
+                        <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col gap-4" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                            <h3 className="text-sm font-bold text-gray-400 dark:text-text-secondary uppercase tracking-wider">Selecteer periode</h3>
                             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                                <SelectTrigger className="w-full flex items-center justify-between px-4 py-3 rounded-[24px] bg-[#fafcf8] border border-gray-200 text-[#3D6456] font-bold shadow-sm hover:border-[#b4ff7a] transition-all">
+                                <SelectTrigger className="w-full flex items-center justify-between px-4 py-3 rounded-[24px] bg-[#fafcf8] dark:bg-card-elevated border border-gray-200 dark:border-border-main text-[#3D6456] dark:text-white font-bold shadow-sm hover:border-[#b4ff7a] dark:hover:border-konsensi-primary transition-all">
                                     <div className="flex items-center gap-3">
-                                        <span className="material-symbols-outlined text-[#b4ff7a]">calendar_month</span>
+                                        <span className="material-symbols-outlined text-[#b4ff7a] dark:text-konsensi-primary">calendar_month</span>
                                         <SelectValue>{currentMonthLabel}</SelectValue>
                                     </div>
                                     <span className="material-symbols-outlined">expand_more</span>
@@ -591,23 +591,23 @@ export default function IncomePage() {
                                 </SelectContent>
                             </Select>
                             <div className="grid grid-cols-2 gap-2 mt-2">
-                                <button 
+                                <button
                                     onClick={() => {
                                         const [year, month] = selectedMonth.split('-');
                                         const prevMonth = new Date(parseInt(year), parseInt(month) - 2, 1);
                                         setSelectedMonth(`${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`);
                                     }}
-                                    className="p-2 text-xs font-bold text-center rounded-[24px] bg-gray-50 hover:bg-[#ecf4e6] text-gray-500 hover:text-[#3D6456] transition-colors"
+                                    className="p-2 text-xs font-bold text-center rounded-[24px] bg-gray-50 dark:bg-card-elevated hover:bg-[#ecf4e6] dark:hover:bg-konsensi-bg-green text-gray-500 dark:text-text-secondary hover:text-[#3D6456] dark:hover:text-konsensi-primary transition-colors"
                                 >
                                     Vorige Maand
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => {
                                         const [year, month] = selectedMonth.split('-');
                                         const nextMonth = new Date(parseInt(year), parseInt(month), 1);
                                         setSelectedMonth(`${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`);
                                     }}
-                                    className="p-2 text-xs font-bold text-center rounded-[24px] bg-gray-50 hover:bg-[#ecf4e6] text-gray-500 hover:text-[#3D6456] transition-colors"
+                                    className="p-2 text-xs font-bold text-center rounded-[24px] bg-gray-50 dark:bg-card-elevated hover:bg-[#ecf4e6] dark:hover:bg-konsensi-bg-green text-gray-500 dark:text-text-secondary hover:text-[#3D6456] dark:hover:text-konsensi-primary transition-colors"
                                 >
                                     Volgende Maand
                                 </button>
@@ -615,46 +615,46 @@ export default function IncomePage() {
                         </div>
 
                         {/* 2. Scan Action Card */}
-                        <div className="bg-[#fafcf8] rounded-[24px] p-6 shadow-card border border-gray-200 flex flex-col items-center text-center" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
-                            <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 text-[#3D6456]">
+                        <div className="bg-[#fafcf8] dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-[#2A3F36] flex flex-col items-center text-center" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                            <div className="w-16 h-16 rounded-full bg-white dark:bg-card-elevated shadow-sm flex items-center justify-center mb-4 text-[#3D6456] dark:text-konsensi-primary">
                                 <span className="material-symbols-outlined text-3xl">document_scanner</span>
                             </div>
-                            <h3 className="font-bold text-[#3D6456] text-lg mb-2">Scan loonstrook</h3>
-                            <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+                            <h3 className="font-bold text-[#3D6456] dark:text-white text-lg mb-2">Scan loonstrook</h3>
+                            <p className="text-sm text-gray-500 dark:text-text-secondary mb-6 leading-relaxed">
                                 Heb je een fysieke of digitale loonstrook? Scan hem direct voor automatische verwerking.
                             </p>
-                            <button 
+                            <button
                                 onClick={() => setShowScanModal(true)}
-                                className="w-full bg-[#b4ff7a] text-[#3D6456] font-bold py-3 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all shadow-sm"
+                                className="w-full bg-[#b4ff7a] dark:bg-konsensi-primary text-[#3D6456] dark:text-black font-bold py-3 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all shadow-sm"
                             >
                                 Scan Nu
                             </button>
                         </div>
 
                         {/* 3. Tips Card */}
-                        <div className="bg-blue-50 rounded-[24px] p-6 border border-blue-100 relative overflow-hidden">
-                            <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-9xl text-blue-100 opacity-50 rotate-12">lightbulb</span>
+                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-[24px] p-6 border border-blue-100 dark:border-blue-800/30 relative overflow-hidden">
+                            <span className="material-symbols-outlined absolute -right-4 -bottom-4 text-9xl text-blue-100 dark:text-blue-900/30 opacity-50 rotate-12">lightbulb</span>
                             <div className="relative z-10">
                                 <div className="flex items-center gap-2 mb-3">
-                                    <span className="material-symbols-outlined text-blue-600">lightbulb</span>
-                                    <h3 className="font-bold text-blue-800">Tip van de maand</h3>
+                                    <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">lightbulb</span>
+                                    <h3 className="font-bold text-blue-800 dark:text-blue-400">Tip van de maand</h3>
                                 </div>
-                                <p className="text-sm text-blue-900/80 leading-relaxed font-medium">
+                                <p className="text-sm text-blue-900/80 dark:text-blue-300/80 leading-relaxed font-medium">
                                     Vraag je werkgever om je salaris eerder uit te betalen als je grote uitgaven verwacht deze maand.
                                 </p>
                             </div>
                         </div>
 
                         {/* Status Summary Mini Card */}
-                        <div className="bg-white rounded-[24px] p-5 shadow-card border border-gray-100" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
-                            <h3 className="font-bold text-[#3D6456] mb-4 text-sm">Huidige Status</h3>
+                        <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-5 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                            <h3 className="font-bold text-[#3D6456] dark:text-white mb-4 text-sm">Huidige Status</h3>
                             <div className="flex items-center gap-3">
-                                <div className="bg-orange-100 text-orange-600 p-2 rounded-[24px]">
+                                <div className="bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 p-2 rounded-[24px]">
                                     <span className="material-symbols-outlined">work_history</span>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-500 uppercase font-bold">Dienstverband</p>
-                                    <p className="text-sm font-bold text-[#3D6456]">
+                                    <p className="text-xs text-gray-500 dark:text-text-secondary uppercase font-bold">Dienstverband</p>
+                                    <p className="text-sm font-bold text-[#3D6456] dark:text-white">
                                         {user?.work_status === 'parttime' ? 'Parttime' : user?.work_status === 'fulltime' ? 'Fulltime' : user?.work_status === 'zzp' ? 'ZZP' : 'Niet ingesteld'}
                                     </p>
                                 </div>
