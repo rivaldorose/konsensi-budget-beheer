@@ -817,13 +817,6 @@ export default function Dashboard() {
               title: 'Uitgaven: €45 over budget',
               action: 'Bekijk details',
               link: '/budget'
-            },
-            {
-              type: 'info',
-              icon: 'lightbulb',
-              title: 'Mindset: Lees nieuwe post',
-              subtitle: '5 min leestijd',
-              link: '/mindset'
             }
           ]}
         />
