@@ -4,14 +4,14 @@ import { formatCurrency } from "@/components/utils/formatters";
 export default function DebtJourneyChart({ monthlyData = [], totalPaid = 0, progressPercentage = 0 }) {
   const [viewMode, setViewMode] = useState("month");
 
-  // Default data if none provided (6 months)
+  // Default empty data if none provided (6 months with zero amounts)
   const defaultData = [
-    { month: "Jul", amount: 1840 },
-    { month: "Aug", amount: 2400 },
-    { month: "Sep", amount: 1400 },
-    { month: "Okt", amount: 3000 },
-    { month: "Nov", amount: 2200 },
-    { month: "Dec", amount: 3414 },
+    { month: "Jul", amount: 0 },
+    { month: "Aug", amount: 0 },
+    { month: "Sep", amount: 0 },
+    { month: "Okt", amount: 0 },
+    { month: "Nov", amount: 0 },
+    { month: "Dec", amount: 0 },
   ];
 
   const chartData = monthlyData.length > 0 ? monthlyData : defaultData;
@@ -59,13 +59,13 @@ export default function DebtJourneyChart({ monthlyData = [], totalPaid = 0, prog
       <div className="flex items-end gap-4">
         <div>
           <p className="text-3xl font-header font-extrabold text-[#10B981] dark:text-konsensi-primary tracking-tight">
-            {formatCurrency(totalPaid || 3414.43)}
+            {formatCurrency(totalPaid || 0)}
           </p>
           <p className="text-sm text-gray-500 dark:text-text-secondary font-bold">Totaal Afbetaald</p>
         </div>
         <div className="mb-1 px-3 py-1 bg-purple-100 dark:bg-accent-purple/15 text-[#8B5CF6] dark:text-accent-purple rounded-full text-xs font-bold flex items-center gap-1 border border-transparent dark:border-accent-purple/20">
           <span className="material-symbols-outlined text-[16px]">trending_up</span>
-          Voortgang: {Math.round(progressPercentage || 21)}%
+          Voortgang: {Math.round(progressPercentage || 0)}%
         </div>
       </div>
 

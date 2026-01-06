@@ -804,22 +804,17 @@ export default function Dashboard() {
 
         {/* Gamification Stats - Always show */}
         {(() => {
-          // Calculate days on track based on payment consistency
+          // Calculate days on track based on app usage/consistency
+          // This should ideally track actual login days, but for now we use account age
           const daysOnTrack = (() => {
-            if (!allPayments || allPayments.length === 0) return 0; // Show 0 if no data
-            // Simple calculation: count days since first payment
-            const sortedPayments = [...allPayments].sort((a, b) => {
-              const dateA = a?.payment_date ? new Date(a.payment_date) : new Date(0);
-              const dateB = b?.payment_date ? new Date(b.payment_date) : new Date(0);
-              return dateA - dateB;
-            });
-            const firstPayment = sortedPayments[0];
-            if (!firstPayment?.payment_date) return 0; // Show 0 if no valid payment
+            if (!user?.created_at) return 0; // Show 0 if no user data
             try {
-              const firstDate = new Date(firstPayment.payment_date);
-              if (isNaN(firstDate.getTime())) return 0;
-              const daysDiff = Math.floor((new Date() - firstDate) / (1000 * 60 * 60 * 24));
-              return Math.max(0, Math.min(daysDiff, 30)); // Cap at 30 days, minimum 0
+              const accountCreated = new Date(user.created_at);
+              if (isNaN(accountCreated.getTime())) return 0;
+              const daysSinceCreation = Math.floor((new Date() - accountCreated) / (1000 * 60 * 60 * 24));
+              // For now, assume user is consistent if they have any activity
+              // This can be improved with actual login tracking
+              return Math.max(0, Math.min(daysSinceCreation, 365)); // Cap at 365 days
             } catch {
               return 0;
             }
@@ -836,18 +831,15 @@ export default function Dashboard() {
         {/* Upcoming Payments - Always show */}
         <UpcomingPayments payments={upcomingPaymentsData} />
 
-        {/* Dashboard Alerts - Always show */}
-        <DashboardAlerts
-          alerts={[
-            {
-              type: 'warning',
-              icon: 'warning',
-              title: 'Uitgaven: €45 over budget',
-              action: 'Bekijk details',
-              link: '/budget'
-            }
-          ]}
-        />
+        {/* Dashboard Alerts - Only show when there's actual data */}
+        {totalExpenses > 0 && (
+          <DashboardAlerts
+            alerts={[
+              // Alerts will be dynamically generated based on actual budget data
+              // For now, we show no alerts when there's no expense data
+            ]}
+          />
+        )}
                         </div>
 
       {/* Footer */}
