@@ -137,11 +137,11 @@ const MonthlyCostsChart = ({ allMonthlyCosts = [], allUnexpectedCosts = [] }) =>
   const isDarkMode = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
   return (
-    <div className="bg-transparent rounded-xl">
+    <div className="bg-transparent rounded-xl w-full">
       {/* Grafiek */}
-      <div style={{ width: '100%', height: 300 }} className="bg-white dark:bg-[#0a0a0a] rounded-xl p-4">
-        <ResponsiveContainer>
-          <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+      <div className="bg-white dark:bg-[#0a0a0a] rounded-xl p-4 w-full overflow-hidden" style={{ height: 280 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
             <defs>
               <linearGradient id="colorVast" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
@@ -169,7 +169,7 @@ const MonthlyCostsChart = ({ allMonthlyCosts = [], allUnexpectedCosts = [] }) =>
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend
-              wrapperStyle={{ paddingTop: '20px' }}
+              wrapperStyle={{ paddingTop: '10px' }}
               iconType="circle"
             />
             <Area
