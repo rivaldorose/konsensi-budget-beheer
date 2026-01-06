@@ -96,8 +96,8 @@ function LayoutWithProvider({ children, currentPageName }) {
   // Dark mode state
   const [darkMode, setDarkMode] = React.useState(() => {
     // Check localStorage first, then system preference
-    const saved = localStorage.getItem('darkMode');
-    if (saved !== null) return saved === 'true';
+    const saved = localStorage.getItem('theme');
+    if (saved !== null) return saved === 'dark';
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
@@ -105,10 +105,11 @@ function LayoutWithProvider({ children, currentPageName }) {
   React.useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
-    localStorage.setItem('darkMode', darkMode.toString());
   }, [darkMode]);
 
   const toggleDarkMode = () => {
