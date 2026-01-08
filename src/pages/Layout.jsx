@@ -589,9 +589,9 @@ function LayoutWithProvider({ children, currentPageName }) {
   const fetchNotifications = React.useCallback(async () => {
     
     if (!user?.id || !notificationsEnabled) return;
-    
+
     try {
-      const allNotifications = await Notification.filter({ user_id: user.id }, '-created_date', 50);
+      const allNotifications = await Notification.filter({ user_id: user.id }, '-created_at');
       
       
       setNotifications(allNotifications || []);
