@@ -596,37 +596,9 @@ function MonthlyCostsStep({ formData, setFormData, darkMode }) {
 
 function DebtsCheckStep({ formData, setFormData, darkMode }) {
   const handleDebtChoice = (hasDebts) => {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'OnboardingNew.jsx:598',message:'handleDebtChoice called',data:{hasDebts,currentHasDebts:formData.hasDebts,step:4},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-    // #endregion
     setFormData({ ...formData, hasDebts });
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'OnboardingNew.jsx:601',message:'setFormData called',data:{hasDebts,newFormDataHasDebts:formData.hasDebts},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
   };
   
-  // #region agent log
-  React.useEffect(() => {
-    const checkZIndex = () => {
-      const label = document.querySelector('label[for="debt_status_yes"], label:has(input[name="debt_status"][value="yes"])');
-      if (!label) {
-        const labels = document.querySelectorAll('label');
-        labels.forEach((l, i) => {
-          const input = l.querySelector('input[name="debt_status"][value="yes"]');
-          if (input) {
-            const rect = l.getBoundingClientRect();
-            const zIndex = window.getComputedStyle(l).zIndex;
-            const pointerEvents = window.getComputedStyle(l).pointerEvents;
-            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'OnboardingNew.jsx:610',message:'Debt button z-index check',data:{zIndex,pointerEvents,rect:{top:rect.top,left:rect.left,width:rect.width,height:rect.height},hasInput:!!input,labelIndex:i},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-          }
-        });
-      }
-    };
-    checkZIndex();
-    const interval = setInterval(checkZIndex, 1000);
-    return () => clearInterval(interval);
-  }, []);
-  // #endregion
 
   return (
     <>
@@ -651,17 +623,11 @@ function DebtsCheckStep({ formData, setFormData, darkMode }) {
           }`}
           style={{ zIndex: 1 }}
           onClick={(e) => {
-            // #region agent log
-            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'OnboardingNew.jsx:648',message:'Label clicked for debt yes',data:{target:e.target.tagName,currentTarget:e.currentTarget.tagName,hasDebts:formData.hasDebts,eventType:e.type,clientX:e.clientX,clientY:e.clientY},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-            // #endregion
             e.preventDefault();
             e.stopPropagation();
             handleDebtChoice(true);
           }}
           onMouseDown={(e) => {
-            // #region agent log
-            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'OnboardingNew.jsx:655',message:'Label mousedown for debt yes',data:{target:e.target.tagName,hasDebts:formData.hasDebts},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-            // #endregion
           }}
         >
           <input
@@ -670,9 +636,6 @@ function DebtsCheckStep({ formData, setFormData, darkMode }) {
             value="yes"
             checked={formData.hasDebts === true}
             onChange={(e) => {
-              // #region agent log
-              fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'OnboardingNew.jsx:670',message:'Radio input onChange',data:{checked:e.target.checked,value:e.target.value,hasDebts:formData.hasDebts},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-              // #endregion
               handleDebtChoice(true);
             }}
             className="sr-only peer"

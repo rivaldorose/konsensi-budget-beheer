@@ -4,11 +4,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '@/components/ui/toast';
 
 export default function Login() {
-  // #region agent log
-  React.useEffect(() => {
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:7',message:'Login component mounted',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  }, []);
-  // #endregion
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,11 +23,6 @@ export default function Login() {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // #region agent log
-  React.useEffect(() => {
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:25',message:'Login hooks initialized',data:{toastType:typeof toast,navigateType:typeof navigate},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  }, []);
-  // #endregion
 
   // Apply theme to document
   useEffect(() => {
@@ -62,9 +52,6 @@ export default function Login() {
     setError(''); // Clear previous errors
 
     try {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:58',message:'Login attempt started',data:{email:email.substring(0,3)+'***'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
-      // #endregion
       
       // Sign in
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -72,14 +59,8 @@ export default function Login() {
         password,
       });
 
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:67',message:'signInWithPassword result',data:{hasError:!!error,hasData:!!data,hasSession:!!data?.session,hasUser:!!data?.session?.user,errorMessage:error?.message,errorStatus:error?.status},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
-      // #endregion
 
       if (error) {
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:77',message:'Login error details',data:{errorMessage:error.message,errorStatus:error.status,errorCode:error.code},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
-        // #endregion
         throw error;
       }
 
@@ -101,9 +82,6 @@ export default function Login() {
 
       // Verify session is stored
       const sessionCheck = await supabase.auth.getSession();
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:75',message:'Session check after login',data:{hasSession:!!sessionCheck.data?.session,hasUser:!!sessionCheck.data?.session?.user},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
-      // #endregion
 
       if (!sessionCheck.data?.session) {
         throw new Error('Session not available after login');
@@ -114,16 +92,10 @@ export default function Login() {
         description: 'Welkom terug!',
       });
       
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:90',message:'Navigating to Dashboard',data:{hasSession:!!sessionCheck.data?.session},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
-      // #endregion
       
       // Use window.location.href for a full page reload to ensure session is available
       window.location.href = '/Dashboard';
     } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Login.jsx:120',message:'Login error caught',data:{errorMessage:error.message,errorStatus:error.status,errorCode:error.code},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'J'})}).catch(()=>{});
-      // #endregion
       
       console.error('Auth error:', error);
       

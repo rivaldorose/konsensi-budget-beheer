@@ -11,27 +11,7 @@ export class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log error to debug endpoint
-    try {
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'ErrorBoundary.jsx:16',
-          message: 'Error caught by boundary',
-          data: {
-            errorName: error?.name,
-            errorMessage: error?.message,
-            errorStack: error?.stack,
-            componentStack: errorInfo?.componentStack
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'run1',
-          hypothesisId: 'A'
-        })
-      }).catch(() => {});
-    } catch (e) {}
+    console.error('Error caught by ErrorBoundary:', error, errorInfo);
 
     this.setState({
       error,
@@ -43,14 +23,14 @@ export class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white dark:bg-[#1a2c26] rounded-[24px] shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] p-8 text-center">
+          <div className="max-w-md w-full bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl shadow-soft p-8 text-center">
             <div className="mb-6">
-              <span className="material-symbols-outlined text-[#EF4444] text-6xl">error</span>
+              <span className="material-symbols-outlined text-red-500 dark:text-red-400 text-6xl">error</span>
             </div>
-            <h1 className="text-2xl font-bold text-[#1F2937] dark:text-white mb-3">
+            <h1 className="text-2xl font-bold text-[#131d0c] dark:text-white mb-3 font-display">
               Er ging iets mis
             </h1>
-            <p className="text-[#6B7280] dark:text-[#9CA3AF] mb-6">
+            <p className="text-gray-600 dark:text-[#a1a1a1] mb-6">
               Er is een fout opgetreden bij het laden van deze pagina.
             </p>
             <button
@@ -58,7 +38,7 @@ export class ErrorBoundary extends React.Component {
                 this.setState({ hasError: false, error: null, errorInfo: null });
                 window.location.reload();
               }}
-              className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-[12px] transition-colors shadow-sm"
+              className="bg-[#b4ff7a] hover:bg-[#a2f565] dark:bg-[#10b981] dark:hover:bg-[#34d399] text-[#131d0c] dark:text-black font-bold py-3 px-6 rounded-xl transition-colors shadow-sm"
             >
               Pagina opnieuw laden
             </button>
