@@ -323,11 +323,6 @@ function LayoutWithProvider({ children, currentPageName }) {
             const currentMonthStr = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(today.getFullYear(), today.getMonth(), 1));
             const currentDay = today.getDate();
 
-            console.log('=== CHECK-IN DEBUG ===');
-            console.log('Vandaag:', new Intl.DateTimeFormat('nl-NL').format(today), 'Dag:', currentDay);
-            console.log('Huidige maand:', currentMonthStr);
-            console.log('User email:', user.email);
-
             // Load monthly checks for current month
             let existingChecks = [];
             try {
@@ -339,14 +334,11 @@ function LayoutWithProvider({ children, currentPageName }) {
                 });
               }
             } catch (error) {
-              console.warn('Monthly checks not available (table may not exist yet):', error.message);
+              console.warn('Monthly checks not available:', error.message);
               existingChecks = [];
             }
-            
-            console.log('Bestaande checks deze maand:', existingChecks.length);
-            
+
             if (existingChecks.length > 0) {
-                console.log('Check al gedaan deze maand, niet tonen');
                 setShowCheckIn(false);
                 return;
             }
@@ -373,15 +365,6 @@ function LayoutWithProvider({ children, currentPageName }) {
               })()
             ]);
 
-            console.log('Actieve maandelijkse kosten:', monthlyCosts.length);
-            console.log('Details kosten:', monthlyCosts.map(c => ({
-                naam: c.name,
-                payment_date: c.payment_date,
-                vervallen: c.payment_date <= currentDay
-            })));
-
-            console.log('Actieve schulden met regeling:', debts.length);
-
             const pastDueCosts = monthlyCosts.filter(c => c.payment_date <= currentDay);
             const pastDueDebts = debts.filter(debt => {
                 if (!debt.payment_plan_date) return false;
@@ -389,18 +372,11 @@ function LayoutWithProvider({ children, currentPageName }) {
                     const paymentDay = new Date(debt.payment_plan_date).getDate();
                     return paymentDay <= currentDay;
                 } catch (e) {
-                    console.error("Error parsing debt payment_plan_date:", debt.payment_plan_date, e);
                     return false;
                 }
             });
 
             const hasPastDueItem = pastDueCosts.length > 0 || pastDueDebts.length > 0;
-
-            console.log('Vervallen kosten:', pastDueCosts.length);
-            console.log('Vervallen schulden:', pastDueDebts.length);
-            console.log('Check-in nodig?', hasPastDueItem);
-            console.log('=== EINDE DEBUG ===');
-
             setShowCheckIn(hasPastDueItem);
         } catch (error) {
             console.error('Error in checkInVisibility:', error);

@@ -114,12 +114,17 @@ export default function Debts() {
 
   const loadDebts = React.useCallback(async () => {
     try {
+      console.log('[Debts] Starting loadDebts...');
       const userData = await User.me();
+      console.log('[Debts] User loaded:', userData?.email);
       setUser(userData);
+
       const data = await Debt.filter({ user_id: userData.id }, '-created_date');
+      console.log('[Debts] Debts loaded:', data?.length);
       setDebts(data);
-      
+
       const strategies = await DebtStrategy.filter({ user_id: userData.id });
+      console.log('[Debts] Strategies loaded:', strategies?.length);
       if (strategies.length > 0) {
         setActiveStrategy(strategies[0]);
         const schedule = await DebtPayoffSchedule.filter({ strategy_id: strategies[0].id });
@@ -128,20 +133,23 @@ export default function Debts() {
         setActiveStrategy(null);
         setPayoffSchedule([]);
       }
-      
+
       try {
+        console.log('[Debts] Loading VTBL data...');
         const vtblResult = await vtblService.calculateVtbl();
+        console.log('[Debts] VTBL loaded');
         setVtblData(vtblResult);
       } catch (error) {
         console.error("Error loading VTBL data:", error);
       }
-      
+
       try {
+        console.log('[Debts] Loading payments...');
         const allPayments = await DebtPayment.filter({ user_id: userData.id });
         const totalPaid = allPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
         setTotalPaidAllTime(totalPaid);
         setPaymentCount(allPayments.length);
-        
+
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const thisMonthPayments = allPayments.filter(p => {
@@ -150,10 +158,12 @@ export default function Debts() {
         });
         setCurrentMonthPaid(thisMonthPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0));
         setPaymentCountThisMonth(thisMonthPayments.length);
+        console.log('[Debts] Payments loaded');
       } catch (error) {
         console.error("Error loading payments:", error);
       }
-      
+
+      console.log('[Debts] Setting loading to false');
       setLoading(false);
     } catch (error) {
       console.error("Error loading debts:", error);
