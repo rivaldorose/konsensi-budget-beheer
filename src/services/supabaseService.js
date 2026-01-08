@@ -24,10 +24,10 @@ export const supabaseService = {
     return data || []
   },
 
-  async filter(table, filters = {}) {
-    
+  async filter(table, filters = {}, orderBy = null) {
+
     let query = supabase.from(table).select('*')
-    
+
     // Apply filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -38,11 +38,17 @@ export const supabaseService = {
         }
       }
     })
-    
-    
+
+    // Apply ordering if provided
+    if (orderBy) {
+      const ascending = !orderBy.startsWith('-')
+      const field = orderBy.replace('-', '')
+      query = query.order(field, { ascending })
+    }
+
     const { data, error } = await query
-    
-    
+
+
     if (error) throw error
     return data || []
   },

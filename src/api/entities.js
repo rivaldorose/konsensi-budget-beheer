@@ -6,17 +6,17 @@ import { supabase } from '@/lib/supabase'
 
 // Entity wrappers that mimic base44.entities API
 const createEntityWrapper = (tableName) => ({
-  list: (orderBy = 'created_at', ascending = false) => 
+  list: (orderBy = 'created_at', ascending = false) =>
     supabaseService.list(tableName, orderBy.replace('-', ''), !orderBy.startsWith('-')),
-  
-  filter: (filters) => supabaseService.filter(tableName, filters),
-  
+
+  filter: (filters, orderBy = null) => supabaseService.filter(tableName, filters, orderBy),
+
   get: (id) => supabaseService.getById(tableName, id),
-  
+
   create: (data) => supabaseService.create(tableName, data),
-  
+
   update: (id, data) => supabaseService.update(tableName, id, data),
-  
+
   delete: (id) => supabaseService.delete(tableName, id),
 })
 
