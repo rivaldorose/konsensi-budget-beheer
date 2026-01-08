@@ -3,7 +3,7 @@ import Layout from "./Layout.jsx";
 import { User } from "@/api/entities";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-import debts from "./debts";
+import Debts from "./debts";
 
 import CentVoorCent from "./CentVoorCent";
 
@@ -173,9 +173,9 @@ function PagesContent() {
                         </Suspense>
                     </ErrorBoundary>
                 } />
-                
-                <Route path="/debts" element={<debts />} />
-                
+
+                <Route path="/debts" element={<Debts />} />
+
                 <Route path="/CentVoorCent" element={<CentVoorCent />} />
                 
                 <Route path="/VTLBCalculator" element={<VTLBCalculator />} />
