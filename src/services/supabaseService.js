@@ -25,6 +25,7 @@ export const supabaseService = {
   },
 
   async filter(table, filters = {}, orderBy = null) {
+    console.log(`[SupabaseService] Filtering table: ${table}`, filters, orderBy)
 
     let query = supabase.from(table).select('*')
 
@@ -48,8 +49,12 @@ export const supabaseService = {
 
     const { data, error } = await query
 
+    if (error) {
+      console.error(`[SupabaseService] Error filtering ${table}:`, error)
+      throw error
+    }
 
-    if (error) throw error
+    console.log(`[SupabaseService] Success! Got ${data?.length || 0} rows from ${table}`)
     return data || []
   },
 

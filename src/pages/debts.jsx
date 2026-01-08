@@ -116,9 +116,10 @@ export default function Debts() {
     try {
       console.log('[Debts] Starting loadDebts...');
       const userData = await User.me();
-      console.log('[Debts] User loaded:', userData?.email);
+      console.log('[Debts] User loaded:', userData?.email, 'ID:', userData?.id);
       setUser(userData);
 
+      console.log('[Debts] Fetching debts with user_id:', userData.id);
       const data = await Debt.filter({ user_id: userData.id }, '-created_date');
       console.log('[Debts] Debts loaded:', data?.length);
       setDebts(data);
