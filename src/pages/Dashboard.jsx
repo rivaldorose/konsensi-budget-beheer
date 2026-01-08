@@ -158,7 +158,8 @@ export default function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const [loginStreak, setLoginStreak] = useState(0);
+
   const { toast } = useToast();
   const { t: tFromHook, language } = useTranslation();
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
@@ -204,7 +205,16 @@ export default function Dashboard() {
         throw new Error('User not authenticated');
       }
       setUser(currentUser);
-      
+
+      // Update login streak in database
+      try {
+        const streak = await User.updateStreak();
+        setLoginStreak(streak);
+      } catch (error) {
+        console.error('Error updating streak:', error);
+        setLoginStreak(0);
+      }
+
       // Use user_id for all queries
       const userFilter = { user_id: currentUser.id };
       
@@ -804,59 +814,12 @@ export default function Dashboard() {
 
         {/* Gamification Stats - Always show */}
         {(() => {
-          // Calculate days on track based on unique login days
-          const daysOnTrack = (() => {
-            try {
-              // Get today's date as a string (YYYY-MM-DD)
-              const today = new Date().toISOString().split('T')[0];
-
-              // Get stored values from localStorage
-              const lastLoginDate = localStorage.getItem('lastLoginDate');
-              let loginStreak = parseInt(localStorage.getItem('loginStreak') || '0');
-
-              // If this is the first time or no last login date
-              if (!lastLoginDate) {
-                loginStreak = 1;
-                localStorage.setItem('loginStreak', '1');
-                localStorage.setItem('lastLoginDate', today);
-                return 1;
-              }
-
-              // If already logged in today, return current streak
-              if (lastLoginDate === today) {
-                return loginStreak;
-              }
-
-              // Calculate days difference
-              const lastDate = new Date(lastLoginDate);
-              const currentDate = new Date(today);
-              const daysDifference = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24));
-
-              // If logged in yesterday, increment streak
-              if (daysDifference === 1) {
-                loginStreak += 1;
-              }
-              // If more than 1 day gap, reset streak to 1
-              else if (daysDifference > 1) {
-                loginStreak = 1;
-              }
-
-              // Update localStorage
-              localStorage.setItem('loginStreak', loginStreak.toString());
-              localStorage.setItem('lastLoginDate', today);
-
-              return Math.max(0, Math.min(loginStreak, 365)); // Cap at 365 days
-            } catch {
-              return 0;
-            }
-          })();
-
           // Calculate savings pot amount from pots
           const savingsPotAmount = (pots || []).reduce((sum, pot) => {
             return sum + (Number(pot?.current_amount) || 0);
           }, 0); // Show €0 if no pots
 
-          return <GamificationStats daysOnTrack={daysOnTrack} savingsPotAmount={savingsPotAmount} />;
+          return <GamificationStats daysOnTrack={loginStreak} savingsPotAmount={savingsPotAmount} />;
         })()}
 
         {/* Upcoming Payments - Always show */}

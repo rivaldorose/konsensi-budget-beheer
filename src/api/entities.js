@@ -183,6 +183,63 @@ export const User = {
     if (!user) throw new Error('Not authenticated')
     return await supabaseService.update('users', user.id, data)
   },
+  updateStreak: async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      // Get user profile with streak data
+      const { data: profile } = await supabase
+        .from('users')
+        .select('login_streak, last_login_date')
+        .eq('id', user.id)
+        .single()
+
+      // Get today's date as a string (YYYY-MM-DD)
+      const today = new Date().toISOString().split('T')[0]
+
+      let loginStreak = profile?.login_streak || 0
+      const lastLoginDate = profile?.last_login_date
+
+      // If this is the first time or no last login date
+      if (!lastLoginDate) {
+        loginStreak = 1
+      }
+      // If already logged in today, return current streak
+      else if (lastLoginDate === today) {
+        return loginStreak
+      }
+      // Calculate days difference
+      else {
+        const lastDate = new Date(lastLoginDate)
+        const currentDate = new Date(today)
+        const daysDifference = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24))
+
+        // If logged in yesterday, increment streak
+        if (daysDifference === 1) {
+          loginStreak += 1
+        }
+        // If more than 1 day gap, reset streak to 1
+        else if (daysDifference > 1) {
+          loginStreak = 1
+        }
+      }
+
+      // Cap at 365 days
+      loginStreak = Math.max(0, Math.min(loginStreak, 365))
+
+      // Update database
+      await supabaseService.update('users', user.id, {
+        login_streak: loginStreak,
+        last_login_date: today
+      })
+
+      return loginStreak
+    } catch (error) {
+      console.error('Error updating streak:', error)
+      return 0
+    }
+  },
   logout: async () => {
     const { error } = await supabase.auth.signOut()
     if (error) throw error
