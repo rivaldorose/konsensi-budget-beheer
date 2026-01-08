@@ -177,14 +177,20 @@ export const User = {
   updateStreak: async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Not authenticated')
+      if (!user) return 0
 
       // Get user profile with streak data
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('users')
         .select('login_streak, last_login_date')
         .eq('id', user.id)
         .single()
+
+      // If columns don't exist yet, silently return 0
+      if (profileError) {
+        console.warn('Streak columns not available:', profileError.message)
+        return 0
+      }
 
       // Get today's date as a string (YYYY-MM-DD)
       const today = new Date().toISOString().split('T')[0]
@@ -220,14 +226,22 @@ export const User = {
       loginStreak = Math.max(0, Math.min(loginStreak, 365))
 
       // Update database
-      await supabaseService.update('users', user.id, {
-        login_streak: loginStreak,
-        last_login_date: today
-      })
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          login_streak: loginStreak,
+          last_login_date: today
+        })
+        .eq('id', user.id)
+
+      if (updateError) {
+        console.warn('Failed to update streak:', updateError.message)
+        return 0
+      }
 
       return loginStreak
     } catch (error) {
-      console.error('Error updating streak:', error)
+      console.warn('Streak error, continuing without it:', error.message)
       return 0
     }
   },
