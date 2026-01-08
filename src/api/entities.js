@@ -2,6 +2,7 @@
 // All entities should be migrated to use supabaseService directly
 
 import { supabaseService } from '@/services/supabaseService'
+import { supabase } from '@/lib/supabase'
 
 // Entity wrappers that mimic base44.entities API
 const createEntityWrapper = (tableName) => ({
@@ -251,5 +252,3 @@ export const User = {
     return true
   }
 }
-
-import { supabase } from '@/lib/supabase'
