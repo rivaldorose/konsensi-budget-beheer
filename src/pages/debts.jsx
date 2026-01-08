@@ -348,7 +348,10 @@ export default function Debts() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400 dark:border-gray-600"></div>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-blue-500 dark:border-green-400"></div>
+          <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Laden...</p>
+        </div>
       </div>
     );
   }
