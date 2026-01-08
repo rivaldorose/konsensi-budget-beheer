@@ -3,7 +3,7 @@ import Layout from "./Layout.jsx";
 import { User } from "@/api/entities";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-import Debts from "./debts";
+import Debts from "./Debts";
 
 import CentVoorCent from "./CentVoorCent";
 
