@@ -133,8 +133,18 @@ function _getCurrentPage(url) {
         urlLastPart = urlLastPart.split('?')[0];
     }
 
+    // If empty (root URL), return Dashboard
+    if (!urlLastPart || urlLastPart === '') {
+        return 'Dashboard';
+    }
+
+    // Check for explicit Dashboard route
+    if (urlLastPart.toLowerCase() === 'dashboard') {
+        return 'Dashboard';
+    }
+
     const pageName = Object.keys(PAGES).find(page => page.toLowerCase() === urlLastPart.toLowerCase());
-    return pageName || Object.keys(PAGES)[0];
+    return pageName || 'Dashboard'; // Default to Dashboard instead of first page
 }
 
 
