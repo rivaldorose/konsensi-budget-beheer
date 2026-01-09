@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Income, MonthlyCost, Debt, User } from '@/api/entities';
 import { useToast } from '@/components/ui/toast';
+import { supabase } from '@/lib/supabase';
 
 export default function OnboardingNew() {
   const navigate = useNavigate();
@@ -117,53 +118,78 @@ export default function OnboardingNew() {
 
   const saveAllData = async () => {
     try {
+      console.log('[Onboarding] Starting to save all data...');
+
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('No authenticated user found');
+      }
+      console.log('[Onboarding] User ID:', user.id);
+
       // Save incomes
+      console.log('[Onboarding] Saving incomes:', formData.incomes);
       for (const income of formData.incomes) {
         if (income.description && income.amount) {
-          await Income.create({
+          const incomeData = {
+            user_id: user.id,
             description: income.description,
             amount: parseFloat(income.amount),
             frequency: income.frequency || 'monthly',
-            day_of_month: income.payment_date || 25,
+            day_of_month: income.payment_date === 'last' ? 31 : parseInt(income.payment_date) || 25,
             income_type: 'vast',
             category: 'salaris',
             is_active: true,
             start_date: new Date().toISOString().split('T')[0]
-          });
+          };
+          console.log('[Onboarding] Creating income:', incomeData);
+          await Income.create(incomeData);
         }
       }
 
       // Save monthly costs
+      console.log('[Onboarding] Saving monthly costs:', formData.monthlyCosts);
       for (const cost of formData.monthlyCosts) {
         if (cost.name && cost.amount) {
-          await MonthlyCost.create({
+          const costData = {
+            user_id: user.id,
             name: cost.name,
             amount: parseFloat(cost.amount),
-            payment_date: parseInt(cost.payment_date) || 25,
+            payment_date: cost.payment_date === 'last' ? 31 : parseInt(cost.payment_date) || 25,
             category: cost.category || 'overig',
             status: 'active',
             start_date: new Date().toISOString().split('T')[0]
-          });
+          };
+          console.log('[Onboarding] Creating cost:', costData);
+          await MonthlyCost.create(costData);
         }
       }
 
       // Save debts if user has debts
       if (formData.hasDebts === true) {
+        console.log('[Onboarding] Saving debts:', formData.debts);
         for (const debt of formData.debts) {
           if (debt.creditor && debt.total_amount) {
-            await Debt.create({
+            const debtData = {
+              user_id: user.id,
               creditor_name: debt.creditor,
+              amount: parseFloat(debt.total_amount),
               total_amount: parseFloat(debt.total_amount),
               monthly_payment: parseFloat(debt.monthly_payment) || 0,
-              payment_date: parseInt(debt.payment_date) || 25,
+              payment_date: debt.payment_date === 'last' ? 31 : parseInt(debt.payment_date) || 25,
               status: 'actief',
               description: `Schuld aan ${debt.creditor}`
-            });
+            };
+            console.log('[Onboarding] Creating debt:', debtData);
+            await Debt.create(debtData);
           }
         }
       }
+
+      console.log('[Onboarding] All data saved successfully!');
     } catch (error) {
-      console.error('Error saving onboarding data:', error);
+      console.error('[Onboarding] Error saving data:', error);
+      console.error('[Onboarding] Error details:', error.message, error.hint, error.details, error.code);
       throw error;
     }
   };
@@ -446,8 +472,9 @@ function IncomeStep({ formData, setFormData, darkMode }) {
                     onChange={(e) => updateIncome(index, 'payment_date', e.target.value)}
                     className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] px-4 py-3 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
                   >
-                    <option value="1">1e van de maand</option>
-                    <option value="25">25e van de maand</option>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                      <option key={day} value={day}>{day}e van de maand</option>
+                    ))}
                     <option value="last">Laatste dag</option>
                   </select>
                   <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-primary material-symbols-outlined text-[20px]">expand_more</span>
@@ -571,9 +598,10 @@ function MonthlyCostsStep({ formData, setFormData, darkMode }) {
                     onChange={(e) => updateCost(index, 'payment_date', e.target.value)}
                     className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] px-4 py-3 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
                   >
-                    <option value="1">1e van de maand</option>
-                    <option value="25">25e van de maand</option>
-                    <option value="last">Laatste werkdag</option>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                      <option key={day} value={day}>{day}e van de maand</option>
+                    ))}
+                    <option value="last">Laatste dag</option>
                   </select>
                   <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-primary material-symbols-outlined text-[20px]">expand_more</span>
                 </div>
@@ -809,9 +837,9 @@ function DebtsAddStep({ formData, setFormData, darkMode }) {
                     onChange={(e) => updateDebt(index, 'payment_date', e.target.value)}
                     className="block w-full pl-10 pr-10 py-2.5 bg-[#1a1a1a] border border-[#3a3a3a] rounded-[24px] text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none text-sm cursor-pointer"
                   >
-                    <option value="1">1e van de maand</option>
-                    <option value="15">15e van de maand</option>
-                    <option value="25">25e van de maand</option>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                      <option key={day} value={day}>{day}e van de maand</option>
+                    ))}
                     <option value="last">Laatste dag</option>
                   </select>
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7280] pointer-events-none material-symbols-outlined text-[20px]">expand_more</span>
