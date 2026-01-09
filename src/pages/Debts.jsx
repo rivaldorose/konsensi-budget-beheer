@@ -193,7 +193,13 @@ export default function Debts() {
         await Debt.update(editingDebt.id, debtData);
         toast({ title: "Schuld bijgewerkt! 📝" });
       } else {
-        await Debt.create(debtData);
+        // Add user_id to debt data for RLS policy
+        const dataWithUserId = {
+          ...debtData,
+          user_id: user.id
+        };
+        console.log('[Debts] Creating debt with user_id:', dataWithUserId);
+        await Debt.create(dataWithUserId);
         toast({ title: "Schuld toegevoegd! 💚" });
       }
       setShowAddForm(false);
