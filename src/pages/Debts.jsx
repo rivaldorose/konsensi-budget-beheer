@@ -188,6 +188,7 @@ export default function Debts() {
 
   const handleSubmit = async (debtData) => {
     try {
+      console.log('[Debts] Saving debt data:', debtData);
       if (editingDebt) {
         await Debt.update(editingDebt.id, debtData);
         toast({ title: "Schuld bijgewerkt! 📝" });
@@ -200,6 +201,7 @@ export default function Debts() {
       loadDebts();
     } catch (error) {
       console.error("Error saving debt:", error);
+      console.error("Error details:", error.message, error.hint, error.details);
       toast({ title: "Fout bij het opslaan", variant: "destructive" });
     }
   };

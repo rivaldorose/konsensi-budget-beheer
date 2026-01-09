@@ -70,13 +70,21 @@ export const supabaseService = {
   },
 
   async create(table, data) {
+    console.log(`[SupabaseService] Creating in table: ${table}`, data)
+
     const { data: result, error } = await supabase
       .from(table)
       .insert(data)
       .select()
       .single()
-    
-    if (error) throw error
+
+    if (error) {
+      console.error(`[SupabaseService] Error creating in ${table}:`, error)
+      console.error('Error details:', { message: error.message, hint: error.hint, details: error.details, code: error.code })
+      throw error
+    }
+
+    console.log(`[SupabaseService] Created successfully in ${table}:`, result)
     return result
   },
 
