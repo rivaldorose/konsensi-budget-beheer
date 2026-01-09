@@ -244,19 +244,35 @@ function LayoutWithProvider({ children, currentPageName }) {
     if (location.pathname === '/') {
       const handleRootRedirect = async () => {
         try {
-          
+
           const userData = await User.me();
-          
-          
+
+
           if (!userData) {
             window.location.href = '/login';
-          } else if (!userData.onboarding_completed) {
-            window.location.href = '/onboarding';
           } else {
-            window.location.href = '/Dashboard';
+            // Check if user has actually completed onboarding (has income data)
+            const hasCompletedOnboarding = userData.monthly_income && userData.monthly_income > 0;
+
+            if (!userData.onboarding_completed && hasCompletedOnboarding) {
+              // Auto-fix: user has data but flag is false
+              try {
+                await User.updateMe({ onboarding_completed: true });
+                window.location.href = '/Dashboard';
+              } catch (error) {
+                console.error('Failed to update onboarding flag:', error);
+                window.location.href = '/Dashboard';
+              }
+            } else if (!userData.onboarding_completed && !hasCompletedOnboarding) {
+              // User needs to complete onboarding
+              window.location.href = '/onboarding';
+            } else {
+              // User is good to go
+              window.location.href = '/Dashboard';
+            }
           }
         } catch (error) {
-          
+
           console.error('Error checking auth for root redirect:', error);
           window.location.href = '/login';
         }
@@ -273,17 +289,20 @@ function LayoutWithProvider({ children, currentPageName }) {
 
     const loadInitialUser = async () => {
       try {
-        
+
         const userData = await User.me();
-        
-        
+
+
         if (!userData) {
           // Redirect to login if not logged in (only log if not on auth pages)
           window.location.href = '/login';
           return;
         }
-        
-        if (userData && !userData.onboarding_completed && userData.monthly_income && userData.monthly_income > 0) {
+
+        // Check if user has completed onboarding (has income data)
+        const hasCompletedOnboarding = userData.monthly_income && userData.monthly_income > 0;
+
+        if (!userData.onboarding_completed && hasCompletedOnboarding) {
           console.log('🔧 Detected completed onboarding without flag - fixing now...');
           try {
             await User.updateMe({ onboarding_completed: true });
@@ -293,11 +312,17 @@ function LayoutWithProvider({ children, currentPageName }) {
             console.error('Failed to set onboarding flag:', error);
           }
         }
-        
-        
+
+        // If user hasn't completed onboarding and is not on onboarding page, redirect
+        if (!userData.onboarding_completed && !hasCompletedOnboarding && currentPath !== '/onboarding') {
+          console.log('🔄 User needs to complete onboarding, redirecting...');
+          window.location.href = '/onboarding';
+          return;
+        }
+
         setUser(userData);
       } catch (error) {
-        
+
         console.error("Error loading user:", error);
         setUser(null);
         // Redirect to login on error
