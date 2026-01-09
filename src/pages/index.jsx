@@ -75,9 +75,9 @@ import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-route
 
 // Note: Dashboard is lazy loaded, so we can't include it in PAGES object
 const PAGES = {
-    
-    debts: debts,
-    
+
+    Debts: Debts,
+
     CentVoorCent: CentVoorCent,
     
     VTLBCalculator: VTLBCalculator,
