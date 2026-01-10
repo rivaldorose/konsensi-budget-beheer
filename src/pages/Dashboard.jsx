@@ -649,21 +649,18 @@ export default function Dashboard() {
           />
         )}
 
-        {/* Debt Journey Chart - Only show if there's debt data */}
-        {(remainingDebt > 0 || totalPaidAllTime > 0) && (
-          <DebtJourneyChart
-            monthlyData={monthlyChartData}
-            totalPaid={totalPaidAllTime}
-            progressPercentage={progressPercentage}
-          />
-        )}
+        {/* Debt Journey Chart - Always show for visual appeal */}
+        <DebtJourneyChart
+          monthlyData={monthlyChartData}
+          totalPaid={totalPaidAllTime}
+          progressPercentage={progressPercentage}
+        />
                   </div>
 
       {/* Right Column */}
       <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
-        {/* Total Remaining Debt Card - Only show if there's debt */}
-        {remainingDebt > 0 && (
-          <div className="bg-konsensi-dark dark:bg-card-bg text-white dark:text-white rounded-[2rem] p-6 shadow-soft dark:shadow-soft-dark relative overflow-hidden border border-gray-100 dark:border-border-main">
+        {/* Total Remaining Debt Card */}
+        <div className="bg-konsensi-dark dark:bg-card-bg text-white dark:text-white rounded-[2rem] p-6 shadow-soft dark:shadow-soft-dark relative overflow-hidden border border-konsensi-dark/20 dark:border-border-main">
             <div className="absolute top-0 right-0 p-8 opacity-10 dark:opacity-5 pointer-events-none">
               <span className="material-symbols-outlined text-[120px] text-white">description</span>
             </div>
@@ -678,19 +675,14 @@ export default function Dashboard() {
               <p className="text-sm text-white/70 dark:text-text-secondary">Geen paniek, we komen er samen uit.</p>
             </div>
           </div>
-        )}
 
-        {/* Financial Overview - Only show if there's financial data */}
-        {(financialBreakdownData.totalIncome > 0 || financialBreakdownData.fixedCosts > 0 || financialBreakdownData.paymentPlans > 0 || financialBreakdownData.pots > 0) && (
-          <FinancialOverview {...financialBreakdownData} />
-        )}
+        {/* Financial Overview - Always show */}
+        <FinancialOverview {...financialBreakdownData} />
 
-        {/* Gamification Stats - Only show if user has data and stats are available */}
-        {user && (totalIncome > 0 || totalExpenses > 0) && (() => {
-          // Calculate days on track based on payment consistency
-          const daysOnTrack = (() => {
+        {/* Gamification Stats - Always show streak and savings */}
+        <GamificationStats
+          daysOnTrack={(() => {
             if (!allPayments || allPayments.length === 0) return 0;
-            // Simple calculation: count days since first payment
             const sortedPayments = [...allPayments].sort((a, b) => {
               const dateA = a?.payment_date ? new Date(a.payment_date) : new Date(0);
               const dateB = b?.payment_date ? new Date(b.payment_date) : new Date(0);
@@ -702,22 +694,13 @@ export default function Dashboard() {
               const firstDate = new Date(firstPayment.payment_date);
               if (isNaN(firstDate.getTime())) return 0;
               const daysDiff = Math.floor((new Date() - firstDate) / (1000 * 60 * 60 * 24));
-              return Math.max(0, Math.min(daysDiff, 30)); // Cap at 30 days, minimum 0
+              return Math.max(0, Math.min(daysDiff, 30));
             } catch {
               return 0;
             }
-          })();
-          
-          // Calculate savings pot amount from pots
-          const savingsPotAmount = (pots || []).reduce((sum, pot) => {
-            return sum + (Number(pot?.current_amount) || 0);
-          }, 0);
-          
-          // Only show if there's meaningful data
-          if (daysOnTrack === 0 && savingsPotAmount === 0) return null;
-          
-          return <GamificationStats daysOnTrack={daysOnTrack} savingsPotAmount={savingsPotAmount} />;
-        })()}
+          })()}
+          savingsPotAmount={(pots || []).reduce((sum, pot) => sum + (Number(pot?.current_amount) || 0), 0)}
+        />
 
         {/* Upcoming Payments - Only show if there are upcoming payments */}
         {upcomingPaymentsData.length > 0 && (
