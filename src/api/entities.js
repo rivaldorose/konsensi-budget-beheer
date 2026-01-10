@@ -69,8 +69,6 @@ export const Payslip = createEntityWrapper('payslips')
 export const VariableIncomeEntry = createEntityWrapper('variable_income_entries')
 export const NotificationRule = createEntityWrapper('notification_rules')
 
-import { supabase } from '@/lib/supabase'
-
 // Auth wrapper - use supabase.auth directly
 export const User = {
   me: async () => {
