@@ -176,9 +176,9 @@ export default function AddDebtModal({ isOpen, onClose, onDebtAdded, existingDeb
             </AccordionItem>
           </Accordion>
 
-          <div className="p-4 bg-gray-100 rounded-md text-center">
-            <p className="text-sm text-gray-600">{t('totalDebtAmount')}</p>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalAmount)}</p>
+          <div className="p-4 bg-gray-100 dark:bg-[#2a2a2a] rounded-md text-center">
+            <p className="text-sm text-gray-600 dark:text-[#a1a1a1]">{t('totalDebtAmount')}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(totalAmount)}</p>
           </div>
 
           <div className="space-y-2">

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Camera, Upload, FileText, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { UploadFile, ExtractDataFromUploadedFile } from "@/api/integrations";
+import { User } from "@/api/entities";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
@@ -135,12 +136,19 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
 
   const handleConfirm = async () => {
     if (!extractedData) return;
-    
+
     setIsProcessing(true);
     setError(null);
-    
+
     try {
+      // Get current user for user_id
+      const currentUser = await User.me();
+      if (!currentUser?.id) {
+        throw new Error('Niet ingelogd');
+      }
+
       const debtData = {
+        user_id: currentUser.id,
         creditor_name: extractedData.creditor_name || '',
         creditor_type: extractedData.creditor_type || 'incasso',
         case_number: extractedData.case_number || '',

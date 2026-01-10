@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Debt } from '@/api/entities';
+import { Debt, User } from '@/api/entities';
 import { useToast } from '@/components/ui/toast';
 
 import Step1Type from './Step1Type';
@@ -72,7 +72,14 @@ export default function DebtWizard({ isOpen, onClose, onSave }) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // Get current user for user_id
+      const currentUser = await User.me();
+      if (!currentUser?.id) {
+        throw new Error('Niet ingelogd');
+      }
+
       const dataToSave = {
+        user_id: currentUser.id,
         is_personal_loan: formData.is_personal_loan,
         creditor_name: formData.creditor_name,
         creditor_type: formData.is_personal_loan ? null : formData.creditor_type,
