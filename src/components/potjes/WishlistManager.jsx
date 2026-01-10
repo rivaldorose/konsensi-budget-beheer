@@ -53,10 +53,12 @@ export default function WishlistManager({ userEmail }) {
   }, [userEmail]);
 
   const loadWishlists = async () => {
-    if (!userEmail) return;
     try {
       setLoading(true);
-      const items = await WishlistItem.filter({ created_by: userEmail });
+      const { User } = await import('@/api/entities');
+      const user = await User.me();
+      if (!user) return;
+      const items = await WishlistItem.filter({ user_id: user.id });
       setWishlists(items);
 
       // Groepeer items per list_name

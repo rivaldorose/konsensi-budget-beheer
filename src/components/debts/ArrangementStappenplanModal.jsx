@@ -362,9 +362,9 @@ Bijlage: overzicht inkomsten en uitgaven`;
       const [existingArrangement, proposals, allIncomes, allCosts, allDebts] = await Promise.all([
         ArrangementProgress.filter({ debt_id: debt.id }, '-created_date', 1).then(res => res[0]),
         PaymentPlanProposal.filter({ debt_id: debt.id, template_type: { operator: 'in', value: ['dispute', 'partial_recognition', 'already_paid', 'verjaring'] } }, '-sent_date', 1),
-        Income.filter({ created_by: currentUser.email }),
-        MonthlyCost.filter({ created_by: currentUser.email }),
-        Debt.filter({ created_by: currentUser.email })
+        Income.filter({ user_id: currentUser.id }),
+        MonthlyCost.filter({ user_id: currentUser.id }),
+        Debt.filter({ user_id: currentUser.id })
       ]);
       
       const latestProposal = proposals[0];

@@ -114,7 +114,7 @@ export default function NotificationRulesManager() {
   const loadRules = async () => {
     try {
       const user = await User.me();
-      const data = await NotificationRule.filter({ created_by: user.email });
+      const data = await NotificationRule.filter({ user_id: user.id });
       setRules(data);
       setLoading(false);
     } catch (error) {

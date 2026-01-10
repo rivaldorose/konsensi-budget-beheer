@@ -18,14 +18,15 @@ export default function BudgetHistory({ userEmail }) {
   }, [userEmail, selectedMonths]);
 
   const loadHistory = async () => {
-    if (!userEmail) return;
-    
     try {
       setLoading(true);
+      const { User } = await import('@/api/entities');
+      const user = await User.me();
+      if (!user) return;
       const [transactions, incomes, costs] = await Promise.all([
-        Transaction.filter({ created_by: userEmail, type: 'expense' }),
-        Income.filter({ created_by: userEmail }),
-        MonthlyCost.filter({ created_by: userEmail, status: 'actief' })
+        Transaction.filter({ user_id: user.id, type: 'expense' }),
+        Income.filter({ user_id: user.id }),
+        MonthlyCost.filter({ user_id: user.id, status: 'actief' })
       ]);
 
       const months = parseInt(selectedMonths);

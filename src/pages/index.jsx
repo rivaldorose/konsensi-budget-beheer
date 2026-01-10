@@ -3,7 +3,7 @@ import Layout from "./Layout.jsx";
 import { User } from "@/api/entities";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-import debts from "./debts";
+import Debts from "./Debts";
 
 import CentVoorCent from "./CentVoorCent";
 
@@ -75,9 +75,9 @@ import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-route
 
 // Note: Dashboard is lazy loaded, so we can't include it in PAGES object
 const PAGES = {
-    
-    debts: debts,
-    
+
+    Debts: Debts,
+
     CentVoorCent: CentVoorCent,
     
     VTLBCalculator: VTLBCalculator,
@@ -133,8 +133,18 @@ function _getCurrentPage(url) {
         urlLastPart = urlLastPart.split('?')[0];
     }
 
+    // If empty (root URL), return Dashboard
+    if (!urlLastPart || urlLastPart === '') {
+        return 'Dashboard';
+    }
+
+    // Check for explicit Dashboard route
+    if (urlLastPart.toLowerCase() === 'dashboard') {
+        return 'Dashboard';
+    }
+
     const pageName = Object.keys(PAGES).find(page => page.toLowerCase() === urlLastPart.toLowerCase());
-    return pageName || Object.keys(PAGES)[0];
+    return pageName || 'Dashboard'; // Default to Dashboard instead of first page
 }
 
 
@@ -142,6 +152,7 @@ function _getCurrentPage(url) {
 function PagesContent() {
     const location = useLocation();
     const currentPage = _getCurrentPage(location.pathname);
+    
     
     return (
         <Layout currentPageName={currentPage}>
@@ -172,9 +183,9 @@ function PagesContent() {
                         </Suspense>
                     </ErrorBoundary>
                 } />
-                
-                <Route path="/debts" element={<debts />} />
-                
+
+                <Route path="/debts" element={<Debts />} />
+
                 <Route path="/CentVoorCent" element={<CentVoorCent />} />
                 
                 <Route path="/VTLBCalculator" element={<VTLBCalculator />} />

@@ -71,70 +71,11 @@ export default function Privacy() {
 
   return (
     <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a]">
-      {/* Header */}
-      <header className="bg-primary shadow-md w-full h-16 flex items-center justify-center px-4 md:px-8 z-50 sticky top-0">
-        <div className="w-full max-w-[1400px] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="size-8 flex items-center justify-center text-white">
-              <span className="material-symbols-outlined text-3xl">forest</span>
-            </div>
-            <h2 className="text-white text-lg font-bold tracking-tight">KONSENSI Budgetbeheer</h2>
-          </div>
-          <nav className="hidden md:flex items-center gap-2">
-            <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('Dashboard')}>Dashboard</a>
-            <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('BudgetPlan')}>Balans</a>
-            <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('Debts')}>Schulden</a>
-            <a className="px-5 py-2 bg-secondary text-[#0d1b17] rounded-full text-sm font-bold shadow-sm" href={createPageUrl('Settings')}>Instellingen</a>
-          </nav>
-          <div className="flex items-center gap-4">
-            <label className="relative inline-flex items-center cursor-pointer mr-2">
-              <input 
-                className="sr-only peer" 
-                type="checkbox" 
-                checked={darkMode}
-                onChange={toggleTheme}
-              />
-              <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-white/20 flex items-center justify-between px-1.5">
-                <span className="material-symbols-outlined text-[16px] text-yellow-300 z-10 select-none">light_mode</span>
-                <span className="material-symbols-outlined text-[16px] text-white/80 z-10 select-none">dark_mode</span>
-              </div>
-            </label>
-            <button className="text-white/80 hover:text-white transition-colors p-1">
-              <span className="material-symbols-outlined">search</span>
-            </button>
-            <div className="hidden sm:flex items-center justify-center bg-purple-badge text-white px-3 py-1 rounded-full text-xs font-bold shadow-sm">
-              Level 9
-            </div>
-            <div className="flex items-center gap-3 pl-2 border-l border-white/10">
-              <span className="text-white text-sm font-medium hidden sm:block">Rivaldo</span>
-              <div className="size-9 rounded-full bg-cover bg-center border-2 border-white/20 bg-purple-badge"></div>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <main className="flex-1 flex justify-center py-8 px-4 sm:px-6 md:px-8">
         <div className="w-full max-w-[1400px] flex flex-col gap-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-[#0d1b17] dark:text-secondary text-3xl">settings</span>
-                <h1 className="text-[#0d1b17] dark:text-white text-3xl md:text-4xl font-black tracking-tight">Instellingen</h1>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
-            </div>
-            <button 
-              className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a2c26] text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors shadow-sm"
-              onClick={() => window.location.href = createPageUrl('HelpSupport')}
-            >
-              <span className="material-symbols-outlined text-[20px]">help_outline</span>
-              <span>Hulp</span>
-            </button>
-          </div>
-
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Sidebar */}
-            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a2c26] rounded-[24px] lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-4 lg:p-6 flex flex-col sticky top-24">
+            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2a2a2a] p-4 lg:p-6 flex flex-col sticky top-24">
               <nav className="flex flex-col gap-2">
                 <a 
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
@@ -225,7 +166,7 @@ export default function Privacy() {
             </aside>
 
             {/* Main Content */}
-            <section className="w-full lg:w-3/4 bg-white dark:bg-[#1a2c26] rounded-[24px] lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-6 md:p-8 lg:p-8">
+            <section className="w-full lg:w-3/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2a2a2a] p-6 md:p-8 lg:p-8">
               <div className="mb-8">
                 <h2 className="text-[#0d1b17] dark:text-white font-bold text-2xl">Privacy</h2>
                 <p className="text-gray-600 dark:text-gray-400 text-[15px] mt-2">Beheer je privacy-instellingen</p>

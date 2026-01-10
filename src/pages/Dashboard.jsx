@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import { formatCurrency } from "@/components/utils/formatters";
 import { XCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import StartgidsWidget from "../components/dashboard/StartgidsWidget";
 import AchievementsModal from "@/components/gamification/AchievementsModal";
 import PersonalizedAdviceWidget from "@/components/dashboard/PersonalizedAdviceWidget";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
@@ -22,6 +21,7 @@ import GamificationStats from "@/components/dashboard/GamificationStats";
 import DashboardFooter from "@/components/dashboard/DashboardFooter";
 import { gamificationService } from "@/services/gamificationService";
 import { dashboardService } from "@/services/dashboardService";
+import { getDailyQuote } from "@/utils/dailyQuotes";
 
 const createPageUrl = (pageName) => `/${pageName.toLowerCase()}`;
 
@@ -121,6 +121,7 @@ const dashboardTranslations = {
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
+  const [debtVisible, setDebtVisible] = useState(true); // For toggling debt visibility
   const [gamificationData, setGamificationData] = useState({
     level: 1,
     currentXP: 0,
@@ -157,13 +158,15 @@ export default function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const [loginStreak, setLoginStreak] = useState(0);
+
   const { toast } = useToast();
   const { t: tFromHook, language } = useTranslation();
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
 
   // Use useCallback for t function to avoid useMemo issues
   const t = useCallback((key, options) => {
+    
     let translation = dashboardTranslations[key]?.[language];
     if (translation) {
       if (options) {
@@ -180,18 +183,30 @@ export default function Dashboard() {
   }, [language, tFromHook]);
 
   const loadDashboardData = useCallback(async () => {
+    
     setLoading(true);
     setError(null);
     try {
       const currentUser = await User.me();
-
+      
+      
       if (!currentUser || !currentUser.id) {
         throw new Error('User not authenticated');
       }
       setUser(currentUser);
-      
+
+      // Update login streak in database
+      try {
+        const streak = await User.updateStreak();
+        setLoginStreak(streak);
+      } catch (error) {
+        console.error('Error updating streak:', error);
+        setLoginStreak(0);
+      }
+
       // Use user_id for all queries
       const userFilter = { user_id: currentUser.id };
+      
 
       const now = new Date();
 
@@ -221,9 +236,10 @@ export default function Dashboard() {
         filterWithFallback(Debt, userFilter),
         filterWithFallback(DebtPayment, userFilter),
         filterWithFallback(Pot, userFilter),
-        filterWithFallback(DebtStrategy, { ...userFilter, is_active: true }),
+        filterWithFallback(DebtStrategy, userFilter),
         filterWithFallback(Transaction, userFilter),
       ]);
+      
 
       // Sort payments by date descending (with null safety)
       if (Array.isArray(allPayments)) {
@@ -455,22 +471,26 @@ export default function Dashboard() {
   }, [t, toast, language]);
 
   const loadGamificationData = useCallback(async () => {
+    
     if (!user?.id) return;
     
     try {
-      const [levelData, badges, motivation, weekGoal] = await Promise.all([
+      const [levelData, badges, weekGoal] = await Promise.all([
         gamificationService.getUserLevel(user.id),
         gamificationService.getUserBadges(user.id),
-        gamificationService.getDailyMotivation(language || 'nl'),
         gamificationService.getWeekGoal(user.id),
       ]);
+
+      // Get daily quote from local function (no API call needed)
+      const dailyQuote = getDailyQuote();
+
 
       setGamificationData({
         level: levelData?.level || 1,
         currentXP: levelData?.current_xp || 0,
         totalXP: levelData?.xp_to_next_level || 100,
         badges: (badges || []).map(b => b?.badge_type).filter(Boolean),
-        dailyMotivation: motivation?.quote || "",
+        dailyMotivation: dailyQuote,
         weekGoalPercentage: weekGoal?.percentage || 0,
       });
     } catch (error) {
@@ -478,6 +498,10 @@ export default function Dashboard() {
       // Don't throw - gamification data is not critical
     }
   }, [user?.id, language]);
+
+  // All useEffect hooks must come after all other hooks (useState, useMemo, useCallback)
+  
+  
 
   useEffect(() => {
     loadDashboardData();
@@ -488,6 +512,66 @@ export default function Dashboard() {
       loadGamificationData();
     }
   }, [user?.id, loadGamificationData]);
+
+  // Prepare data for components - useMemo hooks must be before early returns
+  const monthlyChartData = useMemo(() => {
+    const last6Months = Array.from({ length: 6 }, (_, i) => {
+      const monthDate = subMonths(new Date(), 5 - i);
+      const monthEnd = getEndOfMonth(monthDate);
+      const monthStart = getStartOfMonth(monthDate);
+
+      const monthlyTotal = (dashboardData.allPayments || [])
+        .filter(p => {
+          const dateStr = p?.payment_date || p?.created_at;
+          if (!dateStr) return false;
+          try {
+            const pDate = new Date(dateStr);
+            return !isNaN(pDate.getTime()) && pDate >= monthStart && pDate <= monthEnd;
+          } catch {
+            return false;
+          }
+        })
+        .reduce((sum, p) => sum + (Number(p?.amount) || 0), 0) || 0;
+
+      return {
+        month: new Intl.DateTimeFormat("nl-NL", { month: "short" }).format(monthDate),
+        amount: monthlyTotal,
+      };
+    });
+    return last6Months;
+  }, [dashboardData.allPayments]);
+
+  const upcomingPaymentsData = useMemo(() => {
+    const payments = [];
+    const nextCost = dashboardData.nextCost;
+    const nextPayment = dashboardData.nextPayment;
+    if (nextCost) {
+      payments.push({
+        type: "fixed_cost",
+        name: nextCost.name,
+        amount: nextCost.amount,
+        date: nextCost.date,
+      });
+    }
+    if (nextPayment) {
+      payments.push({
+        type: "debt",
+        name: nextPayment.name,
+        amount: nextPayment.amount,
+        date: nextPayment.date,
+      });
+    }
+    return payments;
+  }, [dashboardData.nextCost, dashboardData.nextPayment]);
+
+  const financialBreakdownData = useMemo(() => {
+    return {
+      totalIncome: dashboardData.totalIncome || 0,
+      fixedCosts: dashboardData.totalExpenses || 0,
+      paymentPlans: dashboardData.activeDebtPaymentsSum || 0,
+      pots: dashboardData.totalPotjesBudget || 0,
+    };
+  }, [dashboardData.totalIncome, dashboardData.totalExpenses, dashboardData.activeDebtPaymentsSum, dashboardData.totalPotjesBudget]);
 
   const today = new Date();
   const formattedDate = (() => {
@@ -524,94 +608,59 @@ export default function Dashboard() {
     allPayments = [],
   } = dashboardData;
 
-  // Prepare data for new components - useMemo hooks MUST be before conditional returns
-  const monthlyChartData = useMemo(() => {
-    const last6Months = Array.from({ length: 6 }, (_, i) => {
-      const monthDate = subMonths(new Date(), 5 - i);
-      const monthEnd = getEndOfMonth(monthDate);
-      const monthStart = getStartOfMonth(monthDate);
-
-      const monthlyTotal = (allPayments || [])
-        .filter(p => {
-          const dateStr = p?.payment_date || p?.created_at;
-          if (!dateStr) return false;
-          try {
-            const pDate = new Date(dateStr);
-            return !isNaN(pDate.getTime()) && pDate >= monthStart && pDate <= monthEnd;
-          } catch {
-            return false;
-          }
-        })
-        .reduce((sum, p) => sum + (Number(p?.amount) || 0), 0) || 0;
-
-      return {
-        month: new Intl.DateTimeFormat("nl-NL", { month: "short" }).format(monthDate),
-        amount: monthlyTotal,
-      };
-    });
-    return last6Months;
-  }, [allPayments]);
-
-  const upcomingPaymentsData = useMemo(() => {
-    const payments = [];
-    if (nextCost) {
-      payments.push({
-        type: "fixed_cost",
-        name: nextCost.name,
-        amount: nextCost.amount,
-        date: nextCost.date,
-      });
+  // Calculate dynamic motivational message based on user's progress
+  const motivationalMessage = (() => {
+    // If no debt data, encourage starting
+    if (remainingDebt === 0 && totalPaidAllTime === 0) {
+      return "Klaar voor een frisse start!";
     }
-    if (nextPayment) {
-      payments.push({
-        type: "debt",
-        name: nextPayment.name,
-        amount: nextPayment.amount,
-        date: nextPayment.date,
-      });
+
+    // If debt is completely paid off
+    if (remainingDebt === 0 && totalPaidAllTime > 0) {
+      return "Gefeliciteerd! Je hebt het gehaald!";
     }
-    return payments;
-  }, [nextCost, nextPayment]);
 
-  const financialBreakdownData = useMemo(() => {
-    return {
-      totalIncome: totalIncome,
-      fixedCosts: totalExpenses,
-      paymentPlans: dashboardData.activeDebtPaymentsSum || 0,
-      pots: dashboardData.totalPotjesBudget || 0,
-    };
-  }, [totalIncome, totalExpenses, dashboardData.activeDebtPaymentsSum, dashboardData.totalPotjesBudget]);
-
-  const currentMonthFormatted = useMemo(() => {
-    try {
-      return new Intl.DateTimeFormat(language || 'nl', { month: 'long', year: 'numeric' }).format(today);
-    } catch (e) {
-      return '';
+    // Based on progress percentage
+    if (progressPercentage < 20) {
+      return "Een goed begin is het halve werk!";
+    } else if (progressPercentage >= 20 && progressPercentage < 50) {
+      return "Elke stap telt, blijf doorgaan!";
+    } else if (progressPercentage >= 50 && progressPercentage < 80) {
+      return "Je maakt geweldige vooruitgang!";
+    } else if (progressPercentage >= 80) {
+      return "Houd vol! Je bent er bijna.";
     }
-  }, [language, today]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-konsensi-bg dark:bg-bg-main">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary dark:border-konsensi-primary"></div>
-        </div>
-      </div>
-    );
-  }
+    // Fallback
+    return "Een goed begin is het halve werk!";
+  })();
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-konsensi-bg dark:bg-bg-main p-4">
-        <div className="text-center p-8 md:p-12 bg-white dark:bg-card-bg rounded-[24px] shadow-soft dark:shadow-soft-dark border border-gray-100 dark:border-border-main max-w-sm w-full">
-          <XCircle className="w-16 h-16 text-accent-red mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-konsensi-dark dark:text-white">{t('common.error')}</h2>
-          <p className="text-gray-500 dark:text-text-secondary mt-2">{t('dashboard.errorLoading')}</p>
-          <Button onClick={loadDashboardData} className="mt-4 bg-primary dark:bg-konsensi-primary hover:bg-primary-dark dark:hover:bg-konsensi-hover text-white dark:text-black">Probeer opnieuw</Button>
-        </div>
-      </div>
-    );
-  }
+  // Calculate dynamic user title based on progress
+  const userTitle = (() => {
+    // If no debt data
+    if (remainingDebt === 0 && totalPaidAllTime === 0) {
+      return "Financiële Starter";
+    }
+
+    // If debt is completely paid off
+    if (remainingDebt === 0 && totalPaidAllTime > 0) {
+      return "Schuldenvrij Held";
+    }
+
+    // Based on progress percentage
+    if (progressPercentage < 20) {
+      return "Schuld Tackler";
+    } else if (progressPercentage >= 20 && progressPercentage < 50) {
+      return "Budget Bewaker";
+    } else if (progressPercentage >= 50 && progressPercentage < 80) {
+      return "Schuld Sloper";
+    } else if (progressPercentage >= 80) {
+      return "Vrijheids Jager";
+    }
+
+    // Fallback
+    return "Schuld Sloper";
+  })();
 
   return (
     <main className="flex-grow max-w-[1440px] mx-auto w-full p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 bg-konsensi-bg dark:bg-bg-main min-h-screen">
@@ -624,108 +673,84 @@ export default function Dashboard() {
           currentXP={gamificationData.currentXP}
           totalXP={gamificationData.totalXP}
           badges={gamificationData.badges}
+          motivationalMessage={motivationalMessage}
+          userTitle={userTitle}
         />
 
-        {/* Stat Cards - Only show if there's data */}
-        {(totalIncome > 0 || totalExpenses > 0 || totalPaidThisMonth > 0) && (
-          <StatCards
-            totalIncome={totalIncome}
-            totalExpenses={totalExpenses}
-            totalPaidThisMonth={totalPaidThisMonth}
-            currentMonth={new Date()}
-          />
-        )}
+        {/* Stat Cards - Always show */}
+        <StatCards
+          totalIncome={totalIncome}
+          totalExpenses={totalExpenses}
+          totalPaidThisMonth={totalPaidThisMonth}
+          currentMonth={new Date()}
+        />
 
-        {/* Startgids Widget for new users or empty state */}
-        {user && 
-         allIncomes.length === 0 && allMonthlyCosts.length === 0 && debts.length === 0 && pots.length === 0 && (
-          <StartgidsWidget 
-            allIncomes={allIncomes}
-            allMonthlyCosts={allMonthlyCosts}
-            allDebts={debts}
-            allPots={pots}
-            user={user}
-            onRefresh={loadDashboardData}
-          />
-        )}
-
-        {/* Debt Journey Chart - Only show if there's debt data */}
-        {(remainingDebt > 0 || totalPaidAllTime > 0) && (
-          <DebtJourneyChart
-            monthlyData={monthlyChartData}
-            totalPaid={totalPaidAllTime}
-            progressPercentage={progressPercentage}
-          />
-        )}
+        {/* Debt Journey Chart - Always show */}
+        <DebtJourneyChart
+          monthlyData={monthlyChartData}
+          totalPaid={totalPaidAllTime}
+          progressPercentage={progressPercentage}
+        />
                   </div>
 
       {/* Right Column */}
       <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
-        {/* Total Remaining Debt Card - Only show if there's debt */}
-        {remainingDebt > 0 && (
-          <div className="bg-konsensi-dark dark:bg-card-bg text-white dark:text-white rounded-[2rem] p-6 shadow-soft dark:shadow-soft-dark relative overflow-hidden border border-gray-100 dark:border-border-main">
-            <div className="absolute top-0 right-0 p-8 opacity-10 dark:opacity-5 pointer-events-none">
-              <span className="material-symbols-outlined text-[120px] text-white">description</span>
-            </div>
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 bg-white/10 dark:bg-card-elevated rounded-full border border-white/20 dark:border-border-accent">
+        {/* Total Remaining Debt Card - Always show */}
+        <div className="bg-konsensi-dark dark:bg-card-bg dark:border dark:border-border-main text-white rounded-[2rem] p-6 shadow-soft relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-10 dark:opacity-5 pointer-events-none">
+            <span className="material-symbols-outlined text-[120px] text-white">description</span>
+          </div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-white/10 dark:bg-card-elevated rounded-full border border-transparent dark:border-border-accent">
                   <span className="material-symbols-outlined text-primary dark:text-konsensi-primary">account_balance_wallet</span>
                 </div>
                 <p className="text-primary dark:text-konsensi-primary font-bold text-sm">Totale Restschuld</p>
               </div>
-              <p className="font-header text-4xl font-extrabold mb-2">{formatCurrency(remainingDebt || 0, { decimals: 0 })}</p>
-              <p className="text-sm text-white/70 dark:text-text-secondary">Geen paniek, we komen er samen uit.</p>
+              {/* Eye icon to toggle visibility */}
+              <button
+                onClick={() => setDebtVisible(!debtVisible)}
+                className="p-2 hover:bg-white/10 dark:hover:bg-card-elevated rounded-full transition-colors"
+                aria-label={debtVisible ? "Verberg bedrag" : "Toon bedrag"}
+              >
+                <span className="material-symbols-outlined text-white dark:text-text-secondary text-xl">
+                  {debtVisible ? "visibility" : "visibility_off"}
+                </span>
+              </button>
             </div>
+            <p className="font-header text-4xl font-extrabold mb-2">
+              {debtVisible ? formatCurrency(remainingDebt || 0, { decimals: 0 }) : "€ •••••"}
+            </p>
+            <p className="text-sm text-white/70 dark:text-text-secondary">Geen paniek, we komen er samen uit.</p>
           </div>
-        )}
+        </div>
 
-        {/* Financial Overview - Only show if there's financial data */}
-        {(financialBreakdownData.totalIncome > 0 || financialBreakdownData.fixedCosts > 0 || financialBreakdownData.paymentPlans > 0 || financialBreakdownData.pots > 0) && (
-          <FinancialOverview {...financialBreakdownData} />
-        )}
+        {/* Financial Overview - Always show */}
+        <FinancialOverview {...financialBreakdownData} />
 
-        {/* Gamification Stats - Only show if user has data and stats are available */}
-        {user && (totalIncome > 0 || totalExpenses > 0) && (() => {
-          // Calculate days on track based on payment consistency
-          const daysOnTrack = (() => {
-            if (!allPayments || allPayments.length === 0) return 0;
-            // Simple calculation: count days since first payment
-            const sortedPayments = [...allPayments].sort((a, b) => {
-              const dateA = a?.payment_date ? new Date(a.payment_date) : new Date(0);
-              const dateB = b?.payment_date ? new Date(b.payment_date) : new Date(0);
-              return dateA - dateB;
-            });
-            const firstPayment = sortedPayments[0];
-            if (!firstPayment?.payment_date) return 0;
-            try {
-              const firstDate = new Date(firstPayment.payment_date);
-              if (isNaN(firstDate.getTime())) return 0;
-              const daysDiff = Math.floor((new Date() - firstDate) / (1000 * 60 * 60 * 24));
-              return Math.max(0, Math.min(daysDiff, 30)); // Cap at 30 days, minimum 0
-            } catch {
-              return 0;
-            }
-          })();
-          
+        {/* Gamification Stats - Always show */}
+        {(() => {
           // Calculate savings pot amount from pots
           const savingsPotAmount = (pots || []).reduce((sum, pot) => {
             return sum + (Number(pot?.current_amount) || 0);
-          }, 0);
-          
-          // Only show if there's meaningful data
-          if (daysOnTrack === 0 && savingsPotAmount === 0) return null;
-          
-          return <GamificationStats daysOnTrack={daysOnTrack} savingsPotAmount={savingsPotAmount} />;
+          }, 0); // Show €0 if no pots
+
+          return <GamificationStats daysOnTrack={loginStreak} savingsPotAmount={savingsPotAmount} />;
         })()}
 
-        {/* Upcoming Payments - Only show if there are upcoming payments */}
-        {upcomingPaymentsData.length > 0 && (
-          <UpcomingPayments payments={upcomingPaymentsData} />
-        )}
+        {/* Upcoming Payments - Always show */}
+        <UpcomingPayments payments={upcomingPaymentsData} />
 
-        {/* Dashboard Alerts - Only show if there are alerts */}
-        {/* <DashboardAlerts alerts={[]} /> */}
+        {/* Dashboard Alerts - Only show when there's actual data */}
+        {totalExpenses > 0 && (
+          <DashboardAlerts
+            alerts={[
+              // Alerts will be dynamically generated based on actual budget data
+              // For now, we show no alerts when there's no expense data
+            ]}
+          />
+        )}
                         </div>
 
       {/* Footer */}

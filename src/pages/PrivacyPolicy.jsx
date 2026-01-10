@@ -73,7 +73,7 @@ export default function PrivacyPolicy() {
           </p>
         </header>
 
-        <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] p-8 sm:p-10 mb-12">
+        <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] p-8 sm:p-10 mb-12">
           <section className="mb-8">
             <h2 className="text-[#1F2937] dark:text-white text-xl font-semibold mb-4">1. Introductie</h2>
             <p className="text-[#6B7280] dark:text-[#9CA3AF] text-[15px] leading-relaxed">

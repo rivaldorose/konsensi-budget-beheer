@@ -82,6 +82,7 @@ function LayoutWithProvider({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
   
+  
   const { t, language, changeLanguage } = useTranslation();
   const { toast } = useToast();
   const { startPageTour, startFullOnboarding } = useTour();
@@ -89,8 +90,8 @@ function LayoutWithProvider({ children, currentPageName }) {
   // Dark mode state
   const [darkMode, setDarkMode] = React.useState(() => {
     // Check localStorage first, then system preference
-    const saved = localStorage.getItem('darkMode');
-    if (saved !== null) return saved === 'true';
+    const saved = localStorage.getItem('theme');
+    if (saved !== null) return saved === 'dark';
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
@@ -98,10 +99,11 @@ function LayoutWithProvider({ children, currentPageName }) {
   React.useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
-    localStorage.setItem('darkMode', darkMode.toString());
   }, [darkMode]);
 
   const toggleDarkMode = () => {
@@ -116,6 +118,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                      currentPath === '/terms' || currentPath === '/privacy' ||
                      currentPath === '/maintenance';
   
+
   const [fabPosition, setFabPosition] = React.useState({ x: null, y: null });
   const fabRef = React.useRef(null);
   const isDragging = React.useRef(false);
@@ -241,16 +244,35 @@ function LayoutWithProvider({ children, currentPageName }) {
     if (location.pathname === '/') {
       const handleRootRedirect = async () => {
         try {
+
           const userData = await User.me();
+
 
           if (!userData) {
             window.location.href = '/login';
-          } else if (!userData.onboarding_completed) {
-            window.location.href = '/onboarding';
           } else {
-            window.location.href = '/Dashboard';
+            // Check if user has actually completed onboarding (has income data)
+            const hasCompletedOnboarding = userData.monthly_income && userData.monthly_income > 0;
+
+            if (!userData.onboarding_completed && hasCompletedOnboarding) {
+              // Auto-fix: user has data but flag is false
+              try {
+                await User.updateMe({ onboarding_completed: true });
+                window.location.href = '/Dashboard';
+              } catch (error) {
+                console.error('Failed to update onboarding flag:', error);
+                window.location.href = '/Dashboard';
+              }
+            } else if (!userData.onboarding_completed && !hasCompletedOnboarding) {
+              // User needs to complete onboarding
+              window.location.href = '/onboarding';
+            } else {
+              // User is good to go
+              window.location.href = '/Dashboard';
+            }
           }
         } catch (error) {
+
           console.error('Error checking auth for root redirect:', error);
           window.location.href = '/login';
         }
@@ -267,15 +289,20 @@ function LayoutWithProvider({ children, currentPageName }) {
 
     const loadInitialUser = async () => {
       try {
+
         const userData = await User.me();
+
 
         if (!userData) {
           // Redirect to login if not logged in (only log if not on auth pages)
           window.location.href = '/login';
           return;
         }
-        
-        if (userData && !userData.onboarding_completed && userData.monthly_income && userData.monthly_income > 0) {
+
+        // Check if user has completed onboarding (has income data)
+        const hasCompletedOnboarding = userData.monthly_income && userData.monthly_income > 0;
+
+        if (!userData.onboarding_completed && hasCompletedOnboarding) {
           console.log('🔧 Detected completed onboarding without flag - fixing now...');
           try {
             await User.updateMe({ onboarding_completed: true });
@@ -285,9 +312,17 @@ function LayoutWithProvider({ children, currentPageName }) {
             console.error('Failed to set onboarding flag:', error);
           }
         }
-        
+
+        // If user hasn't completed onboarding and is not on onboarding page, redirect
+        if (!userData.onboarding_completed && !hasCompletedOnboarding && currentPath !== '/onboarding') {
+          console.log('🔄 User needs to complete onboarding, redirecting...');
+          window.location.href = '/onboarding';
+          return;
+        }
+
         setUser(userData);
       } catch (error) {
+
         console.error("Error loading user:", error);
         setUser(null);
         // Redirect to login on error
@@ -310,30 +345,25 @@ function LayoutWithProvider({ children, currentPageName }) {
     const checkInVisibility = async () => {
         try {
             const today = new Date();
-            const currentMonthStr = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit' }).format(today);
+            const currentMonthStr = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(today.getFullYear(), today.getMonth(), 1));
             const currentDay = today.getDate();
-
-            console.log('=== CHECK-IN DEBUG ===');
-            console.log('Vandaag:', new Intl.DateTimeFormat('nl-NL').format(today), 'Dag:', currentDay);
-            console.log('Huidige maand:', currentMonthStr);
-            console.log('User email:', user.email);
 
             // Load monthly checks for current month
             let existingChecks = [];
             try {
-              existingChecks = await MonthlyCheck.filter({
-                  month: currentMonthStr,
-                  user_id: user.id
-              });
+              // Only try to load if MonthlyCheck is available
+              if (MonthlyCheck && typeof MonthlyCheck.filter === 'function') {
+                existingChecks = await MonthlyCheck.filter({
+                    month: currentMonthStr,
+                    user_id: user.id
+                });
+              }
             } catch (error) {
-              console.error('Error loading monthly checks:', error);
+              console.warn('Monthly checks not available:', error.message);
               existingChecks = [];
             }
-            
-            console.log('Bestaande checks deze maand:', existingChecks.length);
-            
+
             if (existingChecks.length > 0) {
-                console.log('Check al gedaan deze maand, niet tonen');
                 setShowCheckIn(false);
                 return;
             }
@@ -360,15 +390,6 @@ function LayoutWithProvider({ children, currentPageName }) {
               })()
             ]);
 
-            console.log('Actieve maandelijkse kosten:', monthlyCosts.length);
-            console.log('Details kosten:', monthlyCosts.map(c => ({
-                naam: c.name,
-                payment_date: c.payment_date,
-                vervallen: c.payment_date <= currentDay
-            })));
-
-            console.log('Actieve schulden met regeling:', debts.length);
-
             const pastDueCosts = monthlyCosts.filter(c => c.payment_date <= currentDay);
             const pastDueDebts = debts.filter(debt => {
                 if (!debt.payment_plan_date) return false;
@@ -376,18 +397,11 @@ function LayoutWithProvider({ children, currentPageName }) {
                     const paymentDay = new Date(debt.payment_plan_date).getDate();
                     return paymentDay <= currentDay;
                 } catch (e) {
-                    console.error("Error parsing debt payment_plan_date:", debt.payment_plan_date, e);
                     return false;
                 }
             });
 
             const hasPastDueItem = pastDueCosts.length > 0 || pastDueDebts.length > 0;
-
-            console.log('Vervallen kosten:', pastDueCosts.length);
-            console.log('Vervallen schulden:', pastDueDebts.length);
-            console.log('Check-in nodig?', hasPastDueItem);
-            console.log('=== EINDE DEBUG ===');
-
             setShowCheckIn(hasPastDueItem);
         } catch (error) {
             console.error('Error in checkInVisibility:', error);
@@ -598,11 +612,13 @@ function LayoutWithProvider({ children, currentPageName }) {
 
 
   const fetchNotifications = React.useCallback(async () => {
+    
     if (!user?.id || !notificationsEnabled) return;
 
     try {
-      const allNotifications = await Notification.filter({ user_id: user.id }, '-created_date', 50);
-
+      const allNotifications = await Notification.filter({ user_id: user.id }, '-created_at');
+      
+      
       setNotifications(allNotifications || []);
       const unread = (allNotifications || []).filter(n => !n.is_read).length;
       setUnreadCount(unread);
@@ -668,7 +684,7 @@ function LayoutWithProvider({ children, currentPageName }) {
   const handleLogout = React.useCallback(async () => {
     try {
       await User.logout();
-      navigate(createPageUrl('Onboarding'));
+      navigate(createPageUrl('Login'));
     } catch (error) {
       console.error("Error logging out:", error);
     }
@@ -756,6 +772,7 @@ function LayoutWithProvider({ children, currentPageName }) {
     return groups;
   }, [notifications]);
 
+
   if (checkingOnboarding) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -779,7 +796,7 @@ function LayoutWithProvider({ children, currentPageName }) {
   const isAnyModalOpen = showAddModal || showLoanModal || showScanBonModal || showConfirmModal;
 
   return (
-    <div className={`theme-light flex min-h-screen bg-gray-50 font-sans antialiased ${isAnyModalOpen ? 'overflow-hidden' : ''}`} dir={languages.find(l => l.code === language)?.rtl ? 'rtl' : 'ltr'}>
+    <div className={`flex min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] font-sans antialiased transition-colors duration-200 ${isAnyModalOpen ? 'overflow-hidden' : ''}`} dir={languages.find(l => l.code === language)?.rtl ? 'rtl' : 'ltr'}>
       <style>{`
         :root {
           --konsensi-primary: #10b77f;
@@ -833,7 +850,7 @@ function LayoutWithProvider({ children, currentPageName }) {
 
       <div className="flex-grow flex flex-col w-full">
         {/* Desktop Header - New Konsensi Design */}
-        <nav className="w-full bg-[#0a0a0a] dark:bg-[#0a0a0a] h-16 px-8 flex items-center justify-center sticky top-0 z-50 border-b border-[#2a2a2a] dark:border-[#2a2a2a]">
+        <nav className="w-full bg-konsensi-dark dark:bg-[#0a0a0a] h-16 px-8 flex items-center justify-center sticky top-0 z-50 border-b border-konsensi-dark/50 dark:border-[#2a2a2a] transition-colors duration-200">
           <div className="w-full max-w-[1400px] flex items-center justify-between">
             {/* Logo & Brand */}
             <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3 text-white">
@@ -908,7 +925,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                 Budgetplan
               </Link>
               
-              <Link 
+              <Link
                 to={createPageUrl('Potjes')}
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
                   currentPageName === 'Potjes'
@@ -918,8 +935,19 @@ function LayoutWithProvider({ children, currentPageName }) {
               >
                 Potjes
               </Link>
-              
-              <Link 
+
+              <Link
+                to={createPageUrl('Debts')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  currentPageName === 'Debts'
+                    ? 'text-white'
+                    : 'text-[#a1a1a1] hover:text-white'
+                }`}
+              >
+                Betaalachterstanden
+              </Link>
+
+              <Link
                 to={createPageUrl('CentVoorCent')}
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
                   currentPageName === 'CentVoorCent'
@@ -1024,7 +1052,7 @@ function LayoutWithProvider({ children, currentPageName }) {
         </nav>
 
         {/* Mobile Header - New Konsensi Design */}
-        <nav className="md:hidden w-full bg-[#0a0a0a] dark:bg-[#0a0a0a] h-16 px-4 flex items-center justify-between sticky top-0 z-50 border-b border-[#2a2a2a] dark:border-[#2a2a2a]">
+        <nav className="md:hidden w-full bg-konsensi-dark dark:bg-[#0a0a0a] h-16 px-4 flex items-center justify-between sticky top-0 z-50 border-b border-konsensi-dark/50 dark:border-[#2a2a2a] transition-colors duration-200">
           <Link to={createPageUrl('Dashboard')} className="flex items-center gap-2 text-white">
             <img 
               src="/logo%20header.png" 

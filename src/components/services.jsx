@@ -125,10 +125,10 @@ class VTBLService {
                 
                 const user = await User.me();
                 const email = user.email;
-                
-                allIncomes = await Income.filter({ created_by: email });
-                allCosts = await MonthlyCost.filter({ created_by: email });
-                allDebts = await Debt.filter({ created_by: email });
+
+                allIncomes = await Income.filter({ user_id: user.id });
+                allCosts = await MonthlyCost.filter({ user_id: user.id });
+                allDebts = await Debt.filter({ user_id: user.id });
             } catch (error) {
                 console.error('Error fetching data for VTBL calculation:', error);
                 return null;

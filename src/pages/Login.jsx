@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '@/components/ui/toast';
 
 export default function Login() {
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,6 +22,7 @@ export default function Login() {
   
   const { toast } = useToast();
   const navigate = useNavigate();
+  
 
   // Apply theme to document
   useEffect(() => {
@@ -50,11 +52,13 @@ export default function Login() {
     setError(''); // Clear previous errors
 
     try {
+      
       // Sign in
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+
 
       if (error) {
         throw error;
@@ -87,10 +91,12 @@ export default function Login() {
         title: 'Ingelogd!',
         description: 'Welkom terug!',
       });
-
+      
+      
       // Use window.location.href for a full page reload to ensure session is available
       window.location.href = '/Dashboard';
     } catch (error) {
+      
       console.error('Auth error:', error);
       
       // Provide user-friendly error messages based on error type

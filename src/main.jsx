@@ -5,6 +5,7 @@ import '@/index.css'
 
 // Error boundary for React rendering errors
 try {
+  
   ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
       <App />

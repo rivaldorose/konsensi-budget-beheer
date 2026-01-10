@@ -9,12 +9,12 @@ export default function StatCards({ totalIncome, totalExpenses, totalPaidThisMon
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Total Income Card */}
-      <div className="bg-white dark:bg-card-bg border border-gray-100 dark:border-border-main p-5 rounded-[1.5rem] shadow-soft dark:shadow-soft-dark flex flex-col justify-between h-32 hover:border-gray-200 dark:hover:border-border-accent hover:-translate-y-1 transition-all duration-300">
+      <div className="bg-white dark:bg-card-bg dark:border dark:border-border-main p-5 rounded-[1.5rem] shadow-soft flex flex-col justify-between h-32 hover:-translate-y-1 hover:dark:border-border-accent transition-all duration-300">
         <div className="flex justify-between items-start">
           <div className="size-10 rounded-full bg-[#ECFDF5] dark:bg-konsensi-bg-green flex items-center justify-center text-green-600 dark:text-konsensi-primary">
             <span className="material-symbols-outlined">calendar_month</span>
           </div>
-          <span className="text-[10px] font-bold bg-gray-100 dark:bg-card-elevated px-2 py-1 rounded-full text-gray-500 dark:text-text-secondary border border-gray-200 dark:border-border-main">
+          <span className="text-[10px] font-bold bg-gray-100 dark:bg-card-elevated px-2 py-1 rounded-full text-gray-500 dark:text-text-secondary dark:border dark:border-border-main">
             {formattedMonth}
           </span>
         </div>
@@ -27,12 +27,12 @@ export default function StatCards({ totalIncome, totalExpenses, totalPaidThisMon
       </div>
 
       {/* Expenses Card */}
-      <div className="bg-white dark:bg-card-bg border border-gray-100 dark:border-border-main p-5 rounded-[1.5rem] shadow-soft dark:shadow-soft-dark flex flex-col justify-between h-32 hover:border-gray-200 dark:hover:border-border-accent hover:-translate-y-1 transition-all duration-300">
+      <div className="bg-white dark:bg-card-bg dark:border dark:border-border-main p-5 rounded-[1.5rem] shadow-soft flex flex-col justify-between h-32 hover:-translate-y-1 hover:dark:border-border-accent transition-all duration-300">
         <div className="flex justify-between items-start">
           <div className="size-10 rounded-full bg-[#FFF1F2] dark:bg-accent-red/10 flex items-center justify-center text-rose-500 dark:text-accent-red">
             <span className="material-symbols-outlined">payments</span>
           </div>
-          <span className="text-[10px] font-bold bg-gray-100 dark:bg-card-elevated px-2 py-1 rounded-full text-gray-500 dark:text-text-secondary border border-gray-200 dark:border-border-main">
+          <span className="text-[10px] font-bold bg-gray-100 dark:bg-card-elevated px-2 py-1 rounded-full text-gray-500 dark:text-text-secondary dark:border dark:border-border-main">
             {formattedMonth}
           </span>
         </div>
@@ -45,9 +45,9 @@ export default function StatCards({ totalIncome, totalExpenses, totalPaidThisMon
       </div>
 
       {/* Paid Off Card */}
-      <div className="bg-white dark:bg-card-bg border-2 border-primary/20 dark:border-konsensi-primary/30 p-5 rounded-[1.5rem] shadow-soft dark:shadow-[0_0_15px_rgba(16,185,129,0.05)] flex flex-col justify-between h-32 hover:-translate-y-1 transition-transform duration-300">
+      <div className="bg-white dark:bg-card-bg p-5 rounded-[1.5rem] shadow-soft border-2 border-primary/20 dark:border-konsensi-primary/30 dark:shadow-[0_0_15px_rgba(16,185,129,0.05)] flex flex-col justify-between h-32 hover:-translate-y-1 transition-transform duration-300">
         <div className="flex justify-between items-start">
-          <div className="size-10 rounded-full bg-primary/20 dark:bg-konsensi-bg-green flex items-center justify-center text-konsensi-dark dark:text-konsensi-primary">
+          <div className="size-10 rounded-full bg-primary/20 dark:bg-konsensi-bg-green flex items-center justify-center text-primary dark:text-konsensi-primary">
             <span className="material-symbols-outlined">check_circle</span>
           </div>
           <span className="text-[10px] font-bold bg-primary dark:bg-konsensi-primary text-konsensi-dark dark:text-black px-2 py-1 rounded-full">
@@ -60,7 +60,7 @@ export default function StatCards({ totalIncome, totalExpenses, totalPaidThisMon
             <p className="text-2xl font-header font-bold text-konsensi-dark dark:text-white">
               {formatCurrency(totalPaidThisMonth || 0, { decimals: 0 })}
             </p>
-            <span className="text-xs font-bold text-primary dark:text-konsensi-primary bg-konsensi-dark/90 dark:bg-konsensi-bg-green border border-konsensi-primary/20 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-bold text-primary dark:text-konsensi-primary bg-konsensi-dark/90 dark:bg-konsensi-bg-green dark:border dark:border-konsensi-primary/20 px-2 py-0.5 rounded-md">
               Trots!
             </span>
           </div>
@@ -69,4 +69,3 @@ export default function StatCards({ totalIncome, totalExpenses, totalPaidThisMon
     </div>
   );
 }
-

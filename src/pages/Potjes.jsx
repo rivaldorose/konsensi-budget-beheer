@@ -99,32 +99,105 @@ export default function Potjes() {
     setError(null);
     try {
       const userData = await User.me();
+      if (!userData || !userData.id) {
+        throw new Error('Gebruikersgegevens niet gevonden');
+      }
       setUser(userData);
       const userFilter = { user_id: userData.id };
-      
-      let [allPots, allIncomes, allCosts, allDebts, allTransactions] = await Promise.all([
-        Pot.filter(userFilter),
-        Income.filter(userFilter),
-        MonthlyCost.filter(userFilter),
-        Debt.filter(userFilter),
-        Transaction.filter(userFilter)
-      ]);
 
-      const hasBadHabits = allPots.some(p => p.name === 'Bad Habits');
-      if (!hasBadHabits) {
-        await Pot.create({
-          name: 'Bad Habits',
-          icon: '🍔',
-          description: 'Uitgaven die je eigenlijk niet nodig had (fastfood, impulsaankopen, etc.)',
-          pot_type: 'expense',
-          category: 'uitgaan',
-          is_essential: false,
-          monthly_budget: 50,
-          spending_frequency: 'flexible',
-          payment_day: 1,
-          display_order: 999
-        });
+      console.log('Fetching potjes data for user:', userData.id);
+
+      // Fetch each entity individually with try-catch
+      let allPots = [];
+      let allIncomes = [];
+      let allCosts = [];
+      let allDebts = [];
+      let allTransactions = [];
+
+      try {
         allPots = await Pot.filter(userFilter);
+        console.log('Pots loaded:', allPots?.length || 0);
+      } catch (err) {
+        console.error('Pot.filter error:', err);
+        allPots = [];
+      }
+
+      try {
+        allIncomes = await Income.filter(userFilter);
+        console.log('Incomes loaded:', allIncomes?.length || 0);
+      } catch (err) {
+        console.error('Income.filter error:', err);
+        allIncomes = [];
+      }
+
+      try {
+        allCosts = await MonthlyCost.filter(userFilter);
+        console.log('Costs loaded:', allCosts?.length || 0);
+      } catch (err) {
+        console.error('MonthlyCost.filter error:', err);
+        allCosts = [];
+      }
+
+      try {
+        allDebts = await Debt.filter(userFilter);
+        console.log('Debts loaded:', allDebts?.length || 0);
+      } catch (err) {
+        console.error('Debt.filter error:', err);
+        allDebts = [];
+      }
+
+      try {
+        allTransactions = await Transaction.filter(userFilter);
+        console.log('Transactions loaded:', allTransactions?.length || 0);
+      } catch (err) {
+        console.error('Transaction.filter error:', err);
+        allTransactions = [];
+      }
+
+      // Ensure all values are arrays and filter out any null/undefined items
+      allPots = Array.isArray(allPots) ? allPots.filter(item => item && typeof item === 'object') : [];
+      allIncomes = Array.isArray(allIncomes) ? allIncomes.filter(item => item && typeof item === 'object') : [];
+      allCosts = Array.isArray(allCosts) ? allCosts.filter(item => item && typeof item === 'object') : [];
+      allDebts = Array.isArray(allDebts) ? allDebts.filter(item => item && typeof item === 'object') : [];
+      allTransactions = Array.isArray(allTransactions) ? allTransactions.filter(item => item && typeof item === 'object') : [];
+
+      console.log('Filtered data counts:', {
+        pots: allPots.length,
+        incomes: allIncomes.length,
+        costs: allCosts.length,
+        debts: allDebts.length,
+        transactions: allTransactions.length
+      });
+
+      // Try to create Bad Habits pot if it doesn't exist
+      try {
+        const hasBadHabits = allPots.some(p => p && p.name === 'Bad Habits');
+        if (!hasBadHabits) {
+          console.log('Creating Bad Habits pot...');
+          await Pot.create({
+            user_id: userData.id,
+            name: 'Bad Habits',
+            icon: '🍔',
+            description: 'Uitgaven die je eigenlijk niet nodig had (fastfood, impulsaankopen, etc.)',
+            pot_type: 'expense',
+            category: 'uitgaan',
+            is_essential: false,
+            monthly_budget: 50,
+            spending_frequency: 'flexible',
+            payment_day: 1,
+            display_order: 999
+          });
+          // Reload pots after creation
+          try {
+            allPots = await Pot.filter(userFilter);
+            allPots = Array.isArray(allPots) ? allPots.filter(item => item && typeof item === 'object') : [];
+          } catch (reloadErr) {
+            console.error('Error reloading pots after Bad Habits creation:', reloadErr);
+          }
+        }
+      } catch (badHabitsErr) {
+        console.error('Error creating Bad Habits pot:', badHabitsErr);
+        // Continue without Bad Habits pot
       }
 
       setPotjes(allPots.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)));
@@ -151,29 +224,69 @@ export default function Potjes() {
       
       const totalFixedCosts = activeCosts.reduce((sum, cost) => sum + (cost.amount || 0), 0);
       const activeDebtPayments = allDebts
-        .filter(d => d.status === 'betalingsregeling' && d.monthly_payment)
+        .filter(d => d && d.status === 'betalingsregeling' && d.monthly_payment)
         .reduce((sum, debt) => sum + (debt.monthly_payment || 0), 0);
 
-      const vtbl = await vtblService.calculateVtbl(allIncomes, allCosts, allDebts);
-      vtbl.vasteLasten = totalFixedCosts;
-      vtbl.huidigeRegelingen = activeDebtPayments;
-      setVtblData(vtbl);
+      // Try to calculate VTBL
+      try {
+        const vtbl = await vtblService.calculateVtbl(allIncomes, allCosts, allDebts);
+        if (vtbl && typeof vtbl === 'object') {
+          vtbl.vasteLasten = totalFixedCosts;
+          vtbl.huidigeRegelingen = activeDebtPayments;
+          setVtblData(vtbl);
+        } else {
+          console.warn('Invalid VTBL data returned');
+          setVtblData({
+            vasteLasten: totalFixedCosts,
+            huidigeRegelingen: activeDebtPayments,
+            vrij: 0
+          });
+        }
+      } catch (vtblErr) {
+        console.error('Error calculating VTBL:', vtblErr);
+        // Set default VTBL data
+        setVtblData({
+          vasteLasten: totalFixedCosts,
+          huidigeRegelingen: activeDebtPayments,
+          vrij: 0
+        });
+      }
 
       const monthStart = getStartOfMonth(new Date());
       const monthEnd = getEndOfMonth(new Date());
 
       const spendingsMap = {};
       allPots.forEach(pot => {
-        if (pot.pot_type === 'expense') { 
-          const potTransactions = allTransactions.filter(tx => {
-            const txDate = new Date(tx.date);
-            const isInMonth = txDate >= monthStart && txDate <= monthEnd;
-            const isExpense = tx.type === 'expense'; 
-            const categoryMatches = tx.category === pot.name;
-            return isInMonth && isExpense && categoryMatches;
-          });
-          const totalSpent = potTransactions.reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
-          spendingsMap[pot.id] = totalSpent;
+        if (pot && pot.pot_type === 'expense') {
+          try {
+            const potTransactions = allTransactions.filter(tx => {
+              // Comprehensive null/undefined checks
+              if (!tx || typeof tx !== 'object') return false;
+              if (!tx.date || !tx.type || !tx.category) return false;
+
+              try {
+                const txDate = new Date(tx.date);
+                // Check if date is valid
+                if (isNaN(txDate.getTime())) return false;
+
+                const isInMonth = txDate >= monthStart && txDate <= monthEnd;
+                const isExpense = tx.type === 'expense';
+                const categoryMatches = tx.category === pot.name;
+                return isInMonth && isExpense && categoryMatches;
+              } catch (err) {
+                console.error('Error processing transaction:', err, tx);
+                return false;
+              }
+            });
+            const totalSpent = potTransactions.reduce((sum, tx) => {
+              const amount = parseFloat(tx?.amount);
+              return sum + (isNaN(amount) ? 0 : amount);
+            }, 0);
+            spendingsMap[pot.id] = totalSpent;
+          } catch (err) {
+            console.error('Error calculating spending for pot:', pot?.name, err);
+            spendingsMap[pot.id] = 0;
+          }
         } else {
           spendingsMap[pot.id] = 0;
         }
@@ -183,6 +296,7 @@ export default function Potjes() {
 
       const notifications = [];
       allPots.forEach(pot => {
+        if (!pot || typeof pot !== 'object') return;
         if (pot.pot_type === 'savings') {
           const progress = pot.target_amount ? ((pot.current_amount || 0) / pot.target_amount) * 100 : 0;
           if (progress >= 100) {
@@ -231,7 +345,11 @@ export default function Potjes() {
   }, [fetchData]);
 
   const totalAllocated = useMemo(() => {
-    return potjes.reduce((sum, pot) => sum + (parseFloat(pot.monthly_budget) || 0), 0);
+    if (!Array.isArray(potjes)) return 0;
+    return potjes.reduce((sum, pot) => {
+      if (!pot || typeof pot !== 'object') return sum;
+      return sum + (parseFloat(pot.monthly_budget) || 0);
+    }, 0);
   }, [potjes]);
 
   const fixedCostsAndArrangements = vtblData ? (vtblData.vasteLasten + vtblData.huidigeRegelingen) : 0;
@@ -239,7 +357,9 @@ export default function Potjes() {
   const remaining = availableForPots - totalAllocated;
 
   const sortedPotjes = useMemo(() => {
-    return [...potjes].sort((a, b) => {
+    if (!Array.isArray(potjes)) return [];
+    return [...potjes].filter(p => p && typeof p === 'object').sort((a, b) => {
+      if (!a || !b) return 0;
       if (a.pot_type !== b.pot_type) {
         return a.pot_type === 'savings' ? -1 : 1;
       }
@@ -251,22 +371,33 @@ export default function Potjes() {
   }, [potjes]);
 
   const potjesChartData = useMemo(() => {
-    const categoryMap = {};
-    potjes.filter(p => p.pot_type === 'expense' && p.category).forEach(pot => {
-      if (!categoryMap[pot.category]) {
-        categoryMap[pot.category] = {
-          category: pot.category,
-          label: NIBUD_LABELS[pot.category] || pot.category,
-          budget: 0,
-          spent: 0,
-          nibud_advice: totalIncome * (NIBUD_PERCENTAGES[pot.category] || 0) / 100,
-          nibud_percentage: NIBUD_PERCENTAGES[pot.category] || 0
-        };
+    try {
+      if (!Array.isArray(potjes) || !potjeSpendings || typeof potjeSpendings !== 'object') {
+        return [];
       }
-      categoryMap[pot.category].budget += pot.monthly_budget || 0;
-      categoryMap[pot.category].spent += potjeSpendings[pot.id] || 0;
-    });
-    return Object.values(categoryMap).filter(c => c.budget > 0 || c.spent > 0);
+      const categoryMap = {};
+      potjes
+        .filter(p => p && typeof p === 'object' && p.pot_type === 'expense' && p.category)
+        .forEach(pot => {
+          if (!pot.category) return;
+          if (!categoryMap[pot.category]) {
+            categoryMap[pot.category] = {
+              category: pot.category,
+              label: NIBUD_LABELS[pot.category] || pot.category,
+              budget: 0,
+              spent: 0,
+              nibud_advice: totalIncome * (NIBUD_PERCENTAGES[pot.category] || 0) / 100,
+              nibud_percentage: NIBUD_PERCENTAGES[pot.category] || 0
+            };
+          }
+          categoryMap[pot.category].budget += pot.monthly_budget || 0;
+          categoryMap[pot.category].spent += potjeSpendings[pot.id] || 0;
+        });
+      return Object.values(categoryMap).filter(c => c && (c.budget > 0 || c.spent > 0));
+    } catch (err) {
+      console.error('Error calculating potjesChartData:', err);
+      return [];
+    }
   }, [potjes, potjeSpendings, totalIncome]);
 
   const handleSelectPot = useCallback((pot) => {

@@ -59,7 +59,7 @@ export default function MaandelijkseLastenPage() {
             setUser(userData);
             
             const userFilter = { user_id: userData.id };
-            const costsData = await MonthlyCost.filter(userFilter, '-payment_date', 100);
+            const costsData = await MonthlyCost.filter(userFilter);
             setCosts(costsData);
         } catch (error) {
             console.error('Error loading data:', error);
@@ -289,7 +289,7 @@ export default function MaandelijkseLastenPage() {
                 <div className="flex items-center gap-3">
                     <button 
                         onClick={() => setShowQuickAddModal(true)}
-                        className="group flex items-center justify-center h-11 px-5 rounded-[24px] border-2 border-gray-200 dark:border-[#2A3F36] bg-transparent text-[#1F2937] dark:text-white font-bold text-sm hover:border-primary hover:bg-white dark:hover:bg-[#1a2c26] transition-all"
+                        className="group flex items-center justify-center h-11 px-5 rounded-[24px] border-2 border-gray-200 dark:border-[#2a2a2a] bg-transparent text-[#1F2937] dark:text-white font-bold text-sm hover:border-primary hover:bg-white dark:hover:bg-[#2a2a2a] transition-all"
                     >
                         <span className="material-symbols-outlined text-[20px] mr-2 group-hover:scale-110 transition-transform text-primary">bolt</span>
                         Snel kiezen
@@ -318,7 +318,7 @@ export default function MaandelijkseLastenPage() {
             {/* Statistics Cards Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Card 1: Totaal per maand */}
-                <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
+                <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
                     <div className="absolute top-6 right-6 size-10 rounded-full bg-blue-50 dark:bg-blue-500/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                         <span className="material-symbols-outlined">payments</span>
                     </div>
@@ -327,7 +327,7 @@ export default function MaandelijkseLastenPage() {
                 </div>
 
                 {/* Card 2: Actieve lasten */}
-                <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
+                <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
                     <div className="absolute top-6 right-6 size-10 rounded-full bg-green-50 dark:bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                         <span className="material-symbols-outlined">assignment</span>
                     </div>
@@ -336,7 +336,7 @@ export default function MaandelijkseLastenPage() {
                 </div>
 
                 {/* Card 3: Nog te betalen */}
-                <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
+                <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] flex flex-col gap-1 relative overflow-hidden group hover:shadow-lg dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.7)] transition-shadow">
                     <div className="absolute top-6 right-6 size-10 rounded-full bg-orange-50 dark:bg-orange-500/20 flex items-center justify-center text-orange-500 dark:text-orange-400 group-hover:scale-110 transition-transform">
                         <span className="material-symbols-outlined">trending_up</span>
                     </div>
@@ -346,7 +346,7 @@ export default function MaandelijkseLastenPage() {
             </div>
 
             {/* Year Overview Chart Card */}
-            <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-8 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] w-full">
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-8 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] w-full">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-[#1F2937] dark:text-white text-xl font-bold flex items-center gap-2">
                         📊 Overzicht Vaste Lasten
@@ -363,26 +363,26 @@ export default function MaandelijkseLastenPage() {
                     <>
                         {/* Stats Mini-Pills */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                            <div className="bg-blue-50/50 dark:bg-blue-500/10 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-blue-100 dark:border-blue-500/20">
-                                <span className="text-[#6B7280] dark:text-[#9CA3AF] text-xs font-semibold uppercase">Gem. Vast</span>
-                                <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.avgFixed, { decimals: 0 })}</span>
+                            <div className="bg-blue-50/50 dark:bg-[#2a2a2a] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-blue-100 dark:border-[#2a2a2a]">
+                                <span className="text-[#6B7280] dark:text-[#a1a1a1] text-xs font-semibold uppercase">Gem. Vast</span>
+                                <span className="text-[#1F2937] dark:text-[#3b82f6] font-bold text-lg">{formatCurrency(yearStats.avgFixed, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-orange-50/50 dark:bg-orange-500/10 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-orange-100 dark:border-orange-500/20">
-                                <span className="text-[#6B7280] dark:text-[#9CA3AF] text-xs font-semibold uppercase">Gem. Onverwacht</span>
-                                <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.avgUnexpected, { decimals: 0 })}</span>
+                            <div className="bg-orange-50/50 dark:bg-[#2a2a2a] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-orange-100 dark:border-[#2a2a2a]">
+                                <span className="text-[#6B7280] dark:text-[#a1a1a1] text-xs font-semibold uppercase">Gem. Onverwacht</span>
+                                <span className="text-[#1F2937] dark:text-[#f59e0b] font-bold text-lg">{formatCurrency(yearStats.avgUnexpected, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-purple-50/50 dark:bg-purple-500/10 rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-purple-100 dark:border-purple-500/20">
-                                <span className="text-[#6B7280] dark:text-[#9CA3AF] text-xs font-semibold uppercase">Gem. Totaal</span>
-                                <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.avgTotal, { decimals: 0 })}</span>
+                            <div className="bg-purple-50/50 dark:bg-[#2a2a2a] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-purple-100 dark:border-[#2a2a2a]">
+                                <span className="text-[#6B7280] dark:text-[#a1a1a1] text-xs font-semibold uppercase">Gem. Totaal</span>
+                                <span className="text-[#1F2937] dark:text-[#8b5cf6] font-bold text-lg">{formatCurrency(yearStats.avgTotal, { decimals: 0 })}</span>
                             </div>
-                            <div className="bg-gray-50 dark:bg-[#2A3F36] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-gray-200 dark:border-[#2A3F36]">
-                                <span className="text-[#6B7280] dark:text-[#9CA3AF] text-xs font-semibold uppercase">Totaal Jaar</span>
+                            <div className="bg-gray-50 dark:bg-[#2a2a2a] rounded-[24px] p-3 flex flex-col items-center justify-center text-center border border-gray-200 dark:border-[#2a2a2a]">
+                                <span className="text-[#6B7280] dark:text-[#a1a1a1] text-xs font-semibold uppercase">Totaal Jaar</span>
                                 <span className="text-[#1F2937] dark:text-white font-bold text-lg">{formatCurrency(yearStats.totalYear, { decimals: 0 })}</span>
                             </div>
                         </div>
 
                         {/* Chart Area */}
-                        <div className="w-full h-[280px] relative">
+                        <div className="w-full h-[280px] relative overflow-hidden">
                             <MonthlyCostsChart allMonthlyCosts={costs} allUnexpectedCosts={[]} />
                         </div>
                     </>
@@ -392,8 +392,8 @@ export default function MaandelijkseLastenPage() {
             {/* Expense Categories */}
             <div className="flex flex-col gap-6">
             {Object.entries(costsByCategory).map(([category, data]) => (
-                    <div key={category} className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36]">
-                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-[#2A3F36]">
+                    <div key={category} className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]">
+                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-[#2a2a2a]">
                             <h4 className="text-[#1F2937] dark:text-white text-lg font-bold flex items-center gap-2">
                                 {categoryEmojis[category] || '📦'} {categoryLabels[category] || category}
                             </h4>
@@ -431,7 +431,7 @@ export default function MaandelijkseLastenPage() {
                                                     e.stopPropagation();
                                                     handleEdit(cost);
                                                 }}
-                                                className="size-8 rounded-full bg-white dark:bg-[#1a2c26] border border-gray-200 dark:border-[#2A3F36] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] hover:text-[#1F2937] dark:hover:text-white"
+                                                className="size-8 rounded-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-[#2a2a2a] text-[#6B7280] dark:text-[#9CA3AF] hover:text-[#1F2937] dark:hover:text-white"
                                             >
                                                 <span className="material-symbols-outlined text-[16px]">edit</span>
                                             </button>
@@ -453,7 +453,7 @@ export default function MaandelijkseLastenPage() {
                 ))}
 
                 {activeCosts.length === 0 && (
-                    <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-12 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] flex flex-col items-center justify-center text-center">
+                    <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-12 shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] flex flex-col items-center justify-center text-center">
                         <span className="material-symbols-outlined text-6xl text-[#9CA3AF] dark:text-[#6B7280] mb-4">receipt_long</span>
                         <p className="text-[#6B7280] dark:text-[#9CA3AF] text-lg font-medium mb-4">Nog geen vaste lasten toegevoegd</p>
                         <button 
@@ -480,25 +480,18 @@ export default function MaandelijkseLastenPage() {
 
             {/* Add/Edit Modal */}
             <Dialog open={showFormModal} onOpenChange={handleFormClose}>
-                <DialogContent className="sm:max-w-[600px] rounded-3xl p-0">
-                    <form className="bg-white rounded-3xl overflow-hidden flex flex-col" onSubmit={handleFormSubmit}>
-                        <div className="flex items-center justify-between px-8 py-6 border-b border-gray-100">
-                            <h3 className="text-xl font-display font-bold text-primary-dark">
+                <DialogContent className="sm:max-w-[600px] rounded-3xl p-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]">
+                    <form className="bg-white dark:bg-[#1a1a1a] rounded-3xl overflow-hidden flex flex-col" onSubmit={handleFormSubmit}>
+                        <div className="px-8 py-6 border-b border-gray-100 dark:border-[#2a2a2a]">
+                            <h3 className="text-xl font-display font-bold text-primary-dark dark:text-white">
                                 {editingCost ? 'Last bewerken' : 'Nieuwe uitgave toevoegen'}
                             </h3>
-                            <button 
-                                type="button"
-                                onClick={handleFormClose}
-                                className="size-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
-                            >
-                                <span className="material-symbols-outlined">close</span>
-                            </button>
                         </div>
                         <div className="p-8 flex flex-col gap-6">
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-bold text-gray-700">Naam</label>
+                                <label className="text-sm font-bold text-gray-700 dark:text-white">Naam</label>
                                 <input
-                                    className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                                    className="w-full h-12 rounded-[24px] border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-900 dark:text-white"
                                     placeholder="Bijv. Netflix"
                                     type="text"
                                     value={formData.name}
@@ -508,9 +501,9 @@ export default function MaandelijkseLastenPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-bold text-gray-700">Bedrag (€)</label>
+                                    <label className="text-sm font-bold text-gray-700 dark:text-white">Bedrag (€)</label>
                                     <input
-                                        className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                                        className="w-full h-12 rounded-[24px] border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-900 dark:text-white"
                                         placeholder="0.00"
                                         type="number"
                                         step="0.01"
@@ -520,9 +513,9 @@ export default function MaandelijkseLastenPage() {
                                     />
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-bold text-gray-700">Betaaldag</label>
+                                    <label className="text-sm font-bold text-gray-700 dark:text-white">Betaaldag</label>
                                     <input
-                                        className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                                        className="w-full h-12 rounded-[24px] border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-900 dark:text-white"
                                         max="31"
                                         min="1"
                                         placeholder="DD"
@@ -534,12 +527,12 @@ export default function MaandelijkseLastenPage() {
                                 </div>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-bold text-gray-700">Categorie</label>
+                                <label className="text-sm font-bold text-gray-700 dark:text-white">Categorie</label>
                                 <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
-                                    <SelectTrigger className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-700">
+                                    <SelectTrigger className="w-full h-12 rounded-[24px] border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-700 dark:text-white">
                                         <SelectValue placeholder="Selecteer categorie" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]">
                                         <SelectItem value="wonen">🏠 Wonen</SelectItem>
                                         <SelectItem value="utilities">⚡ Nutsvoorzieningen</SelectItem>
                                         <SelectItem value="verzekeringen">🛡️ Verzekeringen</SelectItem>
@@ -553,20 +546,20 @@ export default function MaandelijkseLastenPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-bold text-gray-700">Startdatum</label>
+                                    <label className="text-sm font-bold text-gray-700 dark:text-white">Startdatum</label>
                                     <input
-                                        className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-500"
+                                        className="w-full h-12 rounded-[24px] border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-500 dark:text-[#a1a1a1]"
                                         type="date"
                                         value={formData.start_date}
                                         onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
                                     />
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-bold text-gray-700">
-                                        Einddatum <span className="font-normal text-gray-400">(optioneel)</span>
+                                    <label className="text-sm font-bold text-gray-700 dark:text-white">
+                                        Einddatum <span className="font-normal text-gray-400 dark:text-[#6B7280]">(optioneel)</span>
                                     </label>
                                     <input
-                                        className="w-full h-12 rounded-[24px] border-gray-200 bg-gray-50 px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-500"
+                                        className="w-full h-12 rounded-[24px] border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] px-4 focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-gray-500 dark:text-[#a1a1a1]"
                                         type="date"
                                         value={formData.end_date}
                                         onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
@@ -574,17 +567,17 @@ export default function MaandelijkseLastenPage() {
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-gray-50 px-8 py-5 flex justify-end gap-3 border-t border-gray-100">
+                        <div className="bg-gray-50 dark:bg-[#0a0a0a] px-8 py-5 flex justify-end gap-3 border-t border-gray-100 dark:border-[#2a2a2a]">
                             <button
                                 type="button"
                                 onClick={handleFormClose}
-                                className="px-6 py-2.5 rounded-[24px] border border-gray-300 text-gray-700 font-bold hover:bg-white hover:shadow-sm transition-all text-sm"
+                                className="px-6 py-2.5 rounded-[24px] border border-gray-300 dark:border-[#2a2a2a] text-gray-700 dark:text-white font-bold hover:bg-white dark:hover:bg-[#1a1a1a] hover:shadow-sm transition-all text-sm"
                             >
                                 Annuleren
                             </button>
                             <button
                                 type="submit"
-                                className="px-6 py-2.5 rounded-[24px] bg-primary-dark text-white font-bold hover:bg-opacity-90 shadow-soft hover:shadow-lg transition-all text-sm"
+                                className="px-6 py-2.5 rounded-[24px] bg-primary-dark dark:bg-primary text-white dark:text-[#0a0a0a] font-bold hover:bg-opacity-90 shadow-soft hover:shadow-lg transition-all text-sm"
                             >
                                 {editingCost ? 'Opslaan' : 'Toevoegen'}
                             </button>
@@ -595,20 +588,20 @@ export default function MaandelijkseLastenPage() {
 
             {/* Quick Add Modal */}
             <Dialog open={showQuickAddModal} onOpenChange={setShowQuickAddModal}>
-                <DialogContent className="sm:max-w-[600px] rounded-3xl p-0">
-                    <form className="bg-white rounded-3xl overflow-hidden flex flex-col">
-                        <div className="flex items-center gap-4 px-8 py-6 border-b border-gray-100">
+                <DialogContent className="sm:max-w-[600px] rounded-3xl p-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]">
+                    <form className="bg-white dark:bg-[#1a1a1a] rounded-3xl overflow-hidden flex flex-col">
+                        <div className="flex items-center gap-4 px-8 py-6 border-b border-gray-100 dark:border-[#2a2a2a]">
                             <button
                                 type="button"
                                 onClick={() => setShowQuickAddModal(false)}
-                                className="text-gray-400 hover:text-primary-dark transition-colors"
+                                className="text-gray-400 dark:text-[#9CA3AF] hover:text-primary-dark dark:hover:text-primary transition-colors"
                             >
                                 <span className="material-symbols-outlined">arrow_back</span>
                             </button>
-                            <h3 className="text-xl font-display font-bold text-primary-dark">Snel vaste lasten toevoegen</h3>
+                            <h3 className="text-xl font-display font-bold text-primary-dark dark:text-white">Snel vaste lasten toevoegen</h3>
                         </div>
                         <div className="p-8">
-                            <p className="text-gray-500 mb-6 text-sm">Kies een categorie om direct veelvoorkomende vaste lasten toe te voegen.</p>
+                            <p className="text-gray-500 dark:text-[#a1a1a1] mb-6 text-sm">Kies een categorie om direct veelvoorkomende vaste lasten toe te voegen.</p>
                     <CommonCostsSelector 
                         existingCosts={costs}
                         onSelect={async (selectedCosts) => {

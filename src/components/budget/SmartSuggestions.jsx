@@ -22,12 +22,15 @@ export default function SmartSuggestions({ userEmail, totalIncome }) {
         
         try {
             setLoading(true);
-            
+
+            const { User } = await import('@/api/entities');
+            const user = await User.me();
+            if (!user) return;
             const [costs, transactions, pots, debts] = await Promise.all([
-                MonthlyCost.filter({ created_by: userEmail, status: 'actief' }),
-                Transaction.filter({ created_by: userEmail }),
-                Pot.filter({ created_by: userEmail }),
-                Debt.filter({ created_by: userEmail })
+                MonthlyCost.filter({ user_id: user.id, status: 'actief' }),
+                Transaction.filter({ user_id: user.id }),
+                Pot.filter({ user_id: user.id }),
+                Debt.filter({ user_id: user.id })
             ]);
 
             const tips = [];
@@ -77,6 +80,7 @@ export default function SmartSuggestions({ userEmail, totalIncome }) {
             thirtyDaysAgo.setDate(now.getDate() - 30);
             
             const recentTransactions = transactions.filter(tx => {
+                if (!tx || !tx.date) return false;
                 const txDate = new Date(tx.date);
                 return tx.type === 'expense' && txDate >= thirtyDaysAgo;
             });

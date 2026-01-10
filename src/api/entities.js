@@ -2,13 +2,14 @@
 // All entities should be migrated to use supabaseService directly
 
 import { supabaseService } from '@/services/supabaseService'
+import { supabase } from '@/lib/supabase'
 
 // Entity wrappers that mimic base44.entities API
 const createEntityWrapper = (tableName) => ({
   list: (orderBy = 'created_at', ascending = false) =>
     supabaseService.list(tableName, orderBy.replace('-', ''), !orderBy.startsWith('-')),
 
-  filter: (filters) => supabaseService.filter(tableName, filters),
+  filter: (filters, orderBy = null) => supabaseService.filter(tableName, filters, orderBy),
 
   get: (id) => supabaseService.getById(tableName, id),
 
@@ -74,9 +75,11 @@ import { supabase } from '@/lib/supabase'
 export const User = {
   me: async () => {
     try {
+      
       // First try getSession (faster, uses local storage)
       const { data: { session: sessionData } } = await supabase.auth.getSession()
-
+      
+      
       // If we have a session, use it directly
       if (sessionData?.user) {
         const user = sessionData.user
@@ -121,7 +124,8 @@ export const User = {
 
       // Fallback to getUser (slower, validates with server)
       const { data: { user }, error: authError } = await supabase.auth.getUser()
-
+      
+      
       if (authError || !user) {
         console.log('No authenticated user:', authError?.message || 'User not found')
         return null
@@ -172,6 +176,77 @@ export const User = {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Not authenticated')
     return await supabaseService.update('users', user.id, data)
+  },
+  updateStreak: async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return 0
+
+      // Get user profile with streak data
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('login_streak, last_login_date')
+        .eq('id', user.id)
+        .single()
+
+      // If columns don't exist yet, silently return 0
+      if (profileError) {
+        console.warn('Streak columns not available:', profileError.message)
+        return 0
+      }
+
+      // Get today's date as a string (YYYY-MM-DD)
+      const today = new Date().toISOString().split('T')[0]
+
+      let loginStreak = profile?.login_streak || 0
+      const lastLoginDate = profile?.last_login_date
+
+      // If this is the first time or no last login date
+      if (!lastLoginDate) {
+        loginStreak = 1
+      }
+      // If already logged in today, return current streak
+      else if (lastLoginDate === today) {
+        return loginStreak
+      }
+      // Calculate days difference
+      else {
+        const lastDate = new Date(lastLoginDate)
+        const currentDate = new Date(today)
+        const daysDifference = Math.floor((currentDate - lastDate) / (1000 * 60 * 60 * 24))
+
+        // If logged in yesterday, increment streak
+        if (daysDifference === 1) {
+          loginStreak += 1
+        }
+        // If more than 1 day gap, reset streak to 1
+        else if (daysDifference > 1) {
+          loginStreak = 1
+        }
+      }
+
+      // Cap at 365 days
+      loginStreak = Math.max(0, Math.min(loginStreak, 365))
+
+      // Update database
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          login_streak: loginStreak,
+          last_login_date: today
+        })
+        .eq('id', user.id)
+
+      if (updateError) {
+        console.warn('Failed to update streak:', updateError.message)
+        return 0
+      }
+
+      return loginStreak
+    } catch (error) {
+      console.warn('Streak error, continuing without it:', error.message)
+      return 0
+    }
   },
   logout: async () => {
     const { error } = await supabase.auth.signOut()

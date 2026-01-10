@@ -80,9 +80,9 @@ export default function PotjeModal({ pot, isOpen, onClose, onSave }) {
         const loadUserIncome = async () => {
             try {
                 const user = await User.me();
-                
+
                 // Haal alle inkomens op van de gebruiker
-                const allIncomes = await Income.filter({ created_by: user.email });
+                const allIncomes = await Income.filter({ user_id: user.id });
                 
                 // Gebruik incomeService om het totale inkomen te berekenen
                 const incomeData = incomeService.processIncomeData(allIncomes, new Date());

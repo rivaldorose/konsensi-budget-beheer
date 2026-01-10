@@ -24,7 +24,9 @@ export const supabaseService = {
     return data || []
   },
 
-  async filter(table, filters = {}) {
+  async filter(table, filters = {}, orderBy = null) {
+    console.log(`[SupabaseService] Filtering table: ${table}`, filters, orderBy)
+
     let query = supabase.from(table).select('*')
 
     // Apply filters
@@ -38,9 +40,21 @@ export const supabaseService = {
       }
     })
 
+    // Apply ordering if provided
+    if (orderBy) {
+      const ascending = !orderBy.startsWith('-')
+      const field = orderBy.replace('-', '')
+      query = query.order(field, { ascending })
+    }
+
     const { data, error } = await query
 
-    if (error) throw error
+    if (error) {
+      console.error(`[SupabaseService] Error filtering ${table}:`, error)
+      throw error
+    }
+
+    console.log(`[SupabaseService] Success! Got ${data?.length || 0} rows from ${table}`)
     return data || []
   },
 
@@ -56,13 +70,21 @@ export const supabaseService = {
   },
 
   async create(table, data) {
+    console.log(`[SupabaseService] Creating in table: ${table}`, data)
+
     const { data: result, error } = await supabase
       .from(table)
       .insert(data)
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error(`[SupabaseService] Error creating in ${table}:`, error)
+      console.error('Error details:', { message: error.message, hint: error.hint, details: error.details, code: error.code })
+      throw error
+    }
+
+    console.log(`[SupabaseService] Created successfully in ${table}:`, result)
     return result
   },
 

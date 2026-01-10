@@ -1,81 +1,51 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
 
 export default function DashboardAlerts({ alerts = [] }) {
-  const defaultAlerts = [
-    {
-      type: "warning",
-      title: "Uitgaven: €45 over budget",
-      description: "Bekijk details",
-      link: createPageUrl("BudgetPlan"),
-      icon: "warning",
-    },
-    {
-      type: "tip",
-      title: "Mindset: Lees nieuwe post",
-      description: "5 min leestijd",
-      link: "#",
-      icon: "lightbulb",
-    },
-  ];
-
-  const displayAlerts = alerts.length > 0 ? alerts : defaultAlerts;
+  if (!alerts || alerts.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-3">
-      {displayAlerts.map((alert, index) => (
-        <Link
-          key={index}
-          to={alert.link}
-          className={`border rounded-2xl p-4 flex items-center gap-3 transition-shadow hover:shadow-md ${
-            alert.type === "warning"
-              ? "bg-rose-50 border-rose-100"
-              : alert.type === "tip"
-              ? "bg-[#F0FDF4] border-[#DCFCE7]"
-              : "bg-blue-50 border-blue-100"
-          }`}
-        >
-          <span
-            className={`material-symbols-outlined ${
-              alert.type === "warning"
-                ? "text-rose-500"
-                : alert.type === "tip"
-                ? "text-green-500"
-                : "text-blue-500"
-            }`}
+      {alerts.map((alert, index) => {
+        const isWarning = alert.type === 'warning';
+        const isInfo = alert.type === 'info';
+
+        return (
+          <div
+            key={index}
+            className={`
+              ${isWarning ? 'bg-rose-50 dark:bg-card-bg border-rose-100 dark:border-accent-red/20' : ''}
+              ${isInfo ? 'bg-[#F0FDF4] dark:bg-card-bg border-[#DCFCE7] dark:border-konsensi-primary/20' : ''}
+              border rounded-2xl p-4 flex items-center gap-3 relative overflow-hidden
+            `}
           >
-            {alert.icon}
-          </span>
-          <div>
-            <p
-              className={`font-bold text-sm ${
-                alert.type === "warning"
-                  ? "text-rose-700"
-                  : alert.type === "tip"
-                  ? "text-green-700"
-                  : "text-blue-700"
-              }`}
-            >
-              {alert.title}
-            </p>
-            {alert.description && (
-              <p
-                className={`text-xs ${
-                  alert.type === "warning"
-                    ? "text-rose-500 underline decoration-rose-300"
-                    : alert.type === "tip"
-                    ? "text-green-600"
-                    : "text-blue-600"
-                }`}
-              >
-                {alert.description}
+            {/* Left accent bar */}
+            <div className={`absolute left-0 top-0 bottom-0 w-1 ${isWarning ? 'bg-accent-red' : 'bg-konsensi-primary'}`}></div>
+
+            <span className={`material-symbols-outlined ${isWarning ? 'text-rose-500 dark:text-accent-red' : 'text-green-500 dark:text-konsensi-primary'}`}>
+              {alert.icon}
+            </span>
+            <div className="flex-grow">
+              <p className={`font-bold text-sm ${isWarning ? 'text-rose-700 dark:text-white' : 'text-green-700 dark:text-white'}`}>
+                {alert.title}
               </p>
-            )}
+              {alert.subtitle && (
+                <p className={`text-xs ${isWarning ? 'text-rose-600' : 'text-green-600 dark:text-konsensi-primary'} ${!alert.action && 'cursor-pointer hover:underline'}`}>
+                  {alert.subtitle}
+                </p>
+              )}
+              {alert.action && (
+                <Link
+                  to={alert.link || '#'}
+                  className={`text-xs underline ${isWarning ? 'text-rose-500 decoration-rose-300 hover:text-red-400' : 'text-green-500 dark:text-konsensi-primary decoration-green-300 hover:text-green-400'}`}
+                >
+                  {alert.action}
+                </Link>
+              )}
+            </div>
           </div>
-        </Link>
-      ))}
+        );
+      })}
     </div>
   );
 }
-

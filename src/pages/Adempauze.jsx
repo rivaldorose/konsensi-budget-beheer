@@ -192,61 +192,6 @@ export default function Adempauze() {
 
     return (
     <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white flex flex-col">
-      {/* Top Navigation Bar */}
-      <header className="bg-primary dark:bg-[#1a2c26] h-16 shadow-[0_2px_4px_rgba(0,0,0,0.1)] dark:border-b dark:border-[#2A3F36] sticky top-0 z-50">
-        <div className="h-full max-w-[1400px] mx-auto px-4 lg:px-8 flex items-center justify-between">
-          {/* Left: Logo */}
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🌳</span>
-            <span className="font-display font-bold text-white tracking-wide">
-              KONSENSI <span className="font-normal opacity-90">Budgetbeheer</span>
-            </span>
-          </div>
-          {/* Middle: Nav Items (Hidden on mobile) */}
-          <nav className="hidden md:flex items-center gap-8">
-            <a className="text-white font-display font-medium text-sm hover:text-accent dark:hover:text-primary transition-colors" href={createPageUrl('Dashboard')}>Dashboard</a>
-            <a className="text-white font-display font-medium text-sm hover:text-accent dark:hover:text-primary transition-colors" href={createPageUrl('BudgetPlan')}>Balans</a>
-            <a className="text-white font-display font-medium text-sm hover:text-accent dark:hover:text-primary transition-colors" href={createPageUrl('debts')}>Schulden</a>
-            <a className="text-white font-display font-medium text-sm hover:text-accent dark:hover:text-primary transition-colors" href={createPageUrl('Settings')}>Instellingen</a>
-          </nav>
-          {/* Right: User Area */}
-          <div className="flex items-center gap-6">
-            <button className="text-white hover:text-accent dark:hover:text-primary transition-colors material-symbols-outlined">search</button>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                className="sr-only peer" 
-                type="checkbox" 
-                checked={darkMode}
-                onChange={toggleTheme}
-              />
-              <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-white/20 flex items-center justify-between px-1.5">
-                <span className="material-symbols-outlined text-[16px] text-yellow-300 z-10 select-none">light_mode</span>
-                <span className="material-symbols-outlined text-[16px] text-white/80 z-10 select-none">dark_mode</span>
-              </div>
-            </label>
-            <div className="flex items-center gap-3 pl-2 border-l border-white/20">
-              <span className="bg-purple-badge text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Level 9</span>
-              <span className="text-white font-body text-sm hidden sm:block">{user?.voornaam || 'Gebruiker'}</span>
-              <div 
-                className="h-8 w-8 rounded-full bg-cover bg-center border-2 border-accent"
-                style={{
-                  backgroundImage: user?.profielfoto_url 
-                    ? `url(${user.profielfoto_url})` 
-                    : 'none',
-                  backgroundColor: user?.profielfoto_url ? 'transparent' : '#8B5CF6'
-                }}
-              >
-                {!user?.profielfoto_url && (
-                  <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs">
-                    {(user?.voornaam?.[0] || user?.email?.[0] || 'U').toUpperCase()}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content Area */}
       <main className="flex-grow w-full max-w-[1400px] mx-auto p-4 md:p-8">
         {/* Status Banner */}

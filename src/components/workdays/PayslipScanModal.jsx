@@ -98,8 +98,8 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
       if (extractedData.period_start && extractedData.period_end) {
         const { User } = await import('@/api/entities');
         const user = await User.me();
-        
-        const allWorkDays = await WorkDay.filter({ created_by: user.email });
+
+        const allWorkDays = await WorkDay.filter({ user_id: user.id });
         const periodStart = new Date(extractedData.period_start);
         const periodEnd = new Date(extractedData.period_end);
         

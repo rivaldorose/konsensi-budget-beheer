@@ -47,7 +47,7 @@ export default function VtblSettingsModal({ isOpen, onClose }) {
         setLoading(true);
         try {
             const user = await User.me();
-            const existingSettings = await VtblSetting.filter({ created_by: user.email });
+            const existingSettings = await VtblSetting.filter({ user_id: user.id });
             if (existingSettings.length > 0) {
                 const data = existingSettings[0];
                 setSettingsId(data.id);

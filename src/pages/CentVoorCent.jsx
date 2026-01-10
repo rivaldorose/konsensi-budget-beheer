@@ -196,65 +196,6 @@ export default function CentVoorCent() {
 
   return (
     <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] font-display text-[#1F2937] dark:text-white antialiased">
-      {/* Top Navigation Bar */}
-      <nav className="bg-primary-dark dark:bg-[#1a2c26] w-full h-16 shadow-md dark:border-b dark:border-[#2A3F36] sticky top-0 z-50">
-        <div className="max-w-[1400px] mx-auto h-full px-4 lg:px-8 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-white text-3xl">forest</span>
-            <h1 className="text-white font-bold text-xl tracking-wide hidden sm:block">
-              KONSENSI <span className="font-normal opacity-80">Budgetbeheer</span>
-            </h1>
-          </div>
-          {/* Nav Items (Desktop) */}
-          <div className="hidden md:flex items-center gap-8">
-            <a className="text-white text-sm font-medium hover:text-primary transition-colors" href={createPageUrl('Dashboard')}>Dashboard</a>
-            <a className="text-white text-sm font-medium hover:text-primary transition-colors border-b-2 border-primary pb-0.5" href={createPageUrl('BudgetPlan')}>Balans</a>
-            <a className="text-white text-sm font-medium hover:text-primary transition-colors" href={createPageUrl('debts')}>Schulden</a>
-            <a className="text-white text-sm font-medium hover:text-primary transition-colors" href={createPageUrl('Settings')}>Instellingen</a>
-          </div>
-          {/* Right Actions */}
-          <div className="flex items-center gap-4">
-            <button className="text-white hover:text-primary p-1">
-              <span className="material-symbols-outlined">search</span>
-            </button>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                className="sr-only peer" 
-                type="checkbox" 
-                checked={darkMode}
-                onChange={toggleTheme}
-              />
-              <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-white/20 flex items-center justify-between px-1.5">
-                <span className="material-symbols-outlined text-[16px] text-yellow-300 z-10 select-none">light_mode</span>
-                <span className="material-symbols-outlined text-[16px] text-white/80 z-10 select-none">dark_mode</span>
-              </div>
-            </label>
-            <div className="flex items-center gap-3 bg-white/10 rounded-full px-1 py-1 pr-4">
-              <div className="relative">
-                <div 
-                  className="size-8 rounded-full bg-cover bg-center border-2 border-white"
-                  style={{
-                    backgroundImage: user?.profielfoto_url 
-                      ? `url(${user.profielfoto_url})` 
-                      : 'none',
-                    backgroundColor: user?.profielfoto_url ? 'transparent' : '#8B5CF6'
-                  }}
-                >
-                  {!user?.profielfoto_url && (
-                    <div className="w-full h-full flex items-center justify-center text-white font-bold">
-                      {(user?.voornaam?.[0] || user?.email?.[0] || 'R').toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <div className="absolute -bottom-1 -right-1 bg-[#8B5CF6] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-primary-dark">Lvl 9</div>
-              </div>
-              <span className="text-white text-sm font-semibold">{user?.voornaam || 'Gebruiker'}</span>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Main Content Wrapper */}
       <main className="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-8">
         {/* Header Section */}
@@ -264,7 +205,7 @@ export default function CentVoorCent() {
             <p className="text-text-tertiary dark:text-text-secondary text-base">Jouw maandelijkse financiële reflectie</p>
           </div>
           <button 
-            className="flex items-center gap-2 bg-white dark:bg-[#1a2c26] border border-gray-200 dark:border-[#2A3F36] rounded-[24px] px-4 py-2.5 text-text-main dark:text-white font-semibold shadow-sm hover:border-primary dark:hover:border-konsensi-green transition-colors cursor-pointer group"
+            className="flex items-center gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-[24px] px-4 py-2.5 text-text-main dark:text-white font-semibold shadow-sm hover:border-primary dark:hover:border-konsensi-green transition-colors cursor-pointer group"
             onClick={() => {/* Open month picker */}}
           >
             <span className="material-symbols-outlined text-text-tertiary dark:text-text-secondary group-hover:text-primary dark:group-hover:text-konsensi-green transition-colors">calendar_month</span>
@@ -276,9 +217,9 @@ export default function CentVoorCent() {
         {/* 1. MAAND SAMENVATTING (Hero Section) */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Card A: Inkomen */}
-          <div className="bg-white dark:bg-[#1a2c26] rounded-3xl p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 group border dark:border-[#2A3F36]">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 group border dark:border-[#2a2a2a]">
             <div className="flex justify-between items-start mb-4">
-              <div className="p-3 bg-accent-green/10 dark:bg-[#1a2c26]-elevated rounded-2xl text-accent-green dark:text-konsensi-green border dark:border-[#2A3F36]">
+              <div className="p-3 bg-accent-green/10 dark:bg-[#1a1a1a]-elevated rounded-2xl text-accent-green dark:text-konsensi-green border dark:border-[#2a2a2a]">
                 <span className="material-symbols-outlined icon-filled text-3xl">savings</span>
               </div>
               <span className="text-text-tertiary dark:text-text-secondary text-xs font-bold uppercase tracking-wider">Totaal Inkomen</span>
@@ -294,9 +235,9 @@ export default function CentVoorCent() {
           </div>
 
           {/* Card B: Uitgaven */}
-          <div className="bg-white dark:bg-[#1a2c26] rounded-3xl p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 border dark:border-[#2A3F36]">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 border dark:border-[#2a2a2a]">
             <div className="flex justify-between items-start mb-4">
-              <div className="p-3 bg-accent-orange/10 dark:bg-[#1a2c26]-elevated rounded-2xl text-accent-orange dark:text-konsensi-orange border dark:border-[#2A3F36]">
+              <div className="p-3 bg-accent-orange/10 dark:bg-[#1a1a1a]-elevated rounded-2xl text-accent-orange dark:text-konsensi-orange border dark:border-[#2a2a2a]">
                 <span className="material-symbols-outlined icon-filled text-3xl">payments</span>
               </div>
               <span className="text-text-tertiary dark:text-text-secondary text-xs font-bold uppercase tracking-wider">Totaal Uitgaven</span>
@@ -310,11 +251,11 @@ export default function CentVoorCent() {
           </div>
 
           {/* Card C: Verschil */}
-          <div className="bg-white dark:bg-[#1a2c26] rounded-3xl p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden border dark:border-[#2A3F36]">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden border dark:border-[#2a2a2a]">
             <div className="absolute inset-0 bg-primary/10 dark:bg-konsensi-green/5 pointer-events-none"></div>
             <div className="relative z-10">
               <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-white dark:bg-[#1a2c26]-elevated rounded-2xl text-primary-dark dark:text-konsensi-green shadow-sm border dark:border-[#2A3F36]">
+                <div className="p-3 bg-white dark:bg-[#1a1a1a]-elevated rounded-2xl text-primary-dark dark:text-konsensi-green shadow-sm border dark:border-[#2a2a2a]">
                   <span className="material-symbols-outlined icon-filled text-3xl text-accent-green dark:text-konsensi-green">auto_awesome</span>
                 </div>
                 <span className="text-text-main dark:text-text-secondary text-xs font-bold uppercase tracking-wider opacity-60">Overgebleven</span>
@@ -339,7 +280,7 @@ export default function CentVoorCent() {
         {/* 2. VISUALISATIE SECTIE */}
         <section className="flex flex-col lg:flex-row gap-6 mb-8">
           {/* Left: Income vs Expenses */}
-          <div className="w-full lg:w-[60%] bg-white dark:bg-[#1a2c26] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between border dark:border-[#2A3F36]">
+          <div className="w-full lg:w-[60%] bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between border dark:border-[#2a2a2a]">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-primary-dark dark:text-white text-xl font-bold flex items-center gap-2">
                 <span className="material-symbols-outlined">bar_chart</span> Inkomen vs Uitgaven
@@ -352,7 +293,7 @@ export default function CentVoorCent() {
                   <span>Inkomen</span>
                   <span>{formatCurrency(monthlyData.totalIncome)}</span>
                 </div>
-                <div className="h-14 dark:h-[60px] w-full bg-background-light dark:bg-[#1a2c26]-elevated rounded-[24px] overflow-hidden relative group cursor-pointer border dark:border-[#2A3F36]">
+                <div className="h-14 dark:h-[60px] w-full bg-background-light dark:bg-[#1a1a1a]-elevated rounded-[24px] overflow-hidden relative group cursor-pointer border dark:border-[#2a2a2a]">
                   <div 
                     className="absolute top-0 left-0 h-full bg-primary/60 dark:bg-konsensi-green group-hover:bg-primary dark:group-hover:bg-konsensi-green-light transition-colors flex items-center justify-end px-4" 
                     style={{ width: '100%' }}
@@ -367,7 +308,7 @@ export default function CentVoorCent() {
                   <span>Uitgaven</span>
                   <span>{formatCurrency(monthlyData.totalExpenses)}</span>
                 </div>
-                <div className="h-14 dark:h-[60px] w-full bg-background-light dark:bg-[#1a2c26]-elevated rounded-[24px] overflow-hidden relative group cursor-pointer border dark:border-[#2A3F36]">
+                <div className="h-14 dark:h-[60px] w-full bg-background-light dark:bg-[#1a1a1a]-elevated rounded-[24px] overflow-hidden relative group cursor-pointer border dark:border-[#2a2a2a]">
                   <div 
                     className="absolute top-0 left-0 h-full bg-accent-orange dark:bg-konsensi-orange group-hover:opacity-90 transition-all duration-500 ease-out flex items-center justify-end px-4" 
                     style={{ width: `${expensePercentage}%` }}
@@ -386,7 +327,7 @@ export default function CentVoorCent() {
           </div>
 
           {/* Right: Breakdown */}
-          <div className="w-full lg:w-[40%] bg-white dark:bg-[#1a2c26] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 border dark:border-[#2A3F36]">
+          <div className="w-full lg:w-[40%] bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 border dark:border-[#2a2a2a]">
             <div className="flex justify-between items-center mb-6 dark:mb-8">
               <h3 className="text-primary-dark dark:text-white text-xl font-bold flex items-center gap-2">
                 <span className="material-symbols-outlined">pie_chart</span> Uitgaven Breakdown
@@ -399,7 +340,7 @@ export default function CentVoorCent() {
                   <span className="text-text-secondary dark:text-white font-semibold group-hover:text-accent-orange dark:group-hover:text-konsensi-orange transition-colors">Potjes budget</span>
                   <span className="text-text-main dark:text-white font-bold">{formatCurrency(monthlyData.potsBudget)}</span>
                 </div>
-                <div className="h-2 w-full bg-background-light dark:bg-[#1a2c26]-elevated rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-background-light dark:bg-[#1a1a1a]-elevated rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-accent-orange dark:bg-konsensi-orange rounded-full dark:shadow-[0_0_10px_rgba(245,158,11,0.5)]" 
                     style={{ width: `${potsPercentage}%` }}
@@ -412,7 +353,7 @@ export default function CentVoorCent() {
                   <span className="text-text-secondary dark:text-white font-semibold group-hover:text-primary dark:group-hover:text-konsensi-green transition-colors">Bespaard</span>
                   <span className="text-text-main dark:text-white font-bold">{formatCurrency(monthlyData.remaining)}</span>
                 </div>
-                <div className="h-2 w-full bg-background-light dark:bg-[#1a2c26]-elevated rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-background-light dark:bg-[#1a1a1a]-elevated rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-primary dark:bg-konsensi-green rounded-full dark:shadow-[0_0_10px_rgba(16,185,129,0.5)]" 
                     style={{ width: `${savingsPercentage}%` }}
@@ -425,7 +366,7 @@ export default function CentVoorCent() {
                   <span className="text-text-secondary dark:text-text-secondary font-semibold">Overig</span>
                   <span className="text-text-main dark:text-text-secondary font-bold">{formatCurrency(monthlyData.fixedCosts - monthlyData.potsBudget)}</span>
                 </div>
-                <div className="h-2 w-full bg-background-light dark:bg-[#1a2c26]-elevated rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-background-light dark:bg-[#1a1a1a]-elevated rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-gray-300 dark:bg-text-tertiary rounded-full opacity-50" 
                     style={{ width: `${Math.max(1, 100 - potsPercentage - savingsPercentage)}%` }}
@@ -437,7 +378,7 @@ export default function CentVoorCent() {
         </section>
 
         {/* 3. REFLECTIE SECTIE */}
-        <section className="bg-white dark:bg-[#1a2c26] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 mb-8 border dark:border-[#2A3F36]">
+        <section className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 mb-8 border dark:border-[#2a2a2a]">
           <h3 className="text-primary-dark dark:text-white text-2xl font-bold mb-6 dark:mb-8 flex items-center gap-2 dark:gap-3">
             <span className="material-symbols-outlined dark:text-text-secondary">psychology</span> Reflectie van deze maand
           </h3>
@@ -475,7 +416,7 @@ export default function CentVoorCent() {
 
         {/* 4. SCHULD PROGRESS */}
         {monthlyData.debtTotal > 0 && (
-          <section className="bg-white dark:bg-[#1a2c26] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 mb-8 border-l-4 border-accent-orange dark:border-l-konsensi-orange flex flex-col lg:flex-row gap-8 border dark:border-[#2A3F36]">
+          <section className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 mb-8 border-l-4 border-accent-orange dark:border-l-konsensi-orange flex flex-col lg:flex-row gap-8 border dark:border-[#2a2a2a]">
             {/* Left Part */}
             <div className="flex-1 flex flex-col justify-between">
               <div className="flex items-center gap-3 mb-6">
@@ -488,7 +429,7 @@ export default function CentVoorCent() {
                   {formatCurrency(monthlyData.debtRemaining)}
                 </p>
                 {/* Progress Bar */}
-                <div className="h-6 w-full bg-gray-100 dark:bg-[#1a2c26]-elevated rounded-full overflow-hidden mb-2 border dark:border-[#2A3F36]">
+                <div className="h-6 w-full bg-gray-100 dark:bg-[#1a1a1a]-elevated rounded-full overflow-hidden mb-2 border dark:border-[#2a2a2a]">
                   <div 
                     className="h-full bg-gradient-to-r from-red-400 to-red-600 dark:from-red-500 dark:to-konsensi-red transition-all duration-500" 
                     style={{ width: `${monthlyData.debtTotal > 0 ? ((monthlyData.debtPaid / monthlyData.debtTotal) * 100) : 0}%` }}
@@ -504,7 +445,7 @@ export default function CentVoorCent() {
               </div>
             </div>
             {/* Right Part: Breakdown Box */}
-            <div className="lg:w-[350px] bg-background-light dark:bg-[#1a2c26]-elevated rounded-2xl dark:rounded-[24px] p-6 flex flex-col justify-center gap-4 border dark:border-[#2A3F36]">
+            <div className="lg:w-[350px] bg-background-light dark:bg-[#1a1a1a]-elevated rounded-2xl dark:rounded-[24px] p-6 flex flex-col justify-center gap-4 border dark:border-[#2a2a2a]">
               <div className="flex justify-between items-center">
                 <span className="text-text-secondary dark:text-text-secondary text-sm font-medium">Afgelost deze maand</span>
                 <span className="text-[#8B5CF6] dark:text-konsensi-purple font-bold">{formatCurrency(monthlyData.debtPaid)}</span>
@@ -523,7 +464,7 @@ export default function CentVoorCent() {
         )}
 
         {/* 5. ADVIES VOOR VOLGENDE MAAND */}
-        <section className="bg-white dark:bg-[#1a2c26] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 mb-8 border-l-4 border-primary dark:border-l-konsensi-green border dark:border-[#2A3F36]">
+        <section className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 mb-8 border-l-4 border-primary dark:border-l-konsensi-green border dark:border-[#2a2a2a]">
           <h3 className="text-primary-dark dark:text-white text-2xl font-bold mb-6 dark:mb-8 flex items-center gap-2 dark:gap-3">
             <span className="material-symbols-outlined dark:text-text-secondary">track_changes</span> Advies voor volgende maand
           </h3>
@@ -545,7 +486,7 @@ export default function CentVoorCent() {
 
         {/* 6. VERGELIJKING */}
         <section className="max-w-[600px] mb-12">
-          <div className="bg-white dark:bg-[#1a2c26] rounded-2xl p-6 shadow-sm dark:border dark:border-[#2A3F36] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-sm dark:border dark:border-[#2a2a2a] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h5 className="text-primary-dark dark:text-white font-bold dark:font-semibold text-lg mb-1 dark:mb-2 flex items-center gap-2">
                 <span className="material-symbols-outlined text-base dark:text-text-secondary">trending_up</span> Vergelijking

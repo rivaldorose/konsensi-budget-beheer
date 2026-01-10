@@ -77,14 +77,14 @@ export default function ScanCostModal({ isOpen, onClose, onCostAdded }) {
       
       try {
         const user = await User.me();
-        
+
         // Haal inkomen op
-        const allIncomes = await Income.filter({ created_by: user.email });
+        const allIncomes = await Income.filter({ user_id: user.id });
         const incomeData = incomeService.processIncomeData(allIncomes, new Date());
         setUserIncome(incomeData.total);
-        
+
         // Haal bestaande uitgaven-potjes op
-        const allPots = await Pot.filter({ created_by: user.email, pot_type: 'expense' });
+        const allPots = await Pot.filter({ user_id: user.id, pot_type: 'expense' });
         setExistingPots(allPots);
       } catch (error) {
         console.error('Error loading data:', error);

@@ -205,8 +205,8 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
               </div>
 
               {/* Info banner voor extra inkomen */}
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-sm text-red-700">
+              <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg p-3">
+                <p className="text-sm text-red-700 dark:text-red-400">
                   💡 Dit inkomen wordt alleen geteld in de geselecteerde maand
                 </p>
               </div>
@@ -217,11 +217,11 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
           {incomeType === 'vast' && (
             <>
               {/* Variabel inkomen toggle */}
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className="font-medium text-amber-900">Variabel inkomen?</p>
-                    <p className="text-sm text-amber-700">
+                    <p className="font-medium text-amber-900 dark:text-amber-400">Variabel inkomen?</p>
+                    <p className="text-sm text-amber-700 dark:text-amber-300">
                       Aan zetten als je inkomen elke maand anders is (bijv. oproepkracht, onregelmatige diensten)
                     </p>
                   </div>
@@ -231,33 +231,33 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
                   />
                 </div>
                 {formData.is_variable && (
-                  <p className="text-xs text-amber-600 mt-2">
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
                     💡 Je kunt het bedrag elke maand bijwerken via de bewerk-knop
                   </p>
                 )}
               </div>
 
               <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600">Is dit je huidige baan?</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Is dit je huidige baan?</span>
                 <label className="flex items-center gap-1">
-                  <input 
-                    type="radio" 
-                    name="currentJob" 
+                  <input
+                    type="radio"
+                    name="currentJob"
                     checked={formData.is_active === true}
                     onChange={() => setFormData(prev => ({ ...prev, is_active: true }))}
                     className="w-4 h-4"
                   />
-                  <span className="text-sm">Ja</span>
+                  <span className="text-sm text-gray-900 dark:text-gray-100">Ja</span>
                 </label>
                 <label className="flex items-center gap-1">
-                  <input 
-                    type="radio" 
-                    name="currentJob" 
+                  <input
+                    type="radio"
+                    name="currentJob"
                     checked={formData.is_active === false}
                     onChange={() => setFormData(prev => ({ ...prev, is_active: false }))}
                     className="w-4 h-4"
                   />
-                  <span className="text-sm">Nee</span>
+                  <span className="text-sm text-gray-900 dark:text-gray-100">Nee</span>
                 </label>
               </div>
 

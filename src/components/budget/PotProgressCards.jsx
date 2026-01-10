@@ -16,12 +16,13 @@ export default function PotProgressCards({ userEmail, periodStart, periodEnd }) 
   }, [userEmail, periodStart, periodEnd]);
 
   const loadData = async () => {
-    if (!userEmail) return;
-    
     try {
+      const { User } = await import('@/api/entities');
+      const user = await User.me();
+      if (!user) return;
       const [potsData, transactionsData] = await Promise.all([
-        Pot.filter({ created_by: userEmail, pot_type: 'expense' }),
-        Transaction.filter({ created_by: userEmail, type: 'expense' })
+        Pot.filter({ user_id: user.id, pot_type: 'expense' }),
+        Transaction.filter({ user_id: user.id, type: 'expense' })
       ]);
 
       setPots(potsData);

@@ -23,11 +23,13 @@ export default function BudgetOverviewCard({ userEmail, onPlanBudget, onRefresh 
     const [isExpanded, setIsExpanded] = useState(false);
 
     const loadBudgets = useCallback(async () => {
-        if (!userEmail) return;
         try {
             setLoading(true);
             console.log('🔄 BudgetOverviewCard: Loading budgets...');
-            const potsData = await Pot.filter({ created_by: userEmail });
+            const { User } = await import('@/api/entities');
+            const user = await User.me();
+            if (!user) return;
+            const potsData = await Pot.filter({ user_id: user.id });
             console.log('📦 Loaded pots:', potsData.length, potsData);
             const expensePots = potsData.filter(p => p.pot_type === 'expense' && (p.budget || 0) > 0);
             console.log('💰 Expense pots with budget:', expensePots.length, expensePots);

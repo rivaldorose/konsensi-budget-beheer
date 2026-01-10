@@ -123,7 +123,7 @@ export default function MonthlyBudgetPlanner({ isOpen, onClose, user, onBudgetSe
             setCustomDebtAmounts(initialDebtAmounts);
 
             // Haal potjes op
-            const potsData = await Pot.filter({ created_by: user.email });
+            const potsData = await Pot.filter({ user_id: user.id });
             const expensePots = potsData.filter(p => p.pot_type === 'expense');
             setPots(expensePots);
 
