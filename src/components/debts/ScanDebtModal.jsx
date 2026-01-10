@@ -149,6 +149,7 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
 
       const debtData = {
         user_id: currentUser.id,
+        name: extractedData.creditor_name || '', // Required field in database
         creditor_name: extractedData.creditor_name || '',
         creditor_type: extractedData.creditor_type || 'incasso',
         case_number: extractedData.case_number || '',
