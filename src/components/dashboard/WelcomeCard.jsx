@@ -10,7 +10,7 @@ export default function WelcomeCard({ user, level = 9, currentXP = 2025, totalXP
     year: "numeric",
   }).format(today);
 
-  const userName = user?.voornaam || user?.full_name || user?.name || "Rivaldo";
+  const userName = user?.voornaam || user?.full_name || user?.name || "Gebruiker";
   const xpPercentage = totalXP > 0 ? (currentXP / totalXP) * 100 : 0;
 
   return (

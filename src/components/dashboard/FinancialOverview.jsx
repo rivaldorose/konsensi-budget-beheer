@@ -1,13 +1,15 @@
 import React from "react";
 import { formatCurrency } from "@/components/utils/formatters";
 
-export default function FinancialOverview({ totalIncome = 436, fixedCosts = 548, paymentPlans = 300, pots = 746 }) {
-  // Calculate percentages for donut chart (light mode: 34%, 19%, 47%)
+export default function FinancialOverview({ totalIncome = 0, fixedCosts = 0, paymentPlans = 0, pots = 0 }) {
+  // Calculate percentages for donut chart based on actual data
   const total = fixedCosts + paymentPlans + pots;
+  const freeToSpend = Math.max(0, totalIncome - total);
 
-  const fixedCostsPercent = 34; // Green dark
-  const paymentPlansPercent = 19; // Green light
-  const potsPercent = 47; // Gray
+  const fixedCostsPercent = totalIncome > 0 ? (fixedCosts / totalIncome) * 100 : 0;
+  const paymentPlansPercent = totalIncome > 0 ? (paymentPlans / totalIncome) * 100 : 0;
+  const potsPercent = totalIncome > 0 ? (pots / totalIncome) * 100 : 0;
+  const freeToSpendPercent = totalIncome > 0 ? (freeToSpend / totalIncome) * 100 : 0;
 
   return (
     <div className="bg-white dark:bg-card-bg rounded-[2rem] p-6 shadow-soft border border-transparent dark:border-border-main">

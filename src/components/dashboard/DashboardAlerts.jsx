@@ -37,7 +37,7 @@ export default function DashboardAlerts({ alerts = [] }) {
               {alert.action && (
                 <Link
                   to={alert.link || '#'}
-                  className={`text-xs ${isWarning ? 'text-rose-500' : 'text-green-500 dark:text-konsensi-primary'} underline ${isWarning ? 'decoration-rose-300' : 'decoration-green-300'} hover:text-${isWarning ? 'red' : 'green'}-400`}
+                  className={`text-xs underline ${isWarning ? 'text-rose-500 decoration-rose-300 hover:text-red-400' : 'text-green-500 dark:text-konsensi-primary decoration-green-300 hover:text-green-400'}`}
                 >
                   {alert.action}
                 </Link>
