@@ -173,6 +173,7 @@ export default function OnboardingNew() {
           if (debt.creditor && debt.total_amount) {
             const debtData = {
               user_id: user.id,
+              name: debt.creditor,
               creditor_name: debt.creditor,
               amount: parseFloat(debt.total_amount),
               total_amount: parseFloat(debt.total_amount),
