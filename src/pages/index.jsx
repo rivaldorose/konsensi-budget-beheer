@@ -143,18 +143,6 @@ function PagesContent() {
     const location = useLocation();
     const currentPage = _getCurrentPage(location.pathname);
     
-    // #region agent log
-    React.useEffect(() => {
-      const prevPath = sessionStorage.getItem('prevPath');
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:137',message:'PagesContent render',data:{pathname:location.pathname,currentPage,prevPath,routeChanged:prevPath!==location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-      if (prevPath && prevPath !== location.pathname) {
-        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'index.jsx:140',message:'Route change detected',data:{from:prevPath,to:location.pathname,timeSinceLastRender:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-      }
-      sessionStorage.setItem('prevPath', location.pathname);
-      sessionStorage.setItem('lastRouteChange', Date.now().toString());
-    }, [location.pathname, currentPage]);
-    // #endregion
-    
     return (
         <Layout currentPageName={currentPage}>
             <Routes>

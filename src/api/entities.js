@@ -5,17 +5,17 @@ import { supabaseService } from '@/services/supabaseService'
 
 // Entity wrappers that mimic base44.entities API
 const createEntityWrapper = (tableName) => ({
-  list: (orderBy = 'created_at', ascending = false) => 
+  list: (orderBy = 'created_at', ascending = false) =>
     supabaseService.list(tableName, orderBy.replace('-', ''), !orderBy.startsWith('-')),
-  
+
   filter: (filters) => supabaseService.filter(tableName, filters),
-  
+
   get: (id) => supabaseService.getById(tableName, id),
-  
+
   create: (data) => supabaseService.create(tableName, data),
-  
+
   update: (id, data) => supabaseService.update(tableName, id, data),
-  
+
   delete: (id) => supabaseService.delete(tableName, id),
 })
 
@@ -68,32 +68,26 @@ export const Payslip = createEntityWrapper('payslips')
 export const VariableIncomeEntry = createEntityWrapper('variable_income_entries')
 export const NotificationRule = createEntityWrapper('notification_rules')
 
+import { supabase } from '@/lib/supabase'
+
 // Auth wrapper - use supabase.auth directly
 export const User = {
   me: async () => {
     try {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'entities.js:73',message:'User.me() called',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'I'})}).catch(()=>{});
-      // #endregion
-      
       // First try getSession (faster, uses local storage)
       const { data: { session: sessionData } } = await supabase.auth.getSession()
-      
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'entities.js:78',message:'getSession result',data:{hasSession:!!sessionData,hasUser:!!sessionData?.user},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'I'})}).catch(()=>{});
-      // #endregion
-      
+
       // If we have a session, use it directly
       if (sessionData?.user) {
         const user = sessionData.user
-        
+
         // Try to get user profile from users table
         const { data: profile, error: profileError } = await supabase
           .from('users')
           .select('*')
           .eq('id', user.id)
           .single()
-        
+
         // If profile doesn't exist, create it
         if (profileError && profileError.code === 'PGRST116') {
           // Profile doesn't exist, create it
@@ -106,44 +100,40 @@ export const User = {
             })
             .select()
             .single()
-          
+
           if (createError) {
             console.error('Error creating user profile:', createError)
             // Return user without profile if creation fails
             return { ...user, email: user.email, id: user.id }
           }
-          
+
           return { ...user, ...newProfile }
         }
-        
+
         if (profileError) {
           console.error('Error fetching user profile:', profileError)
           // Return user without profile if fetch fails
           return { ...user, email: user.email, id: user.id }
         }
-        
+
         return { ...user, ...profile, email: user.email || profile?.email }
       }
-      
+
       // Fallback to getUser (slower, validates with server)
       const { data: { user }, error: authError } = await supabase.auth.getUser()
-      
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'entities.js:120',message:'getUser result',data:{hasUser:!!user,hasError:!!authError,errorMessage:authError?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'I'})}).catch(()=>{});
-      // #endregion
-      
+
       if (authError || !user) {
         console.log('No authenticated user:', authError?.message || 'User not found')
         return null
       }
-      
+
       // Try to get user profile from users table
       const { data: profile, error: profileError } = await supabase
         .from('users')
         .select('*')
         .eq('id', user.id)
         .single()
-      
+
       // If profile doesn't exist, create it
       if (profileError && profileError.code === 'PGRST116') {
         // Profile doesn't exist, create it
@@ -156,22 +146,22 @@ export const User = {
           })
           .select()
           .single()
-        
+
         if (createError) {
           console.error('Error creating user profile:', createError)
           // Return user without profile if creation fails
           return { ...user, email: user.email, id: user.id }
         }
-        
+
         return { ...user, ...newProfile }
       }
-      
+
       if (profileError) {
         console.error('Error fetching user profile:', profileError)
         // Return user without profile if fetch fails
         return { ...user, email: user.email, id: user.id }
       }
-      
+
       return { ...user, ...profile, email: user.email || profile?.email }
     } catch (error) {
       console.error('Error in User.me():', error)
@@ -189,5 +179,3 @@ export const User = {
     return true
   }
 }
-
-import { supabase } from '@/lib/supabase'

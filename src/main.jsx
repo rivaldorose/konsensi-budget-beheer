@@ -5,19 +5,12 @@ import '@/index.css'
 
 // Error boundary for React rendering errors
 try {
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.jsx:7',message:'Starting React render',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
-  
   ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
       <App />
     </React.StrictMode>
   )
 } catch (error) {
-  // #region agent log
-  fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'main.jsx:13',message:'Render error caught',data:{errorMessage:error.message,errorStack:error.stack,errorName:error.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-  // #endregion
   console.error('Failed to render app:', error)
   document.body.innerHTML = `
     <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #F8F8F8; font-family: system-ui, -apple-system, sans-serif;">
@@ -26,8 +19,8 @@ try {
         <p style="color: #666; margin-bottom: 1.5rem;">
           Er is een fout opgetreden bij het laden van de applicatie.
         </p>
-        <button 
-          onclick="window.location.reload()" 
+        <button
+          onclick="window.location.reload()"
           style="background: #3D6456; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600;"
         >
           Pagina verversen
@@ -39,4 +32,4 @@ try {
       </div>
     </div>
   `
-} 
+}

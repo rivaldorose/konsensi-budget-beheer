@@ -164,12 +164,6 @@ export default function Dashboard() {
 
   // Use useCallback for t function to avoid useMemo issues
   const t = useCallback((key, options) => {
-    // #region agent log
-    try {
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:177',message:'t function called',data:{key,hasTFromHook:!!tFromHook,language},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'L'})}).catch(()=>{});
-    } catch(e) {}
-    // #endregion
-    
     let translation = dashboardTranslations[key]?.[language];
     if (translation) {
       if (options) {
@@ -186,19 +180,11 @@ export default function Dashboard() {
   }, [language, tFromHook]);
 
   const loadDashboardData = useCallback(async () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:209',message:'loadDashboardData started',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-    // #endregion
-    
     setLoading(true);
     setError(null);
     try {
       const currentUser = await User.me();
-      
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:213',message:'User.me() result',data:{hasUser:!!currentUser,userId:currentUser?.id,userEmail:currentUser?.email},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-      // #endregion
-      
+
       if (!currentUser || !currentUser.id) {
         throw new Error('User not authenticated');
       }
@@ -206,29 +192,16 @@ export default function Dashboard() {
       
       // Use user_id for all queries
       const userFilter = { user_id: currentUser.id };
-      
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:220',message:'userFilter created',data:{userFilter,userId:currentUser.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
 
       const now = new Date();
 
       // Helper to filter with error handling
       const filterWithFallback = async (Entity, filter) => {
         const entityName = Entity?.name || Entity?.tableName || 'unknown';
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:225',message:'filterWithFallback called',data:{entityName,filter},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-        // #endregion
         try {
           const result = await Entity.filter(filter);
-          // #region agent log
-          fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:228',message:'filterWithFallback success',data:{entityName,resultLength:result?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-          // #endregion
           return result;
         } catch (error) {
-          // #region agent log
-          fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:230',message:'filterWithFallback error',data:{entityName,errorCode:error?.code,errorMessage:error?.message,errorHint:error?.hint,errorDetails:error?.details},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-          // #endregion
           console.error(`Error filtering ${entityName}:`, error);
           return [];
         }
@@ -251,10 +224,6 @@ export default function Dashboard() {
         filterWithFallback(DebtStrategy, { ...userFilter, is_active: true }),
         filterWithFallback(Transaction, userFilter),
       ]);
-      
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:250',message:'all queries completed',data:{incomesLength:allIncomes?.length,costsLength:allMonthlyCosts?.length,debtsLength:allDebts?.length,paymentsLength:allPayments?.length,potsLength:pots?.length,strategiesLength:activeStrategies?.length,transactionsLength:allTransactions?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
 
       // Sort payments by date descending (with null safety)
       if (Array.isArray(allPayments)) {
@@ -477,9 +446,6 @@ export default function Dashboard() {
       }));
 
     } catch (err) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:500',message:'loadDashboardData error',data:{errorMessage:err?.message,errorStack:err?.stack,errorName:err?.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
       console.error("Failed to load dashboard data:", err);
       setError(err);
       toast({ title: t('common.error'), description: t('dashboard.errorLoading'), variant: "destructive" });
@@ -489,10 +455,6 @@ export default function Dashboard() {
   }, [t, toast, language]);
 
   const loadGamificationData = useCallback(async () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:495',message:'loadGamificationData called',data:{hasUserId:!!user?.id,userId:user?.id,language},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-    // #endregion
-    
     if (!user?.id) return;
     
     try {
@@ -502,10 +464,6 @@ export default function Dashboard() {
         gamificationService.getDailyMotivation(language || 'nl'),
         gamificationService.getWeekGoal(user.id),
       ]);
-      
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:504',message:'gamification data loaded',data:{hasLevelData:!!levelData,hasBadges:!!badges,hasMotivation:!!motivation,hasWeekGoal:!!weekGoal},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
 
       setGamificationData({
         level: levelData?.level || 1,
@@ -516,32 +474,10 @@ export default function Dashboard() {
         weekGoalPercentage: weekGoal?.percentage || 0,
       });
     } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:515',message:'gamification error',data:{errorMessage:error?.message,errorStack:error?.stack},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
       console.error("Error loading gamification data:", error);
       // Don't throw - gamification data is not critical
     }
   }, [user?.id, language]);
-
-  // All useEffect hooks must come after all other hooks (useState, useMemo, useCallback)
-  // #region agent log
-  useEffect(() => {
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:160',message:'Before useToast hook',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'L'})}).catch(()=>{});
-  }, []);
-  // #endregion
-  
-  // #region agent log
-  useEffect(() => {
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:165',message:'After useToast, before useTranslation',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'L'})}).catch(()=>{});
-  }, []);
-  // #endregion
-  
-  // #region agent log
-  useEffect(() => {
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Dashboard.jsx:172',message:'After useTranslation hook',data:{hasTFromHook:!!tFromHook,language},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'L'})}).catch(()=>{});
-  }, [tFromHook, language]);
-  // #endregion
 
   useEffect(() => {
     loadDashboardData();
