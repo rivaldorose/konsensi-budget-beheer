@@ -499,45 +499,23 @@ export default function Dashboard() {
     }
   })();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-konsensi-bg dark:bg-bg-main">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary dark:border-konsensi-primary"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-konsensi-bg dark:bg-bg-main p-4">
-        <div className="text-center p-8 md:p-12 bg-white dark:bg-card-bg rounded-[24px] shadow-soft dark:shadow-soft-dark border border-gray-100 dark:border-border-main max-w-sm w-full">
-          <XCircle className="w-16 h-16 text-accent-red mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-konsensi-dark dark:text-white">{t('common.error')}</h2>
-          <p className="text-gray-500 dark:text-text-secondary mt-2">{t('dashboard.errorLoading')}</p>
-          <Button onClick={loadDashboardData} className="mt-4 bg-primary dark:bg-konsensi-primary hover:bg-primary-dark dark:hover:bg-konsensi-hover text-white dark:text-black">Probeer opnieuw</Button>
-        </div>
-      </div>
-    );
-  }
-
+  // Extract data from dashboardData (with defaults for when loading)
   const {
-    userName,
-    totalIncome,
-    totalExpenses,
-    totalPaidThisMonth,
-    remainingDebt,
-    totalPaidAllTime,
-    progressPercentage,
-    monthlyGraphData,
-    weeklyGraphData,
-    monthsUntilDebtFree,
-    monthlyPaymentRate,
-    breakdownData,
-    nextPayment,
-    nextCost,
-    showCheckIn,
+    userName = '',
+    totalIncome = 0,
+    totalExpenses = 0,
+    totalPaidThisMonth = 0,
+    remainingDebt = 0,
+    totalPaidAllTime = 0,
+    progressPercentage = 0,
+    monthlyGraphData = [],
+    weeklyGraphData = [],
+    monthsUntilDebtFree = 0,
+    monthlyPaymentRate = 0,
+    breakdownData = [],
+    nextPayment = null,
+    nextCost = null,
+    showCheckIn = false,
     allIncomes = [],
     allMonthlyCosts = [],
     debts = [],
@@ -545,23 +523,15 @@ export default function Dashboard() {
     allTransactions = [],
     allPayments = [],
   } = dashboardData;
-  
-  const currentMonthFormatted = (() => {
-    try {
-      return new Intl.DateTimeFormat(language || 'nl', { month: 'long', year: 'numeric' }).format(today);
-    } catch (e) {
-      return '';
-    }
-  })();
 
-  // Prepare data for new components
+  // Prepare data for new components - useMemo hooks MUST be before conditional returns
   const monthlyChartData = useMemo(() => {
     const last6Months = Array.from({ length: 6 }, (_, i) => {
       const monthDate = subMonths(new Date(), 5 - i);
       const monthEnd = getEndOfMonth(monthDate);
       const monthStart = getStartOfMonth(monthDate);
-      
-      const monthlyTotal = (dashboardData.allPayments || [])
+
+      const monthlyTotal = (allPayments || [])
         .filter(p => {
           const dateStr = p?.payment_date || p?.created_at;
           if (!dateStr) return false;
@@ -573,14 +543,14 @@ export default function Dashboard() {
           }
         })
         .reduce((sum, p) => sum + (Number(p?.amount) || 0), 0) || 0;
-      
+
       return {
         month: new Intl.DateTimeFormat("nl-NL", { month: "short" }).format(monthDate),
         amount: monthlyTotal,
       };
     });
     return last6Months;
-  }, [dashboardData.allPayments]);
+  }, [allPayments]);
 
   const upcomingPaymentsData = useMemo(() => {
     const payments = [];
@@ -610,7 +580,38 @@ export default function Dashboard() {
       paymentPlans: dashboardData.activeDebtPaymentsSum || 0,
       pots: dashboardData.totalPotjesBudget || 0,
     };
-  }, [totalIncome, totalExpenses, dashboardData]);
+  }, [totalIncome, totalExpenses, dashboardData.activeDebtPaymentsSum, dashboardData.totalPotjesBudget]);
+
+  const currentMonthFormatted = useMemo(() => {
+    try {
+      return new Intl.DateTimeFormat(language || 'nl', { month: 'long', year: 'numeric' }).format(today);
+    } catch (e) {
+      return '';
+    }
+  }, [language, today]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-konsensi-bg dark:bg-bg-main">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary dark:border-konsensi-primary"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-konsensi-bg dark:bg-bg-main p-4">
+        <div className="text-center p-8 md:p-12 bg-white dark:bg-card-bg rounded-[24px] shadow-soft dark:shadow-soft-dark border border-gray-100 dark:border-border-main max-w-sm w-full">
+          <XCircle className="w-16 h-16 text-accent-red mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-konsensi-dark dark:text-white">{t('common.error')}</h2>
+          <p className="text-gray-500 dark:text-text-secondary mt-2">{t('dashboard.errorLoading')}</p>
+          <Button onClick={loadDashboardData} className="mt-4 bg-primary dark:bg-konsensi-primary hover:bg-primary-dark dark:hover:bg-konsensi-hover text-white dark:text-black">Probeer opnieuw</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="flex-grow max-w-[1440px] mx-auto w-full p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 bg-konsensi-bg dark:bg-bg-main min-h-screen">
