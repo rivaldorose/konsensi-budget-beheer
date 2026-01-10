@@ -114,9 +114,9 @@ export default function Step3Amount({ formData, updateFormData }) {
             
             <Separator />
             
-            <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
-                <span className="font-semibold">TOTAAL SCHULDBEDRAG</span>
-                <span className="font-bold text-xl">€{total.toFixed(2)}</span>
+            <div className="flex justify-between items-center bg-gray-50 dark:bg-[#2a2a2a] p-3 rounded-lg border border-gray-200 dark:border-[#3a3a3a]">
+                <span className="font-semibold text-gray-900 dark:text-white">TOTAAL SCHULDBEDRAG</span>
+                <span className="font-bold text-xl text-gray-900 dark:text-white">€{total.toFixed(2)}</span>
             </div>
 
             {amountPaidInput}
@@ -190,9 +190,9 @@ export default function Step3Amount({ formData, updateFormData }) {
       
       <Separator />
 
-      <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
-        <span className="font-semibold">TOTAAL</span>
-        <span className="font-bold text-xl">€{total.toFixed(2)}</span>
+      <div className="flex justify-between items-center bg-gray-50 dark:bg-[#2a2a2a] p-3 rounded-lg border border-gray-200 dark:border-[#3a3a3a]">
+        <span className="font-semibold text-gray-900 dark:text-white">TOTAAL</span>
+        <span className="font-bold text-xl text-gray-900 dark:text-white">€{total.toFixed(2)}</span>
       </div>
 
       {amountPaidInput}
