@@ -9,24 +9,24 @@ const COMMON_COSTS = [
   { name: 'Huur', category: 'wonen', icon: '🏠', avgAmount: 800, popular: true },
   { name: 'Hypotheek', category: 'wonen', icon: '🏡', avgAmount: 1200 },
   { name: 'Servicekosten', category: 'wonen', icon: '🔧', avgAmount: 100 },
-  
+
   // Nutsvoorzieningen
   { name: 'Energie (Gas & Stroom)', category: 'utilities', icon: '⚡', avgAmount: 150, popular: true },
   { name: 'Water', category: 'utilities', icon: '💧', avgAmount: 40 },
   { name: 'Afvalstoffenheffing', category: 'utilities', icon: '🗑️', avgAmount: 25 },
-  
+
   // Verzekeringen
   { name: 'Zorgverzekering', category: 'verzekeringen', icon: '🏥', avgAmount: 130, popular: true },
   { name: 'Aansprakelijkheidsverzekering', category: 'verzekeringen', icon: '🛡️', avgAmount: 5 },
-  { name: 'Inboedelverzekering', category: 'verzekeringen', icon: '🏠', avgAmount: 15 },
-  { name: 'Autoverzekering', category: 'verzekeringen', icon: '🚗', avgAmount: 80 },
+  { name: 'Inboedelverzekering', category: 'verzekeringen', icon: '🪑', avgAmount: 15 },
+  { name: 'Autoverzekering', category: 'verzekeringen', icon: '🚙', avgAmount: 80 },
   { name: 'Reisverzekering', category: 'verzekeringen', icon: '✈️', avgAmount: 10 },
-  
+
   // Abonnementen
   { name: 'Telefoon abonnement', category: 'abonnementen', icon: '📱', avgAmount: 25, popular: true },
   { name: 'Internet', category: 'abonnementen', icon: '🌐', avgAmount: 45, popular: true },
-  { name: 'TV pakket', category: 'abonnementen', icon: '📺', avgAmount: 20 },
-  
+  { name: 'TV pakket', category: 'abonnementen', icon: '📡', avgAmount: 20 },
+
   // Streaming
   { name: 'Netflix', category: 'streaming_diensten', icon: '🎬', avgAmount: 13, popular: true },
   { name: 'Spotify', category: 'streaming_diensten', icon: '🎵', avgAmount: 10 },
@@ -34,17 +34,17 @@ const COMMON_COSTS = [
   { name: 'Videoland', category: 'streaming_diensten', icon: '📺', avgAmount: 10 },
   { name: 'Amazon Prime', category: 'streaming_diensten', icon: '📦', avgAmount: 5 },
   { name: 'HBO Max', category: 'streaming_diensten', icon: '🎥', avgAmount: 10 },
-  
+
   // Vervoer
   { name: 'OV-chipkaart / NS', category: 'vervoer', icon: '🚆', avgAmount: 100 },
   { name: 'Benzine / Tanken', category: 'vervoer', icon: '⛽', avgAmount: 150 },
-  { name: 'Wegenbelasting', category: 'vervoer', icon: '🚗', avgAmount: 50 },
+  { name: 'Wegenbelasting', category: 'vervoer', icon: '💰', avgAmount: 50 },
   { name: 'Parkeervergunning', category: 'vervoer', icon: '🅿️', avgAmount: 60 },
-  
+
   // Bankkosten
   { name: 'Bankrekening', category: 'bankkosten', icon: '🏦', avgAmount: 5 },
   { name: 'Creditcard', category: 'bankkosten', icon: '💳', avgAmount: 3 },
-  
+
   // Overig
   { name: 'Sportschool', category: 'other', icon: '💪', avgAmount: 30 },
   { name: 'Kinderopvang', category: 'other', icon: '👶', avgAmount: 500 },
