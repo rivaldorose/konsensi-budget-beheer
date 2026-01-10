@@ -133,6 +133,7 @@ export default function OnboardingNew() {
         if (income.description && income.amount) {
           const incomeData = {
             user_id: user.id,
+            name: income.description,
             description: income.description,
             amount: parseFloat(income.amount),
             frequency: income.frequency || 'monthly',
