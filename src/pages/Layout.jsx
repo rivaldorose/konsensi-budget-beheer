@@ -1273,7 +1273,12 @@ function LayoutWithProvider({ children, currentPageName }) {
           onClose={() => setShowScanDebtModal(false)}
           onDebtScanned={async (debtData) => {
             try {
-              await Debt.create(debtData);
+              // Ensure name field is set (required by database)
+              const dataToCreate = {
+                ...debtData,
+                name: debtData.name || debtData.creditor_name || 'Onbekende schuld'
+              };
+              await Debt.create(dataToCreate);
               toast({ 
                 title: "✅ Schuld toegevoegd!",
                 description: "Je kunt nu de volgende brief scannen"

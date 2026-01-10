@@ -193,10 +193,11 @@ export default function Debts() {
         await Debt.update(editingDebt.id, debtData);
         toast({ title: "Schuld bijgewerkt! 📝" });
       } else {
-        // Add user_id to debt data for RLS policy
+        // Add user_id and ensure name field is set (required by database)
         const dataWithUserId = {
           ...debtData,
-          user_id: user.id
+          user_id: user.id,
+          name: debtData.name || debtData.creditor_name || 'Onbekende schuld'
         };
         console.log('[Debts] Creating debt with user_id:', dataWithUserId);
         await Debt.create(dataWithUserId);
@@ -252,7 +253,12 @@ export default function Debts() {
           return;
         }
       }
-      await Debt.create(scannedData);
+      // Ensure name field is set (required by database)
+      const dataToCreate = {
+        ...scannedData,
+        name: scannedData.name || scannedData.creditor_name || 'Onbekende schuld'
+      };
+      await Debt.create(dataToCreate);
       await loadDebts();
       toast({ title: "✅ Schuld toegevoegd!" });
     } catch (error) {

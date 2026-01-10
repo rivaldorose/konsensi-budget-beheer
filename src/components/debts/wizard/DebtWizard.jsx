@@ -80,6 +80,7 @@ export default function DebtWizard({ isOpen, onClose, onSave }) {
 
       const dataToSave = {
         user_id: currentUser.id,
+        name: formData.creditor_name, // Required field in database
         is_personal_loan: formData.is_personal_loan,
         creditor_name: formData.creditor_name,
         creditor_type: formData.is_personal_loan ? null : formData.creditor_type,
