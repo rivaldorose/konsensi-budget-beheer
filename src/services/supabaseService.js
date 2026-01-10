@@ -3,11 +3,11 @@ import { supabase } from '@/lib/supabase'
 /**
  * Supabase Service Layer
  * This replaces base44.entities with Supabase queries
- * 
+ *
  * Usage:
  * - Instead of: Income.list()
  * - Use: supabaseService.list('income')
- * 
+ *
  * - Instead of: Income.filter({ id: '123' })
  * - Use: supabaseService.filter('income', { id: '123' })
  */
@@ -19,7 +19,7 @@ export const supabaseService = {
       .from(table)
       .select('*')
       .order(orderBy, { ascending })
-    
+
     if (error) throw error
     return data || []
   },
@@ -64,7 +64,7 @@ export const supabaseService = {
       .select('*')
       .eq('id', id)
       .single()
-    
+
     if (error) throw error
     return data
   },
@@ -95,7 +95,7 @@ export const supabaseService = {
       .eq('id', id)
       .select()
       .single()
-    
+
     if (error) throw error
     return result
   },
@@ -105,7 +105,7 @@ export const supabaseService = {
       .from(table)
       .delete()
       .eq('id', id)
-    
+
     if (error) throw error
     return true
   },
@@ -118,13 +118,13 @@ export const supabaseService = {
         cacheControl: '3600',
         upsert: true
       })
-    
+
     if (error) throw error
-    
+
     const { data: { publicUrl } } = supabase.storage
       .from(bucket)
       .getPublicUrl(path)
-    
+
     return { file_url: publicUrl }
   },
 
@@ -136,4 +136,3 @@ export const supabaseService = {
     return data.publicUrl
   }
 }
-

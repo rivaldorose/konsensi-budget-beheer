@@ -5,11 +5,11 @@ module.exports = {
   theme: {
   	extend: {
   		borderRadius: {
-  			DEFAULT: '0.5rem',
-  			lg: '1rem',
-  			xl: '12px',
-  			'2xl': '16px',
-  			'3xl': '24px',
+  			DEFAULT: '1rem',
+  			lg: '1.5rem',
+  			xl: '2rem',
+  			'2xl': '2.5rem',
+  			'3xl': '3rem',
   			full: '9999px',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
@@ -21,6 +21,21 @@ module.exports = {
   			'primary-dark': '#059669',
   			'primary-darker': '#047857',
   			secondary: '#B2FF78',
+  			// Dark mode colors
+  			'bg-main': '#0a0a0a',
+  			'card-bg': '#1a1a1a',
+  			'card-elevated': '#2a2a2a',
+  			'border-main': '#2a2a2a',
+  			'border-accent': '#3a3a3a',
+  			'text-primary': '#ffffff',
+  			'text-secondary': '#a1a1a1',
+  			'text-tertiary': '#6b7280',
+  			'text-disabled': '#4b5563',
+  			// Konsensi brand colors
+  			'konsensi-primary': '#10b981',
+  			'konsensi-hover': '#34d399',
+  			'konsensi-dark-green': '#059669',
+  			'konsensi-bg-green': 'rgba(16, 185, 129, 0.1)',
 			success: '#10B981',
 			info: '#60A5FA',
 			warning: '#F59E0B',
@@ -68,9 +83,9 @@ module.exports = {
   			'border-dark': '#2a2a2a',
   			'text-gray': '#a1a1a1',
   			'text-gray-dark': '#6b7280',
-  			'accent-blue': '#60A5FA',
-  			'accent-orange': '#F59E0B',
-  			'accent-purple': '#8B5CF6',
+			'accent-blue': '#3b82f6',
+			'accent-orange': '#F59E0B',
+			'accent-purple': '#8B5CF6',
   			'purple-badge': '#8B5CF6',
   			'surface-white': '#FFFFFF',
   			'text-main': '#3D6456',
@@ -124,27 +139,27 @@ module.exports = {
   			}
   		},
   		fontFamily: {
-  			display: ['Montserrat', 'Inter', 'sans-serif'],
+  			display: ['Plus Jakarta Sans', 'Montserrat', 'Inter', 'sans-serif'],
   			header: ['Montserrat', 'Inter', 'sans-serif'],
   			body: ['Lato', 'Inter', 'sans-serif'],
   			montserrat: ['Montserrat', 'sans-serif'],
   			lato: ['Lato', 'sans-serif'],
   			sans: ['Inter', 'sans-serif']
   		},
-			boxShadow: {
-				'soft-dark': '0 4px 12px rgba(0,0,0,0.5)',
-				'modal-dark': '0 8px 32px rgba(0,0,0,0.7)',
-				'glow-green': '0 0 15px rgba(16, 185, 129, 0.15)',
-				soft: '4px 0 24px rgba(0,0,0,0.04)',
-				subtle: '4px 0 24px rgba(0,0,0,0.04)',
-				glow: '0 0 0 3px rgba(16,185,129,0.1)',
-				button: '0 4px 12px rgba(16,185,129,0.2)',
-				card: '0 8px 32px rgba(0,0,0,0.1)',
-				float: '0 20px 60px rgba(61,100,86,0.3)',
-				nav: '0 2px 4px rgba(0,0,0,0.1)',
-				hover: '0 4px 12px rgba(0,0,0,0.1)',
-				modal: '0 4px 12px rgba(0,0,0,0.5)'
-			},
+		boxShadow: {
+			'soft-dark': '0 4px 24px rgba(0,0,0,0.4)',
+			'modal-dark': '0 8px 32px rgba(0,0,0,0.7)',
+			'glow-green': '0 0 15px rgba(16, 185, 129, 0.15)',
+			soft: '0 4px 24px rgba(0,0,0,0.06)',
+			subtle: '4px 0 24px rgba(0,0,0,0.04)',
+			glow: '0 0 0 3px rgba(16,185,129,0.1)',
+			button: '0 4px 12px rgba(16,185,129,0.2)',
+			card: '0 2px 8px rgba(0,0,0,0.2)',
+			float: '0 20px 60px rgba(61,100,86,0.3)',
+			nav: '0 2px 4px rgba(0,0,0,0.1)',
+			hover: '0 4px 12px rgba(0,0,0,0.1)',
+			modal: '0 4px 12px rgba(0,0,0,0.5)'
+		},
   		keyframes: {
   			'accordion-down': {
   				from: {

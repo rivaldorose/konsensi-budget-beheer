@@ -88,7 +88,7 @@ export default function Login() {
       }
 
       toast({
-        title: 'Ingelogd! ✅',
+        title: 'Ingelogd!',
         description: 'Welkom terug!',
       });
       

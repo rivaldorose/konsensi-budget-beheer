@@ -20,8 +20,8 @@ try {
         <p style="color: #666; margin-bottom: 1.5rem;">
           Er is een fout opgetreden bij het laden van de applicatie.
         </p>
-        <button 
-          onclick="window.location.reload()" 
+        <button
+          onclick="window.location.reload()"
           style="background: #3D6456; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-weight: 600;"
         >
           Pagina verversen
@@ -33,4 +33,4 @@ try {
       </div>
     </div>
   `
-} 
+}

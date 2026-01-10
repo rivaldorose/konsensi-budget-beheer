@@ -69,6 +69,8 @@ export const Payslip = createEntityWrapper('payslips')
 export const VariableIncomeEntry = createEntityWrapper('variable_income_entries')
 export const NotificationRule = createEntityWrapper('notification_rules')
 
+import { supabase } from '@/lib/supabase'
+
 // Auth wrapper - use supabase.auth directly
 export const User = {
   me: async () => {
@@ -81,14 +83,14 @@ export const User = {
       // If we have a session, use it directly
       if (sessionData?.user) {
         const user = sessionData.user
-        
+
         // Try to get user profile from users table
         const { data: profile, error: profileError } = await supabase
           .from('users')
           .select('*')
           .eq('id', user.id)
           .single()
-        
+
         // If profile doesn't exist, create it
         if (profileError && profileError.code === 'PGRST116') {
           // Profile doesn't exist, create it
@@ -101,25 +103,25 @@ export const User = {
             })
             .select()
             .single()
-          
+
           if (createError) {
             console.error('Error creating user profile:', createError)
             // Return user without profile if creation fails
             return { ...user, email: user.email, id: user.id }
           }
-          
+
           return { ...user, ...newProfile }
         }
-        
+
         if (profileError) {
           console.error('Error fetching user profile:', profileError)
           // Return user without profile if fetch fails
           return { ...user, email: user.email, id: user.id }
         }
-        
+
         return { ...user, ...profile, email: user.email || profile?.email }
       }
-      
+
       // Fallback to getUser (slower, validates with server)
       const { data: { user }, error: authError } = await supabase.auth.getUser()
       
@@ -128,14 +130,14 @@ export const User = {
         console.log('No authenticated user:', authError?.message || 'User not found')
         return null
       }
-      
+
       // Try to get user profile from users table
       const { data: profile, error: profileError } = await supabase
         .from('users')
         .select('*')
         .eq('id', user.id)
         .single()
-      
+
       // If profile doesn't exist, create it
       if (profileError && profileError.code === 'PGRST116') {
         // Profile doesn't exist, create it
@@ -148,22 +150,22 @@ export const User = {
           })
           .select()
           .single()
-        
+
         if (createError) {
           console.error('Error creating user profile:', createError)
           // Return user without profile if creation fails
           return { ...user, email: user.email, id: user.id }
         }
-        
+
         return { ...user, ...newProfile }
       }
-      
+
       if (profileError) {
         console.error('Error fetching user profile:', profileError)
         // Return user without profile if fetch fails
         return { ...user, email: user.email, id: user.id }
       }
-      
+
       return { ...user, ...profile, email: user.email || profile?.email }
     } catch (error) {
       console.error('Error in User.me():', error)

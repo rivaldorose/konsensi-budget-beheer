@@ -583,45 +583,23 @@ export default function Dashboard() {
     }
   })();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a]">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-dashed rounded-full animate-spin border-primary dark:border-primary"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] p-4">
-        <div className="text-center p-8 md:p-12 bg-white dark:bg-[#1a2c26] rounded-[24px] shadow-soft dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2A3F36] max-w-sm w-full">
-          <XCircle className="w-16 h-16 text-[#EF4444] mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-[#1F2937] dark:text-white">{t('common.error')}</h2>
-          <p className="text-[#6B7280] dark:text-[#9CA3AF] mt-2">{t('dashboard.errorLoading')}</p>
-          <Button onClick={loadDashboardData} className="mt-4 bg-primary hover:bg-primary-dark text-white">Probeer opnieuw</Button>
-        </div>
-      </div>
-    );
-  }
-
+  // Extract data from dashboardData (with defaults for when loading)
   const {
-    userName,
-    totalIncome,
-    totalExpenses,
-    totalPaidThisMonth,
-    remainingDebt,
-    totalPaidAllTime,
-    progressPercentage,
-    monthlyGraphData,
-    weeklyGraphData,
-    monthsUntilDebtFree,
-    monthlyPaymentRate,
-    breakdownData,
-    nextPayment,
-    nextCost,
-    showCheckIn,
+    userName = '',
+    totalIncome = 0,
+    totalExpenses = 0,
+    totalPaidThisMonth = 0,
+    remainingDebt = 0,
+    totalPaidAllTime = 0,
+    progressPercentage = 0,
+    monthlyGraphData = [],
+    weeklyGraphData = [],
+    monthsUntilDebtFree = 0,
+    monthlyPaymentRate = 0,
+    breakdownData = [],
+    nextPayment = null,
+    nextCost = null,
+    showCheckIn = false,
     allIncomes = [],
     allMonthlyCosts = [],
     debts = [],
@@ -629,14 +607,6 @@ export default function Dashboard() {
     allTransactions = [],
     allPayments = [],
   } = dashboardData;
-  
-  const currentMonthFormatted = (() => {
-    try {
-      return new Intl.DateTimeFormat(language || 'nl', { month: 'long', year: 'numeric' }).format(today);
-    } catch (e) {
-      return '';
-    }
-  })();
 
   // Calculate dynamic motivational message based on user's progress
   const motivationalMessage = (() => {
@@ -693,7 +663,7 @@ export default function Dashboard() {
   })();
 
   return (
-    <div className="flex-grow max-w-[1600px] mx-auto w-full p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 bg-[#F8F8F8] dark:bg-[#0a0a0a] min-h-screen">
+    <main className="flex-grow max-w-[1440px] mx-auto w-full p-4 md:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 bg-konsensi-bg dark:bg-bg-main min-h-screen">
       {/* Left Column */}
       <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
         {/* Welcome Card */}
@@ -797,6 +767,6 @@ export default function Dashboard() {
         isOpen={showAchievementsModal} 
         onClose={() => setShowAchievementsModal(false)} 
       />
-    </div>
+    </main>
   );
 }
