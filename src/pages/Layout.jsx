@@ -82,13 +82,6 @@ function LayoutWithProvider({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // #region agent log
-  React.useEffect(() => {
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:82',message:'LayoutWithProvider render start',data:{pathname:location.pathname,currentPageName,prevPage:sessionStorage.getItem('prevPageName')},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-    sessionStorage.setItem('prevPageName', currentPageName);
-  }, [location.pathname, currentPageName]);
-  // #endregion
-  
   const { t, language, changeLanguage } = useTranslation();
   const { toast } = useToast();
   const { startPageTour, startFullOnboarding } = useTour();
@@ -123,17 +116,6 @@ function LayoutWithProvider({ children, currentPageName }) {
                      currentPath === '/terms' || currentPath === '/privacy' ||
                      currentPath === '/maintenance';
   
-  // #region agent log
-  React.useEffect(() => {
-    const prevPageName = sessionStorage.getItem('prevPageName');
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:101',message:'Layout render start',data:{pathname:location.pathname,currentPageName,prevPageName,isAuthPage,pageChanged:prevPageName!==currentPageName},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-    if (prevPageName && prevPageName !== currentPageName) {
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:104',message:'Page name changed',data:{from:prevPageName,to:currentPageName,pathname:location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-    }
-    sessionStorage.setItem('prevPageName', currentPageName);
-  }, [location.pathname, currentPageName, isAuthPage]);
-  // #endregion
-
   const [fabPosition, setFabPosition] = React.useState({ x: null, y: null });
   const fabRef = React.useRef(null);
   const isDragging = React.useRef(false);
@@ -259,16 +241,8 @@ function LayoutWithProvider({ children, currentPageName }) {
     if (location.pathname === '/') {
       const handleRootRedirect = async () => {
         try {
-          // #region agent log
-          fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:235',message:'RootRedirect: User.me() called',data:{pathname:location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'K'})}).catch(()=>{});
-          // #endregion
-          
           const userData = await User.me();
-          
-          // #region agent log
-          fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:242',message:'RootRedirect: User.me() result',data:{userDataExists:!!userData,onboardingCompleted:userData?.onboarding_completed},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'K'})}).catch(()=>{});
-          // #endregion
-          
+
           if (!userData) {
             window.location.href = '/login';
           } else if (!userData.onboarding_completed) {
@@ -277,10 +251,6 @@ function LayoutWithProvider({ children, currentPageName }) {
             window.location.href = '/Dashboard';
           }
         } catch (error) {
-          // #region agent log
-          fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:252',message:'RootRedirect: Error checking auth',data:{errorMessage:error.message,errorStack:error.stack},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'K'})}).catch(()=>{});
-          // #endregion
-          
           console.error('Error checking auth for root redirect:', error);
           window.location.href = '/login';
         }
@@ -297,16 +267,8 @@ function LayoutWithProvider({ children, currentPageName }) {
 
     const loadInitialUser = async () => {
       try {
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:275',message:'loadInitialUser: User.me() called',data:{pathname:location.pathname,currentUserState:user?.email||'null',currentUserVoornaam:user?.voornaam||'null',isAuthPage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'M'})}).catch(()=>{});
-        // #endregion
-        
         const userData = await User.me();
-        
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:280',message:'loadInitialUser: User.me() result',data:{userDataExists:!!userData,onboardingCompleted:userData?.onboarding_completed},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'K'})}).catch(()=>{});
-        // #endregion
-        
+
         if (!userData) {
           // Redirect to login if not logged in (only log if not on auth pages)
           window.location.href = '/login';
@@ -324,16 +286,8 @@ function LayoutWithProvider({ children, currentPageName }) {
           }
         }
         
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:304',message:'Setting user state',data:{userEmail:userData?.email,userVoornaam:userData?.voornaam,userFullName:userData?.full_name,userName:userData?.name,pathname:location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'M'})}).catch(()=>{});
-        // #endregion
-        
         setUser(userData);
       } catch (error) {
-        // #region agent log
-        fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:307',message:'Error loading user',data:{errorMessage:error.message,pathname:location.pathname},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'M'})}).catch(()=>{});
-        // #endregion
-        
         console.error("Error loading user:", error);
         setUser(null);
         // Redirect to login on error
@@ -366,21 +320,12 @@ function LayoutWithProvider({ children, currentPageName }) {
 
             // Load monthly checks for current month
             let existingChecks = [];
-            // #region agent log
-            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:370',message:'loading monthly checks',data:{month:currentMonthStr,userId:user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-            // #endregion
             try {
-              existingChecks = await MonthlyCheck.filter({ 
+              existingChecks = await MonthlyCheck.filter({
                   month: currentMonthStr,
-                  user_id: user.id 
+                  user_id: user.id
               });
-              // #region agent log
-              fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:373',message:'monthly checks success',data:{checksLength:existingChecks?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-              // #endregion
             } catch (error) {
-              // #region agent log
-              fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:375',message:'monthly checks error',data:{errorCode:error?.code,errorMessage:error?.message,errorHint:error?.hint},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-              // #endregion
               console.error('Error loading monthly checks:', error);
               existingChecks = [];
             }
@@ -394,21 +339,12 @@ function LayoutWithProvider({ children, currentPageName }) {
             }
 
             // Load monthly costs and debts
-            // #region agent log
-            fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:388',message:'loading monthly costs and debts',data:{userId:user.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-            // #endregion
             const [monthlyCosts, debts] = await Promise.all([
               (async () => {
                 try {
                   const result = await MonthlyCost.filter({ status: 'actief', user_id: user.id });
-                  // #region agent log
-                  fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:391',message:'monthly costs success',data:{costsLength:result?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-                  // #endregion
                   return result;
                 } catch (error) {
-                  // #region agent log
-                  fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:393',message:'monthly costs error',data:{errorCode:error?.code,errorMessage:error?.message,errorHint:error?.hint},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-                  // #endregion
                   console.error('Error loading monthly costs:', error);
                   return [];
                 }
@@ -416,14 +352,8 @@ function LayoutWithProvider({ children, currentPageName }) {
               (async () => {
                 try {
                   const result = await Debt.filter({ status: 'betalingsregeling', user_id: user.id });
-                  // #region agent log
-                  fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:399',message:'debts success',data:{debtsLength:result?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-                  // #endregion
                   return result;
                 } catch (error) {
-                  // #region agent log
-                  fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:401',message:'debts error',data:{errorCode:error?.code,errorMessage:error?.message,errorHint:error?.hint},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-                  // #endregion
                   console.error('Error loading debts:', error);
                   return [];
                 }
@@ -668,26 +598,15 @@ function LayoutWithProvider({ children, currentPageName }) {
 
 
   const fetchNotifications = React.useCallback(async () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:658',message:'fetchNotifications called',data:{hasUserId:!!user?.id,userId:user?.id,notificationsEnabled},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-    
     if (!user?.id || !notificationsEnabled) return;
-    
+
     try {
       const allNotifications = await Notification.filter({ user_id: user.id }, '-created_date', 50);
-      
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:665',message:'notifications query success',data:{notificationsLength:allNotifications?.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
-      
+
       setNotifications(allNotifications || []);
       const unread = (allNotifications || []).filter(n => !n.is_read).length;
       setUnreadCount(unread);
     } catch (error) {
-      // #region agent log
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:671',message:'notifications query error',data:{errorCode:error?.code,errorMessage:error?.message,errorHint:error?.hint,errorDetails:error?.details},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
       console.warn("Notifications unavailable, disabling feature:", error);
       setNotificationsEnabled(false);
       setNotifications([]);
@@ -836,19 +755,6 @@ function LayoutWithProvider({ children, currentPageName }) {
     });
     return groups;
   }, [notifications]);
-
-  // #region agent log
-  React.useEffect(() => {
-    if (isAuthPage) {
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:725',message:'Rendering auth page',data:{isAuthPage,pathname:location.pathname,childrenType:children?.type?.name||'unknown'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-    } else {
-      const renderStart = Date.now();
-      const prevRenderTime = sessionStorage.getItem('lastRenderTime');
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Layout.jsx:737',message:'Rendering children',data:{currentPageName,pathname:location.pathname,childrenType:children?.type?.name||'unknown',timeSinceLastRender:prevRenderTime?renderStart-parseInt(prevRenderTime):null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-      sessionStorage.setItem('lastRenderTime', renderStart.toString());
-    }
-  }, [isAuthPage, currentPageName, location.pathname]);
-  // #endregion
 
   if (checkingOnboarding) {
     return (

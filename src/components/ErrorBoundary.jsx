@@ -11,28 +11,7 @@ export class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log error to debug endpoint
-    try {
-      fetch('http://127.0.0.1:7244/ingest/0a454eb1-d3d1-4c43-8c8e-e087d82e49ee', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          location: 'ErrorBoundary.jsx:16',
-          message: 'Error caught by boundary',
-          data: {
-            errorName: error?.name,
-            errorMessage: error?.message,
-            errorStack: error?.stack,
-            componentStack: errorInfo?.componentStack
-          },
-          timestamp: Date.now(),
-          sessionId: 'debug-session',
-          runId: 'run1',
-          hypothesisId: 'A'
-        })
-      }).catch(() => {});
-    } catch (e) {}
-
+    console.error('Error caught by boundary:', error, errorInfo);
     this.setState({
       error,
       errorInfo
@@ -70,4 +49,3 @@ export class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
-
