@@ -1,143 +1,147 @@
 -- ============================================
 -- GRANT PERMISSIONS AND FIX RLS POLICIES
 -- ============================================
--- This migration grants necessary permissions to authenticated users
--- and ensures all tables with user_id have proper RLS policies
+-- This migration ensures all tables have proper permissions
+-- and fixes policies for tables that should be publicly readable
 -- ============================================
 
--- ============================================
--- GRANT PERMISSIONS TO AUTHENTICATED USERS
--- ============================================
+-- Grant schema usage to authenticated users
 GRANT USAGE ON SCHEMA public TO authenticated;
+GRANT USAGE ON SCHEMA public TO anon;
 
--- Grant permissions on all tables
+-- Grant permissions on ALL tables to authenticated users
 DO $$
 DECLARE
   table_record RECORD;
 BEGIN
-  FOR table_record IN 
-    SELECT table_name 
-    FROM information_schema.tables 
-    WHERE table_schema = 'public' 
-    AND table_type = 'BASE TABLE'
-    AND table_name NOT IN ('schema_migrations', 'supabase_migrations')
+  FOR table_record IN
+    SELECT tablename
+    FROM pg_tables
+    WHERE schemaname = 'public'
+    AND tablename NOT IN ('schema_migrations', 'supabase_migrations')
   LOOP
     BEGIN
-      EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE %I TO authenticated', table_record.table_name);
-      RAISE NOTICE 'Granted permissions on %', table_record.table_name;
+      EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.%I TO authenticated', table_record.tablename);
+      RAISE NOTICE 'Granted permissions on table %', table_record.tablename;
     EXCEPTION WHEN OTHERS THEN
-      RAISE NOTICE 'Could not grant permissions on %: %', table_record.table_name, SQLERRM;
+      RAISE NOTICE 'Could not grant permissions on table %: %', table_record.tablename, SQLERRM;
     END;
   END LOOP;
 END $$;
 
--- Grant permissions on sequences
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO authenticated;
-
--- ============================================
--- ENABLE RLS AND CREATE POLICIES FOR ALL TABLES WITH USER_ID
--- ============================================
+-- Grant permissions on ALL sequences to authenticated users
 DO $$
 DECLARE
-  table_record RECORD;
-  has_user_id BOOLEAN;
+  seq_record RECORD;
 BEGIN
-  FOR table_record IN 
-    SELECT table_name 
-    FROM information_schema.tables 
-    WHERE table_schema = 'public' 
-    AND table_type = 'BASE TABLE'
-    AND table_name NOT IN ('schema_migrations', 'supabase_migrations', 'users', 'achievements', 'challenges', 'daily_motivations', 'faqs', 'translations', 'creditors')
+  FOR seq_record IN
+    SELECT sequencename
+    FROM pg_sequences
+    WHERE schemaname = 'public'
   LOOP
-    -- Check if table has user_id column
-    SELECT EXISTS (
-      SELECT 1 FROM information_schema.columns 
-      WHERE table_schema = 'public' 
-      AND table_name = table_record.table_name 
-      AND column_name = 'user_id'
-    ) INTO has_user_id;
-
-    IF has_user_id THEN
-      -- Enable RLS
-      BEGIN
-        EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', table_record.table_name);
-        
-        -- Drop existing policies
-        EXECUTE format('DROP POLICY IF EXISTS "Users can read own %I" ON %I', table_record.table_name, table_record.table_name);
-        EXECUTE format('DROP POLICY IF EXISTS "Users can insert own %I" ON %I', table_record.table_name, table_record.table_name);
-        EXECUTE format('DROP POLICY IF EXISTS "Users can update own %I" ON %I', table_record.table_name, table_record.table_name);
-        EXECUTE format('DROP POLICY IF EXISTS "Users can delete own %I" ON %I', table_record.table_name, table_record.table_name);
-        
-        -- Create policies
-        EXECUTE format('CREATE POLICY "Users can read own %I" ON %I FOR SELECT USING (auth.uid() = user_id)', table_record.table_name, table_record.table_name);
-        EXECUTE format('CREATE POLICY "Users can insert own %I" ON %I FOR INSERT WITH CHECK (auth.uid() = user_id)', table_record.table_name, table_record.table_name);
-        EXECUTE format('CREATE POLICY "Users can update own %I" ON %I FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id)', table_record.table_name, table_record.table_name);
-        EXECUTE format('CREATE POLICY "Users can delete own %I" ON %I FOR DELETE USING (auth.uid() = user_id)', table_record.table_name, table_record.table_name);
-        
-        RAISE NOTICE 'Created RLS policies for %', table_record.table_name;
-      EXCEPTION WHEN OTHERS THEN
-        RAISE NOTICE 'Could not create policies for %: %', table_record.table_name, SQLERRM;
-      END;
-    END IF;
+    BEGIN
+      EXECUTE format('GRANT USAGE, SELECT ON SEQUENCE public.%I TO authenticated', seq_record.sequencename);
+      RAISE NOTICE 'Granted permissions on sequence %', seq_record.sequencename;
+    EXCEPTION WHEN OTHERS THEN
+      RAISE NOTICE 'Could not grant permissions on sequence %: %', seq_record.sequencename, SQLERRM;
+    END;
   END LOOP;
 END $$;
 
 -- ============================================
--- FIX PUBLIC TABLES (read-only for authenticated)
+-- Fix policies for public/reference tables
 -- ============================================
+-- Some tables should be readable by all authenticated users
+-- (e.g., daily_motivations, achievements, challenges, faqs)
 
--- Daily_motivations
+-- Daily motivations - should be readable by all
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'daily_motivations') THEN
-    ALTER TABLE daily_motivations ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS "Authenticated users can read motivations" ON daily_motivations;
-    CREATE POLICY "Authenticated users can read motivations" ON daily_motivations
-      FOR SELECT USING (auth.role() = 'authenticated');
+    -- Drop restrictive policy if it exists
+    DROP POLICY IF EXISTS "Users can read own daily_motivations" ON daily_motivations;
+
+    -- Create public read policy
+    DROP POLICY IF EXISTS "Authenticated users can read all motivations" ON daily_motivations;
+    CREATE POLICY "Authenticated users can read all motivations" ON daily_motivations
+      FOR SELECT
+      USING (auth.role() = 'authenticated');
+
+    RAISE NOTICE 'Fixed policies for daily_motivations';
   END IF;
 END $$;
 
--- Translations
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'translations') THEN
-    ALTER TABLE translations ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS "Anyone can read translations" ON translations;
-    CREATE POLICY "Anyone can read translations" ON translations
-      FOR SELECT USING (auth.role() = 'authenticated');
-  END IF;
-END $$;
-
--- Achievements
+-- Achievements - should be readable by all
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'achievements') THEN
-    ALTER TABLE achievements ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS "Anyone can read achievements" ON achievements;
-    CREATE POLICY "Anyone can read achievements" ON achievements
-      FOR SELECT USING (auth.role() = 'authenticated');
+    DROP POLICY IF EXISTS "Users can read own achievements" ON achievements;
+    DROP POLICY IF EXISTS "Authenticated users can read all achievements" ON achievements;
+    CREATE POLICY "Authenticated users can read all achievements" ON achievements
+      FOR SELECT
+      USING (auth.role() = 'authenticated');
+
+    RAISE NOTICE 'Fixed policies for achievements';
   END IF;
 END $$;
 
--- Challenges
+-- Challenges - should be readable by all
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'challenges') THEN
-    ALTER TABLE challenges ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS "Anyone can read challenges" ON challenges;
-    CREATE POLICY "Anyone can read challenges" ON challenges
-      FOR SELECT USING (auth.role() = 'authenticated');
+    DROP POLICY IF EXISTS "Users can read own challenges" ON challenges;
+    DROP POLICY IF EXISTS "Authenticated users can read all challenges" ON challenges;
+    CREATE POLICY "Authenticated users can read all challenges" ON challenges
+      FOR SELECT
+      USING (auth.role() = 'authenticated');
+
+    RAISE NOTICE 'Fixed policies for challenges';
   END IF;
 END $$;
 
--- FAQs
+-- FAQs - should be readable by all
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'faqs') THEN
-    ALTER TABLE faqs ENABLE ROW LEVEL SECURITY;
-    DROP POLICY IF EXISTS "Anyone can read FAQs" ON faqs;
-    CREATE POLICY "Anyone can read FAQs" ON faqs
-      FOR SELECT USING (auth.role() = 'authenticated');
+    DROP POLICY IF EXISTS "Users can read own faqs" ON faqs;
+    DROP POLICY IF EXISTS "Authenticated users can read all faqs" ON faqs;
+    CREATE POLICY "Authenticated users can read all faqs" ON faqs
+      FOR SELECT
+      USING (auth.role() = 'authenticated');
+
+    RAISE NOTICE 'Fixed policies for faqs';
   END IF;
 END $$;
 
+-- Translations - should be readable by all
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'translations') THEN
+    DROP POLICY IF EXISTS "Users can read own translations" ON translations;
+    DROP POLICY IF EXISTS "Authenticated users can read all translations" ON translations;
+    CREATE POLICY "Authenticated users can read all translations" ON translations
+      FOR SELECT
+      USING (auth.role() = 'authenticated');
+
+    RAISE NOTICE 'Fixed policies for translations';
+  END IF;
+END $$;
+
+-- ============================================
+-- Verify all tables have RLS enabled
+-- ============================================
+DO $$
+DECLARE
+  table_record RECORD;
+BEGIN
+  FOR table_record IN
+    SELECT tablename
+    FROM pg_tables
+    WHERE schemaname = 'public'
+    AND tablename NOT IN ('schema_migrations', 'supabase_migrations')
+  LOOP
+    -- Ensure RLS is enabled
+    EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', table_record.tablename);
+  END LOOP;
+  RAISE NOTICE 'RLS enabled on all tables';
+END $$;

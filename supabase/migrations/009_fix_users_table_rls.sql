@@ -1,31 +1,39 @@
 -- ============================================
 -- FIX USERS TABLE RLS POLICIES
 -- ============================================
--- This migration fixes the users table RLS policies to allow
--- profile creation on signup and proper access control
+-- The users table has conflicting policies that prevent
+-- user profile creation. This migration fixes that.
 -- ============================================
+
+-- Drop all existing policies on users table
+DROP POLICY IF EXISTS "Users can read own users" ON public.users;
+DROP POLICY IF EXISTS "Users can insert own users" ON public.users;
+DROP POLICY IF EXISTS "Users can update own users" ON public.users;
+DROP POLICY IF EXISTS "Users can delete own users" ON public.users;
+DROP POLICY IF EXISTS "Users can read their own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.users;
+DROP POLICY IF EXISTS "Users can insert their own profile" ON public.users;
+
+-- Recreate correct policies for users table
+-- Allow users to read their own profile
+CREATE POLICY "Users can read their own profile" ON public.users
+  FOR SELECT
+  USING (auth.uid() = id);
+
+-- Allow users to insert their own profile (when first logging in)
+CREATE POLICY "Users can insert their own profile" ON public.users
+  FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
+-- Allow users to update their own profile
+CREATE POLICY "Users can update their own profile" ON public.users
+  FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
 -- Ensure users table has RLS enabled
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
--- Drop all existing policies
-DROP POLICY IF EXISTS "Users can view their own profile" ON public.users;
-DROP POLICY IF EXISTS "Users can update their own profile" ON public.users;
-DROP POLICY IF EXISTS "Users can insert their own profile" ON public.users;
-DROP POLICY IF EXISTS "Service role can insert users" ON public.users;
-
--- SELECT policy: Users can view their own profile
-CREATE POLICY "Users can view their own profile" ON public.users
-  FOR SELECT USING (auth.uid() = id);
-
--- UPDATE policy: Users can update their own profile
-CREATE POLICY "Users can update their own profile" ON public.users
-  FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
-
--- INSERT policy: Users can create their own profile (for signup)
-CREATE POLICY "Users can insert their own profile" ON public.users
-  FOR INSERT WITH CHECK (auth.uid() = id);
-
--- Grant permissions
+-- Grant permissions on users table
 GRANT SELECT, INSERT, UPDATE ON public.users TO authenticated;
-
+GRANT USAGE ON SCHEMA public TO authenticated;
