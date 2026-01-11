@@ -81,21 +81,30 @@ export default function Layout({ children, currentPageName }) {
 function LayoutWithProvider({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  
+
+
   const { t, language, changeLanguage } = useTranslation();
   const { toast } = useToast();
   const { startPageTour, startFullOnboarding } = useTour();
-  
-  // Dark mode state
+
+  // Dark mode state - initialize early and apply immediately
   const [darkMode, setDarkMode] = React.useState(() => {
     // Check localStorage first, then system preference
-    const saved = localStorage.getItem('theme');
-    if (saved !== null) return saved === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      const isDark = saved !== null ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      // Apply immediately to prevent flash
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      return isDark;
+    }
+    return false;
   });
 
-  // Apply dark mode to document
+  // Apply dark mode to document when state changes
   React.useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -775,10 +784,10 @@ function LayoutWithProvider({ children, currentPageName }) {
 
   if (checkingOnboarding) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
-          <p className="text-gray-600 text-sm mt-4">{t('common.pleaseWait')}</p>
+          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400 dark:border-[#3a3a3a]"></div>
+          <p className="text-gray-600 dark:text-[#a1a1a1] text-sm mt-4">Instellingen laden...</p>
         </div>
       </div>
     );

@@ -80,6 +80,12 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
   });
   const [editingName, setEditingName] = useState(false);
   const [creditorNameValue, setCreditorNameValue] = useState('');
+  const [editingAmount, setEditingAmount] = useState(false);
+  const [amountData, setAmountData] = useState({
+    principal_amount: '',
+    collection_costs: '',
+    interest_amount: ''
+  });
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('theme');
@@ -118,6 +124,11 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
       setPaymentPlanData({
         monthly_payment: debt.monthly_payment?.toString() || '',
         payment_plan_date: debt.payment_plan_date || ''
+      });
+      setAmountData({
+        principal_amount: debt.principal_amount?.toString() || '',
+        collection_costs: debt.collection_costs?.toString() || '',
+        interest_amount: debt.interest_amount?.toString() || ''
       });
       loadPayments();
       loadCorrespondence();
@@ -265,13 +276,36 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
       return;
     }
     try {
-      await Debt.update(debt.id, { creditor_name: creditorNameValue });
+      await Debt.update(debt.id, { creditor_name: creditorNameValue, name: creditorNameValue });
       toast({ title: 'Naam bijgewerkt!' });
       setEditingName(false);
       await refreshDebt();
       if (onUpdate) onUpdate();
     } catch (error) {
       console.error('Error updating creditor name:', error);
+      toast({ title: 'Fout', variant: 'destructive' });
+    }
+  };
+
+  const handleSaveAmount = async () => {
+    try {
+      const principal = parseFloat(amountData.principal_amount) || 0;
+      const collection = parseFloat(amountData.collection_costs) || 0;
+      const interest = parseFloat(amountData.interest_amount) || 0;
+      const totalAmount = principal + collection + interest;
+
+      await Debt.update(debt.id, {
+        principal_amount: principal,
+        collection_costs: collection,
+        interest_amount: interest,
+        amount: totalAmount
+      });
+      toast({ title: 'Bedragen bijgewerkt!' });
+      setEditingAmount(false);
+      await refreshDebt();
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      console.error('Error updating amounts:', error);
       toast({ title: 'Fout', variant: 'destructive' });
     }
   };
@@ -440,63 +474,147 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
               <div className="lg:col-span-8 flex flex-col gap-6">
                 {/* 1. Financieel Overzicht Card */}
                 <div className="bg-white dark:bg-dark-card rounded-xl shadow-card dark:shadow-soft p-6 hover:shadow-hover dark:hover:shadow-card transition-shadow duration-300">
-                  <div className="flex items-center gap-2 mb-5">
-                    <span className="material-symbols-outlined text-primary dark:text-primary-green">account_balance_wallet</span>
-                    <h2 className="text-lg font-semibold text-text-main dark:text-text-primary">Financieel Overzicht</h2>
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-primary dark:text-primary-green">account_balance_wallet</span>
+                      <h2 className="text-lg font-semibold text-text-main dark:text-text-primary">Financieel Overzicht</h2>
+                    </div>
+                    <button
+                      onClick={() => setEditingAmount(!editingAmount)}
+                      className="text-text-muted dark:text-text-secondary hover:text-text-main dark:hover:text-text-primary"
+                    >
+                      <span className="material-symbols-outlined text-[20px]">edit</span>
+                    </button>
                   </div>
-                  
-                  {/* Stats Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-5">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm font-medium text-text-light dark:text-text-secondary">Totaal</span>
-                      <span className="text-2xl font-bold text-text-main dark:text-text-primary">{formatCurrency(currentDebt.amount || 0)}</span>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm font-medium text-text-muted dark:text-text-secondary">Betaald</span>
-                      <span className="text-2xl font-bold text-primary dark:text-primary-green">{formatCurrency(currentDebt.amount_paid || 0)}</span>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm font-medium text-text-muted dark:text-text-secondary">Nog te gaan</span>
-                      <span className="text-2xl font-bold text-accent-orange dark:text-accent-orange">{formatCurrency(remainingAmount)}</span>
-                    </div>
-                  </div>
-                  
-                  <hr className="border-t border-gray-200 dark:border-dark-border my-5"/>
-                  
-                  {/* Kosten Breakdown */}
-                  <div className="mb-5">
-                    <p className="text-sm font-medium text-text-muted dark:text-text-secondary mb-3">Kosten Breakdown:</p>
-                    <div className="flex flex-col gap-2">
-                      <div className="flex justify-between items-center text-sm text-text-muted dark:text-text-secondary">
-                        <span>Hoofdsom:</span>
-                        <span>{formatCurrency(currentDebt.principal_amount || 0)}</span>
+
+                  {editingAmount ? (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium text-text-muted dark:text-text-secondary mb-1 block">Hoofdsom (€)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={amountData.principal_amount}
+                          onChange={(e) => setAmountData({...amountData, principal_amount: e.target.value})}
+                          placeholder="0.00"
+                          className="w-full bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-4 py-2 text-sm text-text-main dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green"
+                        />
                       </div>
-                      <div className="flex justify-between items-center text-sm text-text-muted dark:text-text-secondary">
-                        <span>Incassokosten:</span>
-                        <span>{formatCurrency(currentDebt.collection_costs || 0)}</span>
+                      <div>
+                        <label className="text-sm font-medium text-text-muted dark:text-text-secondary mb-1 block">Incassokosten (€)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={amountData.collection_costs}
+                          onChange={(e) => setAmountData({...amountData, collection_costs: e.target.value})}
+                          placeholder="0.00"
+                          className="w-full bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-4 py-2 text-sm text-text-main dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green"
+                        />
                       </div>
-                      <div className="flex justify-between items-center text-sm text-text-muted dark:text-text-secondary">
-                        <span>Rente:</span>
-                        <span>{formatCurrency(currentDebt.interest_amount || 0)}</span>
+                      <div>
+                        <label className="text-sm font-medium text-text-muted dark:text-text-secondary mb-1 block">Rente (€)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={amountData.interest_amount}
+                          onChange={(e) => setAmountData({...amountData, interest_amount: e.target.value})}
+                          placeholder="0.00"
+                          className="w-full bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-4 py-2 text-sm text-text-main dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green"
+                        />
+                      </div>
+                      <div className="bg-gray-50 dark:bg-dark-card-elevated p-3 rounded-lg">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-medium text-text-muted dark:text-text-secondary">Nieuw Totaal:</span>
+                          <span className="font-bold text-text-main dark:text-text-primary">
+                            {formatCurrency(
+                              (parseFloat(amountData.principal_amount) || 0) +
+                              (parseFloat(amountData.collection_costs) || 0) +
+                              (parseFloat(amountData.interest_amount) || 0)
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={handleSaveAmount}
+                          className="flex-1 bg-primary dark:bg-primary-green text-secondary dark:text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-primary-dark dark:hover:bg-light-green transition-colors"
+                        >
+                          Opslaan
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingAmount(false);
+                            setAmountData({
+                              principal_amount: currentDebt.principal_amount?.toString() || '',
+                              collection_costs: currentDebt.collection_costs?.toString() || '',
+                              interest_amount: currentDebt.interest_amount?.toString() || ''
+                            });
+                          }}
+                          className="flex-1 border border-gray-300 dark:border-dark-border text-text-main dark:text-text-primary font-semibold py-2 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors"
+                        >
+                          Annuleren
+                        </button>
                       </div>
                     </div>
-                  </div>
-                  
-                  <hr className="border-t border-gray-200 dark:border-dark-border my-5"/>
-                  
-                  {/* Vooruitgang */}
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-text-muted dark:text-text-secondary">Vooruitgang</span>
-                      <span className="text-sm font-bold text-accent-orange dark:text-accent-orange">{progress.toFixed(0)}%</span>
-                    </div>
-                    <div className="h-2 w-full bg-gray-200 dark:bg-dark-card-elevated rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-primary dark:bg-primary-green rounded-full transition-all" 
-                        style={{ width: `${Math.min(progress, 100)}%` }}
-                      ></div>
-                    </div>
-                  </div>
+                  ) : (
+                    <>
+                      {/* Stats Row */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-5">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-medium text-text-light dark:text-text-secondary">Totaal</span>
+                          <span className="text-2xl font-bold text-text-main dark:text-text-primary">{formatCurrency(currentDebt.amount || 0)}</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-medium text-text-muted dark:text-text-secondary">Betaald</span>
+                          <span className="text-2xl font-bold text-primary dark:text-primary-green">{formatCurrency(currentDebt.amount_paid || 0)}</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm font-medium text-text-muted dark:text-text-secondary">Nog te gaan</span>
+                          <span className="text-2xl font-bold text-accent-orange dark:text-accent-orange">{formatCurrency(remainingAmount)}</span>
+                        </div>
+                      </div>
+
+                      <hr className="border-t border-gray-200 dark:border-dark-border my-5"/>
+
+                      {/* Kosten Breakdown */}
+                      <div className="mb-5">
+                        <p className="text-sm font-medium text-text-muted dark:text-text-secondary mb-3">Kosten Breakdown:</p>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-between items-center text-sm text-text-muted dark:text-text-secondary">
+                            <span>Hoofdsom:</span>
+                            <span>{formatCurrency(currentDebt.principal_amount || 0)}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-sm text-text-muted dark:text-text-secondary">
+                            <span>Incassokosten:</span>
+                            <span>{formatCurrency(currentDebt.collection_costs || 0)}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-sm text-text-muted dark:text-text-secondary">
+                            <span>Rente:</span>
+                            <span>{formatCurrency(currentDebt.interest_amount || 0)}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <hr className="border-t border-gray-200 dark:border-dark-border my-5"/>
+
+                      {/* Vooruitgang */}
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm font-medium text-text-muted dark:text-text-secondary">Vooruitgang</span>
+                          <span className="text-sm font-bold text-accent-orange dark:text-accent-orange">{progress.toFixed(0)}%</span>
+                        </div>
+                        <div className="h-2 w-full bg-gray-200 dark:bg-dark-card-elevated rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary dark:bg-primary-green rounded-full transition-all"
+                            style={{ width: `${Math.min(progress, 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* 2. Betalingsgeschiedenis Card */}
