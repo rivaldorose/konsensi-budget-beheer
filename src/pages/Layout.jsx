@@ -1021,11 +1021,11 @@ function LayoutWithProvider({ children, currentPageName }) {
                     <span className="hidden xl:block text-sm font-medium text-white group-hover:text-primary transition-colors">
                       {user?.voornaam || user?.full_name || user?.name || user?.email?.split('@')[0] || 'Gebruiker'}
                     </span>
-                    <div 
+                    <div
                       className="w-9 h-9 rounded-full bg-cover bg-center border border-[#3a3a3a] dark:border-[#3a3a3a] group-hover:border-primary transition-all"
-                      style={user?.profielfoto_url ? { backgroundImage: `url(${user.profielfoto_url})` } : {}}
+                      style={user?.avatar_url ? { backgroundImage: `url(${user.avatar_url})` } : {}}
                     >
-                      {!user?.profielfoto_url && (
+                      {!user?.avatar_url && (
                         <div className="w-full h-full flex items-center justify-center bg-primary text-black font-bold text-sm rounded-full">
                           {user?.voornaam?.[0]?.toUpperCase() || user?.full_name?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'G'}
                         </div>
@@ -1122,11 +1122,11 @@ function LayoutWithProvider({ children, currentPageName }) {
             {/* User Profile */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <div 
+                <div
                   className="w-9 h-9 rounded-full bg-cover bg-center border border-[#3a3a3a] dark:border-[#3a3a3a] cursor-pointer"
-                  style={user?.profielfoto_url ? { backgroundImage: `url(${user.profielfoto_url})` } : {}}
+                  style={user?.avatar_url ? { backgroundImage: `url(${user.avatar_url})` } : {}}
                 >
-                  {!user?.profielfoto_url && (
+                  {!user?.avatar_url && (
                     <div className="w-full h-full flex items-center justify-center bg-primary text-black font-bold text-xs rounded-full">
                       {user?.voornaam?.[0]?.toUpperCase() || user?.full_name?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'G'}
                     </div>

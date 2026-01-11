@@ -299,16 +299,16 @@ export default function VasteLastenCheck() {
                 <span className="material-symbols-outlined text-[20px]">settings</span>
               </button>
             </div>
-            <div 
+            <div
               className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-[#e7f3ef] dark:border-[#2a2a2a] cursor-pointer"
               style={{
-                backgroundImage: user?.profielfoto_url 
-                  ? `url(${user.profielfoto_url})` 
+                backgroundImage: user?.avatar_url
+                  ? `url(${user.avatar_url})`
                   : 'none',
-                backgroundColor: user?.profielfoto_url ? 'transparent' : '#8B5CF6'
+                backgroundColor: user?.avatar_url ? 'transparent' : '#8B5CF6'
               }}
             >
-              {!user?.profielfoto_url && (
+              {!user?.avatar_url && (
                 <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs">
                   {(user?.voornaam?.[0] || user?.email?.[0] || 'U').toUpperCase()}
                 </div>
