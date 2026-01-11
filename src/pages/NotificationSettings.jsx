@@ -71,12 +71,12 @@ export default function NotificationSettings() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a]">
-      <main className="flex-1 flex justify-center py-8 px-4 sm:px-6 md:px-8">
-        <div className="w-full max-w-[1400px] flex flex-col gap-6">
-          <div className="flex flex-col lg:flex-row gap-6 items-start">
-            {/* Sidebar */}
-            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2a2a2a] p-4 lg:p-6 flex flex-col sticky top-24">
+    <div className="h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex flex-col overflow-hidden">
+      <main className="flex-1 flex justify-center py-8 px-4 sm:px-6 md:px-8 overflow-hidden">
+        <div className="w-full max-w-[1400px] flex flex-col gap-6 h-full">
+          <div className="flex flex-col lg:flex-row gap-6 items-start flex-1 min-h-0">
+            {/* Sidebar - Fixed */}
+            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2a2a2a] p-4 lg:p-6 flex flex-col flex-shrink-0 lg:max-h-full lg:overflow-y-auto">
               <nav className="flex flex-col gap-2">
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
@@ -166,8 +166,8 @@ export default function NotificationSettings() {
               </nav>
             </aside>
 
-            {/* Main Content */}
-            <section className="w-full lg:w-3/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2a2a2a] p-6 md:p-8">
+            {/* Main Content - Scrollable */}
+            <section className="w-full lg:w-3/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2a2a2a] p-6 md:p-8 overflow-y-auto lg:max-h-full">
               <div className="flex flex-col mb-8">
                 <h2 className="text-[#0d1b17] dark:text-white font-bold text-2xl">Notificaties</h2>
                 <p className="text-gray-600 dark:text-gray-400 text-[15px] mt-2">Kies welke notificaties je wilt ontvangen</p>

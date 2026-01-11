@@ -6,9 +6,7 @@ import { createPageUrl } from "@/utils";
 import { useLocation, Link } from "react-router-dom";
 
 export default function VTLBSettings() {
-  const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
   const [vtlbData, setVtlbData] = useState({
     vastInkomen: 0,
     vasteLasten: 0,
@@ -27,40 +25,18 @@ export default function VTLBSettings() {
   };
 
   useEffect(() => {
-    // Load theme preference
-    const savedTheme = localStorage.getItem('theme');
-    const isDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    setDarkMode(isDark);
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
     loadData();
   }, []);
-
-  const toggleTheme = () => {
-    const newTheme = !darkMode;
-    setDarkMode(newTheme);
-    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
-    if (newTheme) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  };
 
   const loadData = async () => {
     try {
       const userData = await User.me();
-      setUser(userData);
 
       // Calculate VTLB from user data
       const costs = await MonthlyCost.filter({ user_id: userData.id });
-      
+
       // Calculate total fixed income
-      const incomeData = await User.me();
-      const fixedIncome = incomeData.monthly_income || 0;
+      const fixedIncome = userData.monthly_income || 0;
 
       // Calculate total fixed costs
       const totalFixedCosts = costs.reduce((sum, cost) => sum + parseFloat(cost.amount || 0), 0);
@@ -120,87 +96,12 @@ export default function VTLBSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a]">
-      {/* Header */}
-      <header className="bg-primary shadow-md w-full h-16 flex items-center justify-center px-4 md:px-8 z-50 sticky top-0">
-        <div className="w-full max-w-[1400px] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="size-8 flex items-center justify-center text-white">
-              <span className="material-symbols-outlined text-3xl">forest</span>
-            </div>
-            <h2 className="text-white text-lg font-bold tracking-tight">KONSENSI Budgetbeheer</h2>
-          </div>
-          <nav className="hidden md:flex items-center gap-2">
-            <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('Dashboard')}>Dashboard</a>
-            <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('BudgetPlan')}>Balans</a>
-            <a className="px-4 py-2 text-white/90 text-sm font-medium hover:text-white transition-colors" href={createPageUrl('Debts')}>Schulden</a>
-            <a className="px-5 py-2 bg-secondary text-[#0d1b17] rounded-full text-sm font-bold shadow-sm" href={createPageUrl('Settings')}>Instellingen</a>
-          </nav>
-          <div className="flex items-center gap-4">
-            <label className="relative inline-flex items-center cursor-pointer mr-2">
-              <input 
-                className="sr-only peer" 
-                type="checkbox" 
-                checked={darkMode}
-                onChange={toggleTheme}
-              />
-              <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-white/20 flex items-center justify-between px-1.5">
-                <span className="material-symbols-outlined text-[16px] text-yellow-300 z-10 select-none">light_mode</span>
-                <span className="material-symbols-outlined text-[16px] text-white/80 z-10 select-none">dark_mode</span>
-              </div>
-            </label>
-            <button className="text-white/80 hover:text-white transition-colors p-1">
-              <span className="material-symbols-outlined">search</span>
-            </button>
-            <div className="hidden sm:flex items-center justify-center bg-purple-badge text-white px-3 py-1 rounded-full text-xs font-bold shadow-sm">
-              Level 9
-            </div>
-            <div className="flex items-center gap-3 pl-2 border-l border-white/10">
-              <span className="text-white text-sm font-medium hidden sm:block">{user?.voornaam || 'Gebruiker'}</span>
-              <div 
-                className="size-9 rounded-full bg-cover bg-center border-2 border-white/20"
-                style={{
-                  backgroundImage: user?.profielfoto_url 
-                    ? `url(${user.profielfoto_url})` 
-                    : 'none',
-                  backgroundColor: user?.profielfoto_url ? 'transparent' : '#8B5CF6'
-                }}
-              >
-                {!user?.profielfoto_url && (
-                  <div className="w-full h-full flex items-center justify-center text-white font-bold">
-                    {(user?.voornaam?.[0] || user?.email?.[0] || 'R').toUpperCase()}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 flex justify-center py-8 px-4 sm:px-6 md:px-8">
-        <div className="w-full max-w-[1400px] flex flex-col gap-6">
-          {/* Page Header */}
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-[#0d1b17] dark:text-secondary text-3xl">settings</span>
-                <h1 className="text-[#0d1b17] dark:text-white text-3xl md:text-4xl font-black tracking-tight">Instellingen</h1>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
-            </div>
-            <button 
-              className="flex items-center gap-2 px-5 py-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a2c26] text-gray-700 dark:text-gray-200 text-sm font-bold hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors shadow-sm"
-              onClick={() => window.location.href = createPageUrl('HelpSupport')}
-            >
-              <span className="material-symbols-outlined text-[20px]">help_outline</span>
-              <span>Hulp</span>
-            </button>
-          </div>
-
-          <div className="flex flex-col lg:flex-row gap-6 items-start">
+    <div className="h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex flex-col overflow-hidden">
+      <main className="flex-1 flex justify-center py-8 px-4 sm:px-6 md:px-8 overflow-hidden">
+        <div className="w-full max-w-[1400px] flex flex-col gap-6 h-full">
+          <div className="flex flex-col lg:flex-row gap-6 items-start flex-1 min-h-0">
             {/* Sidebar Navigation */}
-            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a2c26] rounded-[24px] lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-4 lg:p-6 flex flex-col sticky top-24">
+            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a2c26] rounded-[24px] lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-4 lg:p-6 flex flex-col flex-shrink-0 lg:max-h-full lg:overflow-y-auto">
               <nav className="flex flex-col gap-2">
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
@@ -291,16 +192,39 @@ export default function VTLBSettings() {
                   }`}
                   to={createPageUrl('HelpSupport')}
                 >
-                  <span className={`material-symbols-outlined ${isActiveRoute('HelpSupport') ? 'fill-1' : ''}`} style={isActiveRoute('HelpSupport') ? { fontVariationSettings: "'FILL' 1" } : {}}>
-                    help_outline
-                  </span>
-                  <span className={`text-sm ${isActiveRoute('HelpSupport') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Hulp & Support</span>
+                  <span className="material-symbols-outlined">help</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Help Center</span>
+                </Link>
+                <Link
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
+                    isActiveRoute('FAQSettings')
+                      ? 'bg-secondary text-[#0d1b17]'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
+                  }`}
+                  to={createPageUrl('FAQSettings')}
+                >
+                  <span className="material-symbols-outlined">help_outline</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Veelgestelde Vragen</span>
+                </Link>
+                <Link
+                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white transition-all"
+                  to={createPageUrl('TermsOfService')}
+                >
+                  <span className="material-symbols-outlined">description</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Algemene Voorwaarden</span>
+                </Link>
+                <Link
+                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white transition-all"
+                  to={createPageUrl('PrivacyPolicy')}
+                >
+                  <span className="material-symbols-outlined">policy</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Privacybeleid</span>
                 </Link>
               </nav>
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1 w-full">
+            <div className="flex-1 w-full overflow-y-auto lg:max-h-full">
               <div className="bg-white dark:bg-[#1a2c26] rounded-2xl shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-6 md:p-8 w-full">
                 <div className="mb-8">
                   <h2 className="text-gray-900 dark:text-white text-2xl font-bold leading-tight mb-2">VTLB Berekening</h2>
