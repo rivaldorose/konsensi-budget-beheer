@@ -3,6 +3,46 @@ import { User, MonthlyCost, Pot, Debt, DebtPayment } from "@/api/entities";
 import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
 
+// ALGEMENE TIPS - Deze ziet iedereen in de app
+const ALGEMENE_TIPS = [
+  {
+    icon: 'lightbulb',
+    title: 'De 50/30/20 Regel',
+    text: 'Besteed 50% aan vaste lasten, 30% aan leuke dingen, en spaar 20% van je inkomen.',
+    type: 'general'
+  },
+  {
+    icon: 'shopping_cart',
+    title: 'Boodschappen',
+    text: 'Maak een boodschappenlijstje en ga nooit met honger naar de supermarkt.',
+    type: 'general'
+  },
+  {
+    icon: 'receipt_long',
+    title: 'Abonnementen',
+    text: 'Check maandelijks je abonnementen. Vaak betaal je voor dingen die je niet gebruikt.',
+    type: 'general'
+  },
+  {
+    icon: 'savings',
+    title: 'Noodfonds',
+    text: 'Probeer minimaal 3 maanden aan vaste lasten als buffer op te bouwen.',
+    type: 'general'
+  },
+  {
+    icon: 'compare_arrows',
+    title: 'Vergelijken loont',
+    text: 'Vergelijk jaarlijks je energie, verzekeringen en internet. Bespaar honderden euros!',
+    type: 'general'
+  },
+  {
+    icon: 'event',
+    title: 'Automatisch sparen',
+    text: 'Zet een automatische overschrijving naar je spaarrekening op de dag dat je salaris binnenkomt.',
+    type: 'general'
+  }
+];
+
 export default function CentVoorCent() {
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -170,41 +210,51 @@ export default function CentVoorCent() {
 
       setReflection({ goodThings, attentionPoints });
 
-      // Generate dynamic advice
-      const adviceList = [];
+      // Generate PERSONAL advice based on user data
+      const personalAdviceList = [];
       if (debtRemaining > 0 && monthlyArrangements > 0) {
         const monthsLeft = Math.ceil(debtRemaining / monthlyArrangements);
-        adviceList.push({
+        personalAdviceList.push({
           icon: 'savings',
           title: 'Aflossen',
-          text: `Met je huidige aflossing van ${formatCurrency(monthlyArrangements)}/maand ben je over ${monthsLeft} maanden schuldenvrij.`
+          text: `Met je huidige aflossing van ${formatCurrency(monthlyArrangements)}/maand ben je over ${monthsLeft} maanden schuldenvrij.`,
+          type: 'personal'
         });
       }
       if (remaining > 100) {
-        adviceList.push({
+        personalAdviceList.push({
           icon: 'trending_up',
           title: 'Extra aflossen',
-          text: `Je hebt ${formatCurrency(remaining)} over. Overweeg extra af te lossen om sneller schuldenvrij te zijn.`
+          text: `Je hebt ${formatCurrency(remaining)} over. Overweeg extra af te lossen om sneller schuldenvrij te zijn.`,
+          type: 'personal'
         });
       }
       if (totalFixedCosts > totalIncome * 0.5) {
-        adviceList.push({
+        personalAdviceList.push({
           icon: 'content_cut',
           title: 'Vaste lasten',
-          text: 'Je vaste lasten zijn meer dan 50% van je inkomen. Kijk of je ergens kunt besparen.'
+          text: 'Je vaste lasten zijn meer dan 50% van je inkomen. Kijk of je ergens kunt besparen.',
+          type: 'personal'
+        });
+      }
+      if (savingsPercentage < 10 && remaining > 0) {
+        personalAdviceList.push({
+          icon: 'account_balance',
+          title: 'Sparen',
+          text: `Je spaart nu ${savingsPercentage}%. Probeer richting 10-20% te werken voor een gezonde buffer.`,
+          type: 'personal'
+        });
+      }
+      if (debtTotal > 0 && monthlyArrangements === 0) {
+        personalAdviceList.push({
+          icon: 'handshake',
+          title: 'Betalingsregeling',
+          text: 'Je hebt schulden maar nog geen betalingsregeling. Neem contact op met je schuldeisers.',
+          type: 'personal'
         });
       }
 
-      // Default advice
-      if (adviceList.length === 0) {
-        adviceList.push({
-          icon: 'lightbulb',
-          title: 'Tip',
-          text: 'Voeg je schulden en betalingsregelingen toe voor gepersonaliseerd advies.'
-        });
-      }
-
-      setAdvice(adviceList);
+      setAdvice(personalAdviceList);
 
     } catch (error) {
       console.error("Error loading data:", error);
@@ -694,28 +744,82 @@ END:VEVENT
           </section>
         )}
 
-        {/* 5. ADVIES VOOR VOLGENDE MAAND */}
-        <section className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 mb-8 border-l-4 border-primary dark:border-l-konsensi-green border dark:border-[#2a2a2a]">
-          <h3 className="text-primary-dark dark:text-white text-2xl font-bold mb-6 dark:mb-8 flex items-center gap-2 dark:gap-3">
-            <span className="material-symbols-outlined dark:text-text-secondary">track_changes</span> Advies voor volgende maand
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {advice.map((item, index) => (
-              <div 
-                key={index} 
-                className="bg-primary/10 dark:bg-konsensi-green/10 rounded-2xl p-6 flex flex-col gap-3 dark:gap-4 group cursor-pointer hover:bg-primary/20 dark:hover:bg-konsensi-green/15 transition-colors border border-transparent hover:border-primary dark:hover:border-konsensi-green/30"
-              >
-                <div className="text-primary-dark dark:text-konsensi-green mb-2 dark:mb-1 transform group-hover:scale-110 transition-transform origin-left">
-                  <span className="material-symbols-outlined text-4xl">{item.icon}</span>
+        {/* 5. PERSOONLIJK ADVIES */}
+        {advice.length > 0 && (
+          <section className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 mb-8 border-l-4 border-primary dark:border-l-konsensi-green border dark:border-[#2a2a2a]">
+            <div className="flex items-center gap-3 mb-6 dark:mb-8">
+              <h3 className="text-primary-dark dark:text-white text-2xl font-bold flex items-center gap-2 dark:gap-3">
+                <span className="material-symbols-outlined dark:text-text-secondary">person</span> Jouw persoonlijke advies
+              </h3>
+              <span className="bg-primary/20 dark:bg-konsensi-green/20 text-primary-dark dark:text-konsensi-green text-xs font-bold px-2.5 py-1 rounded-full">
+                Op basis van jouw data
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {advice.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-primary/10 dark:bg-konsensi-green/10 rounded-2xl p-6 flex flex-col gap-3 dark:gap-4 group cursor-pointer hover:bg-primary/20 dark:hover:bg-konsensi-green/15 transition-colors border border-transparent hover:border-primary dark:hover:border-konsensi-green/30"
+                >
+                  <div className="text-primary-dark dark:text-konsensi-green mb-2 dark:mb-1 transform group-hover:scale-110 transition-transform origin-left">
+                    <span className="material-symbols-outlined text-4xl">{item.icon}</span>
+                  </div>
+                  <h4 className="text-primary-dark dark:text-white text-lg font-bold dark:font-semibold">{item.title}</h4>
+                  <p className="text-text-secondary dark:text-text-secondary text-[15px] leading-relaxed">{item.text}</p>
                 </div>
-                <h4 className="text-primary-dark dark:text-white text-lg font-bold dark:font-semibold">{item.title}</h4>
-                <p className="text-text-secondary dark:text-text-secondary text-[15px] leading-relaxed">{item.text}</p>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 6. ALGEMENE TIPS */}
+        <section className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 mb-8 border-l-4 border-amber-500 dark:border-l-amber-400 border dark:border-[#2a2a2a]">
+          <div className="flex items-center gap-3 mb-6 dark:mb-8">
+            <h3 className="text-primary-dark dark:text-white text-2xl font-bold flex items-center gap-2 dark:gap-3">
+              <span className="material-symbols-outlined text-amber-500 dark:text-amber-400">tips_and_updates</span> Slimme geldzaken tips
+            </h3>
+            <span className="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full">
+              Algemeen
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {ALGEMENE_TIPS.slice(0, 3).map((tip, index) => (
+              <div
+                key={index}
+                className="bg-amber-50 dark:bg-amber-500/10 rounded-2xl p-6 flex flex-col gap-3 dark:gap-4 group cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-500/15 transition-colors border border-transparent hover:border-amber-400 dark:hover:border-amber-500/30"
+              >
+                <div className="text-amber-600 dark:text-amber-400 mb-2 dark:mb-1 transform group-hover:scale-110 transition-transform origin-left">
+                  <span className="material-symbols-outlined text-4xl">{tip.icon}</span>
+                </div>
+                <h4 className="text-amber-800 dark:text-white text-lg font-bold dark:font-semibold">{tip.title}</h4>
+                <p className="text-text-secondary dark:text-text-secondary text-[15px] leading-relaxed">{tip.text}</p>
               </div>
             ))}
           </div>
+          {/* Show more tips toggle */}
+          <details className="mt-6">
+            <summary className="cursor-pointer text-amber-600 dark:text-amber-400 font-semibold hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-2">
+              <span className="material-symbols-outlined text-lg">expand_more</span>
+              Meer tips bekijken
+            </summary>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+              {ALGEMENE_TIPS.slice(3).map((tip, index) => (
+                <div
+                  key={index}
+                  className="bg-amber-50 dark:bg-amber-500/10 rounded-2xl p-6 flex flex-col gap-3 dark:gap-4 group cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-500/15 transition-colors border border-transparent hover:border-amber-400 dark:hover:border-amber-500/30"
+                >
+                  <div className="text-amber-600 dark:text-amber-400 mb-2 dark:mb-1 transform group-hover:scale-110 transition-transform origin-left">
+                    <span className="material-symbols-outlined text-4xl">{tip.icon}</span>
+                  </div>
+                  <h4 className="text-amber-800 dark:text-white text-lg font-bold dark:font-semibold">{tip.title}</h4>
+                  <p className="text-text-secondary dark:text-text-secondary text-[15px] leading-relaxed">{tip.text}</p>
+                </div>
+              ))}
+            </div>
+          </details>
         </section>
 
-        {/* 6. BETALINGSHERINNERINGEN */}
+        {/* 7. BETALINGSHERINNERINGEN */}
         <section className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 mb-8 border-l-4 border-blue-500 dark:border-l-blue-400 border dark:border-[#2a2a2a]">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <h3 className="text-primary-dark dark:text-white text-2xl font-bold flex items-center gap-2">
