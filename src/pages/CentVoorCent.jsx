@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User } from "@/api/entities";
-import { MonthlyCost } from "@/api/entities";
-import { Pot } from "@/api/entities";
+import { User, MonthlyCost, Pot, Debt, DebtPayment } from "@/api/entities";
 import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
 
@@ -82,19 +80,36 @@ export default function CentVoorCent() {
       const pots = await Pot.filter({ user_id: userData.id });
       const totalPotsBudget = pots.reduce((sum, pot) => sum + parseFloat(pot.target_amount || 0), 0);
 
+      // Load debt data
+      const debts = await Debt.filter({ user_id: userData.id });
+      const debtTotal = debts.reduce((sum, debt) => sum + parseFloat(debt.amount || 0), 0);
+      const debtPaidTotal = debts.reduce((sum, debt) => sum + parseFloat(debt.amount_paid || 0), 0);
+      const debtRemaining = debtTotal - debtPaidTotal;
+
+      // Load debt payments for this month
+      const payments = await DebtPayment.filter({ user_id: userData.id });
+      const monthPayments = payments.filter(payment => {
+        const paymentDate = new Date(payment.payment_date);
+        return paymentDate >= monthStart && paymentDate <= monthEnd;
+      });
+      const debtPaidThisMonth = monthPayments.reduce((sum, payment) => sum + parseFloat(payment.amount || 0), 0);
+
+      // Load payment arrangements for monthly obligations
+      const debtsWithArrangements = debts.filter(debt =>
+        debt.status === 'betalingsregeling' || debt.status === 'payment_arrangement'
+      );
+      const monthlyArrangements = debtsWithArrangements.reduce((sum, debt) =>
+        sum + parseFloat(debt.monthly_payment || 0), 0
+      );
+
       // Calculate totals
       const totalIncome = regularIncome + extraIncome;
-      const totalExpenses = totalFixedCosts + totalPotsBudget;
+      const totalExpenses = totalFixedCosts + totalPotsBudget + monthlyArrangements;
       const remaining = totalIncome - totalExpenses;
       const savingsPercentage = totalIncome > 0 ? Math.round((remaining / totalIncome) * 100) : 0;
 
-      // Load debt data (placeholder - would need actual debt entity)
-      const debtTotal = 0;
-      const debtPaid = 0;
-      const debtRemaining = debtTotal - debtPaid;
-
-      // Previous month expenses (simplified)
-      const previousMonthExpenses = totalExpenses * 0.9; // Placeholder
+      // Previous month expenses (simplified - could load actual previous month data)
+      const previousMonthExpenses = totalExpenses * 0.9; // Placeholder for now
 
       setMonthlyData({
         totalIncome,
@@ -103,31 +118,93 @@ export default function CentVoorCent() {
         totalExpenses,
         fixedCosts: totalFixedCosts,
         potsBudget: totalPotsBudget,
+        monthlyArrangements,
         remaining,
         savingsPercentage,
         debtTotal,
-        debtPaid,
+        debtPaid: debtPaidThisMonth,
+        debtPaidTotal,
         debtRemaining,
-        previousMonthExpenses
+        previousMonthExpenses,
+        debtsWithArrangements,
+        costs
       });
 
-      // Generate reflection and advice (simplified - would use AI in production)
-      setReflection({
-        goodThings: [
-          { emoji: '🎉', text: 'Je hebt je bonus direct naar je spaarrekening overgemaakt.' },
-          { emoji: '💪', text: 'Geen impulsaankopen gedaan in de eerste week.' }
-        ],
-        attentionPoints: [
-          { emoji: '⚠️', text: 'Boodschappenbudget is met €45 overschreden.' },
-          { emoji: '💡', text: 'Vergeet niet je sportschool abonnement op te zeggen.' }
-        ]
-      });
+      // Generate dynamic reflection based on data
+      const goodThings = [];
+      const attentionPoints = [];
 
-      setAdvice([
-        { icon: 'savings', title: 'Aflossen!', text: 'Probeer €500 af te lossen volgende maand om je doel van 27 maanden te halen.' },
-        { icon: 'shopping_cart', title: 'Boodschappen', text: 'Houd je boodschappenkosten in de gaten, deze waren 15% hoger dan gemiddeld.' },
-        { icon: 'content_cut', title: 'Abonnementen', text: 'Je hebt 3 streamingdiensten. Stop met onnodige abonnementen om €25 te besparen.' }
-      ]);
+      // Positive reflections
+      if (remaining > 0) {
+        goodThings.push({ emoji: '💚', text: `Je hebt ${formatCurrency(remaining)} overgehouden deze maand!` });
+      }
+      if (savingsPercentage >= 20) {
+        goodThings.push({ emoji: '🎉', text: `Geweldig! Je hebt ${savingsPercentage}% van je inkomen bespaard.` });
+      }
+      if (debtPaidThisMonth > 0) {
+        goodThings.push({ emoji: '💪', text: `Je hebt ${formatCurrency(debtPaidThisMonth)} afgelost op je schulden.` });
+      }
+      if (debtsWithArrangements.length > 0) {
+        goodThings.push({ emoji: '✅', text: `Je hebt ${debtsWithArrangements.length} actieve betalingsregeling(en) lopen.` });
+      }
+
+      // Attention points
+      if (remaining < 0) {
+        attentionPoints.push({ emoji: '⚠️', text: `Let op: je uitgaven zijn ${formatCurrency(Math.abs(remaining))} hoger dan je inkomen.` });
+      }
+      if (debtRemaining > 0) {
+        const monthsToPayoff = monthlyArrangements > 0 ? Math.ceil(debtRemaining / monthlyArrangements) : 0;
+        attentionPoints.push({ emoji: '📊', text: `Nog ${formatCurrency(debtRemaining)} schuld te gaan${monthsToPayoff > 0 ? ` (±${monthsToPayoff} maanden)` : ''}.` });
+      }
+      if (savingsPercentage < 10 && remaining > 0) {
+        attentionPoints.push({ emoji: '💡', text: 'Probeer minimaal 10% van je inkomen te sparen.' });
+      }
+
+      // Default messages if no data
+      if (goodThings.length === 0) {
+        goodThings.push({ emoji: '📝', text: 'Voeg je inkomen en uitgaven toe om inzichten te krijgen.' });
+      }
+      if (attentionPoints.length === 0 && debtTotal === 0) {
+        attentionPoints.push({ emoji: '🎯', text: 'Geen schulden! Blijf zo doorgaan.' });
+      }
+
+      setReflection({ goodThings, attentionPoints });
+
+      // Generate dynamic advice
+      const adviceList = [];
+      if (debtRemaining > 0 && monthlyArrangements > 0) {
+        const monthsLeft = Math.ceil(debtRemaining / monthlyArrangements);
+        adviceList.push({
+          icon: 'savings',
+          title: 'Aflossen',
+          text: `Met je huidige aflossing van ${formatCurrency(monthlyArrangements)}/maand ben je over ${monthsLeft} maanden schuldenvrij.`
+        });
+      }
+      if (remaining > 100) {
+        adviceList.push({
+          icon: 'trending_up',
+          title: 'Extra aflossen',
+          text: `Je hebt ${formatCurrency(remaining)} over. Overweeg extra af te lossen om sneller schuldenvrij te zijn.`
+        });
+      }
+      if (totalFixedCosts > totalIncome * 0.5) {
+        adviceList.push({
+          icon: 'content_cut',
+          title: 'Vaste lasten',
+          text: 'Je vaste lasten zijn meer dan 50% van je inkomen. Kijk of je ergens kunt besparen.'
+        });
+      }
+
+      // Default advice
+      if (adviceList.length === 0) {
+        adviceList.push({
+          icon: 'lightbulb',
+          title: 'Tip',
+          text: 'Voeg je schulden en betalingsregelingen toe voor gepersonaliseerd advies.'
+        });
+      }
+
+      setAdvice(adviceList);
 
     } catch (error) {
       console.error("Error loading data:", error);
@@ -167,6 +244,160 @@ export default function CentVoorCent() {
     const newDate = new Date(selectedMonth);
     newDate.setMonth(newDate.getMonth() + months);
     setSelectedMonth(newDate);
+  };
+
+  // Generate iCal file for calendar reminder
+  const generateICalEvent = (title, description, dueDate, amount) => {
+    const startDate = new Date(dueDate);
+    const endDate = new Date(dueDate);
+    endDate.setHours(endDate.getHours() + 1);
+
+    const formatICalDate = (date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+
+    const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Konsensi//Betalingsherinnering//NL
+BEGIN:VEVENT
+UID:${Date.now()}@konsensi.app
+DTSTAMP:${formatICalDate(new Date())}
+DTSTART:${formatICalDate(startDate)}
+DTEND:${formatICalDate(endDate)}
+SUMMARY:${title}
+DESCRIPTION:${description}\\n\\nBedrag: €${amount.toFixed(2)}
+BEGIN:VALARM
+TRIGGER:-P1D
+ACTION:DISPLAY
+DESCRIPTION:Morgen: ${title}
+END:VALARM
+BEGIN:VALARM
+TRIGGER:-PT2H
+ACTION:DISPLAY
+DESCRIPTION:Over 2 uur: ${title}
+END:VALARM
+END:VEVENT
+END:VCALENDAR`;
+
+    return icsContent;
+  };
+
+  const downloadCalendarReminder = (item, type) => {
+    const today = new Date();
+    let dueDate = new Date(today.getFullYear(), today.getMonth(), item.due_day || 1);
+
+    // If due day has passed, set for next month
+    if (dueDate < today) {
+      dueDate.setMonth(dueDate.getMonth() + 1);
+    }
+
+    const title = type === 'cost'
+      ? `Betaling: ${item.name || item.category}`
+      : `Aflossing: ${item.creditor_name || item.name}`;
+
+    const description = type === 'cost'
+      ? `Vaste lasten betaling voor ${item.name || item.category}`
+      : `Betalingsregeling aflossing voor ${item.creditor_name || item.name}`;
+
+    const amount = type === 'cost'
+      ? parseFloat(item.amount || 0)
+      : parseFloat(item.monthly_payment || 0);
+
+    const icsContent = generateICalEvent(title, description, dueDate, amount);
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${title.replace(/[^a-z0-9]/gi, '_')}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: 'Herinnering gedownload!',
+      description: 'Open het bestand om toe te voegen aan je agenda.'
+    });
+  };
+
+  const addAllRemindersToCalendar = () => {
+    // Combine all costs and arrangements
+    const allItems = [
+      ...(monthlyData.costs || []).map(c => ({ ...c, type: 'cost' })),
+      ...(monthlyData.debtsWithArrangements || []).map(d => ({ ...d, type: 'arrangement' }))
+    ];
+
+    if (allItems.length === 0) {
+      toast({
+        title: 'Geen betalingen gevonden',
+        description: 'Voeg eerst vaste lasten of betalingsregelingen toe.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Generate combined calendar events
+    const today = new Date();
+    let icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Konsensi//Betalingsherinneringen//NL
+`;
+
+    allItems.forEach((item, index) => {
+      let dueDate = new Date(today.getFullYear(), today.getMonth(), item.due_day || 1);
+      if (dueDate < today) {
+        dueDate.setMonth(dueDate.getMonth() + 1);
+      }
+
+      const title = item.type === 'cost'
+        ? `Betaling: ${item.name || item.category}`
+        : `Aflossing: ${item.creditor_name || item.name}`;
+
+      const amount = item.type === 'cost'
+        ? parseFloat(item.amount || 0)
+        : parseFloat(item.monthly_payment || 0);
+
+      const formatICalDate = (date) => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+
+      const endDate = new Date(dueDate);
+      endDate.setHours(endDate.getHours() + 1);
+
+      icsContent += `BEGIN:VEVENT
+UID:${Date.now()}-${index}@konsensi.app
+DTSTAMP:${formatICalDate(new Date())}
+DTSTART:${formatICalDate(dueDate)}
+DTEND:${formatICalDate(endDate)}
+SUMMARY:${title}
+DESCRIPTION:Bedrag: €${amount.toFixed(2)}
+RRULE:FREQ=MONTHLY
+BEGIN:VALARM
+TRIGGER:-P1D
+ACTION:DISPLAY
+DESCRIPTION:Morgen: ${title}
+END:VALARM
+END:VEVENT
+`;
+    });
+
+    icsContent += 'END:VCALENDAR';
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'konsensi_betalingsherinneringen.ics';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: `${allItems.length} herinneringen gedownload!`,
+      description: 'Open het bestand om toe te voegen aan je agenda.'
+    });
   };
 
   if (loading) {
@@ -484,7 +715,103 @@ export default function CentVoorCent() {
           </div>
         </section>
 
-        {/* 6. VERGELIJKING */}
+        {/* 6. BETALINGSHERINNERINGEN */}
+        <section className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 mb-8 border-l-4 border-blue-500 dark:border-l-blue-400 border dark:border-[#2a2a2a]">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            <h3 className="text-primary-dark dark:text-white text-2xl font-bold flex items-center gap-2">
+              <span className="material-symbols-outlined text-blue-500 dark:text-blue-400">notifications_active</span> Betalingsherinneringen
+            </h3>
+            <button
+              onClick={addAllRemindersToCalendar}
+              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2.5 rounded-xl transition-colors"
+            >
+              <span className="material-symbols-outlined text-lg">calendar_add_on</span>
+              Alle herinneringen toevoegen aan agenda
+            </button>
+          </div>
+
+          <p className="text-text-secondary dark:text-text-secondary mb-6">
+            Krijg een herinnering in je agenda voor je vaste lasten en betalingsregelingen. De herinnering wordt 1 dag van tevoren verstuurd.
+          </p>
+
+          {/* Vaste Lasten */}
+          {(monthlyData.costs?.length > 0 || monthlyData.debtsWithArrangements?.length > 0) ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Vaste Lasten Column */}
+              <div>
+                <h4 className="text-text-main dark:text-white font-semibold mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-orange-500">receipt_long</span> Vaste Lasten
+                </h4>
+                <div className="space-y-3">
+                  {(monthlyData.costs || []).slice(0, 5).map((cost, index) => (
+                    <div key={index} className="flex items-center justify-between bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-3 border dark:border-[#2a2a2a]">
+                      <div className="flex-1">
+                        <p className="text-text-main dark:text-white font-medium text-sm">{cost.name || cost.category}</p>
+                        <p className="text-text-tertiary dark:text-text-secondary text-xs">
+                          {cost.due_day ? `Elke ${cost.due_day}e van de maand` : 'Geen datum ingesteld'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-orange-500 dark:text-konsensi-orange font-bold">{formatCurrency(cost.amount || 0)}</span>
+                        <button
+                          onClick={() => downloadCalendarReminder(cost, 'cost')}
+                          className="p-2 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors"
+                          title="Toevoegen aan agenda"
+                        >
+                          <span className="material-symbols-outlined text-lg">event</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {(monthlyData.costs || []).length === 0 && (
+                    <p className="text-text-tertiary dark:text-text-secondary text-sm italic">Geen vaste lasten gevonden</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Betalingsregelingen Column */}
+              <div>
+                <h4 className="text-text-main dark:text-white font-semibold mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-purple-500">handshake</span> Betalingsregelingen
+                </h4>
+                <div className="space-y-3">
+                  {(monthlyData.debtsWithArrangements || []).map((debt, index) => (
+                    <div key={index} className="flex items-center justify-between bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-3 border dark:border-[#2a2a2a]">
+                      <div className="flex-1">
+                        <p className="text-text-main dark:text-white font-medium text-sm">{debt.creditor_name || debt.name}</p>
+                        <p className="text-text-tertiary dark:text-text-secondary text-xs">
+                          {debt.payment_plan_date ? `Elke ${new Date(debt.payment_plan_date).getDate()}e van de maand` : 'Geen datum ingesteld'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-purple-500 dark:text-purple-400 font-bold">{formatCurrency(debt.monthly_payment || 0)}</span>
+                        <button
+                          onClick={() => downloadCalendarReminder(debt, 'arrangement')}
+                          className="p-2 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors"
+                          title="Toevoegen aan agenda"
+                        >
+                          <span className="material-symbols-outlined text-lg">event</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {(monthlyData.debtsWithArrangements || []).length === 0 && (
+                    <p className="text-text-tertiary dark:text-text-secondary text-sm italic">Geen betalingsregelingen gevonden</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <span className="material-symbols-outlined text-5xl text-gray-300 dark:text-gray-600 mb-4">event_busy</span>
+              <p className="text-text-tertiary dark:text-text-secondary">
+                Voeg vaste lasten of betalingsregelingen toe om herinneringen te kunnen instellen.
+              </p>
+            </div>
+          )}
+        </section>
+
+        {/* 7. VERGELIJKING */}
         <section className="max-w-[600px] mb-12">
           <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-sm dark:border dark:border-[#2a2a2a] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
