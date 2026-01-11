@@ -264,19 +264,6 @@ export default function Settings() {
                   </span>
                   <span className={`text-sm ${isActiveRoute('VTLBSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>VTLB Berekening</span>
                 </Link>
-                <Link
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
-                    isActiveRoute('Privacy')
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
-                  }`}
-                  to={createPageUrl('Privacy')}
-                >
-                  <span className={`material-symbols-outlined ${isActiveRoute('Privacy') ? 'fill-1' : ''}`} style={isActiveRoute('Privacy') ? { fontVariationSettings: "'FILL' 1" } : {}}>
-                    lock
-                  </span>
-                  <span className={`text-sm ${isActiveRoute('Privacy') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Privacy</span>
-                </Link>
                 <div className="mt-4 pt-2 px-4 pb-1">
                   <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Hulp & Support</h3>
                 </div>
