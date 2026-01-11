@@ -113,9 +113,11 @@ export default function Settings() {
       setUploading(true);
       toast({ title: 'Foto uploaden...' });
 
-      const { file_url } = await UploadFile({ file });
+      // Upload to avatars bucket with user-specific path
+      const fileName = `${user.id}-${Date.now()}.${file.name.split('.').pop()}`;
+      const { file_url } = await UploadFile({ file, bucket: 'avatars', path: fileName });
 
-      await User.updateMe({ profielfoto_url: file_url });
+      await User.updateMe({ avatar_url: file_url });
       toast({ title: 'Foto succesvol geüpload!' });
 
       loadUser();
@@ -132,9 +134,9 @@ export default function Settings() {
 
   const handleDeletePhoto = async () => {
     if (!window.confirm('Weet je zeker dat je je profielfoto wilt verwijderen?')) return;
-    
+
     try {
-      await User.updateMe({ profielfoto_url: null });
+      await User.updateMe({ avatar_url: null });
       toast({ title: 'Foto verwijderd' });
       loadUser();
     } catch (error) {
@@ -322,14 +324,14 @@ export default function Settings() {
               {/* Profile Photo Section */}
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-10">
                 <div className="relative group cursor-pointer">
-                  <div 
+                  <div
                     className="size-24 md:size-32 rounded-full bg-cover bg-center border-4 border-[#E5E7EB] dark:border-[#2a2a2a] shadow-sm"
                     style={{
-                      backgroundImage: user?.profielfoto_url ? `url(${user.profielfoto_url})` : 'none',
-                      backgroundColor: user?.profielfoto_url ? 'transparent' : '#8B5CF6'
+                      backgroundImage: user?.avatar_url ? `url(${user.avatar_url})` : 'none',
+                      backgroundColor: user?.avatar_url ? 'transparent' : '#8B5CF6'
                     }}
                   >
-                    {!user?.profielfoto_url && (
+                    {!user?.avatar_url && (
                       <div className="w-full h-full flex items-center justify-center text-white font-bold text-2xl">
                         {(user?.voornaam?.[0] || user?.email?.[0] || 'R').toUpperCase()}
                       </div>
@@ -361,9 +363,9 @@ export default function Settings() {
               >
                       {uploading ? 'Uploaden...' : 'Nieuwe foto uploaden'}
                     </button>
-                    {user?.profielfoto_url && (
-                      <button 
-                        aria-label="Delete photo" 
+                    {user?.avatar_url && (
+                      <button
+                        aria-label="Delete photo"
                         className="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-colors"
                         onClick={handleDeletePhoto}
                       >
