@@ -7,6 +7,7 @@ import { User } from '@/api/entities';
 import { Pot } from '@/api/entities';
 import { createPageUrl } from '@/utils';
 import AddTransactionModal from '@/components/budget/AddTransactionModal';
+import AddBudgetCategoryModal from '@/components/budget/AddBudgetCategoryModal';
 
 export default function BudgetPlan() {
     const [loading, setLoading] = useState(true);
@@ -785,6 +786,14 @@ export default function BudgetPlan() {
                 onClose={() => setShowAddModal(false)}
                 onSuccess={() => loadData()}
                 userEmail={user?.email}
+            />
+
+            {/* Add Budget Category Modal */}
+            <AddBudgetCategoryModal
+                isOpen={showCategoryModal}
+                onClose={() => setShowCategoryModal(false)}
+                onSuccess={() => loadData()}
+                monthlyIncome={totalIncome}
             />
         </div>
     );

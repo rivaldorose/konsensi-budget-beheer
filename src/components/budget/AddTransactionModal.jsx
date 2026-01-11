@@ -57,11 +57,14 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
         }
     }, [isOpen]);
 
+    const [userId, setUserId] = useState(null);
+
     const loadPots = async () => {
         try {
             const { User } = await import('@/api/entities');
             const user = await User.me();
             if (!user) return;
+            setUserId(user.id);
             const potsData = await Pot.filter({ user_id: user.id });
             setPots(potsData.filter(p => p.pot_type === 'expense'));
         } catch (error) {
@@ -75,6 +78,11 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
             return;
         }
 
+        if (!userId) {
+            toast({ title: '⚠️ Niet ingelogd', variant: 'destructive' });
+            return;
+        }
+
         setSaving(true);
         try {
             const parsedAmount = parseFloat(amount);
@@ -83,6 +91,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                 // Inkomen toevoegen
                 if (incomeType === 'vast') {
                     await Income.create({
+                        user_id: userId,
                         description,
                         amount: parsedAmount,
                         income_type: 'vast',
@@ -93,15 +102,17 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                     });
                 } else {
                     await Income.create({
+                        user_id: userId,
                         description,
                         amount: parsedAmount,
                         income_type: 'extra',
                         date: date
                     });
                 }
-                
+
                 // Ook als transactie registreren
                 await Transaction.create({
+                    user_id: userId,
                     type: 'income',
                     amount: parsedAmount,
                     description,
@@ -117,6 +128,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                     // Vaste last toevoegen
                     const dayOfMonth = new Date(date).getDate();
                     await MonthlyCost.create({
+                        user_id: userId,
                         name: description,
                         amount: parsedAmount,
                         payment_date: dayOfMonth,
@@ -133,9 +145,10 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                         const newSpent = (parseFloat(pot.spent) || 0) + parsedAmount;
                         await Pot.update(pot.id, { spent: newSpent });
                     }
-                    
+
                     // Transactie registreren
                     await Transaction.create({
+                        user_id: userId,
                         type: 'expense',
                         amount: parsedAmount,
                         description,
@@ -147,6 +160,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                 } else {
                     // Losse uitgave
                     await Transaction.create({
+                        user_id: userId,
                         type: 'expense',
                         amount: parsedAmount,
                         description,
