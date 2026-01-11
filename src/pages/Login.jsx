@@ -170,13 +170,14 @@ export default function Login() {
   // Based on RFC 6238 - TOTP: Time-Based One-Time Password Algorithm
   const verifyTOTP = async (secret, code) => {
     try {
-      const timeStep = 30; // 30 seconds
+      const timeStep = 30;
       const currentTime = Math.floor(Date.now() / 1000);
       const counter = Math.floor(currentTime / timeStep);
 
       console.log('[2FA Debug] Current time:', new Date().toISOString());
+      console.log('[2FA Debug] Unix timestamp:', currentTime);
       console.log('[2FA Debug] Counter:', counter);
-      console.log('[2FA Debug] Secret length:', secret?.length);
+      console.log('[2FA Debug] Secret:', secret);
       console.log('[2FA Debug] Input code:', code);
 
       // Check current time window and adjacent windows (for clock drift)
@@ -201,15 +202,16 @@ export default function Login() {
     try {
       // Decode base32 secret
       const secretBytes = base32Decode(secret);
-      console.log('[2FA Debug] Secret bytes length:', secretBytes.length);
+      console.log('[2FA Debug] Secret bytes:', Array.from(secretBytes).map(b => b.toString(16).padStart(2, '0')).join(' '));
 
-      // Convert counter to 8-byte array (big-endian)
-      const counterBytes = new Uint8Array(8);
-      let tempCounter = counter;
-      for (let i = 7; i >= 0; i--) {
-        counterBytes[i] = tempCounter & 0xff;
-        tempCounter = Math.floor(tempCounter / 256);
-      }
+      // Convert counter to 8-byte array (big-endian) using DataView for accuracy
+      const counterBuffer = new ArrayBuffer(8);
+      const counterView = new DataView(counterBuffer);
+      // Split counter into high and low 32-bit parts
+      counterView.setUint32(0, Math.floor(counter / 0x100000000), false); // high 32 bits
+      counterView.setUint32(4, counter >>> 0, false); // low 32 bits
+      const counterBytes = new Uint8Array(counterBuffer);
+      console.log('[2FA Debug] Counter bytes:', Array.from(counterBytes).map(b => b.toString(16).padStart(2, '0')).join(' '));
 
       // Import key for HMAC-SHA1
       const key = await crypto.subtle.importKey(
@@ -223,9 +225,10 @@ export default function Login() {
       // Generate HMAC
       const signature = await crypto.subtle.sign('HMAC', key, counterBytes);
       const hmac = new Uint8Array(signature);
+      console.log('[2FA Debug] HMAC:', Array.from(hmac).map(b => b.toString(16).padStart(2, '0')).join(' '));
 
-      // Dynamic truncation
-      const offset = hmac[hmac.length - 1] & 0x0f;
+      // Dynamic truncation (RFC 4226)
+      const offset = hmac[19] & 0x0f;
       const binary =
         ((hmac[offset] & 0x7f) << 24) |
         ((hmac[offset + 1] & 0xff) << 16) |
@@ -234,22 +237,31 @@ export default function Login() {
 
       // Generate 6-digit code
       const otp = binary % 1000000;
-      return otp.toString().padStart(6, '0');
+      const otpString = otp.toString().padStart(6, '0');
+      console.log('[2FA Debug] Binary:', binary, 'OTP:', otpString);
+      return otpString;
     } catch (e) {
       console.error('Error generating TOTP:', e);
       return null;
     }
   };
 
-  // Base32 decoder
+  // Base32 decoder (RFC 4648)
   const base32Decode = (encoded) => {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    const cleanedInput = encoded.toUpperCase().replace(/[^A-Z2-7]/g, '');
+    // Remove spaces, dashes and convert to uppercase
+    const cleanedInput = encoded.toUpperCase().replace(/[\s-]/g, '');
+
+    // Remove padding
+    const unpadded = cleanedInput.replace(/=+$/, '');
 
     let bits = '';
-    for (const char of cleanedInput) {
+    for (const char of unpadded) {
       const val = alphabet.indexOf(char);
-      if (val === -1) continue;
+      if (val === -1) {
+        console.warn('[2FA Debug] Invalid base32 character:', char);
+        continue;
+      }
       bits += val.toString(2).padStart(5, '0');
     }
 
@@ -258,6 +270,7 @@ export default function Login() {
       bytes.push(parseInt(bits.substring(i, i + 8), 2));
     }
 
+    console.log('[2FA Debug] Base32 decoded:', cleanedInput, '-> bytes length:', bytes.length);
     return new Uint8Array(bytes);
   };
 

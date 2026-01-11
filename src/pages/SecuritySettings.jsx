@@ -185,12 +185,13 @@ export default function SecuritySettings() {
   const generateTOTPCode = async (secret, counter) => {
     try {
       const secretBytes = base32Decode(secret);
-      const counterBytes = new Uint8Array(8);
-      let tempCounter = counter;
-      for (let i = 7; i >= 0; i--) {
-        counterBytes[i] = tempCounter & 0xff;
-        tempCounter = Math.floor(tempCounter / 256);
-      }
+
+      // Convert counter to 8-byte array (big-endian) using DataView for accuracy
+      const counterBuffer = new ArrayBuffer(8);
+      const counterView = new DataView(counterBuffer);
+      counterView.setUint32(0, Math.floor(counter / 0x100000000), false);
+      counterView.setUint32(4, counter >>> 0, false);
+      const counterBytes = new Uint8Array(counterBuffer);
 
       const key = await crypto.subtle.importKey(
         'raw',
@@ -203,7 +204,8 @@ export default function SecuritySettings() {
       const signature = await crypto.subtle.sign('HMAC', key, counterBytes);
       const hmac = new Uint8Array(signature);
 
-      const offset = hmac[hmac.length - 1] & 0x0f;
+      // Dynamic truncation (RFC 4226) - use hmac[19] for SHA-1
+      const offset = hmac[19] & 0x0f;
       const binary =
         ((hmac[offset] & 0x7f) << 24) |
         ((hmac[offset + 1] & 0xff) << 16) |
@@ -220,9 +222,10 @@ export default function SecuritySettings() {
 
   const base32Decode = (encoded) => {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    const cleanedInput = encoded.toUpperCase().replace(/[^A-Z2-7]/g, '');
+    const cleanedInput = encoded.toUpperCase().replace(/[\s-]/g, '');
+    const unpadded = cleanedInput.replace(/=+$/, '');
     let bits = '';
-    for (const char of cleanedInput) {
+    for (const char of unpadded) {
       const val = alphabet.indexOf(char);
       if (val === -1) continue;
       bits += val.toString(2).padStart(5, '0');
