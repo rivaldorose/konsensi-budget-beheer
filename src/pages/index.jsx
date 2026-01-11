@@ -50,8 +50,6 @@ import Wishlist from "./Wishlist";
 
 import Feedback from "./Feedback";
 
-import Privacy from "./Privacy";
-
 import HelpSupport from "./HelpSupport";
 
 import FAQSettings from "./FAQSettings";
@@ -116,9 +114,7 @@ const PAGES = {
     Wishlist: Wishlist,
     
     Feedback: Feedback,
-    
-    Privacy: Privacy,
-    
+
     HelpSupport: HelpSupport,
     
     FAQSettings: FAQSettings,
@@ -249,9 +245,7 @@ function PagesContent() {
                 <Route path="/Wishlist" element={<Wishlist />} />
                 
                 <Route path="/Feedback" element={<Feedback />} />
-                
-                <Route path="/Privacy" element={<Privacy />} />
-                
+
                 <Route path="/HelpSupport" element={<HelpSupport />} />
                 
                 <Route path="/FAQSettings" element={<FAQSettings />} />
