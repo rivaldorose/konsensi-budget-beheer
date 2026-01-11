@@ -10,7 +10,14 @@ import { supabase } from '@/lib/supabase'
  *
  * - Instead of: Income.filter({ id: '123' })
  * - Use: supabaseService.filter('income', { id: '123' })
+ *
+ * Pagination:
+ * - Use: supabaseService.paginate('debts', { user_id: 'xxx' }, { page: 1, pageSize: 20 })
  */
+
+// Default pagination settings
+const DEFAULT_PAGE_SIZE = 20
+const MAX_PAGE_SIZE = 100
 
 export const supabaseService = {
   // Generic CRUD operations
@@ -56,6 +63,98 @@ export const supabaseService = {
 
     console.log(`[SupabaseService] Success! Got ${data?.length || 0} rows from ${table}`)
     return data || []
+  },
+
+  /**
+   * Paginated query with count
+   * @param {string} table - Table name
+   * @param {object} filters - Filter conditions
+   * @param {object} options - Pagination options
+   * @param {number} options.page - Page number (1-based)
+   * @param {number} options.pageSize - Items per page (default: 20, max: 100)
+   * @param {string} options.orderBy - Order by field (prefix with - for descending)
+   * @returns {Promise<{data: array, count: number, page: number, pageSize: number, totalPages: number}>}
+   */
+  async paginate(table, filters = {}, options = {}) {
+    const page = Math.max(1, options.page || 1)
+    const pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, options.pageSize || DEFAULT_PAGE_SIZE))
+    const offset = (page - 1) * pageSize
+
+    console.log(`[SupabaseService] Paginating table: ${table}`, { filters, page, pageSize })
+
+    // Build query with count
+    let query = supabase.from(table).select('*', { count: 'exact' })
+
+    // Apply filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (Array.isArray(value)) {
+          query = query.in(key, value)
+        } else {
+          query = query.eq(key, value)
+        }
+      }
+    })
+
+    // Apply ordering
+    const orderBy = options.orderBy || '-created_at'
+    const ascending = !orderBy.startsWith('-')
+    const field = orderBy.replace('-', '')
+    query = query.order(field, { ascending })
+
+    // Apply pagination
+    query = query.range(offset, offset + pageSize - 1)
+
+    const { data, error, count } = await query
+
+    if (error) {
+      console.error(`[SupabaseService] Error paginating ${table}:`, error)
+      throw error
+    }
+
+    const totalPages = Math.ceil((count || 0) / pageSize)
+
+    console.log(`[SupabaseService] Paginated ${table}: page ${page}/${totalPages}, ${count} total items`)
+
+    return {
+      data: data || [],
+      count: count || 0,
+      page,
+      pageSize,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+    }
+  },
+
+  /**
+   * Get count of records matching filters
+   * @param {string} table - Table name
+   * @param {object} filters - Filter conditions
+   * @returns {Promise<number>}
+   */
+  async count(table, filters = {}) {
+    let query = supabase.from(table).select('*', { count: 'exact', head: true })
+
+    // Apply filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (Array.isArray(value)) {
+          query = query.in(key, value)
+        } else {
+          query = query.eq(key, value)
+        }
+      }
+    })
+
+    const { count, error } = await query
+
+    if (error) {
+      console.error(`[SupabaseService] Error counting ${table}:`, error)
+      throw error
+    }
+
+    return count || 0
   },
 
   async getById(table, id) {

@@ -21,4 +21,20 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks - split large dependencies
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['lucide-react', 'framer-motion', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs', '@radix-ui/react-tooltip', '@radix-ui/react-select', '@radix-ui/react-switch', '@radix-ui/react-slider'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-charts': ['recharts'],
+          'vendor-query': ['@tanstack/react-query'],
+        },
+      },
+    },
+    // Increase chunk size warning limit slightly (still want to be aware of large chunks)
+    chunkSizeWarningLimit: 600,
+  },
 }) 
