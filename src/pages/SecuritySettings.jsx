@@ -157,6 +157,83 @@ export default function SecuritySettings() {
     return secret;
   };
 
+  // TOTP verification functions
+  const verifyTOTP = async (secret, code) => {
+    try {
+      const timeStep = 30;
+      const currentTime = Math.floor(Date.now() / 1000);
+      const counter = Math.floor(currentTime / timeStep);
+
+      console.log('[2FA Setup Debug] Verifying code:', code);
+      console.log('[2FA Setup Debug] Counter:', counter);
+
+      // Check current time window and adjacent windows (for clock drift)
+      for (let i = -2; i <= 2; i++) {
+        const expectedCode = await generateTOTPCode(secret, counter + i);
+        console.log(`[2FA Setup Debug] Window ${i}: expected=${expectedCode}, matches=${expectedCode === code}`);
+        if (expectedCode === code) {
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      console.error('TOTP verification error:', e);
+      return false;
+    }
+  };
+
+  const generateTOTPCode = async (secret, counter) => {
+    try {
+      const secretBytes = base32Decode(secret);
+      const counterBytes = new Uint8Array(8);
+      let tempCounter = counter;
+      for (let i = 7; i >= 0; i--) {
+        counterBytes[i] = tempCounter & 0xff;
+        tempCounter = Math.floor(tempCounter / 256);
+      }
+
+      const key = await crypto.subtle.importKey(
+        'raw',
+        secretBytes,
+        { name: 'HMAC', hash: 'SHA-1' },
+        false,
+        ['sign']
+      );
+
+      const signature = await crypto.subtle.sign('HMAC', key, counterBytes);
+      const hmac = new Uint8Array(signature);
+
+      const offset = hmac[hmac.length - 1] & 0x0f;
+      const binary =
+        ((hmac[offset] & 0x7f) << 24) |
+        ((hmac[offset + 1] & 0xff) << 16) |
+        ((hmac[offset + 2] & 0xff) << 8) |
+        (hmac[offset + 3] & 0xff);
+
+      const otp = binary % 1000000;
+      return otp.toString().padStart(6, '0');
+    } catch (e) {
+      console.error('Error generating TOTP:', e);
+      return null;
+    }
+  };
+
+  const base32Decode = (encoded) => {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    const cleanedInput = encoded.toUpperCase().replace(/[^A-Z2-7]/g, '');
+    let bits = '';
+    for (const char of cleanedInput) {
+      const val = alphabet.indexOf(char);
+      if (val === -1) continue;
+      bits += val.toString(2).padStart(5, '0');
+    }
+    const bytes = [];
+    for (let i = 0; i + 8 <= bits.length; i += 8) {
+      bytes.push(parseInt(bits.substring(i, i + 8), 2));
+    }
+    return new Uint8Array(bytes);
+  };
+
   const handleVerify2FA = async () => {
     if (verificationCode.length !== 6) {
       toast({ title: 'Voer een 6-cijferige code in', variant: 'destructive' });
@@ -165,13 +242,23 @@ export default function SecuritySettings() {
 
     setIsVerifying(true);
     try {
-      // In a production app, you would verify the TOTP code server-side
-      // For now, we'll simulate verification and save the settings
+      // Verify the TOTP code before saving
+      const isValid = await verifyTOTP(totpSecret, verificationCode);
 
-      // Save the 2FA settings
+      if (!isValid) {
+        toast({
+          title: 'Ongeldige code',
+          description: 'De ingevoerde code is onjuist. Controleer de code in je authenticator app.',
+          variant: 'destructive'
+        });
+        setIsVerifying(false);
+        return;
+      }
+
+      // Code is valid, save the 2FA settings
       const data = {
         two_factor_enabled: true,
-        totp_secret: totpSecret // In production, encrypt this!
+        totp_secret: totpSecret
       };
 
       if (settings?.id) {
