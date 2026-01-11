@@ -62,7 +62,7 @@ export default function TourProvider({ children }) {
     
     // Markeer onboarding als voltooid
     try {
-      await User.updateMyUserData({ 
+      await User.updateMe({ 
         onboarding_completed: true,
         onboarding_tour_completed: true 
       });

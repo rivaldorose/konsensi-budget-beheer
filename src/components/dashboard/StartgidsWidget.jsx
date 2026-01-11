@@ -107,7 +107,7 @@ const StartgidsWidget = ({
 
   const handleDismiss = async () => {
     try {
-      await User.updateMyUserData({ startgids_dismissed: true });
+      await User.updateMe({ startgids_dismissed: true });
       setIsDismissed(true);
       toast({
         title: 'Startgids verborgen',

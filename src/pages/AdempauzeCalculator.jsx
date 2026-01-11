@@ -118,7 +118,7 @@ export default function AdempauzeCalculator() {
 
   const handleActivate = async () => {
     try {
-      await User.updateMyUserData({
+      await User.updateMe({
         adempauze_active: true,
         adempauze_activated_at: new Date().toISOString(),
         adempauze_trigger: 'calculator',

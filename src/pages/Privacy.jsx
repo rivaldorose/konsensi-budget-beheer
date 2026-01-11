@@ -49,7 +49,7 @@ export default function Privacy() {
 
   const handleSave = async () => {
     try {
-      await User.updateMyUserData({ privacy_settings: privacySettings });
+      await User.updateMe({ privacy_settings: privacySettings });
       toast({ title: 'Privacy-instellingen opgeslagen!' });
     } catch (error) {
       console.error('Error saving privacy settings:', error);
