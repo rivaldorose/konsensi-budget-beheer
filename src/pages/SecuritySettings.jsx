@@ -179,6 +179,17 @@ export default function SecuritySettings() {
                 </Link>
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
+                    isActiveRoute('VTLBSettings')
+                      ? 'bg-secondary text-[#0d1b17]'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
+                  }`}
+                  to={createPageUrl('VTLBSettings')}
+                >
+                  <span className="material-symbols-outlined">calculate</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">VTLB Berekening</span>
+                </Link>
+                <Link
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('Privacy')
                       ? 'bg-secondary text-[#0d1b17]'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
@@ -201,6 +212,17 @@ export default function SecuritySettings() {
                 >
                   <span className="material-symbols-outlined">help</span>
                   <span className="font-medium text-sm group-hover:font-semibold">Help Center</span>
+                </Link>
+                <Link
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
+                    isActiveRoute('FAQSettings')
+                      ? 'bg-secondary text-[#0d1b17]'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
+                  }`}
+                  to={createPageUrl('FAQSettings')}
+                >
+                  <span className="material-symbols-outlined">help_outline</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Veelgestelde Vragen</span>
                 </Link>
                 <Link
                   className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white transition-all"
