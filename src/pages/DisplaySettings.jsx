@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User } from '@/api/entities';
 import { useToast } from '@/components/ui/use-toast';
 import { createPageUrl } from '@/utils';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { useTranslation } from '@/components/utils/LanguageContext';
 
 export default function DisplaySettings() {
@@ -121,91 +121,91 @@ export default function DisplaySettings() {
             {/* Sidebar */}
             <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2a2a2a] p-4 lg:p-6 flex flex-col sticky top-24">
               <nav className="flex flex-col gap-2">
-                <a 
+                <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
-                    isActiveRoute('Settings') 
-                      ? 'bg-secondary text-[#0d1b17]' 
+                    isActiveRoute('Settings')
+                      ? 'bg-secondary text-[#0d1b17]'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
                   }`}
-                  href={createPageUrl('Settings')}
+                  to={createPageUrl('Settings')}
                 >
                   <span className="material-symbols-outlined">account_circle</span>
                   <span className="font-medium text-sm group-hover:font-semibold">Mijn Profiel</span>
-                </a>
-                <a 
+                </Link>
+                <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('SecuritySettings')
                       ? 'bg-secondary text-[#0d1b17]'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
                   }`}
-                  href={createPageUrl('SecuritySettings')}
+                  to={createPageUrl('SecuritySettings')}
                 >
                   <span className="material-symbols-outlined">shield</span>
                   <span className="font-medium text-sm group-hover:font-semibold">Account & Beveiliging</span>
-                </a>
-                <a 
+                </Link>
+                <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('NotificationSettings')
                       ? 'bg-secondary text-[#0d1b17]'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
                   }`}
-                  href={createPageUrl('NotificationSettings')}
+                  to={createPageUrl('NotificationSettings')}
                 >
                   <span className="material-symbols-outlined">notifications</span>
                   <span className="font-medium text-sm group-hover:font-semibold">Notificaties</span>
-                </a>
-                <a 
+                </Link>
+                <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('DisplaySettings')
                       ? 'bg-secondary text-[#0d1b17]'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
                   }`}
-                  href={createPageUrl('DisplaySettings')}
+                  to={createPageUrl('DisplaySettings')}
                 >
                   <span className={`material-symbols-outlined ${isActiveRoute('DisplaySettings') ? 'fill-1' : ''}`} style={isActiveRoute('DisplaySettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
                     tune
                   </span>
                   <span className={`text-sm ${isActiveRoute('DisplaySettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>App Voorkeuren</span>
-                </a>
-                <a 
+                </Link>
+                <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('Privacy')
                       ? 'bg-secondary text-[#0d1b17]'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
                   }`}
-                  href={createPageUrl('Privacy')}
+                  to={createPageUrl('Privacy')}
                 >
                   <span className="material-symbols-outlined">lock</span>
                   <span className="font-medium text-sm group-hover:font-semibold">Privacy</span>
-                </a>
+                </Link>
                 <div className="mt-4 pt-2 px-4 pb-1">
                   <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Hulp & Support</h3>
                 </div>
-                <a 
+                <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('HelpSupport')
                       ? 'bg-secondary text-[#0d1b17]'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
                   }`}
-                  href={createPageUrl('HelpSupport')}
+                  to={createPageUrl('HelpSupport')}
                 >
                   <span className="material-symbols-outlined">help</span>
                   <span className="font-medium text-sm group-hover:font-semibold">Help Center</span>
-                </a>
-                <a 
+                </Link>
+                <Link
                   className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white transition-all"
-                  href={createPageUrl('TermsOfService')}
+                  to={createPageUrl('TermsOfService')}
                 >
                   <span className="material-symbols-outlined">description</span>
                   <span className="font-medium text-sm group-hover:font-semibold">Algemene Voorwaarden</span>
-                </a>
-                <a 
+                </Link>
+                <Link
                   className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white transition-all"
-                  href={createPageUrl('PrivacyPolicy')}
+                  to={createPageUrl('PrivacyPolicy')}
                 >
                   <span className="material-symbols-outlined">policy</span>
                   <span className="font-medium text-sm group-hover:font-semibold">Privacybeleid</span>
-                </a>
+                </Link>
               </nav>
             </aside>
 
