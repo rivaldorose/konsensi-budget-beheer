@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/components/utils/LanguageContext';
 import IncomeFormModal from '@/components/income/IncomeFormModal';
 import ScanIncomeModal from '@/components/income/ScanIncomeModal';

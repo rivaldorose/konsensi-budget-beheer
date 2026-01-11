@@ -4,7 +4,7 @@ import { DebtPayment } from '@/api/entities';
 import { DebtCorrespondence } from '@/api/entities';
 import { PaymentDocument } from '@/api/entities';
 import { UploadPrivateFile, CreateFileSignedUrl } from '@/api/integrations';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 import { formatCurrency } from '@/components/utils/formatters';
 import PaymentRegistrationModal from './PaymentRegistrationModal';
 import AddCorrespondenceModal from './AddCorrespondenceModal';

@@ -8,7 +8,7 @@ import { nl } from 'date-fns/locale';
 import { Receipt, TrendingDown, Calendar, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function PotActivityModal({ pot, isOpen, onClose, spent, onTransactionDeleted }) {
   const [transactions, setTransactions] = useState([]);

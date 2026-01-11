@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Income, MonthlyCost, Debt, User } from '@/api/entities';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
 
 export default function OnboardingNew() {

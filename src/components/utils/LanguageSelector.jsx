@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useTranslation } from './LanguageContext';
 import { Globe } from 'lucide-react';
 import { User } from '@/api/entities';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 
 
 const languages = [
