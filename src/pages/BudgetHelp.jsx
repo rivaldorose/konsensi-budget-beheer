@@ -366,15 +366,6 @@ export default function BudgetHelp() {
                                     <span className="material-symbols-outlined text-[18px]">open_in_new</span>
                                     Geldfit - Financiële hulp
                                 </a>
-                                <a
-                                    href="https://www.zelfjeschuldenregelen.nl"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors"
-                                >
-                                    <span className="material-symbols-outlined text-[18px]">open_in_new</span>
-                                    Zelf je schulden regelen
-                                </a>
                             </div>
                         </div>
                     </div>
