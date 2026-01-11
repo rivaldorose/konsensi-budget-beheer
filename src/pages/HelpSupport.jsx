@@ -201,8 +201,8 @@ export default function HelpSupport() {
                       <ArrowRight className="w-4 h-4 text-primary group-hover:translate-x-0.5 transition-transform" />
                     </button>
                     <div className="flex flex-col gap-1">
-                      <a className="text-primary text-sm hover:underline inline-flex items-center gap-2" href="tel:0881234567">
-                        Bel ons: 088-1234567
+                      <a className="text-primary text-sm hover:underline inline-flex items-center gap-2" href="tel:+31619866218">
+                        Bel ons: +31 6 19 86 62 18
                       </a>
                       <a className="text-primary text-sm hover:underline inline-flex items-center gap-2" href="mailto:support@konsensi.nl">
                         E-mail: support@konsensi.nl
