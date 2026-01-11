@@ -158,33 +158,33 @@ export default function DebtWizard({ isOpen, onClose, onSave }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[480px] max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-[480px] max-h-[90vh] flex flex-col bg-white dark:bg-[#0a0a0a] border-gray-200 dark:border-[#2a2a2a]">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Nieuwe Schuld Toevoegen</DialogTitle>
-          <div className="text-sm text-muted-foreground pt-2">
+          <DialogTitle className="text-gray-900 dark:text-white">Nieuwe Schuld Toevoegen</DialogTitle>
+          <div className="text-sm text-gray-500 dark:text-[#a1a1a1] pt-2">
             <p>Stap {step} van {TOTAL_STEPS}</p>
-            <Progress value={(step / TOTAL_STEPS) * 100} className="w-full mt-1 h-2" />
+            <Progress value={(step / TOTAL_STEPS) * 100} className="w-full mt-1 h-2 bg-gray-200 dark:bg-[#2a2a2a] [&>div]:bg-[#10b981]" />
           </div>
         </DialogHeader>
 
-        <div className="py-4 overflow-y-auto flex-1">{renderStep()}</div>
+        <div className="py-4 overflow-y-auto flex-1 text-gray-900 dark:text-white">{renderStep()}</div>
 
         <DialogFooter className="flex-col sm:flex-row sm:justify-between gap-2">
           {step > 1 && (
-             <Button variant="ghost" onClick={handleBack} className="w-full sm:w-auto">
+             <Button variant="ghost" onClick={handleBack} className="w-full sm:w-auto text-gray-600 dark:text-[#10b981] hover:bg-gray-100 dark:hover:bg-[#1a1a1a]">
               Vorige
             </Button>
           )}
           {step < TOTAL_STEPS && (
-            <Button onClick={handleNext} disabled={!validateStep()} className="w-full sm:w-auto ml-auto">
+            <Button onClick={handleNext} disabled={!validateStep()} className="w-full sm:w-auto ml-auto bg-[#10b981] hover:bg-[#059669] text-black dark:text-black">
               Volgende
             </Button>
           )}
           {step === TOTAL_STEPS && (
-            <Button 
-              onClick={handleSave} 
-              disabled={isSaving} 
-              className="w-full sm:w-auto bg-green-600 hover:bg-green-700 ml-auto"
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="w-full sm:w-auto bg-[#10b981] hover:bg-[#059669] text-black dark:text-black ml-auto"
             >
               {isSaving ? "Opslaan..." : "Opslaan"}
             </Button>
