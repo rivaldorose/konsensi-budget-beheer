@@ -1,19 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Challenge } from '@/api/entities';
 import { User } from '@/api/entities';
-import { 
-  Target, 
-  Clock, 
-  Zap,
-  CheckCircle2,
-  Plus,
-  RefreshCw
-} from 'lucide-react';
-import { motion } from 'framer-motion';
 import { formatCurrency } from '@/components/utils/formatters';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -24,7 +11,6 @@ const CHALLENGE_TEMPLATES = [
     goal_type: 'clear_debt',
     target_value: 1,
     xp_reward: 75,
-    icon: '🎯',
     challenge_type: 'weekly'
   },
   {
@@ -33,7 +19,6 @@ const CHALLENGE_TEMPLATES = [
     goal_type: 'clear_debt',
     target_value: 3,
     xp_reward: 150,
-    icon: '📅',
     challenge_type: 'monthly'
   },
   {
@@ -42,7 +27,6 @@ const CHALLENGE_TEMPLATES = [
     goal_type: 'save_amount',
     target_value: 50,
     xp_reward: 100,
-    icon: '💪',
     challenge_type: 'weekly'
   },
   {
@@ -51,7 +35,6 @@ const CHALLENGE_TEMPLATES = [
     goal_type: 'check_in',
     target_value: 5,
     xp_reward: 50,
-    icon: '🔥',
     challenge_type: 'weekly'
   },
   {
@@ -60,15 +43,14 @@ const CHALLENGE_TEMPLATES = [
     goal_type: 'save_amount',
     target_value: 200,
     xp_reward: 250,
-    icon: '🚀',
     challenge_type: 'monthly'
   }
 ];
 
-export default function DebtChallengesWidget({ 
-  currentMonthPaid = 0, 
+export default function DebtChallengesWidget({
+  currentMonthPaid = 0,
   paymentCountThisMonth = 0,
-  onChallengeComplete 
+  onChallengeComplete
 }) {
   const [challenges, setChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -81,11 +63,11 @@ export default function DebtChallengesWidget({
   const loadChallenges = async () => {
     try {
       const user = await User.me();
-      const userChallenges = await Challenge.filter({ 
+      const userChallenges = await Challenge.filter({
         created_by: user.email,
         status: 'active'
       });
-      
+
       // If no active challenges, create some
       if (userChallenges.length === 0) {
         await generateNewChallenges();
@@ -122,13 +104,13 @@ export default function DebtChallengesWidget({
       const today = new Date();
       const endOfWeek = new Date(today);
       endOfWeek.setDate(today.getDate() + (7 - today.getDay()));
-      
+
       const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      
+
       // Pick 2-3 random challenges
       const shuffled = [...CHALLENGE_TEMPLATES].sort(() => 0.5 - Math.random());
       const selected = shuffled.slice(0, 3);
-      
+
       const newChallenges = [];
       for (const template of selected) {
         if (!template) continue;
@@ -139,10 +121,9 @@ export default function DebtChallengesWidget({
           goal_type: template.goal_type,
           target_value: template.target_value,
           xp_reward: template.xp_reward,
-          icon: template.icon,
           type: challengeType,
           start_date: today.toISOString().split('T')[0],
-          end_date: challengeType === 'weekly' 
+          end_date: challengeType === 'weekly'
             ? endOfWeek.toISOString().split('T')[0]
             : endOfMonth.toISOString().split('T')[0],
           current_value: 0,
@@ -150,9 +131,9 @@ export default function DebtChallengesWidget({
         });
         newChallenges.push(challenge);
       }
-      
+
       setChallenges(newChallenges);
-      toast({ title: '🎯 Nieuwe uitdagingen beschikbaar!' });
+      toast({ title: 'Nieuwe uitdagingen beschikbaar!' });
     } catch (error) {
       console.error('Error generating challenges:', error);
     }
@@ -164,16 +145,16 @@ export default function DebtChallengesWidget({
         status: 'completed',
         completed_at: new Date().toISOString()
       });
-      
+
       toast({
-        title: '🎉 Uitdaging voltooid!',
+        title: 'Uitdaging voltooid!',
         description: `+${challenge.xp_reward} XP verdiend!`
       });
-      
+
       if (onChallengeComplete) {
         onChallengeComplete(challenge);
       }
-      
+
       loadChallenges();
     } catch (error) {
       console.error('Error completing challenge:', error);
@@ -187,112 +168,157 @@ export default function DebtChallengesWidget({
     return Math.max(0, diff);
   };
 
+  const getChallengeIcon = (goalType) => {
+    switch (goalType) {
+      case 'clear_debt':
+        return 'check_circle';
+      case 'save_amount':
+        return 'savings';
+      case 'check_in':
+        return 'visibility';
+      default:
+        return 'flag';
+    }
+  };
+
+  const getChallengeColor = (index) => {
+    const colors = [
+      { bg: 'bg-emerald-100 dark:bg-emerald-500/20', text: 'text-emerald-500', border: 'border-emerald-200 dark:border-emerald-500/30' },
+      { bg: 'bg-blue-100 dark:bg-blue-500/20', text: 'text-blue-500', border: 'border-blue-200 dark:border-blue-500/30' },
+      { bg: 'bg-purple-100 dark:bg-purple-500/20', text: 'text-purple-500', border: 'border-purple-200 dark:border-purple-500/30' }
+    ];
+    return colors[index % colors.length];
+  };
+
   if (loading) {
     return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="animate-pulse space-y-3">
-            <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-20 bg-gray-200 rounded"></div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-[24px] p-6 shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200 dark:bg-[#2a2a2a] rounded w-1/3"></div>
+          <div className="h-24 bg-gray-200 dark:bg-[#2a2a2a] rounded-xl"></div>
+          <div className="h-24 bg-gray-200 dark:bg-[#2a2a2a] rounded-xl"></div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Target className="w-5 h-5 text-blue-600" />
-            Actieve Uitdagingen
-          </CardTitle>
-          <Button 
-            variant="ghost" 
-            size="sm"
-            onClick={generateNewChallenges}
-            className="text-blue-600 hover:text-blue-700"
-          >
-            <RefreshCw className="w-4 h-4 mr-1" />
-            Nieuwe
-          </Button>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="space-y-3">
-        {challenges.length === 0 ? (
-          <div className="text-center py-4">
-            <p className="text-gray-500 mb-3">Geen actieve uitdagingen</p>
-            <Button onClick={generateNewChallenges} className="bg-blue-500 hover:bg-blue-600">
-              <Plus className="w-4 h-4 mr-2" />
-              Genereer Uitdagingen
-            </Button>
+    <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-[24px] p-6 shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="size-10 rounded-full bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center">
+            <span className="material-symbols-outlined text-purple-500 text-[20px]">flag</span>
           </div>
-        ) : (
-          challenges.filter(c => c && c.id).map((challenge, index) => {
+          <h3 className="font-semibold text-lg text-[#1F2937] dark:text-white">Actieve Uitdagingen</h3>
+        </div>
+
+        <button
+          onClick={generateNewChallenges}
+          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-[#2a2a2a] transition-colors"
+          title="Nieuwe uitdagingen"
+        >
+          <span className="material-symbols-outlined text-gray-500 dark:text-[#a1a1a1] text-[20px]">refresh</span>
+        </button>
+      </div>
+
+      {/* Challenges List */}
+      {challenges.length === 0 ? (
+        <div className="text-center py-8">
+          <div className="size-16 rounded-full bg-gray-100 dark:bg-[#2a2a2a] flex items-center justify-center mx-auto mb-4">
+            <span className="material-symbols-outlined text-gray-400 dark:text-[#a1a1a1] text-[32px]">flag</span>
+          </div>
+          <p className="text-gray-500 dark:text-[#a1a1a1] mb-4">Geen actieve uitdagingen</p>
+          <button
+            onClick={generateNewChallenges}
+            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium rounded-xl transition-colors flex items-center gap-2 mx-auto"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span>
+            Genereer Uitdagingen
+          </button>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {challenges.filter(c => c && c.id).map((challenge, index) => {
             const progress = challenge.target_value > 0 ? (challenge.current_value / challenge.target_value) * 100 : 0;
             const isComplete = progress >= 100;
             const daysLeft = getDaysRemaining(challenge.end_date);
-            
+            const color = getChallengeColor(index);
+
             return (
-              <motion.div
+              <div
                 key={challenge.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className={`bg-white rounded-xl p-4 border ${isComplete ? 'border-green-300 bg-green-50' : 'border-gray-200'}`}
+                className={`rounded-2xl p-4 border transition-all ${
+                  isComplete
+                    ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30'
+                    : 'bg-gray-50 dark:bg-[#0a0a0a] border-gray-100 dark:border-[#2a2a2a]'
+                }`}
               >
                 <div className="flex items-start gap-3">
-                  <div className="text-2xl">{challenge.icon}</div>
+                  {/* Icon */}
+                  <div className={`size-10 rounded-xl ${color.bg} flex items-center justify-center shrink-0`}>
+                    <span className={`material-symbols-outlined ${color.text} text-[20px]`}>
+                      {getChallengeIcon(challenge.goal_type)}
+                    </span>
+                  </div>
+
+                  {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-gray-900">{challenge.title}</span>
-                      <Badge variant="outline" className="text-xs">
+                      <span className="font-semibold text-[#1F2937] dark:text-white text-sm">{challenge.title}</span>
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-200 dark:bg-[#2a2a2a] text-gray-600 dark:text-[#a1a1a1]">
                         {(challenge.type || 'weekly') === 'weekly' ? 'Week' : 'Maand'}
-                      </Badge>
+                      </span>
                     </div>
-                    <p className="text-sm text-gray-600 mb-2">{challenge.description}</p>
-                    
-                    <div className="flex items-center gap-2">
-                      <Progress value={Math.min(progress, 100)} className="h-2 flex-1" />
-                      <span className="text-xs font-medium text-gray-600">
-                        {challenge.goal_type === 'save_amount' 
+                    <p className="text-xs text-gray-500 dark:text-[#a1a1a1] mb-3">{challenge.description}</p>
+
+                    {/* Progress Bar */}
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="flex-1 h-2 bg-gray-200 dark:bg-[#2a2a2a] rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            isComplete ? 'bg-emerald-500' : 'bg-emerald-400'
+                          }`}
+                          style={{ width: `${Math.min(progress, 100)}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-medium text-gray-600 dark:text-[#a1a1a1] whitespace-nowrap">
+                        {challenge.goal_type === 'save_amount'
                           ? `${formatCurrency(challenge.current_value)}/${formatCurrency(challenge.target_value)}`
                           : `${Math.min(challenge.current_value, challenge.target_value)}/${challenge.target_value}`
                         }
                       </span>
                     </div>
-                    
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
-                        <Clock className="w-3 h-3" />
+
+                    {/* Footer */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-[#a1a1a1]">
+                        <span className="material-symbols-outlined text-[14px]">schedule</span>
                         {daysLeft} dagen over
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge className="bg-purple-100 text-purple-700">
-                          <Zap className="w-3 h-3 mr-1" />
+                        <span className="text-xs font-medium px-2 py-1 rounded-lg bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[14px]">bolt</span>
                           +{challenge.xp_reward} XP
-                        </Badge>
+                        </span>
                         {isComplete && (
-                          <Button 
-                            size="sm" 
-                            className="h-7 bg-green-500 hover:bg-green-600"
+                          <button
                             onClick={() => handleCompleteChallenge(challenge)}
+                            className="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium rounded-lg transition-colors flex items-center gap-1"
                           >
-                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            <span className="material-symbols-outlined text-[14px]">check</span>
                             Claim
-                          </Button>
+                          </button>
                         )}
                       </div>
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             );
-          })
-        )}
-      </CardContent>
-    </Card>
+          })}
+        </div>
+      )}
+    </div>
   );
 }
