@@ -340,15 +340,6 @@ export default function BudgetHelp() {
                             <h3 className="font-semibold text-[#1F2937] dark:text-white mb-4">Handige Links</h3>
                             <div className="flex flex-col gap-3">
                                 <a
-                                    href="https://www.nibud.nl"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors"
-                                >
-                                    <span className="material-symbols-outlined text-[18px]">open_in_new</span>
-                                    NIBUD - Budget richtlijnen
-                                </a>
-                                <a
                                     href="https://www.belastingdienst.nl/wps/wcm/connect/nl/toeslagen/toeslagen"
                                     target="_blank"
                                     rel="noopener noreferrer"
