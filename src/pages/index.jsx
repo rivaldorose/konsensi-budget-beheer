@@ -70,6 +70,7 @@ import PasswordSaved from "./PasswordSaved";
 
 import NotFound from "./NotFound";
 import Maintenance from "./Maintenance"; // Fixed: removed duplicate import
+import OAuthCallback from "./OAuthCallback";
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -254,7 +255,11 @@ function PagesContent() {
                 <Route path="/HelpSupport" element={<HelpSupport />} />
                 
                 <Route path="/FAQSettings" element={<FAQSettings />} />
-                
+
+                {/* OAuth Callback Routes */}
+                <Route path="/auth/google/callback" element={<OAuthCallback />} />
+                <Route path="/auth/microsoft/callback" element={<OAuthCallback />} />
+
                 {/* Error Pages */}
                 <Route path="/maintenance" element={<Maintenance />} />
                 <Route path="*" element={<NotFound />} />

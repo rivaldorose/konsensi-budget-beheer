@@ -1005,8 +1005,139 @@ function LayoutWithProvider({ children, currentPageName }) {
                 <Heart className="w-5 h-5" />
               </Link>
 
+              {/* Notification Bell */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all relative"
+                    title="Notificaties"
+                  >
+                    <Bell className="w-5 h-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-80 bg-[#1a1a1a] border border-[#2a2a2a] max-h-[400px] overflow-y-auto">
+                  <DropdownMenuLabel className="text-white flex items-center justify-between">
+                    <span>Notificaties</span>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllAsRead}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Alles gelezen
+                      </button>
+                    )}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+
+                  {notifications.length === 0 ? (
+                    <div className="py-8 text-center text-[#a1a1a1]">
+                      <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Geen notificaties</p>
+                    </div>
+                  ) : (
+                    <>
+                      {groupedNotifications.today.length > 0 && (
+                        <>
+                          <div className="px-3 py-1 text-xs text-[#6b7280] font-medium">Vandaag</div>
+                          {groupedNotifications.today.map((notif) => (
+                            <DropdownMenuItem
+                              key={notif.id}
+                              onClick={() => handleMarkAsRead(notif.id)}
+                              className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
+                            >
+                              <div className="flex-shrink-0 mt-0.5">
+                                {getNotificationIcon(notif.type)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm ${!notif.is_read ? 'text-white font-medium' : 'text-[#a1a1a1]'}`}>
+                                  {notif.title}
+                                </p>
+                                <p className="text-xs text-[#6b7280] truncate">{notif.message}</p>
+                                <p className="text-xs text-[#4b5563] mt-1">{getTimeAgo(notif.created_date)}</p>
+                              </div>
+                              {!notif.is_read && (
+                                <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        </>
+                      )}
+
+                      {groupedNotifications.yesterday.length > 0 && (
+                        <>
+                          <div className="px-3 py-1 text-xs text-[#6b7280] font-medium">Gisteren</div>
+                          {groupedNotifications.yesterday.map((notif) => (
+                            <DropdownMenuItem
+                              key={notif.id}
+                              onClick={() => handleMarkAsRead(notif.id)}
+                              className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
+                            >
+                              <div className="flex-shrink-0 mt-0.5">
+                                {getNotificationIcon(notif.type)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm ${!notif.is_read ? 'text-white font-medium' : 'text-[#a1a1a1]'}`}>
+                                  {notif.title}
+                                </p>
+                                <p className="text-xs text-[#6b7280] truncate">{notif.message}</p>
+                                <p className="text-xs text-[#4b5563] mt-1">{getTimeAgo(notif.created_date)}</p>
+                              </div>
+                              {!notif.is_read && (
+                                <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        </>
+                      )}
+
+                      {groupedNotifications.earlier.length > 0 && (
+                        <>
+                          <div className="px-3 py-1 text-xs text-[#6b7280] font-medium">Eerder</div>
+                          {groupedNotifications.earlier.slice(0, 5).map((notif) => (
+                            <DropdownMenuItem
+                              key={notif.id}
+                              onClick={() => handleMarkAsRead(notif.id)}
+                              className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
+                            >
+                              <div className="flex-shrink-0 mt-0.5">
+                                {getNotificationIcon(notif.type)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm ${!notif.is_read ? 'text-white font-medium' : 'text-[#a1a1a1]'}`}>
+                                  {notif.title}
+                                </p>
+                                <p className="text-xs text-[#6b7280] truncate">{notif.message}</p>
+                                <p className="text-xs text-[#4b5563] mt-1">{getTimeAgo(notif.created_date)}</p>
+                              </div>
+                              {!notif.is_read && (
+                                <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to={createPageUrl('NotificationSettings')}
+                      className="text-primary hover:bg-[#2a2a2a] flex items-center justify-center py-2"
+                    >
+                      Alle notificaties bekijken
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               {/* Settings Button (Gear Icon) */}
-              <Link 
+              <Link
                 to={createPageUrl('Settings')}
                 className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
                 title="Instellingen"
@@ -1101,8 +1232,110 @@ function LayoutWithProvider({ children, currentPageName }) {
               </button>
             </div>
 
+            {/* Notification Bell (Mobile) */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all relative"
+                  title="Notificaties"
+                >
+                  <Bell className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 bg-[#1a1a1a] border border-[#2a2a2a] max-h-[70vh] overflow-y-auto">
+                <DropdownMenuLabel className="text-white flex items-center justify-between">
+                  <span>Notificaties</span>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={handleMarkAllAsRead}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Alles gelezen
+                    </button>
+                  )}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+
+                {notifications.length === 0 ? (
+                  <div className="py-8 text-center text-[#a1a1a1]">
+                    <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Geen notificaties</p>
+                  </div>
+                ) : (
+                  <>
+                    {groupedNotifications.today.length > 0 && (
+                      <>
+                        <div className="px-3 py-1 text-xs text-[#6b7280] font-medium">Vandaag</div>
+                        {groupedNotifications.today.slice(0, 3).map((notif) => (
+                          <DropdownMenuItem
+                            key={notif.id}
+                            onClick={() => handleMarkAsRead(notif.id)}
+                            className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
+                          >
+                            <div className="flex-shrink-0 mt-0.5">
+                              {getNotificationIcon(notif.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm ${!notif.is_read ? 'text-white font-medium' : 'text-[#a1a1a1]'}`}>
+                                {notif.title}
+                              </p>
+                              <p className="text-xs text-[#6b7280] truncate">{notif.message}</p>
+                            </div>
+                            {!notif.is_read && (
+                              <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                      </>
+                    )}
+
+                    {groupedNotifications.yesterday.length > 0 && (
+                      <>
+                        <div className="px-3 py-1 text-xs text-[#6b7280] font-medium">Gisteren</div>
+                        {groupedNotifications.yesterday.slice(0, 3).map((notif) => (
+                          <DropdownMenuItem
+                            key={notif.id}
+                            onClick={() => handleMarkAsRead(notif.id)}
+                            className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
+                          >
+                            <div className="flex-shrink-0 mt-0.5">
+                              {getNotificationIcon(notif.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm ${!notif.is_read ? 'text-white font-medium' : 'text-[#a1a1a1]'}`}>
+                                {notif.title}
+                              </p>
+                              <p className="text-xs text-[#6b7280] truncate">{notif.message}</p>
+                            </div>
+                            {!notif.is_read && (
+                              <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                      </>
+                    )}
+                  </>
+                )}
+
+                <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+                <DropdownMenuItem asChild>
+                  <Link
+                    to={createPageUrl('NotificationSettings')}
+                    className="text-primary hover:bg-[#2a2a2a] flex items-center justify-center py-2"
+                  >
+                    Alle notificaties bekijken
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {/* Adem Pauze (Heart Icon) */}
-            <Link 
+            <Link
               to={createPageUrl('Adempauze')}
               className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
               title="Adem pauze"
@@ -1111,7 +1344,7 @@ function LayoutWithProvider({ children, currentPageName }) {
             </Link>
 
             {/* Settings Button (Gear Icon) */}
-            <Link 
+            <Link
               to={createPageUrl('Settings')}
               className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
               title="Instellingen"
