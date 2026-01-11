@@ -47,7 +47,7 @@ export default function WorkStatusModal({ isOpen, onClose, onSave }) {
     
     setSaving(true);
     try {
-      await User.updateMyUserData({ 
+      await User.updateMe({ 
         work_status: selectedStatus,
         work_status_custom: selectedStatus === 'anders' ? customStatus : null
       });

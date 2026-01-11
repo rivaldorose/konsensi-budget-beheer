@@ -76,7 +76,7 @@ export default function DisplaySettings() {
         fontSize,
         currency
       };
-      await User.updateMyUserData({ display_settings: settings });
+      await User.updateMe({ display_settings: settings });
       toast({ title: 'App voorkeuren opgeslagen', variant: 'success' });
     } catch (error) {
       console.error('Error saving display settings:', error);
@@ -236,7 +236,7 @@ export default function DisplaySettings() {
                         const newLang = e.target.value;
                         changeLanguage(newLang);
                         try {
-                          await User.updateMyUserData({ language_preference: newLang });
+                          await User.updateMe({ language_preference: newLang });
                         } catch (error) {
                           console.error('Error saving language:', error);
                         }

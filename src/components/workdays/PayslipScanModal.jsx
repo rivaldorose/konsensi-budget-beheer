@@ -76,7 +76,7 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
         const { User } = await import('@/api/entities');
         const user = await User.me();
         const newEmployers = [...(user.employers || []), extractedData.employer_name];
-        await User.updateMyUserData({ employers: newEmployers });
+        await User.updateMe({ employers: newEmployers });
       }
 
       // Save payslip

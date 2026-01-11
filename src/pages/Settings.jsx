@@ -91,7 +91,7 @@ export default function Settings() {
       if (formData.telefoonnummer) updateData.telefoonnummer = formData.telefoonnummer.trim();
       if (formData.adres) updateData.adres = formData.adres.trim();
 
-      await User.updateMyUserData(updateData);
+      await User.updateMe(updateData);
       toast({ title: 'Profiel succesvol bijgewerkt!' });
       setEditing(false);
       await loadUser();
@@ -115,7 +115,7 @@ export default function Settings() {
 
       const { file_url } = await UploadFile({ file });
 
-      await User.updateMyUserData({ profielfoto_url: file_url });
+      await User.updateMe({ profielfoto_url: file_url });
       toast({ title: 'Foto succesvol geüpload!' });
 
       loadUser();
@@ -134,7 +134,7 @@ export default function Settings() {
     if (!window.confirm('Weet je zeker dat je je profielfoto wilt verwijderen?')) return;
     
     try {
-      await User.updateMyUserData({ profielfoto_url: null });
+      await User.updateMe({ profielfoto_url: null });
       toast({ title: 'Foto verwijderd' });
       loadUser();
     } catch (error) {
