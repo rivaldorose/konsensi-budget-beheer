@@ -28,6 +28,7 @@ const WorkSchedule = React.lazy(() => import("./WorkSchedule"));
 const Adempauze = React.lazy(() => import("./Adempauze"));
 const AdempauzeCalculator = React.lazy(() => import("./AdempauzeCalculator"));
 const Wishlist = React.lazy(() => import("./Wishlist"));
+const BudgetHelp = React.lazy(() => import("./BudgetHelp"));
 
 // Keep smaller/frequently accessed pages static
 import TermsOfService from "./TermsOfService";
@@ -84,7 +85,7 @@ function _getCurrentPage(url) {
     }
 
     // Check for lazy loaded pages
-    const lazyPages = ['debts', 'centvvorcent', 'vtlbcalculator', 'potjes', 'budgetplan', 'income', 'maandelijkselasten', 'vastelastencheck', 'workschedule', 'adempauze', 'adempauzecalculator', 'wishlist'];
+    const lazyPages = ['debts', 'centvvorcent', 'vtlbcalculator', 'potjes', 'budgetplan', 'budgethelp', 'income', 'maandelijkselasten', 'vastelastencheck', 'workschedule', 'adempauze', 'adempauzecalculator', 'wishlist'];
     if (lazyPages.includes(urlLastPart.toLowerCase())) {
         return urlLastPart.charAt(0).toUpperCase() + urlLastPart.slice(1);
     }
@@ -135,6 +136,7 @@ function PagesContent() {
                 <Route path="/Adempauze" element={<LazyRoute component={Adempauze} />} />
                 <Route path="/AdempauzeCalculator" element={<LazyRoute component={AdempauzeCalculator} />} />
                 <Route path="/Wishlist" element={<LazyRoute component={Wishlist} />} />
+                <Route path="/BudgetHelp" element={<LazyRoute component={BudgetHelp} />} />
 
                 {/* Settings and smaller pages - static */}
                 <Route path="/Settings" element={<Settings />} />
