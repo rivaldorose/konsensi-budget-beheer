@@ -145,6 +145,7 @@ export default function Login() {
       }
 
       const storedSecret = securitySettings[0].totp_secret;
+      console.log('[2FA Debug] Stored secret from DB:', storedSecret);
 
       // Verify the TOTP code
       // Note: In a production environment, this should be done server-side
@@ -173,13 +174,21 @@ export default function Login() {
       const currentTime = Math.floor(Date.now() / 1000);
       const counter = Math.floor(currentTime / timeStep);
 
+      console.log('[2FA Debug] Current time:', new Date().toISOString());
+      console.log('[2FA Debug] Counter:', counter);
+      console.log('[2FA Debug] Secret length:', secret?.length);
+      console.log('[2FA Debug] Input code:', code);
+
       // Check current time window and adjacent windows (for clock drift)
-      for (let i = -1; i <= 1; i++) {
+      for (let i = -2; i <= 2; i++) {
         const expectedCode = await generateTOTPCode(secret, counter + i);
+        console.log(`[2FA Debug] Window ${i}: expected=${expectedCode}, matches=${expectedCode === code}`);
         if (expectedCode === code) {
+          console.log('[2FA Debug] Code verified successfully!');
           return true;
         }
       }
+      console.log('[2FA Debug] No matching code found');
       return false;
     } catch (e) {
       console.error('TOTP verification error:', e);
@@ -192,6 +201,7 @@ export default function Login() {
     try {
       // Decode base32 secret
       const secretBytes = base32Decode(secret);
+      console.log('[2FA Debug] Secret bytes length:', secretBytes.length);
 
       // Convert counter to 8-byte array (big-endian)
       const counterBytes = new Uint8Array(8);
