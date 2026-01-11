@@ -106,26 +106,35 @@ export default function Settings() {
   };
 
   const handlePhotoUpload = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
+
+    // Reset file input immediately to prevent issues
+    e.target.value = '';
 
     try {
       setUploading(true);
       toast({ title: 'Foto uploaden...' });
 
       // Upload to avatars bucket with user-specific folder path (required by RLS policy)
-      const fileName = `${user.id}/${Date.now()}.${file.name.split('.').pop()}`;
-      const { file_url } = await UploadFile({ file, bucket: 'avatars', path: fileName });
+      const fileExtension = file.name.split('.').pop() || 'jpg';
+      const fileName = `${user.id}/${Date.now()}.${fileExtension}`;
+      const result = await UploadFile({ file, bucket: 'avatars', path: fileName });
 
-      await User.updateMe({ avatar_url: file_url });
+      if (!result?.file_url) {
+        throw new Error('Upload failed - no URL returned');
+      }
+
+      await User.updateMe({ avatar_url: result.file_url });
       toast({ title: 'Foto succesvol geüpload!' });
 
-      loadUser();
+      await loadUser();
     } catch (error) {
       console.error("Error uploading photo:", error);
       toast({
         variant: 'destructive',
-        title: 'Fout bij uploaden foto'
+        title: 'Fout bij uploaden foto',
+        description: error?.message || 'Probeer het opnieuw'
       });
     } finally {
       setUploading(false);
