@@ -97,17 +97,36 @@ export default function VTLBSettings() {
 
   return (
     <div className="h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex flex-col overflow-hidden">
+      {/* Main Content */}
       <main className="flex-1 flex justify-center py-8 px-4 sm:px-6 md:px-8 overflow-hidden">
         <div className="w-full max-w-[1400px] flex flex-col gap-6 h-full">
+          {/* Page Header - Fixed */}
+          <div className="flex flex-wrap items-center justify-between gap-4 flex-shrink-0">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-primary dark:text-primary text-3xl">settings</span>
+                <h1 className="text-[#0d1b17] dark:text-white text-3xl md:text-4xl font-black tracking-tight">Instellingen</h1>
+              </div>
+              <p className="text-[#6B7280] dark:text-[#9CA3AF] text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
+            </div>
+            <button
+              className="flex items-center gap-2 px-5 py-2 rounded-full border border-[#E5E7EB] dark:border-[#2a2a2a] bg-white dark:bg-[#1a1a1a] text-[#0d1b17] dark:text-white text-sm font-bold hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors shadow-sm"
+              onClick={() => window.location.href = createPageUrl('HelpSupport')}
+            >
+              <span className="material-symbols-outlined text-[20px]">help_outline</span>
+              <span>Hulp</span>
+            </button>
+          </div>
+
           <div className="flex flex-col lg:flex-row gap-6 items-start flex-1 min-h-0">
-            {/* Sidebar Navigation */}
-            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a2c26] rounded-[24px] lg:rounded-[20px] shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-4 lg:p-6 flex flex-col flex-shrink-0 lg:max-h-full lg:overflow-y-auto">
+            {/* Sidebar Navigation - Fixed */}
+            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] lg:rounded-[24px] shadow-soft dark:shadow-soft border border-[#E5E7EB] dark:border-[#2a2a2a] p-4 lg:p-6 flex flex-col flex-shrink-0 lg:max-h-full lg:overflow-y-auto">
               <nav className="flex flex-col gap-2">
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('Settings')
-                      ? 'bg-secondary text-[#0d1b17]'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   to={createPageUrl('Settings')}
                 >
@@ -119,8 +138,8 @@ export default function VTLBSettings() {
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('SecuritySettings')
-                      ? 'bg-secondary text-[#0d1b17]'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   to={createPageUrl('SecuritySettings')}
                 >
@@ -132,8 +151,8 @@ export default function VTLBSettings() {
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('NotificationSettings')
-                      ? 'bg-secondary text-[#0d1b17]'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   to={createPageUrl('NotificationSettings')}
                 >
@@ -145,8 +164,8 @@ export default function VTLBSettings() {
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('DisplaySettings')
-                      ? 'bg-secondary text-[#0d1b17]'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   to={createPageUrl('DisplaySettings')}
                 >
@@ -158,8 +177,8 @@ export default function VTLBSettings() {
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('VTLBSettings')
-                      ? 'bg-secondary text-[#0d1b17] dark:bg-primary/10 dark:text-primary dark:border dark:border-primary/20'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   to={createPageUrl('VTLBSettings')}
                 >
@@ -171,8 +190,8 @@ export default function VTLBSettings() {
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('Privacy')
-                      ? 'bg-secondary text-[#0d1b17]'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   to={createPageUrl('Privacy')}
                 >
@@ -187,34 +206,38 @@ export default function VTLBSettings() {
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('HelpSupport')
-                      ? 'bg-secondary text-[#0d1b17]'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   to={createPageUrl('HelpSupport')}
                 >
-                  <span className="material-symbols-outlined">help</span>
-                  <span className="font-medium text-sm group-hover:font-semibold">Help Center</span>
+                  <span className={`material-symbols-outlined ${isActiveRoute('HelpSupport') ? 'fill-1' : ''}`} style={isActiveRoute('HelpSupport') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    help
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('HelpSupport') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Help Center</span>
                 </Link>
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('FAQSettings')
-                      ? 'bg-secondary text-[#0d1b17]'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   to={createPageUrl('FAQSettings')}
                 >
-                  <span className="material-symbols-outlined">help_outline</span>
-                  <span className="font-medium text-sm group-hover:font-semibold">Veelgestelde Vragen</span>
+                  <span className={`material-symbols-outlined ${isActiveRoute('FAQSettings') ? 'fill-1' : ''}`} style={isActiveRoute('FAQSettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    help_outline
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('FAQSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Veelgestelde Vragen</span>
                 </Link>
                 <Link
-                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white transition-all"
+                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white transition-all"
                   to={createPageUrl('TermsOfService')}
                 >
                   <span className="material-symbols-outlined">description</span>
                   <span className="font-medium text-sm group-hover:font-semibold">Algemene Voorwaarden</span>
                 </Link>
                 <Link
-                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-card-elevated hover:text-[#0d1b17] dark:hover:text-white transition-all"
+                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white transition-all"
                   to={createPageUrl('PrivacyPolicy')}
                 >
                   <span className="material-symbols-outlined">policy</span>
@@ -223,12 +246,12 @@ export default function VTLBSettings() {
               </nav>
             </aside>
 
-            {/* Main Content */}
+            {/* Main Content Section - Scrollable */}
             <div className="flex-1 w-full overflow-y-auto lg:max-h-full">
-              <div className="bg-white dark:bg-[#1a2c26] rounded-2xl shadow-sm dark:shadow-lg border dark:border-[#2A3F36] p-6 md:p-8 w-full">
-                <div className="mb-8">
-                  <h2 className="text-gray-900 dark:text-white text-2xl font-bold leading-tight mb-2">VTLB Berekening</h2>
-                  <p className="text-gray-500 dark:text-gray-400 text-[15px] font-normal">Bereken je Vrij Te Laten Bedrag voor schuldaflossing</p>
+              <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] shadow-soft dark:shadow-soft border border-[#E5E7EB] dark:border-[#2a2a2a] p-6 md:p-8 lg:p-10 w-full">
+                <div className="flex flex-col border-b border-[#E5E7EB] dark:border-[#2a2a2a] pb-6 mb-8">
+                  <h2 className="text-[#0d1b17] dark:text-white text-2xl font-bold">VTLB Berekening</h2>
+                  <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm md:text-base mt-1">Bereken je Vrij Te Laten Bedrag voor schuldaflossing</p>
                 </div>
 
                 {/* Warning Banner */}
