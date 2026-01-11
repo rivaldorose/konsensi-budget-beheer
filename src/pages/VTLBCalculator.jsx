@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User } from "@/api/entities";
-import { MonthlyCost } from "@/api/entities";
+import { User, MonthlyCost, Debt } from "@/api/entities";
 import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
 
@@ -13,11 +12,18 @@ export default function VTLBCalculator() {
     numberOfChildren: 0,
     rentMortgage: 0
   });
+  const [baseData, setBaseData] = useState({
+    monthlyIncome: 0,
+    fixedCosts: 0,
+    currentArrangements: 0
+  });
   const [calculation, setCalculation] = useState({
     totalIncome: 0,
     totalExpenses: 0,
     availableBudget: 0,
-    afloscapaciteit: 0
+    afloscapaciteit: 0,
+    fixedCosts: 0,
+    currentArrangements: 0
   });
   const { toast } = useToast();
 
@@ -27,7 +33,7 @@ export default function VTLBCalculator() {
 
   useEffect(() => {
     calculateAfloscapaciteit();
-  }, [formData]);
+  }, [formData, baseData]);
 
   const loadData = async () => {
     try {
@@ -39,9 +45,24 @@ export default function VTLBCalculator() {
       const costs = await MonthlyCost.filter({ user_id: userData.id });
       const totalFixedCosts = costs.reduce((sum, cost) => sum + parseFloat(cost.amount || 0), 0);
 
+      // Load debts with payment arrangements (betalingsregeling)
+      const debts = await Debt.filter({ user_id: userData.id });
+      const debtsWithArrangements = debts.filter(debt =>
+        debt.status === 'betalingsregeling' || debt.status === 'payment_arrangement'
+      );
+      const currentArrangements = debtsWithArrangements.reduce((sum, debt) =>
+        sum + parseFloat(debt.monthly_payment || 0), 0
+      );
+
       // Calculate initial values
-      const monthlyIncome = userData.monthly_income || 0;
-      const currentArrangements = 0; // Would need to fetch from debts/payment plans
+      const monthlyIncome = parseFloat(userData.monthly_income || 0);
+
+      // Store base data for live calculations
+      setBaseData({
+        monthlyIncome: monthlyIncome,
+        fixedCosts: totalFixedCosts,
+        currentArrangements: currentArrangements
+      });
 
       // Calculate available budget
       const availableBudget = monthlyIncome - totalFixedCosts - currentArrangements;
@@ -67,18 +88,20 @@ export default function VTLBCalculator() {
   };
 
   const calculateAfloscapaciteit = () => {
-    const totalIncome = calculation.totalIncome + formData.projectedIncome;
-    const totalExpenses = calculation.fixedCosts + calculation.currentArrangements + formData.rentMortgage;
+    // Use base data plus form adjustments for live calculation
+    const totalIncome = baseData.monthlyIncome + (formData.projectedIncome || 0);
+    const totalExpenses = baseData.fixedCosts + baseData.currentArrangements + (formData.rentMortgage || 0);
     const availableBudget = totalIncome - totalExpenses;
     const afloscapaciteit = Math.max(0, availableBudget * 0.15);
 
-    setCalculation(prev => ({
-      ...prev,
+    setCalculation({
       totalIncome: totalIncome,
       totalExpenses: totalExpenses,
       availableBudget: availableBudget,
-      afloscapaciteit: afloscapaciteit
-    }));
+      afloscapaciteit: afloscapaciteit,
+      fixedCosts: baseData.fixedCosts,
+      currentArrangements: baseData.currentArrangements
+    });
   };
 
   const handleSave = async () => {
