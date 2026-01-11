@@ -3,6 +3,24 @@ import { User, MonthlyCost, Debt } from "@/api/entities";
 import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
 
+// Recofa normen 2024/2025 (bijstandsnormen als basis voor beslagvrije voet)
+// Bron: https://www.rijksoverheid.nl/onderwerpen/bijstand/vraag-en-antwoord/hoe-hoog-is-de-bijstand
+const RECOFA_NORMEN = {
+  // Basisbedragen per maand (netto bijstandsnorm per 1 januari 2024)
+  alleenstaand: 1255.67,           // 70% van gehuwdennorm
+  gehuwdSamenwonend: 1793.81,      // 100% gehuwdennorm voor beide partners samen
+  alleenstaandeOuder: 1255.67,     // Zelfde als alleenstaand, plus kinderbijslag/kindgebonden budget
+
+  // Kinderbijslag gemiddeld per kind per maand (2024)
+  kinderbijslagPerKind: 104.00,    // Gemiddelde voor kinderen 0-17 jaar
+
+  // Woonkosten component (maximale huurtoeslaggrens als richtlijn)
+  maxWoonkostenComponent: 879.66,  // Maximale subsidiabele huur 2024
+
+  // Zorgverzekering (verplichte basispremie minus zorgtoeslag)
+  zorgverzekeringsComponent: 135,  // Gemiddelde na zorgtoeslag
+};
+
 export default function VTLBCalculator() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -10,7 +28,8 @@ export default function VTLBCalculator() {
     projectedIncome: 0,
     householdType: 'Alleenstaand',
     numberOfChildren: 0,
-    rentMortgage: 0
+    rentMortgage: 0,
+    healthInsurance: 135, // Standaard zorgverzekeringspremie
   });
   const [baseData, setBaseData] = useState({
     monthlyIncome: 0,
@@ -19,11 +38,16 @@ export default function VTLBCalculator() {
   });
   const [calculation, setCalculation] = useState({
     totalIncome: 0,
-    totalExpenses: 0,
-    availableBudget: 0,
+    beslagvrijeVoet: 0,
     afloscapaciteit: 0,
     fixedCosts: 0,
-    currentArrangements: 0
+    currentArrangements: 0,
+    breakdown: {
+      basisnorm: 0,
+      woonkosten: 0,
+      zorgverzekering: 0,
+      kinderbijslag: 0
+    }
   });
   const { toast } = useToast();
 
@@ -32,7 +56,7 @@ export default function VTLBCalculator() {
   }, []);
 
   useEffect(() => {
-    calculateAfloscapaciteit();
+    calculateVTLB();
   }, [formData, baseData]);
 
   const loadData = async () => {
@@ -63,19 +87,6 @@ export default function VTLBCalculator() {
         fixedCosts: totalFixedCosts,
         currentArrangements: currentArrangements
       });
-
-      // Calculate available budget
-      const availableBudget = monthlyIncome - totalFixedCosts - currentArrangements;
-      const afloscapaciteit = Math.max(0, availableBudget * 0.15);
-
-      setCalculation({
-        totalIncome: monthlyIncome,
-        totalExpenses: totalFixedCosts + currentArrangements,
-        availableBudget: availableBudget,
-        afloscapaciteit: afloscapaciteit,
-        fixedCosts: totalFixedCosts,
-        currentArrangements: currentArrangements
-      });
     } catch (error) {
       console.error("Error loading data:", error);
       toast({
@@ -87,26 +98,58 @@ export default function VTLBCalculator() {
     }
   };
 
-  const calculateAfloscapaciteit = () => {
-    // Use base data plus form adjustments for live calculation
+  const getBasisnorm = (householdType) => {
+    switch (householdType) {
+      case 'Gehuwd / Samenwonend':
+        return RECOFA_NORMEN.gehuwdSamenwonend;
+      case 'Alleenstaande ouder':
+        return RECOFA_NORMEN.alleenstaandeOuder;
+      case 'Alleenstaand':
+      default:
+        return RECOFA_NORMEN.alleenstaand;
+    }
+  };
+
+  const calculateVTLB = () => {
     const totalIncome = baseData.monthlyIncome + (formData.projectedIncome || 0);
-    const totalExpenses = baseData.fixedCosts + baseData.currentArrangements + (formData.rentMortgage || 0);
-    const availableBudget = totalIncome - totalExpenses;
-    const afloscapaciteit = Math.max(0, availableBudget * 0.15);
+
+    // 1. Bereken basisnorm op basis van huishoudtype
+    const basisnorm = getBasisnorm(formData.householdType);
+
+    // 2. Woonkosten component (werkelijke huur/hypotheek, max. de huurtoeslaggrens)
+    const woonkosten = Math.min(formData.rentMortgage || 0, RECOFA_NORMEN.maxWoonkostenComponent);
+
+    // 3. Zorgverzekering (werkelijke premie)
+    const zorgverzekering = formData.healthInsurance || RECOFA_NORMEN.zorgverzekeringsComponent;
+
+    // 4. Kinderbijslag/kindgebonden budget per kind
+    const kinderbijslag = (formData.numberOfChildren || 0) * RECOFA_NORMEN.kinderbijslagPerKind;
+
+    // 5. Bereken totale beslagvrije voet
+    // Formule: Basisnorm + Woonkosten + Zorgverzekering + Kinderbijslag
+    const beslagvrijeVoet = basisnorm + woonkosten + zorgverzekering + kinderbijslag;
+
+    // 6. Afloscapaciteit = Netto inkomen - Beslagvrije voet - Lopende betalingsregelingen
+    // Let op: vaste lasten zijn vaak al onderdeel van de beslagvrije voet, dus we tellen ze niet dubbel
+    const afloscapaciteit = Math.max(0, totalIncome - beslagvrijeVoet - baseData.currentArrangements);
 
     setCalculation({
       totalIncome: totalIncome,
-      totalExpenses: totalExpenses,
-      availableBudget: availableBudget,
+      beslagvrijeVoet: beslagvrijeVoet,
       afloscapaciteit: afloscapaciteit,
       fixedCosts: baseData.fixedCosts,
-      currentArrangements: baseData.currentArrangements
+      currentArrangements: baseData.currentArrangements,
+      breakdown: {
+        basisnorm: basisnorm,
+        woonkosten: woonkosten,
+        zorgverzekering: zorgverzekering,
+        kinderbijslag: kinderbijslag
+      }
     });
   };
 
   const handleSave = async () => {
     try {
-      // Save calculation or navigate back
       toast({
         title: 'Berekening opgeslagen',
         description: 'Je afloscapaciteit is bijgewerkt.'
@@ -143,7 +186,6 @@ export default function VTLBCalculator() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white antialiased flex flex-col">
-      {/* Main Content Area */}
       <main className="flex-grow flex justify-center py-8 px-4 sm:px-6">
         <div className="w-full max-w-[900px] flex flex-col">
           {/* Page Header */}
@@ -154,9 +196,9 @@ export default function VTLBCalculator() {
               </div>
               <span className="text-sm font-medium text-gray-500 dark:text-[#a1a1a1] group-hover:text-[#10b981] transition-colors">Terug naar overzicht</span>
             </div>
-            <h1 className="text-gray-900 dark:text-white text-3xl md:text-4xl font-extrabold leading-tight tracking-tight mb-2">Jouw Afloscapaciteit</h1>
+            <h1 className="text-gray-900 dark:text-white text-3xl md:text-4xl font-extrabold leading-tight tracking-tight mb-2">VTLB Berekening</h1>
             <p className="text-gray-500 dark:text-[#a1a1a1] text-base md:text-lg font-normal max-w-2xl">
-              Bereken hoeveel je per maand kunt aflossen op je schulden op basis van je huidige situatie.
+              Bereken je Vrij Te Laten Bedrag (VTLB) op basis van de officiële Recofa-normen 2024.
             </p>
           </div>
 
@@ -172,21 +214,19 @@ export default function VTLBCalculator() {
                   <h3 className="text-gray-900 dark:text-white text-xl font-bold">Inkomsten</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Read-only Field */}
                   <div className="flex flex-col gap-2">
                     <label className="text-gray-500 dark:text-[#a1a1a1] text-sm font-semibold">
-                      Vast inkomen <span className="font-normal text-xs text-gray-400">(uit je profiel)</span>
+                      Netto inkomen <span className="font-normal text-xs text-gray-400">(uit je profiel)</span>
                     </label>
                     <div className="w-full h-[56px] px-4 rounded-xl bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#2a2a2a] flex items-center justify-between">
                       <span className="text-gray-900 dark:text-white font-medium">Salaris & Toeslagen</span>
                       <span className="text-[#10b981] font-bold font-mono text-lg">
-                        {formatCurrency(calculation.totalIncome - formData.projectedIncome)}
+                        {formatCurrency(baseData.monthlyIncome)}
                       </span>
                     </div>
                   </div>
-                  {/* Editable Field */}
                   <div className="flex flex-col gap-2">
-                    <label className="text-gray-900 dark:text-white text-sm font-bold">Geprojecteerd inkomen</label>
+                    <label className="text-gray-900 dark:text-white text-sm font-bold">Extra inkomen (optioneel)</label>
                     <div className="relative group">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <span className="text-gray-400 dark:text-[#6b7280] font-bold">€</span>
@@ -201,66 +241,25 @@ export default function VTLBCalculator() {
                     </div>
                   </div>
                 </div>
-                <button className="mt-4 flex items-center gap-2 text-[#10b981] hover:text-[#0d9668] hover:underline decoration-2 underline-offset-4 transition-all text-sm font-bold w-fit px-2 py-1">
-                  <span className="material-symbols-outlined text-[18px]">add</span>
-                  Extra inkomen toevoegen
-                </button>
+                <div className="mt-4 p-4 bg-[#10b981]/5 dark:bg-[#10b981]/10 rounded-xl border border-[#10b981]/20">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">Totaal netto inkomen</span>
+                    <span className="text-[#10b981] font-bold text-xl">{formatCurrency(calculation.totalIncome)}</span>
+                  </div>
+                </div>
               </section>
 
               <hr className="border-gray-100 dark:border-[#2a2a2a]" />
 
-              {/* Section 2: Uitgaven */}
-              <section>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-red-500/10 rounded-full text-red-500">
-                    <span className="material-symbols-outlined text-[20px]">payments</span>
-                  </div>
-                  <h3 className="text-gray-900 dark:text-white text-xl font-bold">Uitgaven</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Read-only Field */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-gray-500 dark:text-[#a1a1a1] text-sm font-semibold">
-                      Vaste lasten <span className="font-normal text-xs text-gray-400">(uit je profiel)</span>
-                    </label>
-                    <div className="w-full h-[56px] px-4 rounded-xl bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#2a2a2a] flex items-center justify-between">
-                      <span className="text-gray-900 dark:text-white font-medium">Huur, G/W/L, Verzekering</span>
-                      <span className="text-red-500 font-bold font-mono text-lg">
-                        - {formatCurrency(calculation.fixedCosts)}
-                      </span>
-                    </div>
-                  </div>
-                  {/* Read-only Field */}
-                  <div className="flex flex-col gap-2">
-                    <label className="text-gray-500 dark:text-[#a1a1a1] text-sm font-semibold">
-                      Betalingsregelingen <span className="font-normal text-xs text-gray-400">(uit je profiel)</span>
-                    </label>
-                    <div className="w-full h-[56px] px-4 rounded-xl bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#2a2a2a] flex items-center justify-between">
-                      <span className="text-gray-900 dark:text-white font-medium">Lopende afspraken</span>
-                      <span className="text-red-500 font-bold font-mono text-lg">
-                        - {formatCurrency(calculation.currentArrangements)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <button className="mt-4 flex items-center gap-2 text-[#10b981] hover:text-[#0d9668] hover:underline decoration-2 underline-offset-4 transition-all text-sm font-bold w-fit px-2 py-1">
-                  <span className="material-symbols-outlined text-[18px]">add</span>
-                  Extra uitgaven toevoegen
-                </button>
-              </section>
-
-              <hr className="border-gray-100 dark:border-[#2a2a2a]" />
-
-              {/* Section 3: Woonsituatie */}
+              {/* Section 2: Huishouden */}
               <section>
                 <div className="flex items-center gap-3 mb-6">
                   <div className="p-2 bg-blue-500/10 rounded-full text-blue-600 dark:text-blue-400">
-                    <span className="material-symbols-outlined text-[20px]">real_estate_agent</span>
+                    <span className="material-symbols-outlined text-[20px]">family_restroom</span>
                   </div>
-                  <h3 className="text-gray-900 dark:text-white text-xl font-bold">Jouw woonsituatie</h3>
+                  <h3 className="text-gray-900 dark:text-white text-xl font-bold">Huishouden</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Dropdown */}
                   <div className="flex flex-col gap-2">
                     <label className="text-gray-900 dark:text-white text-sm font-bold">Type huishouden</label>
                     <div className="relative">
@@ -274,8 +273,10 @@ export default function VTLBCalculator() {
                         <option>Alleenstaande ouder</option>
                       </select>
                     </div>
+                    <p className="text-xs text-gray-500 dark:text-[#6b7280]">
+                      Basisnorm: {formatCurrency(getBasisnorm(formData.householdType))}
+                    </p>
                   </div>
-                  {/* Number Input */}
                   <div className="flex flex-col gap-2">
                     <label className="text-gray-900 dark:text-white text-sm font-bold">Aantal kinderen</label>
                     <div className="flex items-center h-[56px] border border-gray-200 dark:border-[#2a2a2a] rounded-xl bg-gray-50 dark:bg-[#0a0a0a] overflow-hidden focus-within:ring-1 focus-within:ring-[#10b981] focus-within:border-[#10b981]">
@@ -299,45 +300,169 @@ export default function VTLBCalculator() {
                         <span className="material-symbols-outlined text-sm">add</span>
                       </button>
                     </div>
+                    <p className="text-xs text-gray-500 dark:text-[#6b7280]">
+                      + {formatCurrency(RECOFA_NORMEN.kinderbijslagPerKind)} per kind
+                    </p>
                   </div>
                 </div>
-                {/* Optional Field */}
-                <div className="flex flex-col gap-2 mt-6">
-                  <label className="text-gray-900 dark:text-white text-sm font-bold">
-                    Huur/Hypotheek
-                    <span className="font-normal text-gray-500 dark:text-[#a1a1a1]"> (indien niet in vaste lasten)</span>
-                  </label>
-                  <div className="relative group max-w-md">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <span className="text-gray-400 dark:text-[#6b7280] font-bold">€</span>
+              </section>
+
+              <hr className="border-gray-100 dark:border-[#2a2a2a]" />
+
+              {/* Section 3: Vaste lasten voor beslagvrije voet */}
+              <section>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-orange-500/10 rounded-full text-orange-500">
+                    <span className="material-symbols-outlined text-[20px]">home</span>
+                  </div>
+                  <h3 className="text-gray-900 dark:text-white text-xl font-bold">Vaste lasten (voor beslagvrije voet)</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-gray-900 dark:text-white text-sm font-bold">Huur / Hypotheek</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span className="text-gray-400 dark:text-[#6b7280] font-bold">€</span>
+                      </div>
+                      <input
+                        className="form-input block w-full h-[56px] pl-10 pr-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold placeholder:text-gray-400 dark:placeholder:text-[#6b7280] focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981] transition-all"
+                        placeholder="0.00"
+                        type="number"
+                        value={formData.rentMortgage || ''}
+                        onChange={(e) => setFormData({...formData, rentMortgage: parseFloat(e.target.value) || 0})}
+                      />
                     </div>
-                    <input
-                      className="form-input block w-full h-[56px] pl-10 pr-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold placeholder:text-gray-400 dark:placeholder:text-[#6b7280] focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981] transition-all"
-                      placeholder="0.00"
-                      type="number"
-                      value={formData.rentMortgage || ''}
-                      onChange={(e) => setFormData({...formData, rentMortgage: parseFloat(e.target.value) || 0})}
-                    />
+                    <p className="text-xs text-gray-500 dark:text-[#6b7280]">
+                      Max. {formatCurrency(RECOFA_NORMEN.maxWoonkostenComponent)} (huurtoeslaggrens)
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-gray-900 dark:text-white text-sm font-bold">Zorgverzekering (netto)</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <span className="text-gray-400 dark:text-[#6b7280] font-bold">€</span>
+                      </div>
+                      <input
+                        className="form-input block w-full h-[56px] pl-10 pr-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold placeholder:text-gray-400 dark:placeholder:text-[#6b7280] focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981] transition-all"
+                        placeholder="135.00"
+                        type="number"
+                        value={formData.healthInsurance || ''}
+                        onChange={(e) => setFormData({...formData, healthInsurance: parseFloat(e.target.value) || 0})}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-[#6b7280]">
+                      Na aftrek zorgtoeslag
+                    </p>
                   </div>
                 </div>
+              </section>
+
+              <hr className="border-gray-100 dark:border-[#2a2a2a]" />
+
+              {/* Section 4: Lopende betalingsregelingen */}
+              {baseData.currentArrangements > 0 && (
+                <>
+                  <section>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-purple-500/10 rounded-full text-purple-500">
+                        <span className="material-symbols-outlined text-[20px]">payments</span>
+                      </div>
+                      <h3 className="text-gray-900 dark:text-white text-xl font-bold">Lopende betalingsregelingen</h3>
+                    </div>
+                    <div className="w-full h-[56px] px-4 rounded-xl bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#2a2a2a] flex items-center justify-between">
+                      <span className="text-gray-900 dark:text-white font-medium">Maandelijkse aflossingen</span>
+                      <span className="text-purple-500 font-bold font-mono text-lg">
+                        - {formatCurrency(baseData.currentArrangements)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-[#6b7280] mt-2">
+                      Dit bedrag wordt afgetrokken van je beschikbare afloscapaciteit
+                    </p>
+                  </section>
+                  <hr className="border-gray-100 dark:border-[#2a2a2a]" />
+                </>
+              )}
+
+              {/* Section 5: Beslagvrije voet breakdown */}
+              <section>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-amber-500/10 rounded-full text-amber-500">
+                    <span className="material-symbols-outlined text-[20px]">calculate</span>
+                  </div>
+                  <h3 className="text-gray-900 dark:text-white text-xl font-bold">Beslagvrije voet berekening</h3>
+                </div>
+                <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-6 space-y-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Basisnorm ({formData.householdType})</span>
+                    <span className="text-gray-900 dark:text-white font-medium">{formatCurrency(calculation.breakdown.basisnorm)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">+ Woonkosten</span>
+                    <span className="text-gray-900 dark:text-white font-medium">{formatCurrency(calculation.breakdown.woonkosten)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">+ Zorgverzekering</span>
+                    <span className="text-gray-900 dark:text-white font-medium">{formatCurrency(calculation.breakdown.zorgverzekering)}</span>
+                  </div>
+                  {calculation.breakdown.kinderbijslag > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">+ Kinderbijslag ({formData.numberOfChildren} kind{formData.numberOfChildren !== 1 ? 'eren' : ''})</span>
+                      <span className="text-gray-900 dark:text-white font-medium">{formatCurrency(calculation.breakdown.kinderbijslag)}</span>
+                    </div>
+                  )}
+                  <hr className="border-gray-200 dark:border-[#2a2a2a] my-2" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-900 dark:text-white font-bold">Beslagvrije voet</span>
+                    <span className="text-amber-500 font-bold text-lg">{formatCurrency(calculation.beslagvrijeVoet)}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-[#6b7280] mt-3">
+                  De beslagvrije voet is het minimumbedrag dat je nodig hebt om van te leven. Dit bedrag is beschermd tegen beslag.
+                </p>
               </section>
             </div>
 
             {/* Calculation Result Section */}
-            <div className="bg-[#10b981]/10 border-t-2 border-[#10b981] p-8 md:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div className="flex flex-col gap-1">
-                <p className="text-gray-900 dark:text-white text-lg font-bold">Jouw Afloscapaciteit per maand</p>
-                <p className="text-gray-500 dark:text-[#a1a1a1] text-sm max-w-sm">
-                  Dit is het bedrag dat je maandelijks veilig kunt besteden aan het aflossen van je schulden.
-                </p>
+            <div className="bg-[#10b981]/10 border-t-2 border-[#10b981] p-8 md:p-10">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="text-center md:text-left">
+                  <p className="text-gray-500 dark:text-[#a1a1a1] text-sm font-medium mb-1">Netto inkomen</p>
+                  <p className="text-gray-900 dark:text-white font-bold text-xl">{formatCurrency(calculation.totalIncome)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-gray-500 dark:text-[#a1a1a1] text-sm font-medium mb-1">Beslagvrije voet</p>
+                  <p className="text-amber-500 font-bold text-xl">- {formatCurrency(calculation.beslagvrijeVoet)}</p>
+                </div>
+                {baseData.currentArrangements > 0 && (
+                  <div className="text-center md:text-right">
+                    <p className="text-gray-500 dark:text-[#a1a1a1] text-sm font-medium mb-1">Lopende regelingen</p>
+                    <p className="text-purple-500 font-bold text-xl">- {formatCurrency(baseData.currentArrangements)}</p>
+                  </div>
+                )}
               </div>
-              <div className="text-right flex flex-col items-end">
-                <p className="text-[#10b981] font-extrabold text-4xl tracking-tight">
-                  {formatCurrency(calculation.afloscapaciteit)}
-                </p>
-                <div className="flex items-center gap-1 mt-1 text-xs font-bold text-[#10b981] uppercase tracking-wide">
-                  <span className="material-symbols-outlined text-base">check_circle</span>
-                  Beschikbaar
+              <hr className="border-[#10b981]/30 mb-6" />
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                  <p className="text-gray-900 dark:text-white text-lg font-bold">Jouw Afloscapaciteit</p>
+                  <p className="text-gray-500 dark:text-[#a1a1a1] text-sm">
+                    Beschikbaar voor extra schuldaflossing per maand
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[#10b981] font-extrabold text-4xl tracking-tight">
+                    {formatCurrency(calculation.afloscapaciteit)}
+                  </p>
+                  {calculation.afloscapaciteit > 0 ? (
+                    <div className="flex items-center gap-1 mt-1 text-xs font-bold text-[#10b981] uppercase tracking-wide justify-end">
+                      <span className="material-symbols-outlined text-base">check_circle</span>
+                      Beschikbaar
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 mt-1 text-xs font-bold text-red-500 uppercase tracking-wide justify-end">
+                      <span className="material-symbols-outlined text-base">info</span>
+                      Geen ruimte
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -355,11 +480,19 @@ export default function VTLBCalculator() {
           </div>
 
           {/* Footer Note */}
-          <div className="mt-8 text-center px-4 pb-8">
-            <p className="text-sm text-gray-500 dark:text-[#6b7280]">
-              Deze berekening is een indicatie op basis van de ingevulde gegevens. <br className="hidden md:block"/>
-              Raadpleeg altijd een financieel adviseur voor een officiële VTLB berekening.
-            </p>
+          <div className="text-center px-4 pb-8">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <span className="material-symbols-outlined text-blue-500 mt-0.5">info</span>
+                <div className="text-left">
+                  <p className="text-sm font-medium text-blue-800 dark:text-blue-300">Over deze berekening</p>
+                  <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
+                    Deze berekening is gebaseerd op de Recofa-normen 2024. De werkelijke beslagvrije voet kan afwijken
+                    op basis van je persoonlijke situatie. Raadpleeg een schuldhulpverlener voor een officiële berekening.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
