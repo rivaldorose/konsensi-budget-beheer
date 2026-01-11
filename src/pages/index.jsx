@@ -195,8 +195,12 @@ function PagesContent() {
                 <Route path="/onboarding-new" element={<OnboardingNew />} />
                 
                 <Route path="/terms" element={<TermsOfService />} />
-                
+
+                <Route path="/termsofservice" element={<TermsOfService />} />
+
                 <Route path="/privacy" element={<PrivacyPolicy />} />
+
+                <Route path="/privacypolicy" element={<PrivacyPolicy />} />
                 
                 <Route path="/Dashboard" element={
                     <ErrorBoundary>
