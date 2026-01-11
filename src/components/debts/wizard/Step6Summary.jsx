@@ -3,13 +3,18 @@ import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
 
 const SummaryRow = ({ label, value, onEdit, step }) => (
-  <div className="flex justify-between items-start py-2">
+  <div className="flex justify-between items-start py-3 border-b border-gray-100 dark:border-[#2a2a2a] last:border-b-0">
     <div>
-      <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="font-medium">{value || 'N.v.t.'}</p>
+      <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">{label}</p>
+      <p className="font-medium text-gray-900 dark:text-[#10b981]">{value || 'N.v.t.'}</p>
     </div>
     {onEdit && (
-      <Button variant="ghost" size="sm" onClick={() => onEdit(step)}>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => onEdit(step)}
+        className="text-gray-500 dark:text-[#a1a1a1] hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"
+      >
         <Edit className="w-4 h-4 mr-2" />
         Bewerk
       </Button>
@@ -32,10 +37,10 @@ export default function Step6Summary({ formData, goToStep }) {
   };
 
   return (
-    <div className="space-y-2">
-       <h3 className="text-lg font-semibold pb-2">✅ Controleer je gegevens</h3>
-      
-      <div className="border rounded-lg p-4 space-y-1 divide-y">
+    <div className="space-y-4">
+       <h3 className="text-lg font-semibold text-gray-900 dark:text-[#10b981] pb-2">✅ Controleer je gegevens</h3>
+
+      <div className="border border-gray-200 dark:border-[#2a2a2a] rounded-xl p-4 bg-white dark:bg-[#1a1a1a]">
         <SummaryRow 
             label={formData.is_personal_loan ? "Geleend van" : "Schuldeiser"} 
             value={formData.creditor_name} 
