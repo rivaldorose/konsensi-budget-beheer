@@ -3,22 +3,22 @@ import { User, MonthlyCost, Debt } from "@/api/entities";
 import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
 
-// Recofa normen 2024/2025 (bijstandsnormen als basis voor beslagvrije voet)
+// Recofa normen 2025 (bijstandsnormen als basis voor beslagvrije voet)
 // Bron: https://www.rijksoverheid.nl/onderwerpen/bijstand/vraag-en-antwoord/hoe-hoog-is-de-bijstand
 const RECOFA_NORMEN = {
-  // Basisbedragen per maand (netto bijstandsnorm per 1 januari 2024)
-  alleenstaand: 1255.67,           // 70% van gehuwdennorm
-  gehuwdSamenwonend: 1793.81,      // 100% gehuwdennorm voor beide partners samen
-  alleenstaandeOuder: 1255.67,     // Zelfde als alleenstaand, plus kinderbijslag/kindgebonden budget
+  // Basisbedragen per maand (netto bijstandsnorm per 1 januari 2025, excl. vakantietoeslag)
+  alleenstaand: 1278.18,           // 70% van gehuwdennorm
+  gehuwdSamenwonend: 1825.97,      // 100% gehuwdennorm voor beide partners samen
+  alleenstaandeOuder: 1278.18,     // Zelfde als alleenstaand, plus kinderbijslag/kindgebonden budget
 
-  // Kinderbijslag gemiddeld per kind per maand (2024)
-  kinderbijslagPerKind: 104.00,    // Gemiddelde voor kinderen 0-17 jaar
+  // Kinderbijslag gemiddeld per kind per maand (2025)
+  kinderbijslagPerKind: 108.00,    // Gemiddelde voor kinderen 0-17 jaar
 
   // Woonkosten component (maximale huurtoeslaggrens als richtlijn)
-  maxWoonkostenComponent: 879.66,  // Maximale subsidiabele huur 2024
+  maxWoonkostenComponent: 900.07,  // Maximale subsidiabele huur 2025
 
   // Zorgverzekering (verplichte basispremie minus zorgtoeslag)
-  zorgverzekeringsComponent: 135,  // Gemiddelde na zorgtoeslag
+  zorgverzekeringsComponent: 140,  // Gemiddelde na zorgtoeslag 2025
 };
 
 export default function VTLBCalculator() {
