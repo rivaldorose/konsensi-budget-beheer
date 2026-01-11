@@ -113,8 +113,8 @@ export default function Settings() {
       setUploading(true);
       toast({ title: 'Foto uploaden...' });
 
-      // Upload to avatars bucket with user-specific path
-      const fileName = `${user.id}-${Date.now()}.${file.name.split('.').pop()}`;
+      // Upload to avatars bucket with user-specific folder path (required by RLS policy)
+      const fileName = `${user.id}/${Date.now()}.${file.name.split('.').pop()}`;
       const { file_url } = await UploadFile({ file, bucket: 'avatars', path: fileName });
 
       await User.updateMe({ avatar_url: file_url });
