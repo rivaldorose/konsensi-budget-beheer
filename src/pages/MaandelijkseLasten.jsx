@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { MonthlyCost, User } from '@/api/entities';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/components/utils/LanguageContext';
 import { formatCurrency } from '@/components/utils/formatters';
 import { format, startOfMonth, endOfMonth } from 'date-fns';

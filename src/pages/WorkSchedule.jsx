@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { WorkDay } from '@/api/entities';
 import { User } from '@/api/entities';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, getDay } from 'date-fns';
 import { nl } from 'date-fns/locale';
 import WorkDayModal from '@/components/workdays/WorkDayModal';

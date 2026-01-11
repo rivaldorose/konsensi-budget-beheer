@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabaseSync } from '@/api/functions';
 import { Cloud, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function SupabaseSyncButton() {
   const [syncing, setSyncing] = useState(false);

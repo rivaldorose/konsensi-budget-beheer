@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import { Loader2, Zap, Award, Snowflake, TrendingDown, Clock, Shield, Info, X } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/components/utils/LanguageContext';
 import { calculateStrategies, activateStrategy } from '@/api/functions';
 import { formatCurrency } from '@/components/utils/formatters';
