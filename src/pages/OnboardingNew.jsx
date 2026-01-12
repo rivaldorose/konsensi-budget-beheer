@@ -176,11 +176,9 @@ export default function OnboardingNew() {
               name: debt.creditor,
               creditor_name: debt.creditor,
               amount: parseFloat(debt.total_amount),
-              total_amount: parseFloat(debt.total_amount),
               monthly_payment: parseFloat(debt.monthly_payment) || 0,
-              payment_date: debt.payment_date === 'last' ? 31 : parseInt(debt.payment_date) || 25,
               status: 'actief',
-              description: `Schuld aan ${debt.creditor}`
+              notes: `Schuld aan ${debt.creditor}`
             };
             console.log('[Onboarding] Creating debt:', debtData);
             await Debt.create(debtData);
