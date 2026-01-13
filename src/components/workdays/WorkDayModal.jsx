@@ -149,7 +149,7 @@ export default function WorkDayModal({ isOpen, onClose, onSave, onDelete, workDa
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>
-                Uren Gewerkt {(formData.status === 'vrij' || formData.status === 'ziek') ? <span className="text-gray-400">(optioneel)</span> : '*'}
+                Uren Gewerkt {(formData.status === 'vrij' || formData.status === 'ziek') ? <span className="text-gray-400 dark:text-gray-500">(optioneel)</span> : '*'}
               </Label>
               <Input
                 type="number"
@@ -160,13 +160,13 @@ export default function WorkDayModal({ isOpen, onClose, onSave, onDelete, workDa
                 onChange={(e) => setFormData({ ...formData, hours_worked: e.target.value })}
                 placeholder="8"
                 required={formData.status !== 'vrij' && formData.status !== 'ziek'}
-                className="bg-white"
+                className="bg-white dark:bg-[#0a0a0a] dark:border-[#3a3a3a]"
               />
             </div>
 
             <div>
               <Label>
-                Uurloon (€) {(formData.status === 'vrij' || formData.status === 'ziek') ? <span className="text-gray-400">(optioneel)</span> : '*'}
+                Uurloon (€) {(formData.status === 'vrij' || formData.status === 'ziek') ? <span className="text-gray-400 dark:text-gray-500">(optioneel)</span> : '*'}
               </Label>
               <Input
                 type="text"
@@ -180,7 +180,7 @@ export default function WorkDayModal({ isOpen, onClose, onSave, onDelete, workDa
                 }}
                 placeholder="15.00"
                 required={formData.status !== 'vrij' && formData.status !== 'ziek'}
-                className="bg-white"
+                className="bg-white dark:bg-[#0a0a0a] dark:border-[#3a3a3a]"
               />
             </div>
           </div>
@@ -226,8 +226,8 @@ export default function WorkDayModal({ isOpen, onClose, onSave, onDelete, workDa
           </div>
 
           {calculatedAmount > 0 && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-sm text-green-800 font-medium">
+            <div className="bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-lg p-3">
+              <p className="text-sm text-green-800 dark:text-green-400 font-medium">
                 Verdiend: <span className="text-lg font-bold">€{calculatedAmount.toFixed(2)}</span>
               </p>
             </div>
