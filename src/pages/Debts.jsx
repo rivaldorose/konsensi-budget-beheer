@@ -14,6 +14,7 @@ import DebtWizard from "../components/debts/wizard/DebtWizard";
 import DebtFilters from "../components/debts/DebtFilters";
 import DebtJourneyWidget from "../components/debts/DebtJourneyWidget";
 import DebtChallengesWidget from "../components/debts/DebtChallengesWidget";
+import DebtOverviewChart from "../components/debts/DebtOverviewChart";
 import DebtAchievementsModal from "../components/debts/DebtAchievementsModal";
 import DebtsInfoModal from "../components/debts/DebtsInfoModal";
 import ScanDebtModal from "../components/debts/ScanDebtModal";
@@ -609,6 +610,12 @@ export default function Debts() {
             </div>
         {showGamification && (
               <div className="px-6 pb-6">
+                {/* Debt Overview Chart - Full Width */}
+                <div className="mb-4">
+                  <DebtOverviewChart debts={debts} viewMode="type" />
+                </div>
+
+                {/* Journey and Challenges Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <DebtJourneyWidget
                 debts={debts}
