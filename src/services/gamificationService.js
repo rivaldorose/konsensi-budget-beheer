@@ -1,6 +1,15 @@
 import { supabaseService } from "./supabaseService";
 import { supabase } from "@/lib/supabase";
 
+// XP reward amounts
+export const XP_REWARDS = {
+  DAILY_LOGIN: 5,
+  DEBT_ADDED: 10,
+  PAYMENT_ARRANGEMENT_STARTED: 20,
+  PAYMENT_MADE: 25,
+  DEBT_FULLY_PAID: 100,
+};
+
 export const gamificationService = {
   async getUserLevel(userId) {
     try {
@@ -118,50 +127,74 @@ export const gamificationService = {
     }
   },
 
-  async getWeekGoal(userId) {
+  // Record daily login and award XP if first login today
+  async recordDailyLogin(userId) {
     try {
-      const now = new Date();
-      const weekStart = new Date(now.setDate(now.getDate() - now.getDay()));
-      weekStart.setHours(0, 0, 0, 0);
+      const today = new Date().toISOString().split('T')[0];
 
-      const { data, error } = await supabase
-        .from("week_goals")
+      // Check if already logged in today
+      const { data: existingLogin } = await supabase
+        .from("user_login_history")
         .select("*")
         .eq("user_id", userId)
-        .gte("week_start", weekStart.toISOString().split("T")[0])
-        .order("week_start", { ascending: false })
-        .limit(1)
+        .eq("login_date", today)
         .single();
 
-      if (error && error.code !== "PGRST116") {
-        throw error;
+      if (existingLogin) {
+        // Already logged in today, no XP
+        return { xpAwarded: false, xpAmount: 0 };
       }
 
-      return data || null;
+      // Record today's login
+      await supabase.from("user_login_history").insert({
+        user_id: userId,
+        login_date: today,
+      });
+
+      // Award XP for daily login
+      const result = await this.addXP(userId, XP_REWARDS.DAILY_LOGIN, "daily_login");
+
+      return { xpAwarded: true, xpAmount: XP_REWARDS.DAILY_LOGIN, ...result };
     } catch (error) {
-      console.error("Error getting week goal:", error);
-      return null;
+      console.error("Error recording daily login:", error);
+      return { xpAwarded: false, xpAmount: 0 };
     }
   },
 
-  async updateWeekGoalProgress(userId, amount) {
+  // Calculate login streak
+  async getLoginStreak(userId) {
     try {
-      const goal = await this.getWeekGoal(userId);
-      if (!goal) return null;
+      const { data: logins } = await supabase
+        .from("user_login_history")
+        .select("login_date")
+        .eq("user_id", userId)
+        .order("login_date", { ascending: false })
+        .limit(30);
 
-      const newProgress = (goal.current_progress || 0) + amount;
-      const percentage = goal.target_amount > 0 ? (newProgress / goal.target_amount) * 100 : 0;
+      if (!logins || logins.length === 0) return 0;
 
-      const updated = await supabaseService.update("week_goals", goal.id, {
-        current_progress: newProgress,
-        percentage: Math.min(percentage, 100),
-        updated_at: new Date().toISOString(),
-      });
+      let streak = 0;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-      return updated;
+      for (let i = 0; i < logins.length; i++) {
+        const loginDate = new Date(logins[i].login_date);
+        loginDate.setHours(0, 0, 0, 0);
+
+        const expectedDate = new Date(today);
+        expectedDate.setDate(today.getDate() - i);
+
+        if (loginDate.getTime() === expectedDate.getTime()) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+
+      return streak;
     } catch (error) {
-      console.error("Error updating week goal progress:", error);
-      throw error;
+      console.error("Error getting login streak:", error);
+      return 0;
     }
   },
 };

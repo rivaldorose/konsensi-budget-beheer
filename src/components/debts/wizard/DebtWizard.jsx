@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Debt, User } from '@/api/entities';
 import { useToast } from '@/components/ui/use-toast';
+import { gamificationService, XP_REWARDS } from "@/services/gamificationService";
 
 import Step1Type from './Step1Type';
 import Step2Creditor from './Step2Creditor';
@@ -110,10 +111,24 @@ export default function DebtWizard({ isOpen, onClose, onSave }) {
       }
 
       await Debt.create(dataToSave);
-      
+
+      // Award XP for adding a debt
+      let xpAwarded = XP_REWARDS.DEBT_ADDED;
+      try {
+        await gamificationService.addXP(currentUser.id, XP_REWARDS.DEBT_ADDED, "debt_added");
+
+        // Bonus XP if starting with a payment arrangement
+        if (dataToSave.status === 'betalingsregeling' && dataToSave.monthly_payment > 0) {
+          await gamificationService.addXP(currentUser.id, XP_REWARDS.PAYMENT_ARRANGEMENT_STARTED, "payment_arrangement_started");
+          xpAwarded += XP_REWARDS.PAYMENT_ARRANGEMENT_STARTED;
+        }
+      } catch (xpError) {
+        console.error("Error awarding XP:", xpError);
+      }
+
       toast({
         title: "Succes!",
-        description: "De schuld is succesvol toegevoegd.",
+        description: `De schuld is succesvol toegevoegd. +${xpAwarded} XP`,
       });
       onSave(); // Refresh data on the main page
       onClose(); // Close the modal

@@ -194,10 +194,16 @@ export default function Dashboard() {
       }
       setUser(currentUser);
 
-      // Update login streak in database
+      // Update login streak in database and award daily XP
       try {
         const streak = await User.updateStreak();
         setLoginStreak(streak);
+
+        // Record daily login and award XP (only once per day)
+        const loginResult = await gamificationService.recordDailyLogin(currentUser.id);
+        if (loginResult.xpAwarded) {
+          console.log(`Daily login XP awarded: +${loginResult.xpAmount} XP`);
+        }
       } catch (error) {
         console.error('Error updating streak:', error);
         setLoginStreak(0);

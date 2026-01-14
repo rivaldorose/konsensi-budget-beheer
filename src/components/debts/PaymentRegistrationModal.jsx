@@ -9,11 +9,13 @@ import { Debt } from "@/api/entities";
 import { DebtPayment } from "@/api/entities";
 import { PaymentDocument } from "@/api/entities";
 import { Transaction } from "@/api/entities";
+import { User } from "@/api/entities";
 import { UploadPrivateFile, ExtractDataFromUploadedFile, UploadFile } from "@/api/integrations";
 import { useToast } from "@/components/ui/use-toast";
 import { Calendar, DollarSign, Loader2, CheckCircle2, Sparkles, Upload, X, FileText, Wand2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatCurrency } from "@/components/utils/formatters";
+import { gamificationService, XP_REWARDS } from "@/services/gamificationService";
 
 export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaymentAdded }) {
   const [amount, setAmount] = useState("");
@@ -205,48 +207,67 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
         amount_paid: correctAmountPaid,
       };
 
-      // 7. If fully paid for the first time, update status and show celebration
+      // 7. Award XP for payment
+      let xpAwarded = 0;
+      try {
+        const currentUser = await User.me();
+        if (currentUser?.id) {
+          // Award XP for making a payment
+          await gamificationService.addXP(currentUser.id, XP_REWARDS.PAYMENT_MADE, "payment_made");
+          xpAwarded = XP_REWARDS.PAYMENT_MADE;
+
+          // Award bonus XP if debt is fully paid
+          if (debtIsNowFullyPaid && debt.status !== 'afbetaald') {
+            await gamificationService.addXP(currentUser.id, XP_REWARDS.DEBT_FULLY_PAID, "debt_fully_paid");
+            xpAwarded += XP_REWARDS.DEBT_FULLY_PAID;
+          }
+        }
+      } catch (xpError) {
+        console.error("Error awarding XP:", xpError);
+      }
+
+      // 8. If fully paid for the first time, update status and show celebration
       if (debtIsNowFullyPaid && debt.status !== 'afbetaald') {
         updateData.status = 'afbetaald';
-        
+
         // Update database EERST
         await Debt.update(debt.id, updateData);
-        
+
         // Dan celebration tonen
         setIsFullyPaid(true);
         setCelebrating(true);
-        
+
         // Show celebration for 3 seconds, DAN refresh parent data, DAN close
         setTimeout(async () => {
           setCelebrating(false);
-          
+
           // EERST: Refresh parent data
           if (onPaymentAdded) await onPaymentAdded();
-          
+
           // DAN: Toast
-          toast({ 
-            title: "🎉 Schuld afgelost!", 
-            description: `${debt.creditor_name} is volledig afbetaald!`,
+          toast({
+            title: "🎉 Schuld afgelost!",
+            description: `${debt.creditor_name} is volledig afbetaald! +${xpAwarded} XP`,
           });
-          
+
           // LAATSTE: Modal sluiten
           onClose();
         }, 3000);
       } else {
         // Normale flow: update en direct door
         await Debt.update(debt.id, updateData);
-        
+
         // EERST: Refresh parent data
         if (onPaymentAdded) await onPaymentAdded();
-        
+
         // DAN: Toast
-        toast({ 
-          title: isAlreadyPaid ? "Betaling toegevoegd" : "Betaling geregistreerd", 
-          description: isAlreadyPaid 
-            ? "Historische betaling is succesvol toegevoegd!" 
+        toast({
+          title: isAlreadyPaid ? "Betaling toegevoegd" : `Betaling geregistreerd +${xpAwarded} XP`,
+          description: isAlreadyPaid
+            ? "Historische betaling is succesvol toegevoegd!"
             : `Nog ${formatCurrency(debt.amount - correctAmountPaid)} te gaan!`,
         });
-        
+
         // LAATSTE: Modal sluiten
         onClose();
       }
