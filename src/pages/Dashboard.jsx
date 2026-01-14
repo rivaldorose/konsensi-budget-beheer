@@ -366,6 +366,50 @@ export default function Dashboard() {
       let nextCost = null;
       const allMonthlyCostsActive = monthlyCostsResult?.items;
 
+      // Calculate next debt payment for debts with betalingsregeling
+      const debtsWithArrangement = (allDebts || []).filter(d =>
+        d?.status === 'betalingsregeling' &&
+        d?.monthly_payment > 0
+      );
+
+      if (debtsWithArrangement.length > 0) {
+        const today = new Date();
+        let upcomingDebtPayments = [];
+
+        debtsWithArrangement.forEach(debt => {
+          // Use payment_plan_date day of month, or default to 1st
+          const paymentDay = debt.payment_plan_date
+            ? new Date(debt.payment_plan_date).getDate()
+            : 1;
+
+          let nextDebtDate = new Date(today.getFullYear(), today.getMonth(), paymentDay);
+
+          // If date already passed this month, move to next month
+          if (nextDebtDate < today) {
+            nextDebtDate.setMonth(nextDebtDate.getMonth() + 1);
+          }
+
+          upcomingDebtPayments.push({
+            name: debt.creditor_name || 'Schuld',
+            amount: Number(debt.monthly_payment) || 0,
+            next_due_date: nextDebtDate
+          });
+        });
+
+        // Sort by date to get the soonest payment
+        upcomingDebtPayments.sort((a, b) => a.next_due_date.getTime() - b.next_due_date.getTime());
+
+        const nextDebt = upcomingDebtPayments[0];
+        if (nextDebt) {
+          nextPayment = {
+            type: 'debt',
+            name: nextDebt.name,
+            amount: nextDebt.amount,
+            date: nextDebt.next_due_date.toISOString().split('T')[0],
+          };
+        }
+      }
+
       if (allMonthlyCostsActive && allMonthlyCostsActive.length > 0) {
           const today = new Date();
           let upcomingCosts = [];
