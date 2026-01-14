@@ -7,6 +7,8 @@ export const XP_REWARDS = {
   DEBT_ADDED: 10,
   PAYMENT_ARRANGEMENT_STARTED: 20,
   PAYMENT_MADE: 25,
+  EXTRA_PAYMENT_MADE: 35, // Bonus for extra payments beyond regular schedule
+  FIXED_COST_PAID: 5,
   DEBT_FULLY_PAID: 100,
 };
 

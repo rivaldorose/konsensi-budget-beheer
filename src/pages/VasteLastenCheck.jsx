@@ -5,6 +5,7 @@ import { Income } from "@/api/entities";
 import { Pot } from "@/api/entities";
 import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
+import { gamificationService, XP_REWARDS } from "@/services/gamificationService";
 
 export default function VasteLastenCheck() {
   const [loading, setLoading] = useState(true);
@@ -143,9 +144,21 @@ export default function VasteLastenCheck() {
         last_paid: new Date().toISOString(),
         payment_status: 'paid'
       });
+
+      // Award XP for paying fixed cost
+      let xpAwarded = 0;
+      try {
+        if (user?.id) {
+          await gamificationService.addXP(user.id, XP_REWARDS.FIXED_COST_PAID, "fixed_cost_paid");
+          xpAwarded = XP_REWARDS.FIXED_COST_PAID;
+        }
+      } catch (xpError) {
+        console.error("Error awarding XP:", xpError);
+      }
+
       toast({
         title: 'Betaling gemarkeerd als betaald',
-        description: `${payment.name} is succesvol gemarkeerd.`
+        description: `${payment.name} is succesvol gemarkeerd.${xpAwarded > 0 ? ` +${xpAwarded} XP` : ''}`
       });
       loadData();
     } catch (error) {

@@ -216,6 +216,13 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
           await gamificationService.addXP(currentUser.id, XP_REWARDS.PAYMENT_MADE, "payment_made");
           xpAwarded = XP_REWARDS.PAYMENT_MADE;
 
+          // Award bonus XP for extra payment (payment higher than monthly payment arrangement)
+          const monthlyPayment = debt.monthly_payment || debt.repayment_amount || 0;
+          if (monthlyPayment > 0 && paymentAmount > monthlyPayment) {
+            await gamificationService.addXP(currentUser.id, XP_REWARDS.EXTRA_PAYMENT_MADE, "extra_payment_made");
+            xpAwarded += XP_REWARDS.EXTRA_PAYMENT_MADE;
+          }
+
           // Award bonus XP if debt is fully paid
           if (debtIsNowFullyPaid && debt.status !== 'afbetaald') {
             await gamificationService.addXP(currentUser.id, XP_REWARDS.DEBT_FULLY_PAID, "debt_fully_paid");
