@@ -13,6 +13,135 @@ export const XP_REWARDS = {
   DEBT_FULLY_PAID: 100,
 };
 
+// All available badges
+export const BADGES = {
+  // Milestone badges
+  FIRST_DEBT_ADDED: {
+    id: "first_debt_added",
+    name: "Eerste Stap",
+    description: "Je eerste schuld geregistreerd",
+    icon: "flag",
+    color: "emerald",
+    xpBonus: 25,
+  },
+  FIRST_PAYMENT: {
+    id: "first_payment",
+    name: "Betaler",
+    description: "Je eerste betaling gemaakt",
+    icon: "payments",
+    color: "blue",
+    xpBonus: 25,
+  },
+  FIRST_DEBT_CLEARED: {
+    id: "first_debt_cleared",
+    name: "Schuldenvrij",
+    description: "Je eerste schuld volledig afgelost",
+    icon: "celebration",
+    color: "amber",
+    xpBonus: 100,
+  },
+  // Streak badges
+  STREAK_7: {
+    id: "streak_7",
+    name: "Weekstrijder",
+    description: "7 dagen op rij ingelogd",
+    icon: "local_fire_department",
+    color: "orange",
+    xpBonus: 50,
+  },
+  STREAK_30: {
+    id: "streak_30",
+    name: "Maandheld",
+    description: "30 dagen op rij ingelogd",
+    icon: "whatshot",
+    color: "red",
+    xpBonus: 150,
+  },
+  STREAK_100: {
+    id: "streak_100",
+    name: "Consistentie Kampioen",
+    description: "100 dagen op rij ingelogd",
+    icon: "local_fire_department",
+    color: "purple",
+    xpBonus: 500,
+  },
+  // Progress badges
+  DEBT_COUNT_3: {
+    id: "debt_count_3",
+    name: "Overzichthouder",
+    description: "3 schulden geregistreerd",
+    icon: "format_list_numbered",
+    color: "cyan",
+    xpBonus: 30,
+  },
+  DEBT_COUNT_5: {
+    id: "debt_count_5",
+    name: "Schuldenmeester",
+    description: "5 schulden geregistreerd",
+    icon: "rule",
+    color: "indigo",
+    xpBonus: 50,
+  },
+  PAYMENTS_10: {
+    id: "payments_10",
+    name: "Trouwe Betaler",
+    description: "10 betalingen gemaakt",
+    icon: "verified",
+    color: "teal",
+    xpBonus: 75,
+  },
+  PAYMENTS_50: {
+    id: "payments_50",
+    name: "Betalingskoning",
+    description: "50 betalingen gemaakt",
+    icon: "workspace_premium",
+    color: "amber",
+    xpBonus: 200,
+  },
+  // Special badges
+  EXTRA_PAYMENT: {
+    id: "extra_payment",
+    name: "Overachiever",
+    description: "Een extra betaling bovenop je regeling",
+    icon: "add_task",
+    color: "green",
+    xpBonus: 40,
+  },
+  ALL_FIXED_COSTS_PAID: {
+    id: "all_fixed_costs_paid",
+    name: "Vaste Lasten Held",
+    description: "Alle vaste lasten van de maand betaald",
+    icon: "task_alt",
+    color: "blue",
+    xpBonus: 50,
+  },
+  // Level badges
+  LEVEL_5: {
+    id: "level_5",
+    name: "Gevorderde",
+    description: "Level 5 bereikt",
+    icon: "trending_up",
+    color: "blue",
+    xpBonus: 50,
+  },
+  LEVEL_10: {
+    id: "level_10",
+    name: "Expert",
+    description: "Level 10 bereikt",
+    icon: "star",
+    color: "amber",
+    xpBonus: 100,
+  },
+  LEVEL_20: {
+    id: "level_20",
+    name: "Meester",
+    description: "Level 20 bereikt",
+    icon: "military_tech",
+    color: "purple",
+    xpBonus: 250,
+  },
+};
+
 export const gamificationService = {
   async getUserLevel(userId) {
     try {
@@ -101,6 +230,132 @@ export const gamificationService = {
       console.error("Error getting user badges:", error);
       return [];
     }
+  },
+
+  async awardBadge(userId, badgeKey) {
+    try {
+      const badge = BADGES[badgeKey];
+      if (!badge) {
+        console.error("Badge not found:", badgeKey);
+        return { awarded: false };
+      }
+
+      // Check if user already has this badge
+      const existingBadges = await this.getUserBadges(userId);
+      if (existingBadges.some(b => b.badge_type === badge.id)) {
+        return { awarded: false, alreadyHas: true };
+      }
+
+      // Award the badge
+      await supabaseService.create("user_badges", {
+        user_id: userId,
+        badge_type: badge.id,
+        awarded_at: new Date().toISOString(),
+      });
+
+      // Award bonus XP if badge has xpBonus
+      if (badge.xpBonus) {
+        await this.addXP(userId, badge.xpBonus, `badge_${badge.id}`);
+      }
+
+      return { awarded: true, badge, xpBonus: badge.xpBonus || 0 };
+    } catch (error) {
+      console.error("Error awarding badge:", error);
+      return { awarded: false };
+    }
+  },
+
+  async checkAndAwardBadges(userId, context = {}) {
+    const awardedBadges = [];
+
+    try {
+      const existingBadges = await this.getUserBadges(userId);
+      const hasBadge = (badgeId) => existingBadges.some(b => b.badge_type === badgeId);
+
+      // Check streak badges
+      if (context.loginStreak) {
+        if (context.loginStreak >= 7 && !hasBadge("streak_7")) {
+          const result = await this.awardBadge(userId, "STREAK_7");
+          if (result.awarded) awardedBadges.push(result.badge);
+        }
+        if (context.loginStreak >= 30 && !hasBadge("streak_30")) {
+          const result = await this.awardBadge(userId, "STREAK_30");
+          if (result.awarded) awardedBadges.push(result.badge);
+        }
+        if (context.loginStreak >= 100 && !hasBadge("streak_100")) {
+          const result = await this.awardBadge(userId, "STREAK_100");
+          if (result.awarded) awardedBadges.push(result.badge);
+        }
+      }
+
+      // Check level badges
+      if (context.level) {
+        if (context.level >= 5 && !hasBadge("level_5")) {
+          const result = await this.awardBadge(userId, "LEVEL_5");
+          if (result.awarded) awardedBadges.push(result.badge);
+        }
+        if (context.level >= 10 && !hasBadge("level_10")) {
+          const result = await this.awardBadge(userId, "LEVEL_10");
+          if (result.awarded) awardedBadges.push(result.badge);
+        }
+        if (context.level >= 20 && !hasBadge("level_20")) {
+          const result = await this.awardBadge(userId, "LEVEL_20");
+          if (result.awarded) awardedBadges.push(result.badge);
+        }
+      }
+
+      // Check debt count badges
+      if (context.debtCount !== undefined) {
+        if (context.debtCount >= 1 && !hasBadge("first_debt_added")) {
+          const result = await this.awardBadge(userId, "FIRST_DEBT_ADDED");
+          if (result.awarded) awardedBadges.push(result.badge);
+        }
+        if (context.debtCount >= 3 && !hasBadge("debt_count_3")) {
+          const result = await this.awardBadge(userId, "DEBT_COUNT_3");
+          if (result.awarded) awardedBadges.push(result.badge);
+        }
+        if (context.debtCount >= 5 && !hasBadge("debt_count_5")) {
+          const result = await this.awardBadge(userId, "DEBT_COUNT_5");
+          if (result.awarded) awardedBadges.push(result.badge);
+        }
+      }
+
+      // Check payment count badges
+      if (context.paymentCount !== undefined) {
+        if (context.paymentCount >= 1 && !hasBadge("first_payment")) {
+          const result = await this.awardBadge(userId, "FIRST_PAYMENT");
+          if (result.awarded) awardedBadges.push(result.badge);
+        }
+        if (context.paymentCount >= 10 && !hasBadge("payments_10")) {
+          const result = await this.awardBadge(userId, "PAYMENTS_10");
+          if (result.awarded) awardedBadges.push(result.badge);
+        }
+        if (context.paymentCount >= 50 && !hasBadge("payments_50")) {
+          const result = await this.awardBadge(userId, "PAYMENTS_50");
+          if (result.awarded) awardedBadges.push(result.badge);
+        }
+      }
+
+      // Check special badges
+      if (context.debtCleared && !hasBadge("first_debt_cleared")) {
+        const result = await this.awardBadge(userId, "FIRST_DEBT_CLEARED");
+        if (result.awarded) awardedBadges.push(result.badge);
+      }
+
+      if (context.extraPayment && !hasBadge("extra_payment")) {
+        const result = await this.awardBadge(userId, "EXTRA_PAYMENT");
+        if (result.awarded) awardedBadges.push(result.badge);
+      }
+
+      if (context.allFixedCostsPaid && !hasBadge("all_fixed_costs_paid")) {
+        const result = await this.awardBadge(userId, "ALL_FIXED_COSTS_PAID");
+        if (result.awarded) awardedBadges.push(result.badge);
+      }
+    } catch (error) {
+      console.error("Error checking badges:", error);
+    }
+
+    return awardedBadges;
   },
 
   async getDailyMotivation(language = "nl") {
