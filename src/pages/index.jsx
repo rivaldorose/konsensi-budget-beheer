@@ -41,6 +41,7 @@ import NotificationSettings from "./NotificationSettings";
 import SecuritySettings from "./SecuritySettings";
 import DisplaySettings from "./DisplaySettings";
 import VTLBSettings from "./VTLBSettings";
+import GamificationSettings from "./GamificationSettings";
 import Feedback from "./Feedback";
 import HelpSupport from "./HelpSupport";
 import FAQSettings from "./FAQSettings";
@@ -62,6 +63,7 @@ const PAGES = {
     SecuritySettings: SecuritySettings,
     DisplaySettings: DisplaySettings,
     VTLBSettings: VTLBSettings,
+    GamificationSettings: GamificationSettings,
     Feedback: Feedback,
     HelpSupport: HelpSupport,
     FAQSettings: FAQSettings,
@@ -148,6 +150,7 @@ function PagesContent() {
                 <Route path="/SecuritySettings" element={<SecuritySettings />} />
                 <Route path="/DisplaySettings" element={<DisplaySettings />} />
                 <Route path="/VTLBSettings" element={<VTLBSettings />} />
+                <Route path="/GamificationSettings" element={<GamificationSettings />} />
                 <Route path="/FAQ" element={<FAQ />} />
                 <Route path="/FAQSettings" element={<FAQSettings />} />
                 <Route path="/Feedback" element={<Feedback />} />

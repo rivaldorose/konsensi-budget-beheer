@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 export const XP_REWARDS = {
   DAILY_LOGIN: 5,
   DEBT_ADDED: 10,
+  SUMMARY_VIEWED: 10, // Viewing monthly summary in Cent voor Cent
   PAYMENT_ARRANGEMENT_STARTED: 20,
   PAYMENT_MADE: 25,
   EXTRA_PAYMENT_MADE: 35, // Bonus for extra payments beyond regular schedule
@@ -159,6 +160,32 @@ export const gamificationService = {
       return { xpAwarded: true, xpAmount: XP_REWARDS.DAILY_LOGIN, ...result };
     } catch (error) {
       console.error("Error recording daily login:", error);
+      return { xpAwarded: false, xpAmount: 0 };
+    }
+  },
+
+  // Record summary view and award XP if first view today
+  async recordSummaryView(userId) {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const viewKey = `summary_viewed_${today}`;
+
+      // Check localStorage to see if already viewed today (simple client-side check)
+      if (typeof window !== 'undefined' && localStorage.getItem(viewKey)) {
+        return { xpAwarded: false, xpAmount: 0 };
+      }
+
+      // Mark as viewed
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(viewKey, 'true');
+      }
+
+      // Award XP
+      const result = await this.addXP(userId, XP_REWARDS.SUMMARY_VIEWED, "summary_viewed");
+
+      return { xpAwarded: true, xpAmount: XP_REWARDS.SUMMARY_VIEWED, ...result };
+    } catch (error) {
+      console.error("Error recording summary view:", error);
       return { xpAwarded: false, xpAmount: 0 };
     }
   },
