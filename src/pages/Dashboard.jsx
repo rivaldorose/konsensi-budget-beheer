@@ -10,7 +10,6 @@ import { formatCurrency } from "@/components/utils/formatters";
 import { XCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import AchievementsModal from "@/components/gamification/AchievementsModal";
-import PersonalizedAdviceWidget from "@/components/dashboard/PersonalizedAdviceWidget";
 import WelcomeCard from "@/components/dashboard/WelcomeCard";
 import StatCards from "@/components/dashboard/StatCards";
 import DebtJourneyChart from "@/components/dashboard/DebtJourneyChart";
@@ -152,8 +151,6 @@ export default function Dashboard() {
     fixedCosts: [],
     activeDebtPaymentsSum: 0,
     totalPotjesBudget: 0,
-    activeStrategy: null,
-    showCheckIn: false,
     allIncomes: [],
     allMonthlyCosts: [],
     allTransactions: [],
@@ -364,8 +361,7 @@ export default function Dashboard() {
       if (totalPotjesBudget > 0) newBreakdownData.push({ name: t('financialBreakdown.pots'), value: totalPotjesBudget });
       if (freeToSpend > 0) newBreakdownData.push({ name: t('financialBreakdown.freeToSpend'), value: freeToSpend });
 
-      const activeStrategy = activeStrategies.length > 0 ? activeStrategies[0] : null;
-
+      
       let nextPayment = null;
       let nextCost = null;
       const allMonthlyCostsActive = monthlyCostsResult?.items;
@@ -411,29 +407,6 @@ export default function Dashboard() {
           }
       }
 
-      const startOfCurrentMonth = getStartOfMonth(now);
-      const needsCheckIn = (allMonthlyCosts || []).some(cost => {
-          if (!cost?.is_active) return false;
-
-          const paymentDay = cost?.payment_date;
-          if (!paymentDay) return false;
-
-          try {
-            let dueDateForCurrentMonth = new Date(now.getFullYear(), now.getMonth(), paymentDay);
-            if (isNaN(dueDateForCurrentMonth.getTime())) return false;
-
-            if (dueDateForCurrentMonth <= now) {
-                const lastCheckedInDate = cost?.last_checked_in_date ? new Date(cost.last_checked_in_date) : null;
-                if (!lastCheckedInDate || isNaN(lastCheckedInDate.getTime()) || lastCheckedInDate < startOfCurrentMonth) {
-                    return true;
-                }
-            }
-          } catch {
-            return false;
-          }
-          return false;
-      });
-
       setDashboardData(prev => ({
         ...prev,
         userName: currentUser.voornaam || t('common.user'),
@@ -455,8 +428,6 @@ export default function Dashboard() {
         fixedCosts: monthlyCostsResult?.items || [],
         activeDebtPaymentsSum: activeDebtPaymentsSum,
         totalPotjesBudget: totalPotjesBudget,
-        activeStrategy: activeStrategy,
-        showCheckIn: needsCheckIn,
         allIncomes: allIncomes,
         allMonthlyCosts: allMonthlyCosts,
         allTransactions: allTransactions,
@@ -641,7 +612,6 @@ export default function Dashboard() {
     breakdownData = [],
     nextPayment = null,
     nextCost = null,
-    showCheckIn = false,
     allIncomes = [],
     allMonthlyCosts = [],
     debts = [],
@@ -717,6 +687,7 @@ export default function Dashboard() {
           badges={gamificationData.badges}
           motivationalMessage={motivationalMessage}
           userTitle={userTitle}
+          loginStreak={loginStreak}
         />
 
         {/* Stat Cards - Always show */}
@@ -828,8 +799,6 @@ export default function Dashboard() {
       <div className="lg:col-span-12">
         <DashboardFooter
           dailyMotivation={gamificationData.dailyMotivation}
-          weekGoalPercentage={gamificationData.weekGoalPercentage}
-          onNextAction={() => window.location.href = createPageUrl("VasteLastenCheck")}
         />
       </div>
 

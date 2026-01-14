@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function WelcomeCard({ user, level = 9, currentXP = 2025, totalXP = 2562, badges = [], motivationalMessage = "Een goed begin is het halve werk!", userTitle = "Schuld Sloper" }) {
+export default function WelcomeCard({ user, level = 1, currentXP = 0, totalXP = 100, badges = [], motivationalMessage = "Een goed begin is het halve werk!", userTitle = "Schuld Sloper", loginStreak = 0 }) {
   const today = new Date();
   // Format: "Dinsdag 30 December 2025"
   const formattedDate = new Intl.DateTimeFormat("nl-NL", {
@@ -12,6 +12,19 @@ export default function WelcomeCard({ user, level = 9, currentXP = 2025, totalXP
 
   const userName = user?.voornaam || user?.full_name || user?.name || "Gebruiker";
   const xpPercentage = totalXP > 0 ? (currentXP / totalXP) * 100 : 0;
+
+  // Dynamic status badge based on level
+  const getStatusBadge = () => {
+    if (level >= 10) return { label: "Elite Status", icon: "⭐", color: "bg-[#FFD700]/20 text-[#B8860B]" };
+    if (level >= 7) return { label: "Gevorderd", icon: "🏆", color: "bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400" };
+    if (level >= 4) return { label: "Op Weg", icon: "🚀", color: "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400" };
+    return { label: "Starter", icon: "🌱", color: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400" };
+  };
+
+  const statusBadge = getStatusBadge();
+
+  // XP Boost is active when user has logged in 3+ days in a row
+  const hasXpBoost = loginStreak >= 3;
 
   return (
     <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#E8FFD4] via-white to-white dark:from-card-bg dark:via-card-bg dark:to-card-bg dark:border dark:border-border-main shadow-soft p-6 md:p-8 group">
@@ -32,8 +45,8 @@ export default function WelcomeCard({ user, level = 9, currentXP = 2025, totalXP
             <span className="px-3 py-1 bg-konsensi-dark/10 dark:bg-konsensi-bg-green dark:border dark:border-konsensi-primary/20 rounded-full text-xs font-bold text-konsensi-dark dark:text-konsensi-primary uppercase tracking-wider">
               {userTitle}
             </span>
-            <span className="px-3 py-1 bg-[#FFD700]/20 dark:bg-konsensi-bg-green text-[#B8860B] dark:text-konsensi-primary rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1 dark:border dark:border-konsensi-primary/20">
-              Elite Status ⭐
+            <span className={`px-3 py-1 ${statusBadge.color} dark:bg-konsensi-bg-green dark:text-konsensi-primary rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1 dark:border dark:border-konsensi-primary/20`}>
+              {statusBadge.label} {statusBadge.icon}
             </span>
           </div>
         </div>
@@ -56,9 +69,11 @@ export default function WelcomeCard({ user, level = 9, currentXP = 2025, totalXP
             <p className="font-bold text-konsensi-dark dark:text-white">{motivationalMessage}</p>
           </div>
           <div className="text-right">
-            <p className="text-primary dark:text-konsensi-primary font-bold text-xs flex items-center justify-end gap-1 mb-1">
-              XP Boost Active <span className="text-base">🔥</span>
-            </p>
+            {hasXpBoost && (
+              <p className="text-primary dark:text-konsensi-primary font-bold text-xs flex items-center justify-end gap-1 mb-1">
+                XP Boost Active <span className="text-base">🔥</span>
+              </p>
+            )}
             <p className="font-mono text-sm font-bold text-konsensi-dark dark:text-white">
               {currentXP} <span className="text-konsensi-dark/40 dark:text-text-tertiary">/ {totalXP} XP</span>
             </p>
