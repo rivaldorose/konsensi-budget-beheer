@@ -224,15 +224,15 @@ export default function DebtOverviewChart({ debts = [], viewMode = 'type', embed
           </svg>
         </div>
 
-        {/* Legend */}
+        {/* Legend - only category and percentage */}
         <div className="flex-1 w-full">
           <div className="space-y-2">
             {segments.slice(0, 5).map((segment, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors cursor-pointer"
+                className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <div
                     className="size-3 rounded-full flex-shrink-0"
                     style={{ backgroundColor: segment.color }}
@@ -240,23 +240,15 @@ export default function DebtOverviewChart({ debts = [], viewMode = 'type', embed
                   <span className="text-sm text-[#1F2937] dark:text-white font-medium truncate">
                     {segment.label}
                   </span>
-                  <span className="text-xs text-gray-400 dark:text-[#6B7280]">
-                    ({segment.count})
-                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-[#1F2937] dark:text-white">
-                    {formatCurrency(segment.amount)}
-                  </span>
-                  <span className="text-xs text-gray-400 dark:text-[#6B7280] w-12 text-right">
-                    {segment.percentage.toFixed(1)}%
-                  </span>
-                </div>
+                <span className="text-sm font-bold text-[#1F2937] dark:text-white flex-shrink-0 ml-2">
+                  {segment.percentage.toFixed(0)}%
+                </span>
               </div>
             ))}
             {segments.length > 5 && (
               <div className="text-xs text-gray-400 dark:text-[#6B7280] text-center pt-2">
-                +{segments.length - 5} meer categorieën
+                +{segments.length - 5} meer
               </div>
             )}
           </div>
