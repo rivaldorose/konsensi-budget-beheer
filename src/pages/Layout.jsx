@@ -11,6 +11,8 @@ import { Transaction } from "@/api/entities";
 import { UploadFile } from "@/api/integrations";
 import { ToastProvider, useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
+import { useCoachRelation, useUnreadMessageCount } from "@/hooks/useCoachChat";
+import { useClientVideoCalls } from "@/hooks/useVideoCall";
 import {
   Home,
   DollarSign,
@@ -40,7 +42,8 @@ import {
   Shield,
   Mail,
   MessageCircle,
-  BarChart3
+  BarChart3,
+  Video
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -222,7 +225,15 @@ function LayoutWithProvider({ children, currentPageName }) {
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
   const [checkingOnboarding, setCheckingOnboarding] = React.useState(true);
-  
+
+  // Coach chat hooks - check if user has an assigned coach
+  const { hasCoach, coach: assignedCoach, loading: coachLoading } = useCoachRelation(user?.id);
+  const { unreadCount: chatUnreadCount } = useUnreadMessageCount(user?.id);
+
+  // Video calls hook - check for active calls
+  const { activeCalls } = useClientVideoCalls(user?.id);
+  const hasActiveVideoCall = activeCalls && activeCalls.length > 0;
+
   const [balansOpen, setBalansOpen] = React.useState(false);
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [showLoanModal, setShowLoanModal] = React.useState(false);
@@ -997,13 +1008,44 @@ function LayoutWithProvider({ children, currentPageName }) {
               </div>
 
               {/* Adem Pauze (Heart Icon) */}
-              <Link 
+              <Link
                 to={createPageUrl('Adempauze')}
                 className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
                 title="Adem pauze"
               >
                 <Heart className="w-5 h-5" />
               </Link>
+
+              {/* Coach Chat Icon - Only show if user has assigned coach */}
+              {hasCoach && (
+                <Link
+                  to={createPageUrl('CoachChat')}
+                  className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all relative"
+                  title={`Chat met ${assignedCoach?.name || 'je coach'}`}
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  {chatUnreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#10b77f] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                      {chatUnreadCount > 99 ? '99+' : chatUnreadCount}
+                    </span>
+                  )}
+                </Link>
+              )}
+
+              {/* Video Call Icon - Only show if user has assigned coach */}
+              {hasCoach && (
+                <Link
+                  to={createPageUrl('VideoCall')}
+                  className={`w-9 h-9 flex items-center justify-center rounded-full transition-all relative ${
+                    hasActiveVideoCall
+                      ? 'bg-[#10b77f] text-white animate-pulse'
+                      : 'text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a]'
+                  }`}
+                  title={hasActiveVideoCall ? 'Actief video gesprek - Deelnemen' : 'Video gesprekken'}
+                >
+                  <Video className="w-5 h-5" />
+                </Link>
+              )}
 
               {/* Notification Bell */}
               <DropdownMenu>
@@ -1342,6 +1384,37 @@ function LayoutWithProvider({ children, currentPageName }) {
             >
               <Heart className="w-5 h-5" />
             </Link>
+
+            {/* Coach Chat Icon (Mobile) - Only show if user has assigned coach */}
+            {hasCoach && (
+              <Link
+                to={createPageUrl('CoachChat')}
+                className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all relative"
+                title={`Chat met ${assignedCoach?.name || 'je coach'}`}
+              >
+                <MessageCircle className="w-5 h-5" />
+                {chatUnreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#10b77f] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                    {chatUnreadCount > 99 ? '99+' : chatUnreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
+
+            {/* Video Call Icon (Mobile) - Only show if user has assigned coach */}
+            {hasCoach && (
+              <Link
+                to={createPageUrl('VideoCall')}
+                className={`w-9 h-9 flex items-center justify-center rounded-full transition-all relative ${
+                  hasActiveVideoCall
+                    ? 'bg-[#10b77f] text-white animate-pulse'
+                    : 'text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a]'
+                }`}
+                title={hasActiveVideoCall ? 'Actief video gesprek - Deelnemen' : 'Video gesprekken'}
+              >
+                <Video className="w-5 h-5" />
+              </Link>
+            )}
 
             {/* Settings Button (Gear Icon) */}
             <Link

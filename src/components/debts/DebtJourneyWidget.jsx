@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { formatCurrency } from '@/components/utils/formatters';
 
 export default function DebtJourneyWidget({
   debts = [],
   totalPaid = 0,
   paymentCount = 0,
+  payments = [],
   onViewAll
 }) {
-  const [selectedPeriod, setSelectedPeriod] = useState('6m');
+  const [viewMode, setViewMode] = useState('month');
 
   const totalDebt = debts.reduce((sum, d) => sum + (d.amount || 0), 0);
-  const clearedDebts = debts.filter(d => d.status === 'afbetaald').length;
   const overallProgress = totalDebt > 0 ? Math.min((totalPaid / (totalDebt + totalPaid)) * 100, 100) : 0;
 
   // Streak calculation (simplified - based on payments)
@@ -19,174 +19,156 @@ export default function DebtJourneyWidget({
   // Average monthly payment (simplified calculation)
   const avgMonthlyPayment = paymentCount > 0 ? totalPaid / Math.max(paymentCount / 2, 1) : 0;
 
-  // Generate chart data points (6 months of sample data)
-  const generateChartPath = () => {
-    const points = [
-      { x: 0, y: 100 },
-      { x: 16.6, y: 85 },
-      { x: 33.3, y: 70 },
-      { x: 50, y: 55 },
-      { x: 66.6, y: 40 },
-      { x: 83.3, y: 25 },
-      { x: 100, y: Math.max(100 - overallProgress, 10) }
-    ];
+  // Generate monthly chart data from payments
+  const chartData = useMemo(() => {
+    const now = new Date();
+    const months = [];
+    const monthNames = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
 
-    const pathPoints = points.map((p, i) => {
-      const x = (p.x / 100) * 280 + 20;
-      const y = (p.y / 100) * 80 + 10;
-      return i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
-    }).join(' ');
+    // Get last 6 months
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      months.push({
+        month: monthNames[date.getMonth()],
+        monthKey,
+        amount: 0
+      });
+    }
 
-    return pathPoints;
-  };
+    // Sum payments by month
+    if (payments && payments.length > 0) {
+      payments.forEach(payment => {
+        if (payment.payment_date) {
+          const paymentDate = new Date(payment.payment_date);
+          const monthKey = `${paymentDate.getFullYear()}-${String(paymentDate.getMonth() + 1).padStart(2, '0')}`;
+          const monthData = months.find(m => m.monthKey === monthKey);
+          if (monthData) {
+            monthData.amount += payment.amount || 0;
+          }
+        }
+      });
+    }
 
-  // Progress circle calculations
-  const circleRadius = 40;
-  const circumference = 2 * Math.PI * circleRadius;
-  const progressOffset = circumference - (overallProgress / 100) * circumference;
+    return months;
+  }, [payments]);
+
+  const maxAmount = Math.max(...chartData.map(d => d.amount), 1000);
+
+  // Calculate bar heights as percentages
+  const bars = chartData.map(item => ({
+    ...item,
+    height: maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0
+  }));
 
   return (
     <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-[24px] p-6 shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="size-10 rounded-full bg-emerald-100 dark:bg-[#1a2e26] flex items-center justify-center">
             <span className="material-symbols-outlined text-emerald-500 text-[20px]">trending_up</span>
           </div>
-          <h3 className="font-semibold text-lg text-[#1F2937] dark:text-white">Jouw Schuldreis</h3>
+          <div>
+            <h3 className="font-semibold text-lg text-[#1F2937] dark:text-white">Jouw Schuldreis</h3>
+            <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">Je bent goed op weg naar €0!</p>
+          </div>
         </div>
 
-        {/* Period Selector */}
+        {/* View Mode Selector */}
         <div className="flex bg-gray-100 dark:bg-[#2a2a2a] rounded-full p-1">
-          {['6m', '1j', 'Totaal'].map((period) => (
-            <button
-              key={period}
-              onClick={() => setSelectedPeriod(period)}
-              className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
-                selectedPeriod === period
-                  ? 'bg-white dark:bg-[#3a3a3a] text-[#1F2937] dark:text-white shadow-sm'
-                  : 'text-gray-500 dark:text-[#a1a1a1] hover:text-gray-700 dark:hover:text-white'
-              }`}
-            >
-              {period}
-            </button>
+          <button
+            onClick={() => setViewMode('month')}
+            className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${
+              viewMode === 'month'
+                ? 'bg-emerald-500 text-white shadow-sm'
+                : 'text-gray-500 dark:text-[#a1a1a1] hover:text-gray-700 dark:hover:text-white'
+            }`}
+          >
+            Maand
+          </button>
+          <button
+            onClick={() => setViewMode('week')}
+            className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${
+              viewMode === 'week'
+                ? 'bg-emerald-500 text-white shadow-sm'
+                : 'text-gray-500 dark:text-[#a1a1a1] hover:text-gray-700 dark:hover:text-white'
+            }`}
+          >
+            Week
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Row */}
+      <div className="flex items-end gap-4 mb-6">
+        <div>
+          <p className="text-2xl font-extrabold text-emerald-500 tracking-tight">
+            {formatCurrency(totalPaid)}
+          </p>
+          <p className="text-sm text-gray-500 dark:text-[#a1a1a1] font-medium">Totaal Afbetaald</p>
+        </div>
+        <div className="mb-1 px-3 py-1 bg-purple-100 dark:bg-purple-500/15 text-purple-600 dark:text-purple-400 rounded-full text-xs font-bold flex items-center gap-1">
+          <span className="material-symbols-outlined text-[16px]">trending_up</span>
+          Voortgang: {Math.round(overallProgress)}%
+        </div>
+      </div>
+
+      {/* Bar Chart */}
+      <div className="w-full h-48 relative flex items-end justify-between px-2 pt-6">
+        {/* Y-axis labels */}
+        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8 pr-4">
+          {[maxAmount, maxAmount * 0.75, maxAmount * 0.5, maxAmount * 0.25, 0].map((value, idx) => (
+            <div key={idx} className="border-t border-gray-100 dark:border-[#2a2a2a] w-full relative h-0">
+              <span className="absolute -top-2.5 -left-1 text-[10px] text-gray-400 dark:text-[#666] w-8 text-right">
+                €{value >= 1000 ? `${(value / 1000).toFixed(1)}k` : Math.round(value)}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Bars */}
+        <div className="w-full flex justify-between items-end h-full z-10 pl-10 pb-8 gap-3">
+          {bars.map((bar, index) => (
+            <div key={index} className="flex-1 flex flex-col items-center group h-full justify-end">
+              <div className="relative w-full max-w-[50px] bg-gray-100 dark:bg-[#2a2a2a] rounded-[20px] h-full overflow-hidden">
+                <div
+                  className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#3D6456] to-[#10B981] dark:from-[#1a4a3a] dark:to-emerald-400 rounded-[20px] transition-all duration-500 ease-out group-hover:opacity-90"
+                  style={{ height: `${Math.max(bar.height, bar.amount > 0 ? 5 : 0)}%` }}
+                />
+                {bar.amount > 0 && (
+                  <div className="absolute opacity-0 group-hover:opacity-100 bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-[#333] text-white text-xs rounded px-2 py-1 whitespace-nowrap z-20 transition-opacity font-medium">
+                    {formatCurrency(bar.amount)}
+                  </div>
+                )}
+              </div>
+              <span className="mt-2 text-xs font-medium text-gray-500 dark:text-[#a1a1a1]">{bar.month}</span>
+            </div>
           ))}
         </div>
       </div>
 
-      {/* Chart Area */}
-      <div className="relative h-28 mb-6">
-        <svg className="w-full h-full" viewBox="0 0 320 100" preserveAspectRatio="none">
-          {/* Grid Lines */}
-          <line x1="20" y1="30" x2="300" y2="30" stroke="currentColor" strokeWidth="1" className="text-gray-100 dark:text-[#2a2a2a]" strokeDasharray="4 4" />
-          <line x1="20" y1="50" x2="300" y2="50" stroke="currentColor" strokeWidth="1" className="text-gray-100 dark:text-[#2a2a2a]" strokeDasharray="4 4" />
-          <line x1="20" y1="70" x2="300" y2="70" stroke="currentColor" strokeWidth="1" className="text-gray-100 dark:text-[#2a2a2a]" strokeDasharray="4 4" />
-
-          {/* Chart Line */}
-          <path
-            d={generateChartPath()}
-            fill="none"
-            stroke="#10b981"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-
-          {/* Data Points */}
-          {[0, 16.6, 33.3, 50, 66.6, 83.3, 100].map((x, i) => {
-            const progress = [100, 85, 70, 55, 40, 25, Math.max(100 - overallProgress, 10)];
-            const cx = (x / 100) * 280 + 20;
-            const cy = (progress[i] / 100) * 80 + 10;
-            return (
-              <circle
-                key={i}
-                cx={cx}
-                cy={cy}
-                r="4"
-                fill="#10b981"
-                className="drop-shadow-sm"
-              />
-            );
-          })}
-        </svg>
-
-        {/* Month Labels */}
-        <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4 text-xs text-gray-400 dark:text-[#a1a1a1]">
-          <span>Jan</span>
-          <span>Feb</span>
-          <span>Mrt</span>
-          <span>Apr</span>
-          <span>Mei</span>
-          <span>Jun</span>
-          <span>Jul</span>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-4">
-        {/* Total Paid */}
-        <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-2xl p-4 border border-gray-100 dark:border-[#2a2a2a]">
-          <p className="text-xs text-gray-500 dark:text-[#a1a1a1] mb-1">Totaal Afbetaald</p>
-          <p className="text-lg font-bold text-emerald-500">{formatCurrency(totalPaid)}</p>
-        </div>
-
-        {/* Progress Circle */}
-        <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-2xl p-4 border border-gray-100 dark:border-[#2a2a2a] flex flex-col items-center justify-center">
-          <div className="relative size-14">
-            <svg className="size-14 -rotate-90" viewBox="0 0 100 100">
-              {/* Background Circle */}
-              <circle
-                cx="50"
-                cy="50"
-                r={circleRadius}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="8"
-                className="text-gray-200 dark:text-[#2a2a2a]"
-              />
-              {/* Progress Circle */}
-              <circle
-                cx="50"
-                cy="50"
-                r={circleRadius}
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray={circumference}
-                strokeDashoffset={progressOffset}
-                className="transition-all duration-500"
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-sm font-bold text-[#1F2937] dark:text-white">{Math.round(overallProgress)}%</span>
-            </div>
+      {/* Bottom Stats */}
+      <div className="flex gap-3 mt-4">
+        {/* Streak */}
+        <div className="flex-1 bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-3 border border-gray-100 dark:border-[#2a2a2a] flex items-center gap-3">
+          <div className="size-10 rounded-lg bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center">
+            <span className="material-symbols-outlined text-orange-500 text-[20px]">local_fire_department</span>
           </div>
-          <p className="text-xs text-gray-500 dark:text-[#a1a1a1] mt-1">Voortgang</p>
+          <div>
+            <p className="text-lg font-bold text-[#1F2937] dark:text-white">{streak}</p>
+            <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">Streak</p>
+          </div>
         </div>
 
-        {/* Stats Column */}
-        <div className="flex flex-col gap-2">
-          {/* Streak */}
-          <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-3 border border-gray-100 dark:border-[#2a2a2a] flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center">
-              <span className="material-symbols-outlined text-orange-500 text-[16px]">local_fire_department</span>
-            </div>
-            <div>
-              <p className="text-sm font-bold text-[#1F2937] dark:text-white">{streak}</p>
-              <p className="text-[10px] text-gray-500 dark:text-[#a1a1a1]">Streak</p>
-            </div>
+        {/* Average */}
+        <div className="flex-1 bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-3 border border-gray-100 dark:border-[#2a2a2a] flex items-center gap-3">
+          <div className="size-10 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
+            <span className="material-symbols-outlined text-blue-500 text-[20px]">show_chart</span>
           </div>
-
-          {/* Average */}
-          <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-3 border border-gray-100 dark:border-[#2a2a2a] flex items-center gap-2">
-            <div className="size-8 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
-              <span className="material-symbols-outlined text-blue-500 text-[16px]">show_chart</span>
-            </div>
-            <div>
-              <p className="text-sm font-bold text-[#1F2937] dark:text-white">{formatCurrency(avgMonthlyPayment)}</p>
-              <p className="text-[10px] text-gray-500 dark:text-[#a1a1a1]">Gem./mnd</p>
-            </div>
+          <div>
+            <p className="text-lg font-bold text-[#1F2937] dark:text-white">{formatCurrency(avgMonthlyPayment)}</p>
+            <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">Gem./mnd</p>
           </div>
         </div>
       </div>

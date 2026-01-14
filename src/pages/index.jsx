@@ -29,6 +29,8 @@ const Adempauze = React.lazy(() => import("./Adempauze"));
 const AdempauzeCalculator = React.lazy(() => import("./AdempauzeCalculator"));
 const Wishlist = React.lazy(() => import("./Wishlist"));
 const BudgetHelp = React.lazy(() => import("./BudgetHelp"));
+const CoachChat = React.lazy(() => import("./CoachChat"));
+const VideoCall = React.lazy(() => import("./VideoCall"));
 
 // Keep smaller/frequently accessed pages static
 import TermsOfService from "./TermsOfService";
@@ -137,6 +139,8 @@ function PagesContent() {
                 <Route path="/AdempauzeCalculator" element={<LazyRoute component={AdempauzeCalculator} />} />
                 <Route path="/Wishlist" element={<LazyRoute component={Wishlist} />} />
                 <Route path="/BudgetHelp" element={<LazyRoute component={BudgetHelp} />} />
+                <Route path="/CoachChat" element={<LazyRoute component={CoachChat} />} />
+                <Route path="/VideoCall" element={<LazyRoute component={VideoCall} />} />
 
                 {/* Settings and smaller pages - static */}
                 <Route path="/Settings" element={<Settings />} />
