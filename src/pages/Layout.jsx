@@ -11,6 +11,8 @@ import { Transaction } from "@/api/entities";
 import { UploadFile } from "@/api/integrations";
 import { ToastProvider, useToast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
+import { useCoachRelation, useUnreadMessageCount } from "@/hooks/useCoachChat";
+import { useClientVideoCalls } from "@/hooks/useVideoCall";
 import {
   Home,
   DollarSign,
@@ -40,7 +42,8 @@ import {
   Shield,
   Mail,
   MessageCircle,
-  BarChart3
+  BarChart3,
+  Video
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -81,21 +84,30 @@ export default function Layout({ children, currentPageName }) {
 function LayoutWithProvider({ children, currentPageName }) {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  
+
+
   const { t, language, changeLanguage } = useTranslation();
   const { toast } = useToast();
   const { startPageTour, startFullOnboarding } = useTour();
-  
-  // Dark mode state
+
+  // Dark mode state - initialize early and apply immediately
   const [darkMode, setDarkMode] = React.useState(() => {
     // Check localStorage first, then system preference
-    const saved = localStorage.getItem('theme');
-    if (saved !== null) return saved === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      const isDark = saved !== null ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      // Apply immediately to prevent flash
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      return isDark;
+    }
+    return false;
   });
 
-  // Apply dark mode to document
+  // Apply dark mode to document when state changes
   React.useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -213,7 +225,15 @@ function LayoutWithProvider({ children, currentPageName }) {
   const [unreadCount, setUnreadCount] = React.useState(0);
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
   const [checkingOnboarding, setCheckingOnboarding] = React.useState(true);
-  
+
+  // Coach chat hooks - check if user has an assigned coach
+  const { hasCoach, coach: assignedCoach, loading: coachLoading } = useCoachRelation(user?.id);
+  const { unreadCount: chatUnreadCount } = useUnreadMessageCount(user?.id);
+
+  // Video calls hook - check for active calls
+  const { activeCalls } = useClientVideoCalls(user?.id);
+  const hasActiveVideoCall = activeCalls && activeCalls.length > 0;
+
   const [balansOpen, setBalansOpen] = React.useState(false);
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [showLoanModal, setShowLoanModal] = React.useState(false);
@@ -775,10 +795,10 @@ function LayoutWithProvider({ children, currentPageName }) {
 
   if (checkingOnboarding) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400"></div>
-          <p className="text-gray-600 text-sm mt-4">{t('common.pleaseWait')}</p>
+          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400 dark:border-[#3a3a3a]"></div>
+          <p className="text-gray-600 dark:text-[#a1a1a1] text-sm mt-4">Instellingen laden...</p>
         </div>
       </div>
     );
@@ -988,7 +1008,7 @@ function LayoutWithProvider({ children, currentPageName }) {
               </div>
 
               {/* Adem Pauze (Heart Icon) */}
-              <Link 
+              <Link
                 to={createPageUrl('Adempauze')}
                 className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
                 title="Adem pauze"
@@ -996,8 +1016,170 @@ function LayoutWithProvider({ children, currentPageName }) {
                 <Heart className="w-5 h-5" />
               </Link>
 
+              {/* Coach Chat Icon - Only show if user has assigned coach */}
+              {hasCoach && (
+                <Link
+                  to={createPageUrl('CoachChat')}
+                  className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all relative"
+                  title={`Chat met ${assignedCoach?.name || 'je coach'}`}
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  {chatUnreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#10b77f] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                      {chatUnreadCount > 99 ? '99+' : chatUnreadCount}
+                    </span>
+                  )}
+                </Link>
+              )}
+
+              {/* Video Call Icon - Only show if user has assigned coach */}
+              {hasCoach && (
+                <Link
+                  to={createPageUrl('VideoCall')}
+                  className={`w-9 h-9 flex items-center justify-center rounded-full transition-all relative ${
+                    hasActiveVideoCall
+                      ? 'bg-[#10b77f] text-white animate-pulse'
+                      : 'text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a]'
+                  }`}
+                  title={hasActiveVideoCall ? 'Actief video gesprek - Deelnemen' : 'Video gesprekken'}
+                >
+                  <Video className="w-5 h-5" />
+                </Link>
+              )}
+
+              {/* Notification Bell */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all relative"
+                    title="Notificaties"
+                  >
+                    <Bell className="w-5 h-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-80 bg-[#1a1a1a] border border-[#2a2a2a] max-h-[400px] overflow-y-auto">
+                  <DropdownMenuLabel className="text-white flex items-center justify-between">
+                    <span>Notificaties</span>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllAsRead}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Alles gelezen
+                      </button>
+                    )}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+
+                  {notifications.length === 0 ? (
+                    <div className="py-8 text-center text-[#a1a1a1]">
+                      <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Geen notificaties</p>
+                    </div>
+                  ) : (
+                    <>
+                      {groupedNotifications.today.length > 0 && (
+                        <>
+                          <div className="px-3 py-1 text-xs text-[#6b7280] font-medium">Vandaag</div>
+                          {groupedNotifications.today.map((notif) => (
+                            <DropdownMenuItem
+                              key={notif.id}
+                              onClick={() => handleMarkAsRead(notif.id)}
+                              className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
+                            >
+                              <div className="flex-shrink-0 mt-0.5">
+                                {getNotificationIcon(notif.type)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm ${!notif.is_read ? 'text-white font-medium' : 'text-[#a1a1a1]'}`}>
+                                  {notif.title}
+                                </p>
+                                <p className="text-xs text-[#6b7280] truncate">{notif.message}</p>
+                                <p className="text-xs text-[#4b5563] mt-1">{getTimeAgo(notif.created_date)}</p>
+                              </div>
+                              {!notif.is_read && (
+                                <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        </>
+                      )}
+
+                      {groupedNotifications.yesterday.length > 0 && (
+                        <>
+                          <div className="px-3 py-1 text-xs text-[#6b7280] font-medium">Gisteren</div>
+                          {groupedNotifications.yesterday.map((notif) => (
+                            <DropdownMenuItem
+                              key={notif.id}
+                              onClick={() => handleMarkAsRead(notif.id)}
+                              className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
+                            >
+                              <div className="flex-shrink-0 mt-0.5">
+                                {getNotificationIcon(notif.type)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm ${!notif.is_read ? 'text-white font-medium' : 'text-[#a1a1a1]'}`}>
+                                  {notif.title}
+                                </p>
+                                <p className="text-xs text-[#6b7280] truncate">{notif.message}</p>
+                                <p className="text-xs text-[#4b5563] mt-1">{getTimeAgo(notif.created_date)}</p>
+                              </div>
+                              {!notif.is_read && (
+                                <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        </>
+                      )}
+
+                      {groupedNotifications.earlier.length > 0 && (
+                        <>
+                          <div className="px-3 py-1 text-xs text-[#6b7280] font-medium">Eerder</div>
+                          {groupedNotifications.earlier.slice(0, 5).map((notif) => (
+                            <DropdownMenuItem
+                              key={notif.id}
+                              onClick={() => handleMarkAsRead(notif.id)}
+                              className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
+                            >
+                              <div className="flex-shrink-0 mt-0.5">
+                                {getNotificationIcon(notif.type)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm ${!notif.is_read ? 'text-white font-medium' : 'text-[#a1a1a1]'}`}>
+                                  {notif.title}
+                                </p>
+                                <p className="text-xs text-[#6b7280] truncate">{notif.message}</p>
+                                <p className="text-xs text-[#4b5563] mt-1">{getTimeAgo(notif.created_date)}</p>
+                              </div>
+                              {!notif.is_read && (
+                                <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                              )}
+                            </DropdownMenuItem>
+                          ))}
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to={createPageUrl('NotificationSettings')}
+                      className="text-primary hover:bg-[#2a2a2a] flex items-center justify-center py-2"
+                    >
+                      Alle notificaties bekijken
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               {/* Settings Button (Gear Icon) */}
-              <Link 
+              <Link
                 to={createPageUrl('Settings')}
                 className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
                 title="Instellingen"
@@ -1012,11 +1194,11 @@ function LayoutWithProvider({ children, currentPageName }) {
                     <span className="hidden xl:block text-sm font-medium text-white group-hover:text-primary transition-colors">
                       {user?.voornaam || user?.full_name || user?.name || user?.email?.split('@')[0] || 'Gebruiker'}
                     </span>
-                    <div 
+                    <div
                       className="w-9 h-9 rounded-full bg-cover bg-center border border-[#3a3a3a] dark:border-[#3a3a3a] group-hover:border-primary transition-all"
-                      style={user?.profielfoto_url ? { backgroundImage: `url(${user.profielfoto_url})` } : {}}
+                      style={user?.avatar_url ? { backgroundImage: `url(${user.avatar_url})` } : {}}
                     >
-                      {!user?.profielfoto_url && (
+                      {!user?.avatar_url && (
                         <div className="w-full h-full flex items-center justify-center bg-primary text-black font-bold text-sm rounded-full">
                           {user?.voornaam?.[0]?.toUpperCase() || user?.full_name?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'G'}
                         </div>
@@ -1092,8 +1274,110 @@ function LayoutWithProvider({ children, currentPageName }) {
               </button>
             </div>
 
+            {/* Notification Bell (Mobile) */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all relative"
+                  title="Notificaties"
+                >
+                  <Bell className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 bg-[#1a1a1a] border border-[#2a2a2a] max-h-[70vh] overflow-y-auto">
+                <DropdownMenuLabel className="text-white flex items-center justify-between">
+                  <span>Notificaties</span>
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={handleMarkAllAsRead}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Alles gelezen
+                    </button>
+                  )}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+
+                {notifications.length === 0 ? (
+                  <div className="py-8 text-center text-[#a1a1a1]">
+                    <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Geen notificaties</p>
+                  </div>
+                ) : (
+                  <>
+                    {groupedNotifications.today.length > 0 && (
+                      <>
+                        <div className="px-3 py-1 text-xs text-[#6b7280] font-medium">Vandaag</div>
+                        {groupedNotifications.today.slice(0, 3).map((notif) => (
+                          <DropdownMenuItem
+                            key={notif.id}
+                            onClick={() => handleMarkAsRead(notif.id)}
+                            className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
+                          >
+                            <div className="flex-shrink-0 mt-0.5">
+                              {getNotificationIcon(notif.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm ${!notif.is_read ? 'text-white font-medium' : 'text-[#a1a1a1]'}`}>
+                                {notif.title}
+                              </p>
+                              <p className="text-xs text-[#6b7280] truncate">{notif.message}</p>
+                            </div>
+                            {!notif.is_read && (
+                              <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                      </>
+                    )}
+
+                    {groupedNotifications.yesterday.length > 0 && (
+                      <>
+                        <div className="px-3 py-1 text-xs text-[#6b7280] font-medium">Gisteren</div>
+                        {groupedNotifications.yesterday.slice(0, 3).map((notif) => (
+                          <DropdownMenuItem
+                            key={notif.id}
+                            onClick={() => handleMarkAsRead(notif.id)}
+                            className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
+                          >
+                            <div className="flex-shrink-0 mt-0.5">
+                              {getNotificationIcon(notif.type)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className={`text-sm ${!notif.is_read ? 'text-white font-medium' : 'text-[#a1a1a1]'}`}>
+                                {notif.title}
+                              </p>
+                              <p className="text-xs text-[#6b7280] truncate">{notif.message}</p>
+                            </div>
+                            {!notif.is_read && (
+                              <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                            )}
+                          </DropdownMenuItem>
+                        ))}
+                      </>
+                    )}
+                  </>
+                )}
+
+                <DropdownMenuSeparator className="bg-[#2a2a2a]" />
+                <DropdownMenuItem asChild>
+                  <Link
+                    to={createPageUrl('NotificationSettings')}
+                    className="text-primary hover:bg-[#2a2a2a] flex items-center justify-center py-2"
+                  >
+                    Alle notificaties bekijken
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {/* Adem Pauze (Heart Icon) */}
-            <Link 
+            <Link
               to={createPageUrl('Adempauze')}
               className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
               title="Adem pauze"
@@ -1101,8 +1385,39 @@ function LayoutWithProvider({ children, currentPageName }) {
               <Heart className="w-5 h-5" />
             </Link>
 
+            {/* Coach Chat Icon (Mobile) - Only show if user has assigned coach */}
+            {hasCoach && (
+              <Link
+                to={createPageUrl('CoachChat')}
+                className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all relative"
+                title={`Chat met ${assignedCoach?.name || 'je coach'}`}
+              >
+                <MessageCircle className="w-5 h-5" />
+                {chatUnreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#10b77f] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                    {chatUnreadCount > 99 ? '99+' : chatUnreadCount}
+                  </span>
+                )}
+              </Link>
+            )}
+
+            {/* Video Call Icon (Mobile) - Only show if user has assigned coach */}
+            {hasCoach && (
+              <Link
+                to={createPageUrl('VideoCall')}
+                className={`w-9 h-9 flex items-center justify-center rounded-full transition-all relative ${
+                  hasActiveVideoCall
+                    ? 'bg-[#10b77f] text-white animate-pulse'
+                    : 'text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a]'
+                }`}
+                title={hasActiveVideoCall ? 'Actief video gesprek - Deelnemen' : 'Video gesprekken'}
+              >
+                <Video className="w-5 h-5" />
+              </Link>
+            )}
+
             {/* Settings Button (Gear Icon) */}
-            <Link 
+            <Link
               to={createPageUrl('Settings')}
               className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
               title="Instellingen"
@@ -1113,11 +1428,11 @@ function LayoutWithProvider({ children, currentPageName }) {
             {/* User Profile */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <div 
+                <div
                   className="w-9 h-9 rounded-full bg-cover bg-center border border-[#3a3a3a] dark:border-[#3a3a3a] cursor-pointer"
-                  style={user?.profielfoto_url ? { backgroundImage: `url(${user.profielfoto_url})` } : {}}
+                  style={user?.avatar_url ? { backgroundImage: `url(${user.avatar_url})` } : {}}
                 >
-                  {!user?.profielfoto_url && (
+                  {!user?.avatar_url && (
                     <div className="w-full h-full flex items-center justify-center bg-primary text-black font-bold text-xs rounded-full">
                       {user?.voornaam?.[0]?.toUpperCase() || user?.full_name?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'G'}
                     </div>
@@ -1273,7 +1588,12 @@ function LayoutWithProvider({ children, currentPageName }) {
           onClose={() => setShowScanDebtModal(false)}
           onDebtScanned={async (debtData) => {
             try {
-              await Debt.create(debtData);
+              // Ensure name field is set (required by database)
+              const dataToCreate = {
+                ...debtData,
+                name: debtData.name || debtData.creditor_name || 'Onbekende schuld'
+              };
+              await Debt.create(dataToCreate);
               toast({ 
                 title: "✅ Schuld toegevoegd!",
                 description: "Je kunt nu de volgende brief scannen"

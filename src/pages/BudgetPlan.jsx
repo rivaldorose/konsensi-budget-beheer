@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Income } from '@/api/entities';
 import { MonthlyCost } from '@/api/entities';
 import { Debt } from '@/api/entities';
@@ -7,6 +8,7 @@ import { User } from '@/api/entities';
 import { Pot } from '@/api/entities';
 import { createPageUrl } from '@/utils';
 import AddTransactionModal from '@/components/budget/AddTransactionModal';
+import AddBudgetCategoryModal from '@/components/budget/AddBudgetCategoryModal';
 
 export default function BudgetPlan() {
     const [loading, setLoading] = useState(true);
@@ -409,10 +411,13 @@ export default function BudgetPlan() {
                         <p className="text-gray-500 dark:text-[#a1a1a1] text-base md:text-lg font-medium pl-1">Stel je maandelijkse budget samen en houd overzicht</p>
                     </div>
                     <div className="flex items-center gap-3 w-full md:w-auto">
-                        <button className="flex-1 md:flex-none items-center justify-center gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] text-gray-500 dark:text-[#a1a1a1] px-5 py-3 rounded-[24px] font-bold text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-gray-700 dark:hover:text-white transition-all shadow-sm">
+                        <Link
+                            to="/BudgetHelp"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] text-gray-500 dark:text-[#a1a1a1] px-5 py-3 rounded-[24px] font-bold text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-gray-700 dark:hover:text-white transition-all shadow-sm"
+                        >
                             <span className="material-symbols-outlined text-[20px]">help</span>
                             <span>Hulp bij budget</span>
-                        </button>
+                        </Link>
                         <button
                             className="flex-1 md:flex-none items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-[24px] font-bold text-sm hover:bg-[#059669] hover:scale-[1.02] transition-all shadow-lg shadow-primary/30"
                             onClick={() => setShowCategoryModal(true)}
@@ -785,6 +790,14 @@ export default function BudgetPlan() {
                 onClose={() => setShowAddModal(false)}
                 onSuccess={() => loadData()}
                 userEmail={user?.email}
+            />
+
+            {/* Add Budget Category Modal */}
+            <AddBudgetCategoryModal
+                isOpen={showCategoryModal}
+                onClose={() => setShowCategoryModal(false)}
+                onSuccess={() => loadData()}
+                monthlyIncome={totalIncome}
             />
         </div>
     );

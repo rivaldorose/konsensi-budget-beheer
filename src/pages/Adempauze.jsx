@@ -102,7 +102,7 @@ export default function Adempauze() {
     setWellbeing(mood);
     try {
       // Save wellbeing check
-      await User.updateMyUserData({ 
+      await User.updateMe({ 
         adempauze_wellbeing: mood,
         adempauze_wellbeing_checked_at: new Date().toISOString()
       });
@@ -123,7 +123,7 @@ export default function Adempauze() {
     setCompletedActions(newCompleted);
     
     try {
-      await User.updateMyUserData({
+      await User.updateMe({
         adempauze_actions_completed: newCompleted
       });
     } catch (error) {
@@ -136,7 +136,7 @@ export default function Adempauze() {
   const handleDeactivate = async () => {
     if (window.confirm("Weet je zeker dat je Adempauze wilt deactiveren?")) {
       try {
-        await User.updateMyUserData({
+        await User.updateMe({
           adempauze_active: false
         });
         toast({

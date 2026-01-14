@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 import { UploadFile, ExtractDataFromUploadedFile } from '@/api/integrations';
 import { Payslip } from '@/api/entities';
 import { WorkDay } from '@/api/entities';
@@ -76,7 +76,7 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
         const { User } = await import('@/api/entities');
         const user = await User.me();
         const newEmployers = [...(user.employers || []), extractedData.employer_name];
-        await User.updateMyUserData({ employers: newEmployers });
+        await User.updateMe({ employers: newEmployers });
       }
 
       // Save payslip

@@ -16,7 +16,6 @@ import DebtJourneyWidget from "../components/debts/DebtJourneyWidget";
 import DebtChallengesWidget from "../components/debts/DebtChallengesWidget";
 import DebtAchievementsModal from "../components/debts/DebtAchievementsModal";
 import DebtsInfoModal from "../components/debts/DebtsInfoModal";
-import AIDebtAnalysisWidget from "../components/debts/AIDebtAnalysisWidget";
 import ScanDebtModal from "../components/debts/ScanDebtModal";
 import { createPageUrl } from "@/utils";
 import { formatCurrency } from "@/components/utils/formatters";
@@ -80,8 +79,7 @@ export default function Debts() {
   const [showVtlbInfo, setShowVtlbInfo] = useState(false);
   const [showScanModal, setShowScanModal] = useState(false);
   const [showAddChoiceModal, setShowAddChoiceModal] = useState(false);
-  const [showAIAnalysis, setShowAIAnalysis] = useState(false);
-  const [filters, setFilters] = useState({
+    const [filters, setFilters] = useState({
         status: 'all',
         creditorType: 'all',
         minAmount: '',
@@ -193,10 +191,11 @@ export default function Debts() {
         await Debt.update(editingDebt.id, debtData);
         toast({ title: "Schuld bijgewerkt! 📝" });
       } else {
-        // Add user_id to debt data for RLS policy
+        // Add user_id and ensure name field is set (required by database)
         const dataWithUserId = {
           ...debtData,
-          user_id: user.id
+          user_id: user.id,
+          name: debtData.name || debtData.creditor_name || 'Onbekende schuld'
         };
         console.log('[Debts] Creating debt with user_id:', dataWithUserId);
         await Debt.create(dataWithUserId);
@@ -252,7 +251,12 @@ export default function Debts() {
           return;
         }
       }
-      await Debt.create(scannedData);
+      // Ensure name field is set (required by database)
+      const dataToCreate = {
+        ...scannedData,
+        name: scannedData.name || scannedData.creditor_name || 'Onbekende schuld'
+      };
+      await Debt.create(dataToCreate);
       await loadDebts();
       toast({ title: "✅ Schuld toegevoegd!" });
     } catch (error) {
@@ -591,28 +595,6 @@ export default function Debts() {
             </div>
       </div>
 
-          {/* AI Schuld Analyse Section (Collapsible) */}
-          <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl shadow-soft overflow-hidden">
-            <div
-              className="p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors group"
-              onClick={() => setShowAIAnalysis(!showAIAnalysis)}
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">🤖</span>
-                <h3 className="text-lg font-bold text-[#131d0c] dark:text-white font-display">AI Schuld Analyse</h3>
-                <span className="px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold border border-blue-200 dark:border-blue-500/20">
-                  {activeDebts} actief
-                </span>
-              </div>
-              <span className={`material-symbols-outlined text-gray-400 dark:text-[#a1a1a1] group-hover:text-gray-600 dark:group-hover:text-white transition-all ${showAIAnalysis ? 'rotate-180' : ''}`}>expand_more</span>
-            </div>
-            {showAIAnalysis && (
-              <div className="px-6 pb-6">
-                <AIDebtAnalysisWidget debts={debts} vtlbData={vtblData} />
-              </div>
-            )}
-          </div>
-
           {/* Voortgang & Uitdagingen Section (Collapsible) */}
           <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl shadow-soft overflow-hidden">
             <div
@@ -627,6 +609,7 @@ export default function Debts() {
             </div>
         {showGamification && (
               <div className="px-6 pb-6">
+                {/* Journey and Challenges Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <DebtJourneyWidget
                 debts={debts}

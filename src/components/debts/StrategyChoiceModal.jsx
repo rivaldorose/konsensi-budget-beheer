@@ -1,180 +1,234 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Loader2, Zap, Award, Snowflake, TrendingDown, Clock, Shield, Info, X } from 'lucide-react';
-import { Slider } from '@/components/ui/slider';
-import { useToast } from '@/components/ui/toast';
+import { Loader2, X, Check, TrendingDown, Clock, Zap, Scale, ChevronDown, ChevronUp } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/components/utils/LanguageContext';
 import { calculateStrategies, activateStrategy } from '@/api/functions';
 import { formatCurrency } from '@/components/utils/formatters';
-import { format } from 'date-fns';
-import { nl } from 'date-fns/locale';
 
-import SnowballExplanationModal from './SnowballExplanationModal';
-import AvalancheExplanationModal from './AvalancheExplanationModal';
+// Strategy comparison chart component
+const StrategyComparisonChart = ({ strategies }) => {
+    if (!strategies) return null;
 
-// Functions are now imported from @/api/functions
+    const snowballInterest = strategies.snowball?.total_interest || 0;
+    const avalancheInterest = strategies.avalanche?.total_interest || 0;
+    const proportionalInterest = strategies.proportional?.total_interest || 0;
 
+    const maxInterest = Math.max(snowballInterest, avalancheInterest, proportionalInterest, 1);
 
-const StrategyCard = ({ title, icon, description, advantages, disadvantages, result, onChoose, isChoosing, t, onShowExplanation }) => {
-    // Determine card styling based on title or a specific strategy type if available
-    const isSnowball = title === t('strategy.snowball.title');
-    const isAvalanche = title === t('strategy.avalanche.title');
-    const isProportional = title === "Gelijkmatige Verdeling"; // Use a direct check for the new strategy's title
-
-    let borderColor = 'border-gray-200';
-    let bgColor = 'bg-gray-50';
-    let iconBgColor = 'bg-gray-500';
-    let titleTextColor = 'text-gray-900';
-    let descriptionTextColor = 'text-gray-700';
-    let buttonColor = 'bg-gray-600 hover:bg-gray-700';
-
-    if (isSnowball) {
-        borderColor = 'border-blue-200';
-        bgColor = 'bg-blue-50';
-        iconBgColor = 'bg-blue-500';
-        titleTextColor = 'text-blue-900';
-        descriptionTextColor = 'text-blue-700';
-        buttonColor = 'bg-blue-600 hover:bg-blue-700';
-    } else if (isAvalanche) {
-        borderColor = 'border-purple-200';
-        bgColor = 'bg-purple-50';
-        iconBgColor = 'bg-purple-500';
-        titleTextColor = 'text-purple-900';
-        descriptionTextColor = 'text-purple-700';
-        buttonColor = 'bg-purple-600 hover:bg-purple-700';
-    } else if (isProportional) {
-        // New styling for Proportional card
-        borderColor = 'border-green-200';
-        bgColor = 'bg-green-50';
-        iconBgColor = 'bg-green-500';
-        titleTextColor = 'text-green-900';
-        descriptionTextColor = 'text-green-700';
-        buttonColor = 'bg-green-600 hover:bg-green-700';
-    }
-
+    const snowballHeight = (snowballInterest / maxInterest) * 100;
+    const avalancheHeight = (avalancheInterest / maxInterest) * 100;
+    const proportionalHeight = (proportionalInterest / maxInterest) * 100;
 
     return (
-        <div className={`p-6 border-2 rounded-lg flex flex-col h-full ${borderColor} ${bgColor}`}>
-            <div className="flex-1">
-                <div className="flex items-center gap-4 mb-4">
-                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${iconBgColor}`}>
-                        <span className="text-2xl">{icon}</span>
-                    </div>
-                    <div>
-                        <h3 className={`text-xl font-bold ${titleTextColor}`}>{title}</h3>
-                        <p className={`${descriptionTextColor}`}>{description}</p>
-                    </div>
+        <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-2xl p-6 border border-gray-200 dark:border-[#2a2a2a]">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Vergelijking Rentekosten</h3>
+            <div className="flex items-end justify-center gap-8 h-48">
+                {/* Sneeuwbal */}
+                <div className="flex flex-col items-center">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                        {formatCurrency(snowballInterest)}
+                    </span>
+                    <div
+                        className="w-16 bg-blue-500 rounded-t-lg transition-all duration-500"
+                        style={{ height: `${Math.max(snowballHeight, 10)}%` }}
+                    />
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">Sneeuwbal</span>
                 </div>
-                
-                <div className="space-y-1 text-sm mb-4">
-                    <p className="flex items-start gap-2"><span className="text-green-500 mt-1"><Award size={16}/></span>{advantages}</p>
-                    <p className="flex items-start gap-2"><span className="text-red-500 mt-1"><Shield size={16}/></span>{disadvantages}</p>
+                {/* Lawine */}
+                <div className="flex flex-col items-center">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                        {formatCurrency(avalancheInterest)}
+                    </span>
+                    <div
+                        className="w-16 bg-purple-500 rounded-t-lg transition-all duration-500"
+                        style={{ height: `${Math.max(avalancheHeight, 10)}%` }}
+                    />
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">Lawine</span>
                 </div>
-                
-                <div className="bg-white/70 rounded-md p-3 space-y-2 my-4 text-sm">
-                    <h4 className="font-semibold text-gray-700 mb-1">{t('strategy.yourOrder')}</h4>
-                    {result ? (
-                        <ol className="list-decimal list-inside space-y-1 text-gray-600">
-                            {result.schedule.slice(0, 3).map(item => (
-                                <li key={item.debt_id} className="truncate">
-                                    {item.debt_name} ({formatCurrency(item.amount)})
-                                </li>
-                            ))}
-                            {result.schedule.length > 3 && <li>... {t('strategy.andMore', {count: result.schedule.length - 3})}</li>}
-                        </ol>
-                    ) : (
-                        <div className="h-20 flex items-center justify-center">
-                            <Loader2 className="animate-spin text-gray-400" />
+                {/* Gelijkmatig */}
+                <div className="flex flex-col items-center">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                        {formatCurrency(proportionalInterest)}
+                    </span>
+                    <div
+                        className="w-16 bg-emerald-500 rounded-t-lg transition-all duration-500"
+                        style={{ height: `${Math.max(proportionalHeight, 10)}%` }}
+                    />
+                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">Gelijkmatig</span>
+                </div>
+            </div>
+            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+                Lagere balk = minder rente betalen
+            </p>
+        </div>
+    );
+};
+
+// New Strategy Card Component with expanded details
+const NewStrategyCard = ({
+    type,
+    title,
+    subtitle,
+    icon,
+    iconBg,
+    borderColor,
+    howItWorks,
+    example,
+    whyChoose,
+    pros,
+    cons,
+    result,
+    isSelected,
+    onSelect,
+    isLoading
+}) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    return (
+        <div
+            className={`bg-white dark:bg-[#1a1a1a] rounded-2xl border-2 transition-all duration-200 cursor-pointer
+                ${isSelected
+                    ? `${borderColor} ring-2 ring-offset-2 dark:ring-offset-[#0a0a0a] ring-emerald-500`
+                    : 'border-gray-200 dark:border-[#2a2a2a] hover:border-gray-300 dark:hover:border-[#3a3a3a]'
+                }`}
+            onClick={() => onSelect(type)}
+        >
+            {/* Header */}
+            <div className="p-5">
+                <div className="flex items-start gap-4">
+                    <div className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
+                        {icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
+                            {isSelected && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+                                    <Check className="w-3 h-3 mr-1" />
+                                    Geselecteerd
+                                </span>
+                            )}
                         </div>
-                    )}
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{subtitle}</p>
+                    </div>
                 </div>
 
-                {result && (
-                    <div className="text-sm space-y-2 bg-white/70 rounded-md p-3">
-                        <div className="flex justify-between">
-                            <span className="font-medium text-gray-600">{t('strategy.debtFree')}</span>
-                            <span className="font-bold text-gray-800">{format(new Date(result.debt_free_date), 'MMM yyyy', { locale: nl })} ({result.total_months} {t('strategy.months')})</span>
+                {/* Result summary */}
+                {isLoading ? (
+                    <div className="mt-4 flex items-center justify-center py-4">
+                        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                    </div>
+                ) : result && (
+                    <div className="mt-4 grid grid-cols-2 gap-3">
+                        <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-3">
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs mb-1">
+                                <Clock className="w-3.5 h-3.5" />
+                                Schuldenvrij
+                            </div>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                {result.total_months} maanden
+                            </p>
                         </div>
-                         <div className="flex justify-between">
-                            <span className="font-medium text-gray-600">{t('strategy.totalInterest')}</span>
-                            <span className="font-bold text-gray-800">{formatCurrency(result.total_interest)}</span>
+                        <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-3">
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs mb-1">
+                                <TrendingDown className="w-3.5 h-3.5" />
+                                Totale rente
+                            </div>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                {formatCurrency(result.total_interest)}
+                            </p>
                         </div>
                     </div>
                 )}
             </div>
 
-            <div className="flex flex-col gap-2 mt-6">
-                 <Button onClick={onChoose} disabled={isChoosing || !result} className={`w-full ${buttonColor}`}>
-                    {isChoosing ? <Loader2 className="animate-spin" /> : t('strategy.chooseButton', {title})}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={onShowExplanation} className="flex items-center gap-1 text-gray-600">
-                    <Info size={14}/> {t('strategy.viewExplanation')}
-                </Button>
-            </div>
-        </div>
-    );
-}
+            {/* Expandable Details */}
+            <div className="border-t border-gray-100 dark:border-[#2a2a2a]">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsExpanded(!isExpanded);
+                    }}
+                    className="w-full px-5 py-3 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                >
+                    <span>Meer informatie</span>
+                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
 
-const BudgetSelector = ({ available, initialBudget, onChange }) => {
-    const [budget, setBudget] = useState(initialBudget);
-    const { t } = useTranslation();
+                {isExpanded && (
+                    <div className="px-5 pb-5 space-y-4">
+                        {/* How it works */}
+                        <div>
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Hoe het werkt</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{howItWorks}</p>
+                        </div>
 
-    useEffect(() => {
-        // Debug log: BudgetSelector's internal budget state changed
-        console.log('BudgetSelector: Internal budget state changed to', budget);
-        onChange(budget);
-    }, [budget, onChange]);
+                        {/* Example */}
+                        <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-4">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Voorbeeld</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{example}</p>
+                        </div>
 
-    // Ensure recommendedBudget is within the valid range [10, available]
-    const recommendedBudget = Math.max(10, Math.min(available, Math.round((available / 2) / 50) * 50)); 
+                        {/* Why choose */}
+                        <div>
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Waarom deze kiezen?</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{whyChoose}</p>
+                        </div>
 
-    return (
-        <div className="mb-8 p-6 bg-gray-50 rounded-lg">
-            <h3 className="text-lg font-bold text-gray-800">{t('strategy.budgetSelector.title')}</h3>
-            <p className="text-gray-600 mb-4 text-sm">{t('strategy.budgetSelector.description', { amount: formatCurrency(available) })}</p>
-            
-            <Slider
-                value={[budget]}
-                onValueChange={(value) => {
-                    console.log('BudgetSelector: Slider value changed to', value[0]); // Debug log
-                    setBudget(value[0]);
-                }}
-                min={10}
-                max={available}
-                step={10}
-                className="w-full"
-            />
-            
-            <div className="flex justify-between text-sm text-gray-500 mt-2 mb-4">
-                <span>€10</span>
-                <span className="font-bold text-lg text-gray-900">{formatCurrency(budget)}</span>
-                <span>{formatCurrency(available)}</span>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-2">
-                <Button variant="outline" size="sm" onClick={() => {
-                    const newBudget = Math.max(50, Math.round(available * 0.1));
-                    console.log('BudgetSelector: Minimal button clicked, setting budget to', newBudget); // Debug log
-                    setBudget(newBudget);
-                }} className="h-auto py-2 flex flex-col">
-                    <span className="font-bold">{formatCurrency(Math.max(50, Math.round(available * 0.1)))}</span>
-                    <span className="text-xs font-normal">{t('strategy.budgetSelector.minimal')}</span>
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => {
-                    console.log('BudgetSelector: Recommended button clicked, setting budget to', recommendedBudget); // Debug log
-                    setBudget(recommendedBudget);
-                }} className="h-auto py-2 flex flex-col border-2 border-green-500 bg-green-50">
-                    <span className="font-bold">{formatCurrency(recommendedBudget)}</span>
-                    <span className="text-xs font-normal">{t('strategy.budgetSelector.recommended')}</span>
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => {
-                    console.log('BudgetSelector: Maximal button clicked, setting budget to', available); // Debug log
-                    setBudget(available);
-                }} className="h-auto py-2 flex flex-col">
-                    <span className="font-bold">{formatCurrency(available)}</span>
-                    <span className="text-xs font-normal">{t('strategy.budgetSelector.maximal')}</span>
-                </Button>
+                        {/* Pros & Cons */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <h4 className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-2">Voordelen</h4>
+                                <ul className="space-y-1">
+                                    {pros.map((pro, idx) => (
+                                        <li key={idx} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                                            <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                            {pro}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">Nadelen</h4>
+                                <ul className="space-y-1">
+                                    {cons.map((con, idx) => (
+                                        <li key={idx} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                                            <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                                            {con}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* Payment order preview */}
+                        {result?.schedule && result.schedule.length > 0 && (
+                            <div>
+                                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Aflosvolgorde</h4>
+                                <ol className="space-y-1">
+                                    {result.schedule.slice(0, 4).map((item, idx) => (
+                                        <li key={item.debt_id} className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                                            <span className="w-5 h-5 rounded-full bg-gray-200 dark:bg-[#2a2a2a] flex items-center justify-center text-xs font-medium">
+                                                {idx + 1}
+                                            </span>
+                                            <span className="truncate">{item.debt_name}</span>
+                                            <span className="text-gray-400 dark:text-gray-500 ml-auto">
+                                                {formatCurrency(item.amount)}
+                                            </span>
+                                        </li>
+                                    ))}
+                                    {result.schedule.length > 4 && (
+                                        <li className="text-sm text-gray-400 dark:text-gray-500 pl-7">
+                                            + {result.schedule.length - 4} meer schulden
+                                        </li>
+                                    )}
+                                </ol>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -185,250 +239,233 @@ export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, on
     const { t } = useTranslation();
     const [strategies, setStrategies] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [isChoosing, setIsChoosing] = useState(null);
-    const [currentBudget, setCurrentBudget] = useState(monthlyBudget);
+    const [isActivating, setIsActivating] = useState(false);
+    const [selectedStrategy, setSelectedStrategy] = useState(null);
 
-    const [showSnowballExplanation, setShowSnowballExplanation] = useState(false);
-    const [showAvalancheExplanation, setShowAvalancheExplanation] = useState(false);
-
+    // Reset state when modal closes
     useEffect(() => {
-        console.log(`StrategyChoiceModal: Modal is ${isOpen ? 'OPEN' : 'CLOSED'}. Initial monthlyBudget: ${monthlyBudget}, currentBudget: ${currentBudget}`);
         if (!isOpen) {
             setStrategies(null);
             setIsLoading(false);
-            setIsChoosing(null);
-            setShowSnowballExplanation(false);
-            setShowAvalancheExplanation(false);
-            console.log('StrategyChoiceModal: Internal state reset upon modal close.');
+            setIsActivating(false);
+            setSelectedStrategy(null);
         }
-    }, [isOpen, monthlyBudget, currentBudget]);
+    }, [isOpen]);
 
-    const fetchStrategies = useCallback(async (budget) => {
-        console.log(`StrategyChoiceModal: fetchStrategies called for budget: ${budget}`);
+    // Fetch strategies when modal opens
+    const fetchStrategies = useCallback(async () => {
+        if (!monthlyBudget || monthlyBudget <= 0) return;
+
         setIsLoading(true);
-        setStrategies(null);
         try {
-            const { data } = await calculateStrategies({ monthly_budget: budget });
-            console.log('StrategyChoiceModal: calculateStrategies succeeded. Data:', data);
+            const { data } = await calculateStrategies({ monthly_budget: monthlyBudget });
             setStrategies(data);
         } catch (error) {
-            console.error('StrategyChoiceModal: calculateStrategies failed. Error:', error);
-            toast({ title: t('toast.error.title'), description: t('strategy.error.calculation'), variant: 'destructive' });
+            console.error('Error calculating strategies:', error);
+            toast({
+                title: 'Fout',
+                description: 'Kon strategieën niet berekenen',
+                variant: 'destructive'
+            });
         } finally {
             setIsLoading(false);
-            console.log('StrategyChoiceModal: fetchStrategies completed.');
         }
-    }, [t, toast]);
+    }, [monthlyBudget, toast]);
 
     useEffect(() => {
-        if (isOpen && currentBudget > 0) {
-            console.log(`StrategyChoiceModal: currentBudget changed to ${currentBudget} while modal is open. Fetching strategies.`);
-            fetchStrategies(currentBudget);
-        } else if (isOpen && currentBudget <= 0) {
-            console.warn(`StrategyChoiceModal: Modal is open but currentBudget is ${currentBudget}. Cannot fetch strategies.`);
-            setStrategies(null);
+        if (isOpen && monthlyBudget > 0) {
+            fetchStrategies();
         }
-    }, [isOpen, currentBudget, fetchStrategies]);
+    }, [isOpen, monthlyBudget, fetchStrategies]);
 
-    const handleBudgetChange = useCallback((newBudget) => {
-        console.log(`StrategyChoiceModal: handleBudgetChange called. Old budget: ${currentBudget}, New budget: ${newBudget}`);
-        setCurrentBudget(newBudget);
-    }, [currentBudget]);
+    // Handle strategy selection
+    const handleSelectStrategy = (strategyType) => {
+        setSelectedStrategy(strategyType);
+    };
 
-    const handleChooseStrategy = async (strategyType) => {
-        console.log('🎯 User clicked strategy:', strategyType);
-        console.log('💰 Budget:', currentBudget);
-        
-        setIsChoosing(strategyType);
-        try {
-            console.log('📞 Calling activateStrategy...');
-            
-            const response = await activateStrategy({
-                strategy_type: strategyType,
-                monthly_budget: currentBudget,
+    // Handle confirm/activate strategy
+    const handleConfirmStrategy = async () => {
+        if (!selectedStrategy) {
+            toast({
+                title: 'Selecteer een strategie',
+                description: 'Kies eerst een aflosstrategie',
+                variant: 'destructive'
             });
-            
-            console.log('✅ Response from activateStrategy:', response);
-            
-            if (response && response.data && response.data.success) {
-                console.log('✅ Strategy saved successfully!');
-                console.log('📦 Received strategy:', response.data.strategy);
-                console.log('📦 Received schedule:', response.data.schedule);
-                
+            return;
+        }
+
+        setIsActivating(true);
+        try {
+            const response = await activateStrategy({
+                strategy_type: selectedStrategy,
+                monthly_budget: monthlyBudget,
+            });
+
+            if (response?.data?.success) {
                 toast({
-                    title: t('strategy.toast.activatedTitle'),
-                    description: response.data.message,
+                    title: 'Strategie geactiveerd!',
+                    description: response.data.message || 'Je aflosstrategie is opgeslagen',
                 });
-                
+
                 onClose();
-                
-                console.log('⏳ Waiting for database commit (1.5s)...');
+
+                // Give database time to commit, then refresh
                 setTimeout(() => {
-                    console.log('🔄 Now calling onStrategyChosen()...');
                     if (onStrategyChosen) {
                         onStrategyChosen();
                     }
                     setTimeout(() => {
-                        console.log('🔄 Force reload as backup (window.location.reload())...');
                         window.location.reload();
                     }, 500);
                 }, 1500);
-                
             } else {
-                console.error('❌ Invalid response:', response);
-                throw new Error(response?.data?.error || t('strategy.error.activation')); 
+                throw new Error(response?.data?.error || 'Kon strategie niet activeren');
             }
         } catch (error) {
-            console.error('❌ Error in handleChooseStrategy:', error);
-            toast({ 
-                title: t('toast.error.title'), 
-                description: error.message || t('strategy.error.activation'), 
-                variant: "destructive" 
+            console.error('Error activating strategy:', error);
+            toast({
+                title: 'Fout',
+                description: error.message || 'Kon strategie niet activeren',
+                variant: 'destructive'
             });
         } finally {
-            setIsChoosing(null);
+            setIsActivating(false);
         }
     };
-    
-    useEffect(() => {
-        if (showSnowballExplanation) {
-            console.log('StrategyChoiceModal: Snowball explanation modal opened.');
-        } else if (isOpen) {
-            console.log('StrategyChoiceModal: Snowball explanation modal closed.');
-        }
-    }, [showSnowballExplanation, isOpen]);
 
-    useEffect(() => {
-        if (showAvalancheExplanation) {
-            console.log('StrategyChoiceModal: Avalanche explanation modal opened.');
-        } else if (isOpen) {
-            console.log('StrategyChoiceModal: Avalanche explanation modal closed.');
-        }
-    }, [showAvalancheExplanation, isOpen]);
+    // Strategy configurations
+    const strategyConfigs = [
+        {
+            type: 'snowball',
+            title: 'Sneeuwbal',
+            subtitle: 'Begin klein, bouw momentum op',
+            icon: <span className="text-2xl">❄️</span>,
+            iconBg: 'bg-blue-100 dark:bg-blue-900/30',
+            borderColor: 'border-blue-500',
+            howItWorks: 'Je begint met het afbetalen van je kleinste schuld terwijl je minimale betalingen doet op de rest. Zodra de kleinste schuld is afgelost, gebruik je dat vrijgekomen geld voor de volgende kleinste schuld.',
+            example: 'Stel je hebt 3 schulden: €500, €2.000 en €5.000. Je richt je eerst volledig op de €500, dan de €2.000, en als laatste de €5.000.',
+            whyChoose: 'Perfect voor mensen die motivatie nodig hebben. Het snel afbetalen van kleinere schulden geeft je een gevoel van vooruitgang en houdt je gemotiveerd.',
+            pros: ['Snelle winsten voor motivatie', 'Minder schulden om bij te houden', 'Psychologisch bevredigend'],
+            cons: ['Mogelijk meer rente betalen', 'Niet de snelste methode'],
+        },
+        {
+            type: 'avalanche',
+            title: 'Lawine',
+            subtitle: 'Minimaliseer je totale kosten',
+            icon: <Zap className="w-6 h-6 text-purple-600 dark:text-purple-400" />,
+            iconBg: 'bg-purple-100 dark:bg-purple-900/30',
+            borderColor: 'border-purple-500',
+            howItWorks: 'Je richt je eerst op de schuld met het hoogste rentepercentage, ongeacht het bedrag. Dit bespaart je het meeste geld op de lange termijn.',
+            example: 'Als je een creditcard met 18% rente en een lening met 5% rente hebt, betaal je eerst de creditcard af, ook al is de lening misschien kleiner.',
+            whyChoose: 'De mathematisch optimale strategie. Als je gedisciplineerd bent en wilt besparen op rentekosten, is dit de beste keuze.',
+            pros: ['Laagste totale kosten', 'Snelst schuldenvrij', 'Financieel optimaal'],
+            cons: ['Kan langer duren voor eerste afbetaling', 'Vereist meer discipline'],
+        },
+        {
+            type: 'proportional',
+            title: 'Gelijkmatige Verdeling',
+            subtitle: 'Eerlijk verdelen over alle schulden',
+            icon: <Scale className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />,
+            iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
+            borderColor: 'border-emerald-500',
+            howItWorks: 'Je verdeelt je beschikbare budget proportioneel over alle schulden op basis van hun omvang. Grotere schulden krijgen meer, kleinere krijgen minder.',
+            example: 'Met €300 budget en schulden van €1.000 en €2.000 gaat €100 naar de kleinere en €200 naar de grotere schuld.',
+            whyChoose: 'Ideaal als je goede relaties wilt behouden met alle schuldeisers en niemand wilt laten wachten.',
+            pros: ['Eerlijk voor alle partijen', 'Voorkomt conflicten', 'Eenvoudig te begrijpen'],
+            cons: ['Niet optimaal voor rente', 'Minder motiverende tussenwinsten'],
+        },
+    ];
 
-    const avalancheSavings = strategies ? Math.max(0, strategies.snowball.total_interest - strategies.avalanche.total_interest) : 0;
+    const getSelectedStrategyName = () => {
+        const config = strategyConfigs.find(s => s.type === selectedStrategy);
+        return config?.title || '';
+    };
 
     return (
-        <>
-            <Dialog open={isOpen} onOpenChange={(open) => {
-                console.log(`StrategyChoiceModal: Dialog onOpenChange event, new state: ${open}`);
-                onClose();
-            }}>
-                <DialogContent className="max-w-5xl p-0"> {/* Changed from max-w-4xl to max-w-5xl */}
-                    <DialogHeader className="p-6 pb-0">
-                        <DialogTitle className="text-3xl font-bold">{t('strategy.modalTitle')}</DialogTitle>
-                        <DialogDescription>
-                            {t('strategy.modalDescription')}
-                        </DialogDescription>
-                    </DialogHeader>
-                    
-                    <DialogClose asChild>
-                        <Button variant="ghost" size="icon" className="absolute right-4 top-4 rounded-full">
-                            <X className="h-5 w-5" />
-                            <span className="sr-only">Sluiten</span>
-                        </Button>
-                    </DialogClose>
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden bg-white dark:bg-[#0a0a0a] border-gray-200 dark:border-[#2a2a2a]">
+                {/* Header */}
+                <DialogHeader className="p-6 pb-4 border-b border-gray-100 dark:border-[#2a2a2a]">
+                    <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Kies je Aflosstrategie
+                    </DialogTitle>
+                    <DialogDescription className="text-gray-500 dark:text-gray-400">
+                        Selecteer de strategie die het beste bij jouw situatie past. Je maandelijks budget is {formatCurrency(monthlyBudget)}.
+                    </DialogDescription>
+                </DialogHeader>
 
-                    <div className="max-h-[80vh] overflow-y-auto px-6 pb-6">
-                        <BudgetSelector available={monthlyBudget} initialBudget={currentBudget} onChange={handleBudgetChange} />
+                {/* Content */}
+                <div className="overflow-y-auto max-h-[calc(90vh-180px)] p-6 space-y-6">
+                    {/* Strategy Cards */}
+                    <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-1">
+                        {strategyConfigs.map((config) => (
+                            <NewStrategyCard
+                                key={config.type}
+                                {...config}
+                                result={strategies?.[config.type]}
+                                isSelected={selectedStrategy === config.type}
+                                onSelect={handleSelectStrategy}
+                                isLoading={isLoading}
+                            />
+                        ))}
+                    </div>
 
-                        <div className="grid md:grid-cols-3 gap-4"> {/* Changed from md:grid-cols-2 to md:grid-cols-3 */}
-                            {isLoading ? (
+                    {/* Comparison Chart */}
+                    {strategies && !isLoading && (
+                        <StrategyComparisonChart strategies={strategies} />
+                    )}
+                </div>
+
+                {/* Sticky Footer */}
+                <div className="border-t border-gray-100 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#1a1a1a] p-4">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            {selectedStrategy ? (
                                 <>
-                                    <div className="border rounded-lg p-6 flex items-center justify-center min-h-[400px]"><Loader2 className="animate-spin w-8 h-8 text-gray-400"/></div>
-                                    <div className="border rounded-lg p-6 flex items-center justify-center min-h-[400px]"><Loader2 className="animate-spin w-8 h-8 text-gray-400"/></div>
-                                    <div className="border rounded-lg p-6 flex items-center justify-center min-h-[400px]"><Loader2 className="animate-spin w-8 h-8 text-gray-400"/></div> {/* Added for the new card */}
+                                    <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                                        <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                            {getSelectedStrategyName()} geselecteerd
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            Klik op bevestigen om te starten
+                                        </p>
+                                    </div>
                                 </>
                             ) : (
-                                <>
-                                    <StrategyCard
-                                        title={t('strategy.snowball.title')}
-                                        icon="❄️"
-                                        description={t('strategy.snowball.description')}
-                                        advantages={t('strategy.snowball.advantages')}
-                                        disadvantages={t('strategy.snowball.disadvantages')}
-                                        result={strategies?.snowball}
-                                        onChoose={() => {
-                                            console.log('StrategyChoiceModal: Snowball card choose button clicked.');
-                                            handleChooseStrategy('snowball');
-                                        }}
-                                        isChoosing={isChoosing === 'snowball'}
-                                        onShowExplanation={() => {
-                                            console.log('StrategyChoiceModal: Snowball card "View Explanation" button clicked.');
-                                            setShowSnowballExplanation(true);
-                                        }}
-                                        t={t}
-                                    />
-                                    <div className="relative">
-                                        <StrategyCard
-                                            title={t('strategy.avalanche.title')}
-                                            icon="⚡"
-                                            description={t('strategy.avalanche.description')}
-                                            advantages={t('strategy.avalanche.advantages')}
-                                            disadvantages={t('strategy.avalanche.disadvantages')}
-                                            result={strategies?.avalanche}
-                                            onChoose={() => {
-                                                console.log('StrategyChoiceModal: Avalanche card choose button clicked.');
-                                                handleChooseStrategy('avalanche');
-                                            }}
-                                            isChoosing={isChoosing === 'avalanche'}
-                                            onShowExplanation={() => {
-                                                console.log('StrategyChoiceModal: Avalanche card "View Explanation" button clicked.');
-                                                setShowAvalancheExplanation(true);
-                                            }}
-                                            t={t}
-                                        />
-                                        {avalancheSavings > 0 && (
-                                            <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-green-100 text-green-800 text-xs font-bold px-3 py-1 rounded-full border-2 border-white shadow-sm">
-                                                {t('strategy.avalanche.savings')}: {formatCurrency(avalancheSavings)}
-                                            </div>
-                                        )}
-                                    </div>
-                                    {/* NEW STRATEGY CARD: Gelijkmatige Verdeling (Proportional) */}
-                                    <StrategyCard
-                                        title="Gelijkmatige Verdeling"
-                                        icon="⚖️"
-                                        description="Los alle schulden tegelijk af"
-                                        advantages="Eerlijk: elke schuldeiser krijgt zijn deel"
-                                        disadvantages="Kan langer duren dan focusmethodes"
-                                        result={strategies?.proportional}
-                                        onChoose={() => {
-                                            console.log('StrategyChoiceModal: Proportional card choose button clicked.');
-                                            handleChooseStrategy('proportional');
-                                        }}
-                                        isChoosing={isChoosing === 'proportional'}
-                                        onShowExplanation={() => {
-                                            toast({ title: 'Info', description: 'Je budget wordt eerlijk verdeeld over alle schulden op basis van hun grootte.' });
-                                        }}
-                                        t={t}
-                                    />
-                                </>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    Selecteer een strategie om verder te gaan
+                                </p>
                             )}
                         </div>
+                        <div className="flex items-center gap-3">
+                            <Button
+                                variant="outline"
+                                onClick={onClose}
+                                className="border-gray-200 dark:border-[#3a3a3a] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"
+                            >
+                                Annuleren
+                            </Button>
+                            <Button
+                                onClick={handleConfirmStrategy}
+                                disabled={!selectedStrategy || isActivating}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isActivating ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        Bezig...
+                                    </>
+                                ) : (
+                                    'Bevestigen'
+                                )}
+                            </Button>
+                        </div>
                     </div>
-                </DialogContent>
-            </Dialog>
-
-            {/* Explanation Modals */}
-            <SnowballExplanationModal 
-                isOpen={showSnowballExplanation} 
-                onClose={() => {
-                    console.log('StrategyChoiceModal: SnowballExplanationModal onClose called.');
-                    setShowSnowballExplanation(false);
-                }}
-                budget={currentBudget}
-                strategyResult={strategies?.snowball}
-            />
-            <AvalancheExplanationModal 
-                isOpen={showAvalancheExplanation} 
-                onClose={() => {
-                    console.log('StrategyChoiceModal: AvalancheExplanationModal onClose called.');
-                    setShowAvalancheExplanation(false);
-                }}
-                budget={currentBudget}
-                strategyResult={strategies?.avalanche}
-                savings={avalancheSavings}
-            />
-        </>
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 }

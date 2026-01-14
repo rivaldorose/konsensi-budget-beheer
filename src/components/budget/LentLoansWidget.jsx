@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 import { formatCurrency } from '@/components/utils/formatters';
 import { Plus, UserPlus, Calendar, CheckCircle2, Clock, AlertCircle, Trash2, Edit } from 'lucide-react';
 import { motion } from 'framer-motion';

@@ -84,9 +84,9 @@ export default function TopNav({ user, notifications, unreadCount, onLogout }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="size-10 rounded-full bg-white border-2 border-primary overflow-hidden cursor-pointer hover:ring-2 hover:ring-offset-2 hover:ring-primary transition-all bg-cover bg-center">
-                  {user?.profielfoto_url ? (
+                  {user?.avatar_url ? (
                     <img
-                      src={user.profielfoto_url}
+                      src={user.avatar_url}
                       alt="User avatar"
                       className="w-full h-full object-cover"
                     />

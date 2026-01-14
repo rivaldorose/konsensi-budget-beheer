@@ -118,7 +118,7 @@ export default function AdempauzeCalculator() {
 
   const handleActivate = async () => {
     try {
-      await User.updateMyUserData({
+      await User.updateMe({
         adempauze_active: true,
         adempauze_activated_at: new Date().toISOString(),
         adempauze_trigger: 'calculator',
@@ -194,16 +194,16 @@ export default function AdempauzeCalculator() {
             <div className="flex items-center gap-3 pl-2 border-l border-white/20">
               <span className="bg-purple-badge text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider hidden sm:block">Level 9</span>
               <span className="text-white font-body text-sm hidden sm:block">{user?.voornaam || 'Gebruiker'}</span>
-              <div 
+              <div
                 className="h-8 w-8 rounded-full bg-cover bg-center border-2 border-accent cursor-pointer"
                 style={{
-                  backgroundImage: user?.profielfoto_url 
-                    ? `url(${user.profielfoto_url})` 
+                  backgroundImage: user?.avatar_url
+                    ? `url(${user.avatar_url})`
                     : 'none',
-                  backgroundColor: user?.profielfoto_url ? 'transparent' : '#8B5CF6'
+                  backgroundColor: user?.avatar_url ? 'transparent' : '#8B5CF6'
                 }}
               >
-                {!user?.profielfoto_url && (
+                {!user?.avatar_url && (
                   <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs">
                     {(user?.voornaam?.[0] || user?.email?.[0] || 'U').toUpperCase()}
                   </div>

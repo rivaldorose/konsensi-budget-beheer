@@ -14,23 +14,24 @@ export default function Step4DateStatus({ formData, updateFormData }) {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="originDate">Wanneer ontstond deze schuld? *</Label>
+        <Label htmlFor="originDate" className="text-gray-900 dark:text-white">Wanneer ontstond deze schuld? *</Label>
         <Input
           id="originDate"
           type="date"
           value={formData.origin_date}
           onChange={(e) => updateFormData({ origin_date: e.target.value })}
+          className="bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] text-gray-900 dark:text-white [color-scheme:dark]"
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="status">Status *</Label>
+        <Label htmlFor="status" className="text-gray-900 dark:text-white">Status *</Label>
         <Select value={formData.status} onValueChange={(value) => updateFormData({ status: value })}>
-          <SelectTrigger id="status">
+          <SelectTrigger id="status" className="bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] text-gray-900 dark:text-white">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]">
             {statusTypes.map(type => (
-              <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+              <SelectItem key={type.value} value={type.value} className="text-gray-900 dark:text-white focus:bg-gray-100 dark:focus:bg-[#2a2a2a]">{type.label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
