@@ -494,14 +494,13 @@ export default function Dashboard() {
   }, [t, toast, language]);
 
   const loadGamificationData = useCallback(async () => {
-    
+
     if (!user?.id) return;
-    
+
     try {
-      const [levelData, badges, weekGoal] = await Promise.all([
+      const [levelData, badges] = await Promise.all([
         gamificationService.getUserLevel(user.id),
         gamificationService.getUserBadges(user.id),
-        gamificationService.getWeekGoal(user.id),
       ]);
 
       // Get daily quote from local function (no API call needed)
@@ -514,7 +513,7 @@ export default function Dashboard() {
         totalXP: levelData?.xp_to_next_level || 100,
         badges: (badges || []).map(b => b?.badge_type).filter(Boolean),
         dailyMotivation: dailyQuote,
-        weekGoalPercentage: weekGoal?.percentage || 0,
+        weekGoalPercentage: 0,
       });
     } catch (error) {
       console.error("Error loading gamification data:", error);
