@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, MonthlyCost, Pot, Debt, DebtPayment } from "@/api/entities";
 import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
+import { gamificationService } from "@/services/gamificationService";
 
 // ALGEMENE TIPS - Deze ziet iedereen in de app
 const ALGEMENE_TIPS = [
@@ -255,6 +256,19 @@ export default function CentVoorCent() {
       }
 
       setAdvice(personalAdviceList);
+
+      // Award XP for viewing the summary (once per day)
+      try {
+        const summaryResult = await gamificationService.recordSummaryView(userData.id);
+        if (summaryResult.xpAwarded) {
+          toast({
+            title: 'Samenvatting bekeken!',
+            description: `+${summaryResult.xpAmount} XP voor het bekijken van je financiële overzicht.`
+          });
+        }
+      } catch (xpError) {
+        console.error("Error awarding summary XP:", xpError);
+      }
 
     } catch (error) {
       console.error("Error loading data:", error);
