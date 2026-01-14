@@ -215,12 +215,6 @@ export default function DebtOverviewChart({ debts = [], viewMode = 'type', embed
 
             {/* Inner circle (donut hole) */}
             <circle cx="100" cy="100" r="45" className="fill-white dark:fill-[#1a1a1a]" />
-
-            {/* Center text */}
-            <text x="100" y="95" textAnchor="middle" className="fill-gray-500 dark:fill-[#a1a1a1] text-xs">Totaal</text>
-            <text x="100" y="115" textAnchor="middle" className="fill-[#1F2937] dark:fill-white text-sm font-bold">
-              {formatCurrency(totalAmount)}
-            </text>
           </svg>
         </div>
 
