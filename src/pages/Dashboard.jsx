@@ -165,7 +165,6 @@ export default function Dashboard() {
   const { toast } = useToast();
   const { t: tFromHook, language } = useTranslation();
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
-  const [showDebtOverview, setShowDebtOverview] = useState(true);
 
   // Use useCallback for t function to avoid useMemo issues
   const t = useCallback((key, options) => {
@@ -544,6 +543,46 @@ export default function Dashboard() {
     return last6Months;
   }, [dashboardData.allPayments]);
 
+  // Weekly chart data for last 6 weeks
+  const weeklyChartData = useMemo(() => {
+    const last6Weeks = Array.from({ length: 6 }, (_, i) => {
+      const now = new Date();
+      const weekEnd = new Date(now);
+      weekEnd.setDate(now.getDate() - (i * 7));
+      weekEnd.setHours(23, 59, 59, 999);
+
+      const weekStart = new Date(weekEnd);
+      weekStart.setDate(weekEnd.getDate() - 6);
+      weekStart.setHours(0, 0, 0, 0);
+
+      const weeklyTotal = (dashboardData.allPayments || [])
+        .filter(p => {
+          const dateStr = p?.payment_date || p?.created_at;
+          if (!dateStr) return false;
+          try {
+            const pDate = new Date(dateStr);
+            return !isNaN(pDate.getTime()) && pDate >= weekStart && pDate <= weekEnd;
+          } catch {
+            return false;
+          }
+        })
+        .reduce((sum, p) => sum + (Number(p?.amount) || 0), 0) || 0;
+
+      // Get week number
+      const d = new Date(Date.UTC(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate()));
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+
+      return {
+        month: `Wk ${weekNum}`,
+        amount: weeklyTotal,
+      };
+    });
+    return last6Weeks.reverse(); // Oldest first
+  }, [dashboardData.allPayments]);
+
   const upcomingPaymentsData = useMemo(() => {
     const payments = [];
     const nextCost = dashboardData.nextCost;
@@ -691,6 +730,7 @@ export default function Dashboard() {
         {/* Debt Journey Chart - Always show */}
         <DebtJourneyChart
           monthlyData={monthlyChartData}
+          weeklyData={weeklyChartData}
           totalPaid={totalPaidAllTime}
           progressPercentage={progressPercentage}
         />
