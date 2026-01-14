@@ -123,6 +123,7 @@ const dashboardTranslations = {
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [debtVisible, setDebtVisible] = useState(true); // For toggling debt visibility
+  const [showDebtOverview, setShowDebtOverview] = useState(true); // For toggling debt overview chart
   const [gamificationData, setGamificationData] = useState({
     level: 1,
     currentXP: 0,
