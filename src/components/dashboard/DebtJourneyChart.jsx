@@ -1,20 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { formatCurrency } from "@/components/utils/formatters";
 
-export default function DebtJourneyChart({ monthlyData = [], totalPaid = 0, progressPercentage = 0 }) {
+export default function DebtJourneyChart({ monthlyData = [], weeklyData = [], totalPaid = 0, progressPercentage = 0 }) {
   const [viewMode, setViewMode] = useState("month");
 
   // Default empty data if none provided (6 months with zero amounts)
-  const defaultData = [
-    { month: "Jul", amount: 0 },
+  const defaultMonthlyData = [
     { month: "Aug", amount: 0 },
     { month: "Sep", amount: 0 },
     { month: "Okt", amount: 0 },
     { month: "Nov", amount: 0 },
     { month: "Dec", amount: 0 },
+    { month: "Jan", amount: 0 },
   ];
 
-  const chartData = monthlyData.length > 0 ? monthlyData : defaultData;
+  // Default weekly data (last 6 weeks)
+  const defaultWeeklyData = useMemo(() => {
+    const weeks = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const weekDate = new Date(now);
+      weekDate.setDate(now.getDate() - (i * 7));
+      const weekNum = getWeekNumber(weekDate);
+      weeks.push({ month: `Wk ${weekNum}`, amount: 0 });
+    }
+    return weeks;
+  }, []);
+
+  // Helper function to get week number
+  function getWeekNumber(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  }
+
+  // Select data based on view mode
+  const chartData = viewMode === "month"
+    ? (monthlyData.length > 0 ? monthlyData : defaultMonthlyData)
+    : (weeklyData.length > 0 ? weeklyData : defaultWeeklyData);
+
   const maxAmount = Math.max(...chartData.map((d) => d.amount), 4000);
 
   // Calculate bar heights as percentages
