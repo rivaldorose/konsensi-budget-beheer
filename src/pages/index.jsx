@@ -151,6 +151,7 @@ function PagesContent() {
                 <Route path="/DisplaySettings" element={<DisplaySettings />} />
                 <Route path="/VTLBSettings" element={<VTLBSettings />} />
                 <Route path="/GamificationSettings" element={<GamificationSettings />} />
+                <Route path="/gamificationsettings" element={<GamificationSettings />} />
                 <Route path="/FAQ" element={<FAQ />} />
                 <Route path="/FAQSettings" element={<FAQSettings />} />
                 <Route path="/Feedback" element={<Feedback />} />
