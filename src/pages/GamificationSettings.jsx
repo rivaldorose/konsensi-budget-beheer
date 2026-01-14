@@ -3,7 +3,7 @@ import { User } from "@/api/entities";
 import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
 import { useLocation, Link } from "react-router-dom";
-import { gamificationService, XP_REWARDS } from "@/services/gamificationService";
+import { gamificationService, XP_REWARDS, BADGES } from "@/services/gamificationService";
 
 export default function GamificationSettings() {
   const [user, setUser] = useState(null);
@@ -15,6 +15,7 @@ export default function GamificationSettings() {
     total_xp: 0
   });
   const [loginStreak, setLoginStreak] = useState(0);
+  const [userBadges, setUserBadges] = useState([]);
   const location = useLocation();
   const { toast } = useToast();
 
@@ -39,6 +40,9 @@ export default function GamificationSettings() {
 
         const streak = await gamificationService.getLoginStreak(userData.id);
         setLoginStreak(streak);
+
+        const badges = await gamificationService.getUserBadges(userData.id);
+        setUserBadges(badges);
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -72,6 +76,30 @@ export default function GamificationSettings() {
 
   const levelInfo = getLevelTitle(levelData.level);
   const xpPercentage = levelData.xp_to_next_level > 0 ? (levelData.current_xp / levelData.xp_to_next_level) * 100 : 0;
+
+  // Helper function for badge colors
+  const getBadgeColor = (color) => {
+    const colors = {
+      emerald: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30",
+      blue: "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border-blue-200 dark:border-blue-500/30",
+      amber: "bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border-amber-200 dark:border-amber-500/30",
+      orange: "bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400 border-orange-200 dark:border-orange-500/30",
+      red: "bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400 border-red-200 dark:border-red-500/30",
+      purple: "bg-purple-100 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400 border-purple-200 dark:border-purple-500/30",
+      cyan: "bg-cyan-100 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400 border-cyan-200 dark:border-cyan-500/30",
+      indigo: "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/30",
+      teal: "bg-teal-100 text-teal-600 dark:bg-teal-500/20 dark:text-teal-400 border-teal-200 dark:border-teal-500/30",
+      green: "bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400 border-green-200 dark:border-green-500/30",
+    };
+    return colors[color] || colors.emerald;
+  };
+
+  // Check if user has a badge
+  const hasBadge = (badgeId) => userBadges.some(b => b.badge_type === badgeId);
+
+  // Get all badges as array for display
+  const allBadges = Object.values(BADGES);
+  const earnedBadgesCount = allBadges.filter(badge => hasBadge(badge.id)).length;
 
   if (loading) {
     return (
@@ -268,6 +296,77 @@ export default function GamificationSettings() {
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Badges Section */}
+              <div className="border-t border-[#E5E7EB] dark:border-[#2a2a2a] pt-8 mt-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-[#0d1b17] dark:text-white text-xl font-bold flex items-center gap-2">
+                    <span className="material-symbols-outlined text-amber-500">military_tech</span>
+                    Badges
+                  </h3>
+                  <span className="text-[#6B7280] dark:text-[#9CA3AF] text-sm font-medium">
+                    {earnedBadgesCount} / {allBadges.length} verdiend
+                  </span>
+                </div>
+
+                {/* Earned Badges */}
+                {earnedBadgesCount > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-[#0d1b17] dark:text-white text-sm font-semibold mb-3 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-green-500 text-lg">check_circle</span>
+                      Verdiende Badges
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {allBadges.filter(badge => hasBadge(badge.id)).map((badge) => (
+                        <div
+                          key={badge.id}
+                          className={`p-4 rounded-[16px] border ${getBadgeColor(badge.color)} transition-all hover:scale-[1.02]`}
+                        >
+                          <div className="flex flex-col items-center text-center gap-2">
+                            <div className="size-12 rounded-full bg-white/50 dark:bg-black/20 flex items-center justify-center">
+                              <span className="material-symbols-outlined text-2xl">{badge.icon}</span>
+                            </div>
+                            <div>
+                              <p className="font-bold text-sm">{badge.name}</p>
+                              <p className="text-xs opacity-80 mt-0.5">{badge.description}</p>
+                            </div>
+                            <span className="text-xs font-semibold opacity-90">+{badge.xpBonus} XP</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Locked Badges */}
+                {allBadges.filter(badge => !hasBadge(badge.id)).length > 0 && (
+                  <div>
+                    <h4 className="text-[#0d1b17] dark:text-white text-sm font-semibold mb-3 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-gray-400 text-lg">lock</span>
+                      Nog te verdienen
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {allBadges.filter(badge => !hasBadge(badge.id)).map((badge) => (
+                        <div
+                          key={badge.id}
+                          className="p-4 rounded-[16px] border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] opacity-60 grayscale hover:opacity-80 hover:grayscale-0 transition-all"
+                        >
+                          <div className="flex flex-col items-center text-center gap-2">
+                            <div className="size-12 rounded-full bg-gray-200 dark:bg-[#2a2a2a] flex items-center justify-center">
+                              <span className="material-symbols-outlined text-2xl text-gray-400">{badge.icon}</span>
+                            </div>
+                            <div>
+                              <p className="font-bold text-sm text-gray-600 dark:text-gray-400">{badge.name}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">{badge.description}</p>
+                            </div>
+                            <span className="text-xs font-semibold text-gray-400">+{badge.xpBonus} XP</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Level Progression Info */}
