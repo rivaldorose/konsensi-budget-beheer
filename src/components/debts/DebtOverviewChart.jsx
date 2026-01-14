@@ -35,7 +35,7 @@ const colors = [
   '#f97316', // orange
 ];
 
-export default function DebtOverviewChart({ debts = [], viewMode = 'type' }) {
+export default function DebtOverviewChart({ debts = [], viewMode = 'type', embedded = false }) {
   const [activeView, setActiveView] = React.useState(viewMode);
 
   // Calculate distribution data
@@ -117,14 +117,20 @@ export default function DebtOverviewChart({ debts = [], viewMode = 'type' }) {
   const segments = generateDonutSegments();
 
   if (!debts || debts.length === 0) {
+    const wrapperClass = embedded
+      ? ""
+      : "bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-[24px] p-6 shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)]";
+
     return (
-      <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-[24px] p-6 shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="size-10 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
-            <span className="material-symbols-outlined text-blue-500 text-[20px]">pie_chart</span>
+      <div className={wrapperClass}>
+        {!embedded && (
+          <div className="flex items-center gap-3 mb-6">
+            <div className="size-10 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-blue-500 text-[20px]">pie_chart</span>
+            </div>
+            <h3 className="font-semibold text-lg text-[#1F2937] dark:text-white">Schuldenoverzicht</h3>
           </div>
-          <h3 className="font-semibold text-lg text-[#1F2937] dark:text-white">Schuldenoverzicht</h3>
-        </div>
+        )}
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <div className="size-16 rounded-full bg-gray-100 dark:bg-[#2a2a2a] flex items-center justify-center mb-4">
             <span className="material-symbols-outlined text-gray-400 dark:text-[#6B7280] text-3xl">celebration</span>
@@ -136,18 +142,26 @@ export default function DebtOverviewChart({ debts = [], viewMode = 'type' }) {
     );
   }
 
-  return (
-    <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-[24px] p-6 shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="size-10 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
-            <span className="material-symbols-outlined text-blue-500 text-[20px]">pie_chart</span>
-          </div>
-          <h3 className="font-semibold text-lg text-[#1F2937] dark:text-white">Schuldenoverzicht</h3>
-        </div>
+  const wrapperClass = embedded
+    ? ""
+    : "bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-[24px] p-6 shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)]";
 
-        {/* View Toggle */}
+  return (
+    <div className={wrapperClass}>
+      {/* Header - only show if not embedded */}
+      {!embedded && (
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
+              <span className="material-symbols-outlined text-blue-500 text-[20px]">pie_chart</span>
+            </div>
+            <h3 className="font-semibold text-lg text-[#1F2937] dark:text-white">Schuldenoverzicht</h3>
+          </div>
+        </div>
+      )}
+
+      {/* View Toggle */}
+      <div className={`flex ${embedded ? 'justify-end mb-4' : 'justify-end mb-6'}`}>
         <div className="flex bg-gray-100 dark:bg-[#2a2a2a] rounded-full p-1">
           <button
             onClick={() => setActiveView('type')}

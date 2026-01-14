@@ -19,6 +19,7 @@ import UpcomingPayments from "@/components/dashboard/UpcomingPayments";
 import DashboardAlerts from "@/components/dashboard/DashboardAlerts";
 import GamificationStats from "@/components/dashboard/GamificationStats";
 import DashboardFooter from "@/components/dashboard/DashboardFooter";
+import DebtOverviewChart from "@/components/debts/DebtOverviewChart";
 import { gamificationService } from "@/services/gamificationService";
 import { dashboardService } from "@/services/dashboardService";
 import { getDailyQuote } from "@/utils/dailyQuotes";
@@ -163,6 +164,7 @@ export default function Dashboard() {
   const { toast } = useToast();
   const { t: tFromHook, language } = useTranslation();
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
+  const [showDebtOverview, setShowDebtOverview] = useState(true);
 
   // Use useCallback for t function to avoid useMemo issues
   const t = useCallback((key, options) => {
@@ -741,6 +743,34 @@ export default function Dashboard() {
 
         {/* Upcoming Payments - Always show */}
         <UpcomingPayments payments={upcomingPaymentsData} />
+
+        {/* Debt Overview Chart - Collapsible */}
+        {debts && debts.length > 0 && (
+          <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-[24px] shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] overflow-hidden">
+            <button
+              onClick={() => setShowDebtOverview(!showDebtOverview)}
+              className="w-full flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-blue-500 text-[20px]">pie_chart</span>
+                </div>
+                <div className="text-left">
+                  <h3 className="font-semibold text-[#1F2937] dark:text-white">Schuld Inzichten</h3>
+                  <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">Bekijk je schulden per type of status</p>
+                </div>
+              </div>
+              <span className={`material-symbols-outlined text-gray-400 dark:text-[#a1a1a1] transition-transform ${showDebtOverview ? 'rotate-180' : ''}`}>
+                {showDebtOverview ? 'visibility_off' : 'visibility'}
+              </span>
+            </button>
+            {showDebtOverview && (
+              <div className="px-4 pb-4">
+                <DebtOverviewChart debts={debts} viewMode="type" embedded={true} />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Dashboard Alerts - Only show when there's actual data */}
         {totalExpenses > 0 && (
