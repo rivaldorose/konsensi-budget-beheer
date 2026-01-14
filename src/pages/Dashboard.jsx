@@ -19,6 +19,7 @@ import UpcomingPayments from "@/components/dashboard/UpcomingPayments";
 import DashboardAlerts from "@/components/dashboard/DashboardAlerts";
 import GamificationStats from "@/components/dashboard/GamificationStats";
 import DashboardFooter from "@/components/dashboard/DashboardFooter";
+import DebtOverviewChart from "@/components/dashboard/DebtOverviewChart";
 import { gamificationService } from "@/services/gamificationService";
 import { dashboardService } from "@/services/dashboardService";
 import { getDailyQuote } from "@/utils/dailyQuotes";
@@ -122,6 +123,7 @@ const dashboardTranslations = {
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [debtVisible, setDebtVisible] = useState(true); // For toggling debt visibility
+  const [showDebtOverview, setShowDebtOverview] = useState(true); // For toggling debt overview chart
   const [gamificationData, setGamificationData] = useState({
     level: 1,
     currentXP: 0,
@@ -741,6 +743,31 @@ export default function Dashboard() {
 
         {/* Upcoming Payments - Always show */}
         <UpcomingPayments payments={upcomingPaymentsData} />
+
+        {/* Debt Overview Chart - Collapsible */}
+        {debts && debts.length > 0 && (
+          <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-[24px] p-6 shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+            <button
+              onClick={() => setShowDebtOverview(!showDebtOverview)}
+              className="w-full flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-blue-500 text-[20px]">pie_chart</span>
+                </div>
+                <h3 className="font-semibold text-lg text-[#1F2937] dark:text-white">Schuld Inzichten</h3>
+              </div>
+              <span className="material-symbols-outlined text-gray-400 dark:text-[#6B7280] text-xl">
+                {showDebtOverview ? 'visibility' : 'visibility_off'}
+              </span>
+            </button>
+            {showDebtOverview && (
+              <div className="mt-4">
+                <DebtOverviewChart debts={debts} viewMode="type" embedded={true} />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Dashboard Alerts - Only show when there's actual data */}
         {totalExpenses > 0 && (

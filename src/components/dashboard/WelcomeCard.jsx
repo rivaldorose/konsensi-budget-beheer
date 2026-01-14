@@ -54,9 +54,6 @@ export default function WelcomeCard({ user, level = 9, currentXP = 2025, totalXP
         <div className="flex justify-between items-end mb-2">
           <div>
             <p className="font-bold text-konsensi-dark dark:text-white">{motivationalMessage}</p>
-            <p className="text-xs text-konsensi-dark/60 dark:text-text-secondary mt-0.5">
-              Volgende beloning: Rentevrije maand 🎉
-            </p>
           </div>
           <div className="text-right">
             <p className="text-primary dark:text-konsensi-primary font-bold text-xs flex items-center justify-end gap-1 mb-1">
