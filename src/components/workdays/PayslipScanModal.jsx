@@ -23,21 +23,75 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
       const uploadResult = await UploadFile({ file });
       setFileUrl(uploadResult.file_url);
 
-      // Extract data with AI
+      // Extract data with AI - comprehensive Dutch payslip extraction
       const extractResult = await ExtractDataFromUploadedFile({
         file_url: uploadResult.file_url,
         json_schema: {
           type: "object",
           properties: {
+            // Basis informatie
             employer_name: { type: "string", description: "Naam van de werkgever" },
             period_start: { type: "string", description: "Startdatum loonperiode (YYYY-MM-DD)" },
             period_end: { type: "string", description: "Einddatum loonperiode (YYYY-MM-DD)" },
             payment_date: { type: "string", description: "Datum van uitbetaling (YYYY-MM-DD)" },
-            gross_amount: { type: "number", description: "Bruto loon" },
-            net_amount: { type: "number", description: "Netto loon" },
-            total_hours: { type: "number", description: "Totaal gewerkte uren" },
-            hourly_rate: { type: "number", description: "Uurloon" },
-            deductions: { type: "number", description: "Totale inhoudingen" }
+
+            // Bruto bedragen
+            bruto_loon: { type: "number", description: "Bruto loon / basis salaris" },
+            vakantiegeld: { type: "number", description: "Vakantiegeld / vakantietoeslag" },
+            overwerkuren: { type: "number", description: "Overwerk vergoeding" },
+            bonus: { type: "number", description: "Bonus / gratificatie" },
+            onregelmatigheidstoeslag: { type: "number", description: "Onregelmatigheidstoeslag (ORT)" },
+            ploegentoeslag: { type: "number", description: "Ploegentoeslag" },
+            eindejaarsuitkering: { type: "number", description: "Eindejaarsuitkering / 13e maand" },
+            totaal_bruto: { type: "number", description: "Totaal bruto loon" },
+
+            // Inhoudingen - Belastingen
+            loonheffing: { type: "number", description: "Loonheffing / loonbelasting" },
+            premie_volksverzekeringen: { type: "number", description: "Premie volksverzekeringen (AOW, ANW, WLZ)" },
+            premie_ww: { type: "number", description: "WW-premie / werkloosheidswet" },
+            premie_wia: { type: "number", description: "WIA-premie / arbeidsongeschiktheid" },
+            premie_zvw: { type: "number", description: "Premie zorgverzekeringswet (inkomensafhankelijke bijdrage)" },
+            bijdrage_zvw: { type: "number", description: "Bijdrage ZVW (werkgeversdeel)" },
+
+            // Inhoudingen - Pensioen
+            pensioenpremie: { type: "number", description: "Pensioenpremie werknemer" },
+            pensioenpremie_werkgever: { type: "number", description: "Pensioenpremie werkgever (indien vermeld)" },
+            wga_premie: { type: "number", description: "WGA-premie" },
+
+            // Andere inhoudingen
+            inhouding_reiskosten: { type: "number", description: "Inhouding reiskosten / eigen bijdrage OV" },
+            inhouding_lease: { type: "number", description: "Inhouding leaseauto / bijtelling" },
+            inhouding_telefoon: { type: "number", description: "Inhouding telefoon" },
+            inhouding_loonbeslag: { type: "number", description: "Loonbeslag / derdenbeslag" },
+            inhouding_studieschuld: { type: "number", description: "Inhouding studieschuld (DUO)" },
+            inhouding_alimentatie: { type: "number", description: "Inhouding alimentatie" },
+            andere_inhoudingen: { type: "number", description: "Andere inhoudingen" },
+            totaal_inhoudingen: { type: "number", description: "Totaal inhoudingen" },
+
+            // Vergoedingen
+            reiskostenvergoeding: { type: "number", description: "Reiskostenvergoeding" },
+            thuiswerkvergoeding: { type: "number", description: "Thuiswerkvergoeding" },
+            onkostenvergoeding: { type: "number", description: "Onkostenvergoeding" },
+            maaltijdvergoeding: { type: "number", description: "Maaltijdvergoeding" },
+            totaal_vergoedingen: { type: "number", description: "Totaal vergoedingen (netto)" },
+
+            // Netto resultaat
+            netto_loon: { type: "number", description: "Netto loon / uit te betalen" },
+
+            // Werk details
+            uren_gewerkt: { type: "number", description: "Totaal gewerkte uren" },
+            uurloon: { type: "number", description: "Uurloon / basis uurloon" },
+            contract_uren: { type: "number", description: "Contract uren per week" },
+
+            // Belasting details
+            loonheffingskorting: { type: "boolean", description: "Loonheffingskorting ja/nee" },
+            heffingskorting_bedrag: { type: "number", description: "Heffingskorting bedrag" },
+            arbeidskorting: { type: "number", description: "Arbeidskorting" },
+
+            // Cumulatieve jaar totalen
+            cum_bruto_loon: { type: "number", description: "Cumulatief bruto loon (jaar tot nu)" },
+            cum_loonheffing: { type: "number", description: "Cumulatieve loonheffing (jaar tot nu)" },
+            cum_zvw: { type: "number", description: "Cumulatieve ZVW bijdrage (jaar tot nu)" }
           }
         }
       });
@@ -66,34 +120,91 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
 
     setProcessing(true);
     try {
+      // Get current user
+      const { User } = await import('@/api/entities');
+      const user = await User.me();
+
       // Voeg werkgever toe aan lijst als deze nog niet bestaat
       if (extractedData.employer_name && !employers.includes(extractedData.employer_name)) {
-        const { User } = await import('@/api/entities');
-        const user = await User.me();
         const newEmployers = [...(user.employers || []), extractedData.employer_name];
         await User.updateMe({ employers: newEmployers });
       }
 
-      // Save payslip
+      // Save payslip with all extracted data
       const payslip = await Payslip.create({
+        user_id: user.id,
         employer: extractedData.employer_name,
         period_start: extractedData.period_start,
         period_end: extractedData.period_end,
-        payment_date: extractedData.payment_date,
-        gross_amount: extractedData.gross_amount || 0,
-        net_amount: extractedData.net_amount,
-        hours_worked: extractedData.total_hours,
-        hourly_rate: extractedData.hourly_rate,
-        deductions: extractedData.deductions || 0,
+        pay_date: extractedData.payment_date,
+        date: extractedData.payment_date, // Keep for backwards compatibility
+        amount: extractedData.netto_loon || 0, // Keep for backwards compatibility
         file_url: fileUrl,
-        is_processed: true
+
+        // Bruto bedragen
+        bruto_loon: extractedData.bruto_loon || 0,
+        vakantiegeld: extractedData.vakantiegeld || 0,
+        overwerkuren: extractedData.overwerkuren || 0,
+        bonus: extractedData.bonus || 0,
+        onregelmatigheidstoeslag: extractedData.onregelmatigheidstoeslag || 0,
+        ploegentoeslag: extractedData.ploegentoeslag || 0,
+        eindejaarsuitkering: extractedData.eindejaarsuitkering || 0,
+        totaal_bruto: extractedData.totaal_bruto || extractedData.bruto_loon || 0,
+
+        // Inhoudingen - Belastingen
+        loonheffing: extractedData.loonheffing || 0,
+        premie_volksverzekeringen: extractedData.premie_volksverzekeringen || 0,
+        premie_ww: extractedData.premie_ww || 0,
+        premie_wia: extractedData.premie_wia || 0,
+        premie_zvw: extractedData.premie_zvw || 0,
+        bijdrage_zvw: extractedData.bijdrage_zvw || 0,
+
+        // Inhoudingen - Pensioen
+        pensioenpremie: extractedData.pensioenpremie || 0,
+        pensioenpremie_werkgever: extractedData.pensioenpremie_werkgever || 0,
+        wga_premie: extractedData.wga_premie || 0,
+
+        // Andere inhoudingen
+        inhouding_reiskosten: extractedData.inhouding_reiskosten || 0,
+        inhouding_lease: extractedData.inhouding_lease || 0,
+        inhouding_telefoon: extractedData.inhouding_telefoon || 0,
+        inhouding_loonbeslag: extractedData.inhouding_loonbeslag || 0,
+        inhouding_studieschuld: extractedData.inhouding_studieschuld || 0,
+        inhouding_alimentatie: extractedData.inhouding_alimentatie || 0,
+        andere_inhoudingen: extractedData.andere_inhoudingen || 0,
+        totaal_inhoudingen: extractedData.totaal_inhoudingen || 0,
+
+        // Vergoedingen
+        reiskostenvergoeding: extractedData.reiskostenvergoeding || 0,
+        thuiswerkvergoeding: extractedData.thuiswerkvergoeding || 0,
+        onkostenvergoeding: extractedData.onkostenvergoeding || 0,
+        maaltijdvergoeding: extractedData.maaltijdvergoeding || 0,
+        totaal_vergoedingen: extractedData.totaal_vergoedingen || 0,
+
+        // Netto resultaat
+        netto_loon: extractedData.netto_loon || 0,
+
+        // Werk details
+        uren_gewerkt: extractedData.uren_gewerkt || 0,
+        uurloon: extractedData.uurloon || 0,
+        contract_uren: extractedData.contract_uren || 0,
+
+        // Belasting details
+        loonheffingskorting: extractedData.loonheffingskorting !== false,
+        heffingskorting_bedrag: extractedData.heffingskorting_bedrag || 0,
+        arbeidskorting: extractedData.arbeidskorting || 0,
+
+        // Cumulatieve jaar totalen
+        cum_bruto_loon: extractedData.cum_bruto_loon || 0,
+        cum_loonheffing: extractedData.cum_loonheffing || 0,
+        cum_zvw: extractedData.cum_zvw || 0,
+
+        // Status
+        status: 'geverifieerd'
       });
 
       // Update workdays in this period to "gewerkt" and mark as paid
       if (extractedData.period_start && extractedData.period_end) {
-        const { User } = await import('@/api/entities');
-        const user = await User.me();
-
         const allWorkDays = await WorkDay.filter({ user_id: user.id });
         const periodStart = new Date(extractedData.period_start);
         const periodEnd = new Date(extractedData.period_end);
@@ -238,8 +349,8 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
               </p>
             </div>
 
-            {/* Form Fields */}
-            <div className="space-y-4">
+            {/* Form Fields - Scrollable */}
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
               {/* Werkgever */}
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Werkgever</label>
@@ -278,17 +389,6 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
                 </div>
               </div>
 
-              {/* Uitbetalingsdatum */}
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Uitbetalingsdatum</label>
-                <input
-                  type="date"
-                  value={extractedData.payment_date || ''}
-                  onChange={(e) => setExtractedData({...extractedData, payment_date: e.target.value})}
-                  className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
-                />
-              </div>
-
               {/* Uren & Uurloon */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
@@ -296,8 +396,8 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
                   <input
                     type="number"
                     step="0.5"
-                    value={extractedData.total_hours || ''}
-                    onChange={(e) => setExtractedData({...extractedData, total_hours: parseFloat(e.target.value)})}
+                    value={extractedData.uren_gewerkt || ''}
+                    onChange={(e) => setExtractedData({...extractedData, uren_gewerkt: parseFloat(e.target.value)})}
                     className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
                   />
                 </div>
@@ -306,34 +406,189 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
                   <input
                     type="number"
                     step="0.01"
-                    value={extractedData.hourly_rate || ''}
-                    onChange={(e) => setExtractedData({...extractedData, hourly_rate: parseFloat(e.target.value)})}
+                    value={extractedData.uurloon || ''}
+                    onChange={(e) => setExtractedData({...extractedData, uurloon: parseFloat(e.target.value)})}
                     className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
                   />
                 </div>
               </div>
 
-              {/* Bruto & Netto */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Bruto loon (€)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={extractedData.gross_amount || ''}
-                    onChange={(e) => setExtractedData({...extractedData, gross_amount: parseFloat(e.target.value)})}
-                    className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
-                  />
+              {/* BRUTO BEDRAGEN Section */}
+              <div className="border-t border-gray-200 dark:border-[#3a3a3a] pt-4 mt-4">
+                <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-lg text-green-500">trending_up</span>
+                  Bruto Bedragen
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 dark:text-[#6b7280]">Bruto loon</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={extractedData.bruto_loon || ''}
+                      onChange={(e) => setExtractedData({...extractedData, bruto_loon: parseFloat(e.target.value)})}
+                      className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-lg px-3 py-2 text-sm text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 dark:text-[#6b7280]">Vakantiegeld</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={extractedData.vakantiegeld || ''}
+                      onChange={(e) => setExtractedData({...extractedData, vakantiegeld: parseFloat(e.target.value)})}
+                      className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-lg px-3 py-2 text-sm text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 dark:text-[#6b7280]">Overwerk</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={extractedData.overwerkuren || ''}
+                      onChange={(e) => setExtractedData({...extractedData, overwerkuren: parseFloat(e.target.value)})}
+                      className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-lg px-3 py-2 text-sm text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 dark:text-[#6b7280]">Bonus</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={extractedData.bonus || ''}
+                      onChange={(e) => setExtractedData({...extractedData, bonus: parseFloat(e.target.value)})}
+                      className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-lg px-3 py-2 text-sm text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] outline-none"
+                    />
+                  </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Netto loon (€) *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={extractedData.net_amount || ''}
-                    onChange={(e) => setExtractedData({...extractedData, net_amount: parseFloat(e.target.value)})}
-                    className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-bold text-[#10b981] focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
-                  />
+                <div className="mt-3 p-3 bg-green-50 dark:bg-green-500/10 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Totaal Bruto</span>
+                    <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                      €{Number(extractedData.totaal_bruto || extractedData.bruto_loon || 0).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* INHOUDINGEN Section */}
+              <div className="border-t border-gray-200 dark:border-[#3a3a3a] pt-4 mt-4">
+                <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-lg text-red-500">trending_down</span>
+                  Inhoudingen
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 dark:text-[#6b7280]">Loonheffing</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={extractedData.loonheffing || ''}
+                      onChange={(e) => setExtractedData({...extractedData, loonheffing: parseFloat(e.target.value)})}
+                      className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-lg px-3 py-2 text-sm text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 dark:text-[#6b7280]">Pensioenpremie</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={extractedData.pensioenpremie || ''}
+                      onChange={(e) => setExtractedData({...extractedData, pensioenpremie: parseFloat(e.target.value)})}
+                      className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-lg px-3 py-2 text-sm text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 dark:text-[#6b7280]">Premie ZVW</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={extractedData.premie_zvw || ''}
+                      onChange={(e) => setExtractedData({...extractedData, premie_zvw: parseFloat(e.target.value)})}
+                      className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-lg px-3 py-2 text-sm text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 dark:text-[#6b7280]">WW-premie</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={extractedData.premie_ww || ''}
+                      onChange={(e) => setExtractedData({...extractedData, premie_ww: parseFloat(e.target.value)})}
+                      className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-lg px-3 py-2 text-sm text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] outline-none"
+                    />
+                  </div>
+                  {extractedData.inhouding_loonbeslag > 0 && (
+                    <div className="flex flex-col gap-1 col-span-2">
+                      <label className="text-xs text-red-500 dark:text-red-400 font-medium">⚠️ Loonbeslag</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={extractedData.inhouding_loonbeslag || ''}
+                        onChange={(e) => setExtractedData({...extractedData, inhouding_loonbeslag: parseFloat(e.target.value)})}
+                        className="w-full bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg px-3 py-2 text-sm text-red-600 dark:text-red-400 focus:ring-2 focus:ring-red-500 outline-none"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div className="mt-3 p-3 bg-red-50 dark:bg-red-500/10 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Totaal Inhoudingen</span>
+                    <span className="text-lg font-bold text-red-600 dark:text-red-400">
+                      -€{Number(extractedData.totaal_inhoudingen || 0).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* VERGOEDINGEN Section (only if there are any) */}
+              {(extractedData.reiskostenvergoeding > 0 || extractedData.thuiswerkvergoeding > 0 || extractedData.totaal_vergoedingen > 0) && (
+                <div className="border-t border-gray-200 dark:border-[#3a3a3a] pt-4 mt-4">
+                  <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-lg text-blue-500">payments</span>
+                    Vergoedingen (netto)
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-500 dark:text-[#6b7280]">Reiskosten</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={extractedData.reiskostenvergoeding || ''}
+                        onChange={(e) => setExtractedData({...extractedData, reiskostenvergoeding: parseFloat(e.target.value)})}
+                        className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-lg px-3 py-2 text-sm text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] outline-none"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-500 dark:text-[#6b7280]">Thuiswerk</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={extractedData.thuiswerkvergoeding || ''}
+                        onChange={(e) => setExtractedData({...extractedData, thuiswerkvergoeding: parseFloat(e.target.value)})}
+                        className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-lg px-3 py-2 text-sm text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* NETTO RESULTAAT Section */}
+              <div className="border-t-2 border-[#10b981] dark:border-[#10b981] pt-4 mt-4">
+                <div className="p-4 bg-[#10b981]/10 dark:bg-[#10b981]/20 rounded-xl">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Netto Loon</span>
+                      <p className="text-xs text-gray-500 dark:text-[#6b7280]">Uit te betalen</p>
+                    </div>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={extractedData.netto_loon || ''}
+                      onChange={(e) => setExtractedData({...extractedData, netto_loon: parseFloat(e.target.value)})}
+                      className="w-32 bg-white dark:bg-[#1a1a1a] border-2 border-[#10b981] rounded-xl px-4 py-2 text-xl font-bold text-[#10b981] text-right focus:ring-2 focus:ring-[#10b981] outline-none"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
