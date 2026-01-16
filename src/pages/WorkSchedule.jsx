@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { WorkDay } from '@/api/entities';
+import { WorkDay, Payslip } from '@/api/entities';
 import { User } from '@/api/entities';
 import { useToast } from '@/components/ui/use-toast';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, getDay } from 'date-fns';
@@ -12,6 +12,7 @@ import { createPageUrl } from '@/utils';
 export default function WorkSchedule() {
   const [user, setUser] = useState(null);
   const [workDays, setWorkDays] = useState([]);
+  const [payslips, setPayslips] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showModal, setShowModal] = useState(false);
@@ -59,6 +60,7 @@ export default function WorkSchedule() {
 
       const monthStart = startOfMonth(currentMonth);
       const monthEnd = endOfMonth(currentMonth);
+      const monthStr = format(currentMonth, 'yyyy-MM');
 
       const allWorkDays = await WorkDay.filter({ user_id: currentUser.id });
       const filtered = allWorkDays.filter(day => {
@@ -67,6 +69,15 @@ export default function WorkSchedule() {
       });
 
       setWorkDays(filtered);
+
+      // Load payslips for this month
+      const allPayslips = await Payslip.filter({ user_id: currentUser.id });
+      const monthPayslips = allPayslips.filter(p => {
+        if (!p.period_start && !p.period_end) return false;
+        const payslipMonth = (p.period_end || p.period_start)?.substring(0, 7);
+        return payslipMonth === monthStr;
+      });
+      setPayslips(monthPayslips);
     } catch (error) {
       console.error('Error loading work schedule:', error);
       toast({
@@ -424,6 +435,52 @@ export default function WorkSchedule() {
             })}
           </div>
         </div>
+
+        {/* Payslips for this month */}
+        {payslips.length > 0 && (
+          <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] overflow-hidden p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display font-bold text-lg text-[#131d0c] dark:text-white flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#10b981]">description</span>
+                Loonstroken deze maand
+              </h3>
+            </div>
+            <div className="space-y-3">
+              {payslips.map((payslip) => (
+                <div
+                  key={payslip.id}
+                  className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-[#10b981]/5 to-[#10b981]/10 dark:from-[#10b981]/10 dark:to-[#10b981]/5 border border-[#10b981]/20"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="size-12 rounded-xl bg-[#10b981]/20 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-[#10b981]">receipt_long</span>
+                    </div>
+                    <div>
+                      <p className="font-bold text-[#131d0c] dark:text-white">{payslip.employer || 'Werkgever'}</p>
+                      <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">
+                        {payslip.period_start && payslip.period_end
+                          ? `${format(new Date(payslip.period_start), 'd MMM', { locale: nl })} - ${format(new Date(payslip.period_end), 'd MMM yyyy', { locale: nl })}`
+                          : 'Periode onbekend'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-lg text-[#10b981]">
+                      {(payslip.netto_loon || payslip.amount || 0).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">Netto</p>
+                    {payslip.bruto_loon > 0 && (
+                      <p className="text-xs text-gray-400 dark:text-[#6b7280]">
+                        Bruto: {payslip.bruto_loon.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Modals */}

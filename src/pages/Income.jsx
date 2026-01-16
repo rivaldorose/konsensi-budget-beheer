@@ -55,6 +55,18 @@ export default function IncomePage() {
         { value: '2025-10', label: 'oktober 2025' },
         { value: '2025-11', label: 'november 2025' },
         { value: '2025-12', label: 'december 2025' },
+        { value: '2026-01', label: 'januari 2026' },
+        { value: '2026-02', label: 'februari 2026' },
+        { value: '2026-03', label: 'maart 2026' },
+        { value: '2026-04', label: 'april 2026' },
+        { value: '2026-05', label: 'mei 2026' },
+        { value: '2026-06', label: 'juni 2026' },
+        { value: '2026-07', label: 'juli 2026' },
+        { value: '2026-08', label: 'augustus 2026' },
+        { value: '2026-09', label: 'september 2026' },
+        { value: '2026-10', label: 'oktober 2026' },
+        { value: '2026-11', label: 'november 2026' },
+        { value: '2026-12', label: 'december 2026' },
     ];
 
     const currentMonthLabel = months.find(m => m.value === selectedMonth)?.label || selectedMonth;
@@ -141,18 +153,18 @@ export default function IncomePage() {
 
     const totalMonth = totalFixed + totalExtra;
 
-    // Calculate year statistics
+    // Calculate year statistics based on selected month's year
     const yearStats = useMemo(() => {
-        const currentYear = new Date().getFullYear();
+        const selectedYear = parseInt(selectedMonth.split('-')[0]);
         let monthlyData = [];
         let totalYearFixed = 0;
         let totalYearExtra = 0;
         let monthsWithData = 0;
 
         for (let month = 1; month <= 12; month++) {
-            const monthStr = `${currentYear}-${String(month).padStart(2, '0')}`;
+            const monthStr = `${selectedYear}-${String(month).padStart(2, '0')}`;
             const monthNames = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
-            
+
             const currentMonthStr = new Date().toISOString().substring(0, 7);
             const fixedForMonth = allFixedIncome.reduce((sum, i) => {
                 if (i.is_from_work_schedule) {
@@ -184,7 +196,7 @@ export default function IncomePage() {
                 .reduce((sum, i) => sum + (i.amount || 0), 0);
 
             const total = fixedForMonth + extraForMonth;
-            
+
             if (total > 0) {
                 monthsWithData++;
                 totalYearFixed += fixedForMonth;
@@ -204,8 +216,8 @@ export default function IncomePage() {
         const avgTotal = avgFixed + avgExtra;
         const totalYear = totalYearFixed + totalYearExtra;
 
-        return { monthlyData, avgFixed, avgExtra, avgTotal, totalYear };
-    }, [allFixedIncome, incomes, variableEntries]);
+        return { monthlyData, avgFixed, avgExtra, avgTotal, totalYear, year: selectedYear };
+    }, [allFixedIncome, incomes, variableEntries, selectedMonth]);
 
     if (loading) {
         return (
@@ -329,7 +341,7 @@ export default function IncomePage() {
                                     <div className="bg-[#b4ff7a] dark:bg-konsensi-bg-green p-1.5 rounded-lg">
                                         <span className="material-symbols-outlined text-[#3D6456] dark:text-konsensi-primary text-[20px]">target</span>
                                     </div>
-                                    <h3 className="text-lg font-bold text-[#3D6456] dark:text-white">Jaaroverzicht Inkomsten</h3>
+                                    <h3 className="text-lg font-bold text-[#3D6456] dark:text-white">Jaaroverzicht Inkomsten {yearStats.year}</h3>
                                 </div>
                                 <button
                                     onClick={() => setShowYearOverview(!showYearOverview)}
