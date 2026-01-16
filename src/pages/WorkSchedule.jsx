@@ -138,23 +138,34 @@ export default function WorkSchedule() {
     }
   };
 
-  // Statistieken berekenen
+  // Statistieken berekenen - gebruik payslip data als beschikbaar
   const stats = useMemo(() => {
     const worked = workDays.filter(d => d.status === 'gewerkt');
     const planned = workDays.filter(d => d.status === 'gepland');
-    
-    const totalHours = worked.reduce((sum, d) => sum + (parseFloat(d.hours_worked) || 0), 0);
-    const totalEarned = worked.reduce((sum, d) => sum + (parseFloat(d.calculated_amount) || 0), 0);
+
+    // Bereken totalen van werkdagen
+    const workDayHours = worked.reduce((sum, d) => sum + (parseFloat(d.hours_worked) || 0), 0);
+    const workDayEarned = worked.reduce((sum, d) => sum + (parseFloat(d.calculated_amount) || 0), 0);
     const plannedHours = planned.reduce((sum, d) => sum + (parseFloat(d.hours_worked) || 0), 0);
-    const avgHourlyRate = totalHours > 0 ? totalEarned / totalHours : 0;
+
+    // Bereken totalen van loonstroken voor deze maand
+    const payslipEarned = payslips.reduce((sum, p) => sum + (parseFloat(p.netto_loon) || parseFloat(p.amount) || 0), 0);
+    const payslipHours = payslips.reduce((sum, p) => sum + (parseFloat(p.uren_gewerkt) || 0), 0);
+    const payslipHourlyRate = payslips.length > 0 ? (payslips[0].uurloon || 0) : 0;
+
+    // Gebruik payslip data als beschikbaar, anders werkdagen
+    const totalEarned = payslipEarned > 0 ? payslipEarned : workDayEarned;
+    const totalHours = payslipHours > 0 ? payslipHours : workDayHours;
+    const avgHourlyRate = payslipHourlyRate > 0 ? payslipHourlyRate : (totalHours > 0 ? totalEarned / totalHours : 0);
 
     return {
       totalEarned,
       totalHours,
       plannedHours,
-      avgHourlyRate
+      avgHourlyRate,
+      hasPayslip: payslips.length > 0
     };
-  }, [workDays]);
+  }, [workDays, payslips]);
 
   // Kalender genereren
   const calendarDays = useMemo(() => {
@@ -436,51 +447,6 @@ export default function WorkSchedule() {
           </div>
         </div>
 
-        {/* Payslips for this month */}
-        {payslips.length > 0 && (
-          <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] overflow-hidden p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display font-bold text-lg text-[#131d0c] dark:text-white flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#10b981]">description</span>
-                Loonstroken deze maand
-              </h3>
-            </div>
-            <div className="space-y-3">
-              {payslips.map((payslip) => (
-                <div
-                  key={payslip.id}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-[#10b981]/5 to-[#10b981]/10 dark:from-[#10b981]/10 dark:to-[#10b981]/5 border border-[#10b981]/20"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="size-12 rounded-xl bg-[#10b981]/20 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[#10b981]">receipt_long</span>
-                    </div>
-                    <div>
-                      <p className="font-bold text-[#131d0c] dark:text-white">{payslip.employer || 'Werkgever'}</p>
-                      <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">
-                        {payslip.period_start && payslip.period_end
-                          ? `${format(new Date(payslip.period_start), 'd MMM', { locale: nl })} - ${format(new Date(payslip.period_end), 'd MMM yyyy', { locale: nl })}`
-                          : 'Periode onbekend'
-                        }
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-lg text-[#10b981]">
-                      {(payslip.netto_loon || payslip.amount || 0).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">Netto</p>
-                    {payslip.bruto_loon > 0 && (
-                      <p className="text-xs text-gray-400 dark:text-[#6b7280]">
-                        Bruto: {payslip.bruto_loon.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR' })}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </main>
 
       {/* Modals */}
