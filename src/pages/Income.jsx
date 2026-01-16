@@ -640,17 +640,61 @@ export default function IncomePage() {
                         {/* Status Summary Mini Card */}
                         <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <h3 className="font-bold text-[#3D6456] dark:text-white mb-4 text-sm">Huidige Status</h3>
-                            <div className="flex items-center gap-3">
-                                <div className="bg-orange-100 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 p-2 rounded-lg">
-                                    <span className="material-symbols-outlined">work_history</span>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-500 dark:text-text-secondary uppercase font-bold">Dienstverband</p>
-                                    <p className="text-sm font-bold text-[#3D6456] dark:text-white">
-                                        {user?.work_status === 'parttime' ? 'Parttime' : user?.work_status === 'fulltime' ? 'Fulltime' : user?.work_status === 'zzp' ? 'ZZP' : 'Niet ingesteld'}
-                                    </p>
-                                </div>
-                            </div>
+                            {(() => {
+                                const statusLabels = {
+                                    werkend: 'Werkend',
+                                    werkloos: 'Werkloos',
+                                    uitkering: 'Uitkering',
+                                    zzp: 'ZZP/Freelancer',
+                                    student: 'Student',
+                                    gepensioneerd: 'Gepensioneerd',
+                                    arbeidsongeschikt: 'Arbeidsongeschikt',
+                                    anders: 'Anders'
+                                };
+                                const statusIcons = {
+                                    werkend: 'work',
+                                    werkloos: 'search',
+                                    uitkering: 'corporate_fare',
+                                    zzp: 'account_circle',
+                                    student: 'school',
+                                    gepensioneerd: 'nature_people',
+                                    arbeidsongeschikt: 'home',
+                                    anders: 'help'
+                                };
+                                const statuses = Array.isArray(user?.work_status) ? user.work_status : (user?.work_status ? [user.work_status] : []);
+
+                                if (statuses.length === 0) {
+                                    return (
+                                        <div className="flex items-center gap-3">
+                                            <div className="bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 p-2 rounded-lg">
+                                                <span className="material-symbols-outlined">help</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500 dark:text-text-secondary uppercase font-bold">Dienstverband</p>
+                                                <p className="text-sm font-bold text-gray-400 dark:text-gray-500">Niet ingesteld</p>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <div className="flex flex-col gap-2">
+                                        {statuses.map((status, index) => (
+                                            <div key={status} className="flex items-center gap-3">
+                                                <div className="bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 p-2 rounded-lg">
+                                                    <span className="material-symbols-outlined">{statusIcons[status] || 'work_history'}</span>
+                                                </div>
+                                                <div>
+                                                    {index === 0 && <p className="text-xs text-gray-500 dark:text-text-secondary uppercase font-bold">Dienstverband</p>}
+                                                    <p className="text-sm font-bold text-[#3D6456] dark:text-white">
+                                                        {statusLabels[status] || status}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                );
+                            })()}
                         </div>
                     </div>
                 </div>
