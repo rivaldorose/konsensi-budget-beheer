@@ -595,10 +595,9 @@ export default function IncomePage() {
                                         <span className="material-symbols-outlined text-[#b4ff7a] dark:text-konsensi-primary">calendar_month</span>
                                         <SelectValue>{currentMonthLabel}</SelectValue>
                                     </div>
-                                    <span className="material-symbols-outlined">expand_more</span>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {months.map(month => (
+                                    {[...months].reverse().map(month => (
                                         <SelectItem key={month.value} value={month.value}>
                                             {month.label}
                                         </SelectItem>
