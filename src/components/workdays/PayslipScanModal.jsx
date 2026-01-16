@@ -276,9 +276,11 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
       const periodMonth = monthNames[periodDate.getMonth()];
       const periodYear = periodDate.getFullYear();
 
+      const incomeName = `${incomeDescription} - ${periodMonth} ${periodYear}`;
       await Income.create({
         user_id: user.id,
-        description: `${incomeDescription} - ${periodMonth} ${periodYear}`,
+        name: incomeName,
+        description: incomeName,
         amount: extractedData.netto_loon || 0,
         income_type: 'vast',
         start_date: extractedData.period_start,
