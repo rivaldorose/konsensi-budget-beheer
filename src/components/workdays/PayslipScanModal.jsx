@@ -278,14 +278,13 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
 
       await Income.create({
         user_id: user.id,
-        description: incomeDescription,
+        description: `${incomeDescription} - ${periodMonth} ${periodYear}`,
         amount: extractedData.netto_loon || 0,
-        income_type: 'vast', // Vast inkomen van werkgever
+        income_type: 'vast',
         start_date: extractedData.period_start,
         end_date: extractedData.period_end,
         is_active: true,
-        monthly_equivalent: extractedData.netto_loon || 0,
-        notes: `Loonstrook ${periodMonth} ${periodYear} - Bruto: €${extractedData.bruto_loon || 0}`
+        monthly_equivalent: extractedData.netto_loon || 0
       });
 
       console.log('Income record created for payslip:', {
