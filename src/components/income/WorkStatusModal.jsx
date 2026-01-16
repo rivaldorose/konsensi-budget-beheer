@@ -14,7 +14,7 @@ const workStatuses = [
 ];
 
 export default function WorkStatusModal({ isOpen, onClose, onSave }) {
-  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [saving, setSaving] = useState(false);
   const [customStatus, setCustomStatus] = useState('');
 
@@ -28,7 +28,14 @@ export default function WorkStatusModal({ isOpen, onClose, onSave }) {
     try {
       const user = await User.me();
       if (user?.work_status) {
-        setSelectedStatus(user.work_status);
+        // Handle both array and legacy string format
+        if (Array.isArray(user.work_status)) {
+          setSelectedStatuses(user.work_status);
+        } else {
+          setSelectedStatuses([user.work_status]);
+        }
+      } else {
+        setSelectedStatuses([]);
       }
       if (user?.work_status_custom) {
         setCustomStatus(user.work_status_custom);
@@ -38,17 +45,27 @@ export default function WorkStatusModal({ isOpen, onClose, onSave }) {
     }
   };
 
+  const toggleStatus = (value) => {
+    setSelectedStatuses(prev => {
+      if (prev.includes(value)) {
+        return prev.filter(s => s !== value);
+      } else {
+        return [...prev, value];
+      }
+    });
+  };
+
   const handleSave = async () => {
-    if (!selectedStatus) return;
-    if (selectedStatus === 'anders' && !customStatus.trim()) return;
+    if (selectedStatuses.length === 0) return;
+    if (selectedStatuses.includes('anders') && !customStatus.trim()) return;
 
     setSaving(true);
     try {
       await User.updateMe({
-        work_status: selectedStatus,
-        work_status_custom: selectedStatus === 'anders' ? customStatus : null
+        work_status: selectedStatuses,
+        work_status_custom: selectedStatuses.includes('anders') ? customStatus : null
       });
-      onSave?.(selectedStatus);
+      onSave?.(selectedStatuses);
       onClose();
     } catch (error) {
       console.error('Error saving work status:', error);
@@ -56,6 +73,8 @@ export default function WorkStatusModal({ isOpen, onClose, onSave }) {
       setSaving(false);
     }
   };
+
+  const isSelected = (value) => selectedStatuses.includes(value);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -73,51 +92,53 @@ export default function WorkStatusModal({ isOpen, onClose, onSave }) {
               <span className="material-symbols-outlined text-[24px]">close</span>
             </button>
           </div>
-          <p className="text-[15px] text-gray-500 dark:text-[#A1A1A1] mb-8">
+          <p className="text-[15px] text-gray-500 dark:text-[#A1A1A1] mb-2">
             Wat is je huidige werksituatie?
+          </p>
+          <p className="text-[13px] text-emerald-600 dark:text-emerald-400 mb-6">
+            Je kunt meerdere opties selecteren
           </p>
 
           {/* Status Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             {workStatuses.map((status) => (
-              <label key={status.value} className="cursor-pointer group">
-                <input
-                  type="radio"
-                  name="work_status"
-                  value={status.value}
-                  checked={selectedStatus === status.value}
-                  onChange={() => setSelectedStatus(status.value)}
-                  className="sr-only peer"
-                />
-                <div className={`p-5 rounded-2xl border-2 transition-all flex items-start gap-4
-                  ${selectedStatus === status.value
+              <button
+                key={status.value}
+                type="button"
+                onClick={() => toggleStatus(status.value)}
+                className={`p-5 rounded-2xl border-2 transition-all flex items-start gap-4 text-left
+                  ${isSelected(status.value)
                     ? 'border-emerald-500 dark:border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10'
                     : 'border-gray-200 dark:border-[#2a2a2a] bg-white dark:bg-[#1a1a1a] hover:border-[#b4ff7a] dark:hover:border-emerald-500/50'
                   }`}
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all relative
+                  ${isSelected(status.value)
+                    ? 'bg-emerald-500 text-white dark:text-black'
+                    : 'bg-gray-50 dark:bg-[#2a2a2a] text-gray-500 dark:text-emerald-500 border border-gray-200 dark:border-[#3a3a3a]'
+                  }`}
                 >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all
-                    ${selectedStatus === status.value
-                      ? 'bg-emerald-500 text-white dark:text-black'
-                      : 'bg-gray-50 dark:bg-[#2a2a2a] text-gray-500 dark:text-emerald-500 border border-gray-200 dark:border-[#3a3a3a]'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[20px]">{status.icon}</span>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900 dark:text-white text-[16px]">
-                      {status.label}
-                    </h4>
-                    <p className="text-[13px] text-gray-500 dark:text-[#A1A1A1] mt-1 leading-snug">
-                      {status.description}
-                    </p>
-                  </div>
+                  <span className="material-symbols-outlined text-[20px]">{status.icon}</span>
+                  {isSelected(status.value) && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-600 dark:bg-emerald-400 rounded-full flex items-center justify-center">
+                      <span className="material-symbols-outlined text-white dark:text-black text-[14px]">check</span>
+                    </div>
+                  )}
                 </div>
-              </label>
+                <div>
+                  <h4 className="font-bold text-gray-900 dark:text-white text-[16px]">
+                    {status.label}
+                  </h4>
+                  <p className="text-[13px] text-gray-500 dark:text-[#A1A1A1] mt-1 leading-snug">
+                    {status.description}
+                  </p>
+                </div>
+              </button>
             ))}
           </div>
 
           {/* Custom Status Input */}
-          {selectedStatus === 'anders' && (
+          {selectedStatuses.includes('anders') && (
             <div className="mb-8">
               <input
                 type="text"
@@ -126,6 +147,24 @@ export default function WorkStatusModal({ isOpen, onClose, onSave }) {
                 placeholder="Beschrijf je situatie..."
                 className="w-full p-4 border-2 border-gray-200 dark:border-[#2a2a2a] rounded-xl bg-white dark:bg-[#1a1a1a] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-[#6b7280] focus:border-emerald-500 dark:focus:border-emerald-500 focus:outline-none transition-colors"
               />
+            </div>
+          )}
+
+          {/* Selected count */}
+          {selectedStatuses.length > 0 && (
+            <div className="mb-6 flex flex-wrap gap-2">
+              {selectedStatuses.map(status => {
+                const statusInfo = workStatuses.find(s => s.value === status);
+                return (
+                  <span
+                    key={status}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-sm font-medium"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">{statusInfo?.icon}</span>
+                    {statusInfo?.label}
+                  </span>
+                );
+              })}
             </div>
           )}
 
@@ -139,7 +178,7 @@ export default function WorkStatusModal({ isOpen, onClose, onSave }) {
             </button>
             <button
               onClick={handleSave}
-              disabled={!selectedStatus || saving || (selectedStatus === 'anders' && !customStatus.trim())}
+              disabled={selectedStatuses.length === 0 || saving || (selectedStatuses.includes('anders') && !customStatus.trim())}
               className="px-10 py-4 rounded-xl bg-emerald-500 dark:bg-emerald-500 text-white dark:text-black font-bold font-display hover:bg-emerald-600 dark:hover:bg-emerald-400 transition-all text-[16px] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? 'Opslaan...' : 'Opslaan'}
