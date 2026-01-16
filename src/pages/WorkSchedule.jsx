@@ -96,12 +96,13 @@ export default function WorkSchedule() {
         await User.updateMe({ employers: newEmployers });
         setEmployers(newEmployers);
       }
-      
+
       if (selectedDay && selectedDay.id) {
         await WorkDay.update(selectedDay.id, data);
         toast({ title: '✅ Opgeslagen', description: 'Werkdag bijgewerkt' });
       } else {
-        await WorkDay.create(data);
+        // Add user_id when creating new work day
+        await WorkDay.create({ ...data, user_id: user.id });
         toast({ title: '✅ Toegevoegd', description: 'Werkdag toegevoegd' });
       }
       setShowModal(false);
