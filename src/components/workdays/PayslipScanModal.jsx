@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import { UploadFile, ExtractDataFromUploadedFile } from '@/api/integrations';
+import { supabase } from '@/lib/supabase';
 import { Payslip } from '@/api/entities';
 import { WorkDay } from '@/api/entities';
 import { Loader2, CheckCircle2 } from 'lucide-react';
@@ -13,95 +13,96 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
   const [fileUrl, setFileUrl] = useState('');
   const { toast } = useToast();
 
+  // Convert file to base64
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        // Remove the data:mime;base64, prefix
+        const base64 = reader.result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
     try {
-      // Upload file
-      const uploadResult = await UploadFile({ file });
-      setFileUrl(uploadResult.file_url);
+      // Convert file to base64 for AI processing
+      const fileBase64 = await fileToBase64(file);
+      const mimeType = file.type || 'image/jpeg';
 
-      // Extract data with AI - comprehensive Dutch payslip extraction
-      const extractResult = await ExtractDataFromUploadedFile({
-        file_url: uploadResult.file_url,
-        json_schema: {
-          type: "object",
-          properties: {
-            // Basis informatie
-            employer_name: { type: "string", description: "Naam van de werkgever" },
-            period_start: { type: "string", description: "Startdatum loonperiode (YYYY-MM-DD)" },
-            period_end: { type: "string", description: "Einddatum loonperiode (YYYY-MM-DD)" },
-            payment_date: { type: "string", description: "Datum van uitbetaling (YYYY-MM-DD)" },
+      // Get current user for storage path
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Niet ingelogd');
 
-            // Bruto bedragen
-            bruto_loon: { type: "number", description: "Bruto loon / basis salaris" },
-            vakantiegeld: { type: "number", description: "Vakantiegeld / vakantietoeslag" },
-            overwerkuren: { type: "number", description: "Overwerk vergoeding" },
-            bonus: { type: "number", description: "Bonus / gratificatie" },
-            onregelmatigheidstoeslag: { type: "number", description: "Onregelmatigheidstoeslag (ORT)" },
-            ploegentoeslag: { type: "number", description: "Ploegentoeslag" },
-            eindejaarsuitkering: { type: "number", description: "Eindejaarsuitkering / 13e maand" },
-            totaal_bruto: { type: "number", description: "Totaal bruto loon" },
+      // Upload file to storage with user folder for RLS
+      const fileName = `${user.id}/${Date.now()}-${file.name}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('payslips')
+        .upload(fileName, file, { cacheControl: '3600', upsert: true });
 
-            // Inhoudingen - Belastingen
-            loonheffing: { type: "number", description: "Loonheffing / loonbelasting" },
-            premie_volksverzekeringen: { type: "number", description: "Premie volksverzekeringen (AOW, ANW, WLZ)" },
-            premie_ww: { type: "number", description: "WW-premie / werkloosheidswet" },
-            premie_wia: { type: "number", description: "WIA-premie / arbeidsongeschiktheid" },
-            premie_zvw: { type: "number", description: "Premie zorgverzekeringswet (inkomensafhankelijke bijdrage)" },
-            bijdrage_zvw: { type: "number", description: "Bijdrage ZVW (werkgeversdeel)" },
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        // Continue anyway - AI parsing is more important
+      }
 
-            // Inhoudingen - Pensioen
-            pensioenpremie: { type: "number", description: "Pensioenpremie werknemer" },
-            pensioenpremie_werkgever: { type: "number", description: "Pensioenpremie werkgever (indien vermeld)" },
-            wga_premie: { type: "number", description: "WGA-premie" },
+      // Get public URL if upload succeeded
+      if (uploadData) {
+        const { data: { publicUrl } } = supabase.storage
+          .from('payslips')
+          .getPublicUrl(fileName);
+        setFileUrl(publicUrl);
+      }
 
-            // Andere inhoudingen
-            inhouding_reiskosten: { type: "number", description: "Inhouding reiskosten / eigen bijdrage OV" },
-            inhouding_lease: { type: "number", description: "Inhouding leaseauto / bijtelling" },
-            inhouding_telefoon: { type: "number", description: "Inhouding telefoon" },
-            inhouding_loonbeslag: { type: "number", description: "Loonbeslag / derdenbeslag" },
-            inhouding_studieschuld: { type: "number", description: "Inhouding studieschuld (DUO)" },
-            inhouding_alimentatie: { type: "number", description: "Inhouding alimentatie" },
-            andere_inhoudingen: { type: "number", description: "Andere inhoudingen" },
-            totaal_inhoudingen: { type: "number", description: "Totaal inhoudingen" },
-
-            // Vergoedingen
-            reiskostenvergoeding: { type: "number", description: "Reiskostenvergoeding" },
-            thuiswerkvergoeding: { type: "number", description: "Thuiswerkvergoeding" },
-            onkostenvergoeding: { type: "number", description: "Onkostenvergoeding" },
-            maaltijdvergoeding: { type: "number", description: "Maaltijdvergoeding" },
-            totaal_vergoedingen: { type: "number", description: "Totaal vergoedingen (netto)" },
-
-            // Netto resultaat
-            netto_loon: { type: "number", description: "Netto loon / uit te betalen" },
-
-            // Werk details
-            uren_gewerkt: { type: "number", description: "Totaal gewerkte uren" },
-            uurloon: { type: "number", description: "Uurloon / basis uurloon" },
-            contract_uren: { type: "number", description: "Contract uren per week" },
-
-            // Belasting details
-            loonheffingskorting: { type: "boolean", description: "Loonheffingskorting ja/nee" },
-            heffingskorting_bedrag: { type: "number", description: "Heffingskorting bedrag" },
-            arbeidskorting: { type: "number", description: "Arbeidskorting" },
-
-            // Cumulatieve jaar totalen
-            cum_bruto_loon: { type: "number", description: "Cumulatief bruto loon (jaar tot nu)" },
-            cum_loonheffing: { type: "number", description: "Cumulatieve loonheffing (jaar tot nu)" },
-            cum_zvw: { type: "number", description: "Cumulatieve ZVW bijdrage (jaar tot nu)" }
-          }
+      // Call parse-payslip Edge Function
+      const { data: parseResult, error: parseError } = await supabase.functions.invoke('parse-payslip', {
+        body: {
+          fileBase64,
+          mimeType,
+          payslipId: null // We'll create the payslip after parsing
         }
       });
 
-      if (extractResult.status === 'success' && extractResult.output) {
-        setExtractedData(extractResult.output);
+      if (parseError) {
+        throw new Error(parseError.message || 'Kon loonstrook niet scannen');
+      }
+
+      if (parseResult.error) {
+        throw new Error(parseResult.error);
+      }
+
+      if (parseResult.success && parseResult.data) {
+        // Map the parsed data to our extended format
+        const parsed = parseResult.data;
+        const mapped = {
+          employer_name: parsed.employer_name,
+          period_start: parsed.period_start,
+          period_end: parsed.period_end,
+          payment_date: parsed.period_end, // Use end of period as payment date
+          bruto_loon: parsed.gross_income || parsed.breakdown?.bruto_loon || 0,
+          totaal_bruto: parsed.gross_income || parsed.breakdown?.bruto_loon || 0,
+          loonheffing: parsed.tax_deductions || parsed.breakdown?.loonheffing || 0,
+          pensioenpremie: parsed.pension_contribution || parsed.breakdown?.pensioen || 0,
+          premie_ww: parsed.social_security ? parsed.social_security * 0.3 : 0, // Estimate
+          premie_zvw: parsed.social_security ? parsed.social_security * 0.7 : 0, // Estimate
+          totaal_inhoudingen: (parsed.tax_deductions || 0) + (parsed.social_security || 0) + (parsed.pension_contribution || 0) + (parsed.other_deductions || 0),
+          netto_loon: parsed.net_income || parsed.breakdown?.netto_loon || 0,
+          uren_gewerkt: parsed.hours_worked || 0,
+          uurloon: parsed.hourly_rate || 0,
+          calculation_explanation: parsed.calculation_explanation
+        };
+
+        setExtractedData(mapped);
         setStep('review');
         toast({ title: '✅ Loonstrook gescand!' });
       } else {
-        throw new Error(extractResult.details || 'Kon loonstrook niet lezen');
+        throw new Error('Kon loonstrook niet lezen');
       }
     } catch (error) {
       console.error('Upload error:', error);
