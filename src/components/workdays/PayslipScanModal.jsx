@@ -1,9 +1,46 @@
 import React, { useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
-import { Payslip } from '@/api/entities';
+import { Payslip, Income } from '@/api/entities';
 import { WorkDay } from '@/api/entities';
 import { Loader2, CheckCircle2 } from 'lucide-react';
+
+// Normalize date to YYYY-MM-DD format
+// Handles: "2024-12-01", "01-12-2024", "1-12-2024", "01/12/2024", "December 2024", etc.
+const normalizeDate = (dateStr) => {
+  if (!dateStr) return null;
+
+  // Already in YYYY-MM-DD format
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return dateStr;
+  }
+
+  // DD-MM-YYYY or DD/MM/YYYY format (common Dutch format)
+  const ddmmyyyy = dateStr.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (ddmmyyyy) {
+    const [_, day, month, year] = ddmmyyyy;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+
+  // YYYY/MM/DD format
+  const yyyymmdd = dateStr.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (yyyymmdd) {
+    const [_, year, month, day] = yyyymmdd;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+
+  // Try parsing with Date object as fallback
+  try {
+    const date = new Date(dateStr);
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0];
+    }
+  } catch (e) {
+    console.warn('Could not parse date:', dateStr);
+  }
+
+  return dateStr; // Return original if we can't parse
+};
 
 export default function PayslipScanModal({ isOpen, onClose, employers = [], onPayslipProcessed }) {
   const [step, setStep] = useState('upload'); // upload, review, success
@@ -11,6 +48,8 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
   const [processing, setProcessing] = useState(false);
   const [extractedData, setExtractedData] = useState(null);
   const [fileUrl, setFileUrl] = useState('');
+  const [selectedEmployer, setSelectedEmployer] = useState(''); // Selected from dropdown
+  const [isNewEmployer, setIsNewEmployer] = useState(false); // Toggle for new employer input
   const { toast } = useToast();
 
   // Convert file to base64
@@ -80,11 +119,23 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
       if (parseResult.success && parseResult.data) {
         // Map the parsed data to our extended format
         const parsed = parseResult.data;
+
+        // Normalize dates to YYYY-MM-DD format
+        const periodStart = normalizeDate(parsed.period_start);
+        const periodEnd = normalizeDate(parsed.period_end);
+
+        console.log('Parsed dates:', {
+          original_start: parsed.period_start,
+          original_end: parsed.period_end,
+          normalized_start: periodStart,
+          normalized_end: periodEnd
+        });
+
         const mapped = {
           employer_name: parsed.employer_name,
-          period_start: parsed.period_start,
-          period_end: parsed.period_end,
-          payment_date: parsed.period_end, // Use end of period as payment date
+          period_start: periodStart,
+          period_end: periodEnd,
+          payment_date: periodEnd, // Use end of period as payment date
           bruto_loon: parsed.gross_income || parsed.breakdown?.bruto_loon || 0,
           totaal_bruto: parsed.gross_income || parsed.breakdown?.bruto_loon || 0,
           loonheffing: parsed.tax_deductions || parsed.breakdown?.loonheffing || 0,
@@ -130,6 +181,15 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
         const newEmployers = [...(user.employers || []), extractedData.employer_name];
         await User.updateMe({ employers: newEmployers });
       }
+
+      // Log what we're about to save
+      console.log('Saving payslip with data:', {
+        period_start: extractedData.period_start,
+        period_end: extractedData.period_end,
+        payment_date: extractedData.payment_date,
+        employer: extractedData.employer_name,
+        netto_loon: extractedData.netto_loon
+      });
 
       // Save payslip with all extracted data
       const payslip = await Payslip.create({
@@ -204,6 +264,37 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
         status: 'geverifieerd'
       });
 
+      // Create income record so it shows on Income page
+      const incomeDescription = extractedData.employer_name
+        ? `Loon ${extractedData.employer_name}`
+        : 'Loonstrook';
+
+      // Format period for notes (e.g., "december 2025")
+      const periodDate = new Date(extractedData.period_end);
+      const monthNames = ['januari', 'februari', 'maart', 'april', 'mei', 'juni',
+                          'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
+      const periodMonth = monthNames[periodDate.getMonth()];
+      const periodYear = periodDate.getFullYear();
+
+      await Income.create({
+        user_id: user.id,
+        description: incomeDescription,
+        amount: extractedData.netto_loon || 0,
+        income_type: 'vast', // Vast inkomen van werkgever
+        date: extractedData.period_end, // Use end of period as the income date
+        start_date: extractedData.period_start,
+        end_date: extractedData.period_end,
+        is_active: true,
+        monthly_equivalent: extractedData.netto_loon || 0,
+        notes: `Loonstrook ${periodMonth} ${periodYear} - Bruto: €${extractedData.bruto_loon || 0}`
+      });
+
+      console.log('Income record created for payslip:', {
+        description: incomeDescription,
+        amount: extractedData.netto_loon,
+        date: extractedData.period_end
+      });
+
       // Update workdays in this period to "gewerkt" and mark as paid
       if (extractedData.period_start && extractedData.period_end) {
         const allWorkDays = await WorkDay.filter({ user_id: user.id });
@@ -263,6 +354,8 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
     setStep('upload');
     setExtractedData(null);
     setFileUrl('');
+    setSelectedEmployer('');
+    setIsNewEmployer(false);
     onClose();
   };
 
@@ -352,19 +445,62 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
 
             {/* Form Fields - Scrollable */}
             <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-              {/* Werkgever */}
+              {/* Werkgever Selection */}
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Werkgever</label>
-                <input
-                  type="text"
-                  value={extractedData.employer_name || ''}
-                  onChange={(e) => setExtractedData({...extractedData, employer_name: e.target.value})}
-                  className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
-                />
-                {extractedData.employer_name && !employers.includes(extractedData.employer_name) && (
-                  <p className="text-xs text-blue-600 dark:text-[#3b82f6]">
-                    ✨ Deze werkgever wordt automatisch toegevoegd aan je lijst
-                  </p>
+                <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Werkgever / Opdrachtgever</label>
+
+                {employers.length > 0 && !isNewEmployer ? (
+                  <>
+                    <select
+                      value={selectedEmployer || extractedData.employer_name || ''}
+                      onChange={(e) => {
+                        if (e.target.value === '__new__') {
+                          setIsNewEmployer(true);
+                          setSelectedEmployer('');
+                          setExtractedData({...extractedData, employer_name: ''});
+                        } else {
+                          setSelectedEmployer(e.target.value);
+                          setExtractedData({...extractedData, employer_name: e.target.value});
+                        }
+                      }}
+                      className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
+                    >
+                      <option value="">-- Selecteer werkgever --</option>
+                      {employers.map((emp) => (
+                        <option key={emp} value={emp}>{emp}</option>
+                      ))}
+                      <option value="__new__">+ Nieuwe werkgever toevoegen</option>
+                    </select>
+                    {extractedData.employer_name && !employers.includes(extractedData.employer_name) && extractedData.employer_name !== '' && (
+                      <p className="text-xs text-amber-600 dark:text-amber-400">
+                        Gescande werkgever "{extractedData.employer_name}" niet gevonden. Selecteer een bestaande of voeg toe.
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={extractedData.employer_name || ''}
+                      onChange={(e) => setExtractedData({...extractedData, employer_name: e.target.value})}
+                      placeholder="Naam van werkgever/opdrachtgever"
+                      className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
+                    />
+                    {employers.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setIsNewEmployer(false)}
+                        className="text-xs text-[#10b981] hover:underline text-left"
+                      >
+                        ← Kies uit bestaande werkgevers
+                      </button>
+                    )}
+                    {extractedData.employer_name && !employers.includes(extractedData.employer_name) && (
+                      <p className="text-xs text-blue-600 dark:text-[#3b82f6]">
+                        ✨ Deze werkgever wordt automatisch toegevoegd aan je lijst
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
 
