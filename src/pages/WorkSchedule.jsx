@@ -160,20 +160,29 @@ export default function WorkSchedule() {
 
   const getStatusColor = (status) => {
     switch(status) {
-      case 'gewerkt': return 'bg-status-green/10 border-status-green/20';
-      case 'gepland': return 'bg-status-blue/10 border-status-blue/20';
-      case 'ziek': return 'bg-status-red/10 border-status-red/20';
-      case 'vrij': return 'bg-gray-100 dark:bg-text-secondary/10 border-gray-200 dark:border-text-secondary/10';
+      case 'gewerkt': return 'bg-[#10b981]/10 dark:bg-[#10b981]/10 border border-[#10b981]/20';
+      case 'gepland': return 'bg-[#3b82f6]/10 dark:bg-[#3b82f6]/10 border border-[#3b82f6]/20';
+      case 'ziek': return 'bg-[#ef4444]/10 dark:bg-[#ef4444]/10 border border-[#ef4444]/20';
+      case 'vrij': return 'bg-gray-100 dark:bg-[#a1a1a1]/10 border border-gray-200 dark:border-[#a1a1a1]/10';
       default: return '';
     }
   };
 
   const getStatusTextColor = (status) => {
     switch(status) {
-      case 'gewerkt': return 'text-status-green';
-      case 'gepland': return 'text-status-blue';
-      case 'ziek': return 'text-status-red';
-      default: return 'text-gray-600 dark:text-text-secondary';
+      case 'gewerkt': return 'text-[#10b981]';
+      case 'gepland': return 'text-[#3b82f6]';
+      case 'ziek': return 'text-[#ef4444]';
+      default: return 'text-gray-600 dark:text-[#a1a1a1]';
+    }
+  };
+
+  const getStatusDotColor = (status) => {
+    switch(status) {
+      case 'gewerkt': return 'bg-[#10b981]';
+      case 'gepland': return 'bg-[#3b82f6]';
+      case 'ziek': return 'bg-[#ef4444]';
+      default: return 'bg-gray-400 dark:bg-[#a1a1a1]';
     }
   };
 
@@ -226,116 +235,118 @@ export default function WorkSchedule() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Stat 1: Totaal Verdiend */}
-          <div className="bg-white dark:bg-bg-card p-6 rounded-2xl border border-border-subtle dark:border-border-base shadow-soft dark:shadow-soft-dark flex flex-col gap-3 group hover:border-primary/50 dark:hover:border-border-accent transition-colors">
+          <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-2xl border border-gray-100 dark:border-[#2a2a2a] shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] flex flex-col gap-4 group hover:border-gray-200 dark:hover:border-[#3a3a3a] transition-all">
             <div className="flex items-center justify-between">
-              <p className="text-gray-500 dark:text-text-secondary text-sm font-semibold uppercase tracking-wide">Totaal Verdiend</p>
-              <div className="size-8 rounded-full bg-status-green/10 dark:bg-bg-card-elevated flex items-center justify-center text-status-green">
-                <span className="material-symbols-outlined text-[20px]">payments</span>
+              <p className="text-gray-500 dark:text-[#a1a1a1] text-xs font-bold uppercase tracking-wider">Totaal Verdiend</p>
+              <div className="size-10 rounded-xl bg-gray-50 dark:bg-[#2a2a2a] flex items-center justify-center text-primary dark:text-[#10b981] group-hover:bg-primary/10 dark:group-hover:bg-[#10b981]/10 transition-colors">
+                <span className="material-symbols-outlined text-[20px]">wallet</span>
               </div>
             </div>
-            <p className="font-display font-bold text-3xl text-[#131d0c] dark:text-text-primary">
+            <p className="font-display font-bold text-3xl text-[#131d0c] dark:text-white">
               {stats.totalEarned.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })}
             </p>
           </div>
 
           {/* Stat 2: Uren Gewerkt */}
-          <div className="bg-white dark:bg-bg-card p-6 rounded-2xl border border-border-subtle dark:border-border-base shadow-soft dark:shadow-soft-dark flex flex-col gap-3 group hover:border-primary/50 dark:hover:border-border-accent transition-colors">
+          <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-2xl border border-gray-100 dark:border-[#2a2a2a] shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] flex flex-col gap-4 group hover:border-gray-200 dark:hover:border-[#3a3a3a] transition-all">
             <div className="flex items-center justify-between">
-              <p className="text-gray-500 dark:text-text-secondary text-sm font-semibold uppercase tracking-wide">Uren Gewerkt</p>
-              <div className="size-8 rounded-full bg-primary/20 dark:bg-bg-card-elevated flex items-center justify-center text-secondary dark:text-konsensi-green">
-                <span className="material-symbols-outlined text-[20px]">work_history</span>
+              <p className="text-gray-500 dark:text-[#a1a1a1] text-xs font-bold uppercase tracking-wider">Uren Gewerkt</p>
+              <div className="size-10 rounded-xl bg-gray-50 dark:bg-[#2a2a2a] flex items-center justify-center text-primary dark:text-[#10b981] group-hover:bg-primary/10 dark:group-hover:bg-[#10b981]/10 transition-colors">
+                <span className="material-symbols-outlined text-[20px]">work</span>
               </div>
             </div>
-            <p className="font-display font-bold text-3xl text-[#131d0c] dark:text-text-primary">{Math.round(stats.totalHours)}u</p>
+            <p className="font-display font-bold text-3xl text-[#131d0c] dark:text-white">{Math.round(stats.totalHours)}u</p>
           </div>
 
           {/* Stat 3: Geplande Uren */}
-          <div className="bg-white dark:bg-bg-card p-6 rounded-2xl border border-border-subtle dark:border-border-base shadow-soft dark:shadow-soft-dark flex flex-col gap-3 group hover:border-primary/50 dark:hover:border-border-accent transition-colors">
+          <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-2xl border border-gray-100 dark:border-[#2a2a2a] shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] flex flex-col gap-4 group hover:border-gray-200 dark:hover:border-[#3a3a3a] transition-all">
             <div className="flex items-center justify-between">
-              <p className="text-gray-500 dark:text-text-secondary text-sm font-semibold uppercase tracking-wide">Geplande Uren</p>
-              <div className="size-8 rounded-full bg-status-blue/10 dark:bg-bg-card-elevated flex items-center justify-center text-status-blue dark:text-konsensi-green">
-                <span className="material-symbols-outlined text-[20px]">calendar_clock</span>
+              <p className="text-gray-500 dark:text-[#a1a1a1] text-xs font-bold uppercase tracking-wider">Geplande Uren</p>
+              <div className="size-10 rounded-xl bg-gray-50 dark:bg-[#2a2a2a] flex items-center justify-center text-primary dark:text-[#10b981] group-hover:bg-primary/10 dark:group-hover:bg-[#10b981]/10 transition-colors">
+                <span className="material-symbols-outlined text-[20px]">calendar_month</span>
               </div>
             </div>
-            <p className="font-display font-bold text-3xl text-[#131d0c] dark:text-text-primary">{Math.round(stats.plannedHours)}u</p>
+            <p className="font-display font-bold text-3xl text-[#131d0c] dark:text-white">{Math.round(stats.plannedHours)}u</p>
           </div>
 
           {/* Stat 4: Gemiddeld Uurloon */}
-          <div className="bg-white dark:bg-bg-card p-6 rounded-2xl border border-border-subtle dark:border-border-base shadow-soft dark:shadow-soft-dark flex flex-col gap-3 group hover:border-primary/50 dark:hover:border-border-accent transition-colors">
+          <div className="bg-white dark:bg-[#1a1a1a] p-6 rounded-2xl border border-gray-100 dark:border-[#2a2a2a] shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] flex flex-col gap-4 group hover:border-gray-200 dark:hover:border-[#3a3a3a] transition-all">
             <div className="flex items-center justify-between">
-              <p className="text-gray-500 dark:text-text-secondary text-sm font-semibold uppercase tracking-wide">Gemiddeld Uurloon</p>
-              <div className="size-8 rounded-full bg-status-orange/10 dark:bg-bg-card-elevated flex items-center justify-center text-status-orange dark:text-konsensi-green">
+              <p className="text-gray-500 dark:text-[#a1a1a1] text-xs font-bold uppercase tracking-wider">Gemiddeld Uurloon</p>
+              <div className="size-10 rounded-xl bg-gray-50 dark:bg-[#2a2a2a] flex items-center justify-center text-primary dark:text-[#10b981] group-hover:bg-primary/10 dark:group-hover:bg-[#10b981]/10 transition-colors">
                 <span className="material-symbols-outlined text-[20px]">trending_up</span>
               </div>
             </div>
-            <p className="font-display font-bold text-3xl text-[#131d0c] dark:text-text-primary">
-              {stats.avgHourlyRate.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })}
-              <span className="text-base text-gray-400 dark:text-text-tertiary font-medium">/u</span>
-            </p>
+            <div className="flex items-baseline gap-1">
+              <p className="font-display font-bold text-3xl text-[#131d0c] dark:text-white">
+                {stats.avgHourlyRate.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })}
+              </p>
+              <span className="text-sm text-gray-400 dark:text-[#6b7280] font-medium">/u</span>
+            </div>
           </div>
         </div>
 
         {/* Action Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-6 px-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex flex-wrap items-center gap-6 px-2">
             {/* Legend */}
-            <div className="flex items-center gap-2">
-              <span className="size-3 rounded-full bg-status-green"></span>
-              <span className="text-sm font-medium text-gray-600 dark:text-text-secondary">Gewerkt</span>
+            <div className="flex items-center gap-2.5">
+              <span className="size-3 rounded-full bg-[#10b981] shadow-[0_0_8px_rgba(16,185,129,0.4)]"></span>
+              <span className="text-sm font-medium text-gray-600 dark:text-[#a1a1a1]">Gewerkt</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="size-3 rounded-full bg-status-blue"></span>
-              <span className="text-sm font-medium text-gray-600 dark:text-text-secondary">Gepland</span>
+            <div className="flex items-center gap-2.5">
+              <span className="size-3 rounded-full bg-[#3b82f6] shadow-[0_0_8px_rgba(59,130,246,0.4)]"></span>
+              <span className="text-sm font-medium text-gray-600 dark:text-[#a1a1a1]">Gepland</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="size-3 rounded-full bg-status-red"></span>
-              <span className="text-sm font-medium text-gray-600 dark:text-text-secondary">Ziek</span>
+            <div className="flex items-center gap-2.5">
+              <span className="size-3 rounded-full bg-[#ef4444] shadow-[0_0_8px_rgba(239,68,68,0.4)]"></span>
+              <span className="text-sm font-medium text-gray-600 dark:text-[#a1a1a1]">Ziek</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="size-3 rounded-full bg-gray-300 dark:bg-text-secondary"></span>
-              <span className="text-sm font-medium text-gray-600 dark:text-text-secondary">Vrij</span>
+            <div className="flex items-center gap-2.5">
+              <span className="size-3 rounded-full bg-gray-400 dark:bg-[#a1a1a1] shadow-[0_0_8px_rgba(161,161,161,0.2)]"></span>
+              <span className="text-sm font-medium text-gray-600 dark:text-[#a1a1a1]">Vrij</span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button 
+          <div className="flex flex-wrap items-center gap-3">
+            <button
               onClick={() => setShowEmployersModal(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-[24px] border border-gray-200 dark:border-border-base bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-bg-card text-sm font-bold text-[#131d0c] dark:text-text-primary shadow-sm transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-gray-200 dark:border-[#2a2a2a] bg-transparent hover:bg-gray-50 dark:hover:bg-[#1a1a1a] hover:border-gray-300 dark:hover:border-[#3a3a3a] text-[#131d0c] dark:text-white font-bold text-sm transition-all group"
             >
-              <span className="material-symbols-outlined text-[18px]">business_center</span>
+              <span className="material-symbols-outlined text-[18px] text-gray-500 dark:text-[#a1a1a1] group-hover:text-[#131d0c] dark:group-hover:text-white transition-colors">work</span>
               Mijn Werkgevers
             </button>
-            <button 
+            <button
               onClick={() => setShowPayslipModal(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-[24px] border border-gray-200 dark:border-border-base bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-bg-card text-sm font-bold text-[#131d0c] dark:text-text-primary shadow-sm transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border-2 border-gray-200 dark:border-[#2a2a2a] bg-transparent hover:bg-gray-50 dark:hover:bg-[#1a1a1a] hover:border-gray-300 dark:hover:border-[#3a3a3a] text-[#131d0c] dark:text-white font-bold text-sm transition-all group"
             >
-              <span className="material-symbols-outlined text-[18px]">upload_file</span>
+              <span className="material-symbols-outlined text-[18px] text-gray-500 dark:text-[#a1a1a1] group-hover:text-[#131d0c] dark:group-hover:text-white transition-colors">description</span>
               Loonstrook
             </button>
-            <button 
+            <button
               onClick={() => handleAddWorkDay()}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-[24px] bg-primary hover:bg-primary-dark dark:bg-konsensi-green dark:hover:bg-konsensi-green-light text-sm font-bold text-secondary dark:text-bg-base shadow-sm transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary dark:bg-[#10b981] hover:bg-primary-dark dark:hover:bg-[#34d399] active:bg-primary dark:active:bg-[#059669] text-white dark:text-[#0a0a0a] font-bold text-sm shadow-lg dark:shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all transform active:scale-95"
             >
-              <span className="material-symbols-outlined text-[20px]">add</span>
+              <span className="material-symbols-outlined text-[20px] stroke-[3px]">add</span>
               Werkdag
             </button>
           </div>
         </div>
 
         {/* Calendar Container */}
-        <div className="bg-white dark:bg-bg-card border border-border-subtle dark:border-border-base rounded-2xl shadow-soft dark:shadow-soft-dark overflow-hidden">
+        <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] overflow-hidden p-6">
           {/* Days Header */}
-          <div className="grid grid-cols-7 border-b border-border-subtle dark:border-border-base bg-gray-50/50 dark:bg-bg-card-elevated/30">
+          <div className="grid grid-cols-7 mb-4">
             {['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'].map((day, idx) => (
-              <div key={idx} className="py-3 text-center text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-text-secondary/60">
+              <div key={idx} className="text-center text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-[#a1a1a1]/60">
                 {day}
               </div>
             ))}
           </div>
           
           {/* Calendar Grid */}
-          <div className="grid grid-cols-7 auto-rows-[minmax(120px,auto)] divide-x divide-y divide-border-subtle dark:divide-border-base">
+          <div className="grid grid-cols-7 auto-rows-[minmax(140px,auto)] gap-2">
             {calendarDays.map((day, idx) => {
               const workDay = getWorkDayForDate(day);
               const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
@@ -344,8 +355,8 @@ export default function WorkSchedule() {
 
               if (!isCurrentMonth) {
                 return (
-                  <div key={idx} className="bg-gray-50/30 dark:opacity-20 p-2">
-                    <span className="text-sm font-medium text-gray-300 dark:text-text-tertiary">{format(day, 'd')}</span>
+                  <div key={idx} className="rounded-xl p-3 opacity-20">
+                    <span className="text-sm font-bold text-gray-300 dark:text-white">{format(day, 'd')}</span>
                   </div>
                 );
               }
@@ -354,38 +365,34 @@ export default function WorkSchedule() {
                 <div
                   key={idx}
                   onClick={() => workDay ? handleEditWorkDay(workDay) : handleAddWorkDay(day)}
-                  className={`p-2 relative hover:bg-gray-50 dark:hover:bg-bg-card-elevated/50 transition-colors group cursor-pointer ${
-                    workDay ? getStatusColor(workDay.status) : ''
-                  } ${isTodayDate ? 'bg-primary/5 dark:bg-konsensi-green/10' : ''}`}
+                  className={`rounded-xl p-3 hover:bg-gray-50 dark:hover:bg-[#2a2a2a]/50 transition-colors cursor-pointer group border border-transparent hover:border-gray-200 dark:hover:border-[#2a2a2a] ${
+                    isTodayDate ? 'bg-primary/5 dark:bg-[#10b981]/10 border-primary/20 dark:border-[#10b981]/20' : ''
+                  }`}
                 >
                   <div className="flex justify-between items-start">
-                    <span className={`text-sm font-bold p-1 ${
-                      isTodayDate ? 'text-primary dark:text-konsensi-green bg-primary/30 dark:bg-konsensi-green/20 size-7 flex items-center justify-center rounded-full' : 
-                      isWeekend ? 'text-gray-500 dark:text-text-tertiary' : 
-                      'text-gray-500 dark:text-text-primary'
+                    <span className={`text-sm font-bold ${
+                      isTodayDate ? 'text-primary dark:text-[#10b981]' :
+                      isWeekend ? 'text-gray-400 dark:text-[#6b7280]' :
+                      'text-[#131d0c] dark:text-white'
                     }`}>
                       {format(day, 'd')}
                     </span>
                     {workDay && (
-                      <span className="material-symbols-outlined text-[16px] text-gray-400 dark:text-text-secondary opacity-0 group-hover:opacity-100 transition-opacity">edit</span>
+                      <span className="material-symbols-outlined text-[16px] text-gray-400 dark:text-[#a1a1a1] opacity-0 group-hover:opacity-100 transition-opacity">edit</span>
                     )}
                   </div>
                   
                   {workDay && (
-                    <div className={`mt-2 w-full p-2 rounded-[24px] ${getStatusColor(workDay.status)} flex flex-col gap-0.5 shadow-sm`}>
+                    <div className={`mt-2 w-full p-2 rounded-lg ${getStatusColor(workDay.status)} flex flex-col gap-1`}>
                       {workDay.employer && (
-                        <div className="flex items-center gap-1">
-                          <span className={`size-1.5 rounded-full ${
-                            workDay.status === 'gewerkt' ? 'bg-status-green' :
-                            workDay.status === 'gepland' ? 'bg-status-blue' :
-                            workDay.status === 'ziek' ? 'bg-status-red' : 'bg-gray-400'
-                          }`}></span>
-                          <span className="text-[10px] font-bold text-[#131d0c] dark:text-text-primary uppercase tracking-wide">{workDay.employer}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`size-1.5 rounded-full ${getStatusDotColor(workDay.status)}`}></span>
+                          <span className="text-[10px] font-bold text-[#131d0c] dark:text-white uppercase tracking-wide truncate">{workDay.employer}</span>
                         </div>
                       )}
                       {workDay.status === 'gewerkt' && (
                         <>
-                          <span className="text-xs font-medium text-gray-600 dark:text-text-secondary">{workDay.hours_worked}u gewerkt</span>
+                          <span className="text-xs font-medium text-gray-600 dark:text-[#a1a1a1]">{workDay.hours_worked}u gewerkt</span>
                           <span className={`text-xs font-bold ${getStatusTextColor(workDay.status)}`}>
                             {(workDay.calculated_amount || 0).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })}
                           </span>
@@ -393,21 +400,21 @@ export default function WorkSchedule() {
                       )}
                       {workDay.status === 'gepland' && (
                         <>
-                          <span className="text-xs font-bold text-status-blue dark:text-accent-blue">Gepland</span>
-                          <span className="text-xs font-medium text-gray-600 dark:text-text-secondary">{workDay.hours_worked}u · {workDay.employer || ''}</span>
-                          <span className="text-xs font-bold text-gray-400 dark:text-text-tertiary mt-1">
+                          <span className="text-xs font-bold text-[#3b82f6]">Gepland</span>
+                          <span className="text-xs font-medium text-gray-600 dark:text-[#a1a1a1]">{workDay.hours_worked}u</span>
+                          <span className="text-xs font-bold text-gray-400 dark:text-[#6b7280]">
                             {((parseFloat(workDay.hours_worked) || 0) * (parseFloat(workDay.hourly_rate) || 0)).toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })} est.
                           </span>
                         </>
                       )}
                       {workDay.status === 'ziek' && (
                         <>
-                          <span className="text-xs font-bold text-status-red dark:text-accent-red">Ziek</span>
-                          <span className="text-[10px] text-gray-500 dark:text-text-secondary">Gemeld</span>
+                          <span className="text-xs font-bold text-[#ef4444]">Ziek</span>
+                          <span className="text-[10px] text-gray-500 dark:text-[#a1a1a1]">Gemeld</span>
                         </>
                       )}
                       {workDay.status === 'vrij' && (
-                        <span className="text-xs font-bold text-gray-600 dark:text-text-secondary">Vrij</span>
+                        <span className="text-xs font-bold text-gray-600 dark:text-[#a1a1a1]">Vrij</span>
                       )}
                     </div>
                   )}
