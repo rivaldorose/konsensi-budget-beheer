@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import { UploadFile, ExtractDataFromUploadedFile } from '@/api/integrations';
 import { Payslip } from '@/api/entities';
 import { WorkDay } from '@/api/entities';
-import { Upload, FileText, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle2 } from 'lucide-react';
 
 export default function PayslipScanModal({ isOpen, onClose, employers = [], onPayslipProcessed }) {
   const [step, setStep] = useState('upload'); // upload, review, success
@@ -56,10 +51,10 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
       }
     } catch (error) {
       console.error('Upload error:', error);
-      toast({ 
-        title: '❌ Fout bij scannen', 
+      toast({
+        title: '❌ Fout bij scannen',
         description: error.message,
-        variant: 'destructive' 
+        variant: 'destructive'
       });
     } finally {
       setUploading(false);
@@ -68,7 +63,7 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
 
   const handleSavePayslip = async () => {
     if (!extractedData) return;
-    
+
     setProcessing(true);
     try {
       // Voeg werkgever toe aan lijst als deze nog niet bestaat
@@ -102,11 +97,11 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
         const allWorkDays = await WorkDay.filter({ user_id: user.id });
         const periodStart = new Date(extractedData.period_start);
         const periodEnd = new Date(extractedData.period_end);
-        
+
         // Filter werkdagen binnen deze periode
         const workDaysInPeriod = allWorkDays.filter(wd => {
           const wdDate = new Date(wd.date);
-          return wdDate >= periodStart && wdDate <= periodEnd && 
+          return wdDate >= periodStart && wdDate <= periodEnd &&
                  (!wd.employer || wd.employer === extractedData.employer_name);
         });
 
@@ -128,24 +123,24 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
         }
 
         if (workDaysInPeriod.length > 0) {
-          toast({ 
-            title: '✅ Werkdagen bijgewerkt', 
-            description: `${workDaysInPeriod.length} dagen gemarkeerd als betaald` 
+          toast({
+            title: '✅ Werkdagen bijgewerkt',
+            description: `${workDaysInPeriod.length} dagen gemarkeerd als betaald`
           });
         }
       }
 
       setStep('success');
-      
+
       if (onPayslipProcessed) {
         onPayslipProcessed(payslip, extractedData.employer_name);
       }
     } catch (error) {
       console.error('Save error:', error);
-      toast({ 
-        title: '❌ Fout bij opslaan', 
+      toast({
+        title: '❌ Fout bij opslaan',
         description: error.message,
-        variant: 'destructive' 
+        variant: 'destructive'
       });
     } finally {
       setProcessing(false);
@@ -159,29 +154,45 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
     onClose();
   };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Loonstrook Uploaden
-          </DialogTitle>
-        </DialogHeader>
+  if (!isOpen) return null;
 
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-[#0a0a0a]/80 backdrop-blur-sm p-4 overflow-y-auto">
+      <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl border border-gray-200 dark:border-[#2a2a2a] shadow-xl dark:shadow-[0_8px_32px_rgba(0,0,0,0.7)] w-full max-w-[600px] p-8 md:p-10 animate-in fade-in zoom-in duration-200 relative">
+        {/* Close Button */}
+        <button
+          onClick={handleClose}
+          className="absolute top-6 right-6 text-gray-400 dark:text-[#6b7280] hover:text-gray-600 dark:hover:text-white transition-colors p-1"
+        >
+          <span className="material-symbols-outlined text-2xl">close</span>
+        </button>
+
+        {/* Upload Step */}
         {step === 'upload' && (
-          <div className="space-y-4">
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
+          <>
+            {/* Header */}
+            <div className="mb-8">
+              <h3 className="font-display font-bold text-2xl text-[#1F2937] dark:text-white flex items-center gap-2">
+                📄 Loonstrook Uploaden
+              </h3>
+            </div>
+
+            {/* Upload Area */}
+            <div className="border-2 border-dashed border-gray-300 dark:border-[#3a3a3a] rounded-2xl bg-gray-50 dark:bg-[#2a2a2a] p-10 md:p-12 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#10b981]/50 dark:hover:border-[#10b981]/50 transition-all group mb-8">
               {uploading ? (
-                <div className="flex flex-col items-center gap-3">
-                  <Loader2 className="w-12 h-12 text-green-500 animate-spin" />
-                  <p className="text-gray-600">Loonstrook wordt gescand...</p>
+                <div className="flex flex-col items-center gap-4">
+                  <Loader2 className="w-12 h-12 text-[#10b981] animate-spin" />
+                  <p className="text-gray-600 dark:text-[#a1a1a1] font-medium">Loonstrook wordt gescand...</p>
                 </div>
               ) : (
                 <>
-                  <Upload className="w-12 h-12 mx-auto text-gray-400 mb-3" />
-                  <p className="text-gray-600 mb-4">Upload je loonstrook (PDF of foto)</p>
-                  
+                  <div className="mb-5">
+                    <span className="material-symbols-outlined text-5xl text-[#10b981] drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]">cloud_upload</span>
+                  </div>
+                  <p className="text-gray-600 dark:text-[#a1a1a1] text-base mb-6">
+                    Upload je loonstrook (PDF of foto)
+                  </p>
+
                   <input
                     type="file"
                     accept="image/*,.pdf"
@@ -189,160 +200,201 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
                     id="payslip-upload"
                     onChange={handleFileUpload}
                   />
-                  
+
                   <label htmlFor="payslip-upload">
-                    <Button type="button" className="bg-green-600 hover:bg-green-700" asChild>
-                      <span className="cursor-pointer">
-                        📄 Selecteer Bestand
-                      </span>
-                    </Button>
+                    <span className="inline-flex items-center gap-2 bg-[#10b981] hover:bg-[#0da674] text-white dark:text-black font-bold px-8 py-3 rounded-xl cursor-pointer transition-colors shadow-lg dark:shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                      Selecteer Bestand
+                    </span>
                   </label>
                 </>
               )}
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-sm text-blue-800">
-                💡 De AI leest automatisch: werkgever, periode, uren, uurloon en netto bedrag uit je loonstrook.
+            {/* Info Box */}
+            <div className="bg-blue-50 dark:bg-[rgba(59,130,246,0.1)] border border-blue-200 dark:border-[#3b82f6]/30 rounded-2xl p-5 flex gap-4 items-start">
+              <span className="material-symbols-outlined text-[#3b82f6] flex-shrink-0">lightbulb</span>
+              <p className="text-sm text-blue-800 dark:text-[#a1a1a1] leading-relaxed">
+                De AI leest automatisch: werkgever, periode, uren, uurloon en netto bedrag uit je loonstrook.
               </p>
             </div>
-          </div>
+          </>
         )}
 
+        {/* Review Step */}
         {step === 'review' && extractedData && (
-          <div className="space-y-4">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-sm text-green-800 font-medium">
-                ✅ Loonstrook succesvol gescand! Controleer de gegevens:
+          <>
+            {/* Header */}
+            <div className="mb-6">
+              <h3 className="font-display font-bold text-2xl text-[#1F2937] dark:text-white">
+                Controleer Gegevens
+              </h3>
+            </div>
+
+            {/* Success Message */}
+            <div className="bg-green-50 dark:bg-[#10b981]/10 border border-green-200 dark:border-[#10b981]/20 rounded-xl p-4 mb-6">
+              <p className="text-sm text-green-800 dark:text-[#34d399] font-medium flex items-center gap-2">
+                <span className="material-symbols-outlined text-lg">check_circle</span>
+                Loonstrook succesvol gescand! Controleer de gegevens:
               </p>
             </div>
 
-            <div className="space-y-3">
-              <div>
-                <Label>Werkgever</Label>
-                <Input
+            {/* Form Fields */}
+            <div className="space-y-4">
+              {/* Werkgever */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Werkgever</label>
+                <input
+                  type="text"
                   value={extractedData.employer_name || ''}
                   onChange={(e) => setExtractedData({...extractedData, employer_name: e.target.value})}
+                  className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
                 />
                 {extractedData.employer_name && !employers.includes(extractedData.employer_name) && (
-                  <p className="text-xs text-blue-600 mt-1">
+                  <p className="text-xs text-blue-600 dark:text-[#3b82f6]">
                     ✨ Deze werkgever wordt automatisch toegevoegd aan je lijst
                   </p>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Periode van</Label>
-                  <Input
+              {/* Periode */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Periode van</label>
+                  <input
                     type="date"
                     value={extractedData.period_start || ''}
                     onChange={(e) => setExtractedData({...extractedData, period_start: e.target.value})}
+                    className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
                   />
                 </div>
-                <div>
-                  <Label>Periode tot</Label>
-                  <Input
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Periode tot</label>
+                  <input
                     type="date"
                     value={extractedData.period_end || ''}
                     onChange={(e) => setExtractedData({...extractedData, period_end: e.target.value})}
+                    className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
                   />
                 </div>
               </div>
 
-              <div>
-                <Label>Uitbetalingsdatum</Label>
-                <Input
+              {/* Uitbetalingsdatum */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Uitbetalingsdatum</label>
+                <input
                   type="date"
                   value={extractedData.payment_date || ''}
                   onChange={(e) => setExtractedData({...extractedData, payment_date: e.target.value})}
+                  className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Gewerkte uren</Label>
-                  <Input
+              {/* Uren & Uurloon */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Gewerkte uren</label>
+                  <input
                     type="number"
                     step="0.5"
                     value={extractedData.total_hours || ''}
                     onChange={(e) => setExtractedData({...extractedData, total_hours: parseFloat(e.target.value)})}
+                    className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
                   />
                 </div>
-                <div>
-                  <Label>Uurloon (€)</Label>
-                  <Input
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Uurloon (€)</label>
+                  <input
                     type="number"
                     step="0.01"
                     value={extractedData.hourly_rate || ''}
                     onChange={(e) => setExtractedData({...extractedData, hourly_rate: parseFloat(e.target.value)})}
+                    className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label>Bruto loon (€)</Label>
-                  <Input
+              {/* Bruto & Netto */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Bruto loon (€)</label>
+                  <input
                     type="number"
                     step="0.01"
                     value={extractedData.gross_amount || ''}
                     onChange={(e) => setExtractedData({...extractedData, gross_amount: parseFloat(e.target.value)})}
+                    className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-medium text-[#1F2937] dark:text-white focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
                   />
                 </div>
-                <div>
-                  <Label>Netto loon (€) *</Label>
-                  <Input
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold uppercase text-gray-500 dark:text-[#a1a1a1] tracking-widest">Netto loon (€) *</label>
+                  <input
                     type="number"
                     step="0.01"
                     value={extractedData.net_amount || ''}
                     onChange={(e) => setExtractedData({...extractedData, net_amount: parseFloat(e.target.value)})}
-                    className="font-bold text-green-600"
+                    className="w-full bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl px-4 py-3 text-sm font-bold text-[#10b981] focus:ring-2 focus:ring-[#10b981] focus:border-transparent transition-all outline-none"
                   />
                 </div>
               </div>
             </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setStep('upload')}>
+            {/* Buttons */}
+            <div className="flex items-center justify-between gap-4 mt-8">
+              <button
+                type="button"
+                onClick={() => setStep('upload')}
+                className="px-6 py-3 rounded-xl border-2 border-gray-200 dark:border-[#2a2a2a] bg-transparent hover:bg-gray-50 dark:hover:bg-[#2a2a2a] text-[#1F2937] dark:text-white font-bold text-sm transition-all"
+              >
                 Terug
-              </Button>
-              <Button 
-                onClick={handleSavePayslip} 
-                className="bg-green-600 hover:bg-green-700"
+              </button>
+              <button
+                onClick={handleSavePayslip}
                 disabled={processing}
+                className="flex items-center gap-2 px-8 py-3 rounded-xl bg-[#10b981] hover:bg-[#0da674] text-white dark:text-black font-bold text-sm shadow-lg dark:shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all disabled:opacity-50"
               >
                 {processing ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                     Verwerken...
                   </>
                 ) : (
-                  '💾 Opslaan'
+                  <>
+                    <span className="material-symbols-outlined text-lg">save</span>
+                    Opslaan
+                  </>
                 )}
-              </Button>
-            </DialogFooter>
-          </div>
+              </button>
+            </div>
+          </>
         )}
 
+        {/* Success Step */}
         {step === 'success' && (
-          <div className="text-center py-6">
-            <CheckCircle2 className="w-16 h-16 mx-auto text-green-500 mb-4" />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Loonstrook Verwerkt!</h3>
-            <p className="text-gray-600 mb-4">
+          <div className="text-center py-8">
+            <div className="mb-6">
+              <CheckCircle2 className="w-20 h-20 mx-auto text-[#10b981] drop-shadow-[0_0_12px_rgba(16,185,129,0.4)]" />
+            </div>
+            <h3 className="text-2xl font-display font-bold text-[#1F2937] dark:text-white mb-3">
+              Loonstrook Verwerkt!
+            </h3>
+            <p className="text-gray-600 dark:text-[#a1a1a1] mb-6">
               Je werkdagen zijn bijgewerkt en gemarkeerd als betaald.
             </p>
             {extractedData?.payment_date && (
-              <p className="text-sm text-gray-500">
-                📅 Uitbetaling: {new Date(extractedData.payment_date).toLocaleDateString('nl-NL')}
+              <p className="text-sm text-gray-500 dark:text-[#6b7280] mb-6 flex items-center justify-center gap-2">
+                <span className="material-symbols-outlined text-lg">calendar_today</span>
+                Uitbetaling: {new Date(extractedData.payment_date).toLocaleDateString('nl-NL')}
               </p>
             )}
-            <Button onClick={handleClose} className="mt-4 bg-green-600 hover:bg-green-700">
+            <button
+              onClick={handleClose}
+              className="px-10 py-3 rounded-xl bg-[#10b981] hover:bg-[#0da674] text-white dark:text-black font-bold text-sm shadow-lg dark:shadow-[0_0_15px_rgba(16,185,129,0.15)] transition-all"
+            >
               Sluiten
-            </Button>
+            </button>
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
