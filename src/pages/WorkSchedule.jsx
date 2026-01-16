@@ -150,16 +150,19 @@ export default function WorkSchedule() {
 
     // Bereken totalen van loonstroken voor deze maand
     const payslipEarned = payslips.reduce((sum, p) => sum + (parseFloat(p.netto_loon) || parseFloat(p.amount) || 0), 0);
+    const payslipBruto = payslips.reduce((sum, p) => sum + (parseFloat(p.bruto_loon) || 0), 0);
     const payslipHours = payslips.reduce((sum, p) => sum + (parseFloat(p.uren_gewerkt) || 0), 0);
     const payslipHourlyRate = payslips.length > 0 ? (payslips[0].uurloon || 0) : 0;
 
     // Gebruik payslip data als beschikbaar, anders werkdagen
     const totalEarned = payslipEarned > 0 ? payslipEarned : workDayEarned;
+    const totalBruto = payslipBruto;
     const totalHours = payslipHours > 0 ? payslipHours : workDayHours;
     const avgHourlyRate = payslipHourlyRate > 0 ? payslipHourlyRate : (totalHours > 0 ? totalEarned / totalHours : 0);
 
     return {
       totalEarned,
+      totalBruto,
       totalHours,
       plannedHours,
       avgHourlyRate,
@@ -267,9 +270,16 @@ export default function WorkSchedule() {
                 <span className="material-symbols-outlined text-[20px]">wallet</span>
               </div>
             </div>
-            <p className="font-display font-bold text-3xl text-[#131d0c] dark:text-white">
-              {stats.totalEarned.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })}
-            </p>
+            <div>
+              <p className="font-display font-bold text-3xl text-[#131d0c] dark:text-white">
+                {stats.totalEarned.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })}
+              </p>
+              {stats.totalBruto > 0 && (
+                <p className="text-sm text-gray-500 dark:text-[#a1a1a1] mt-1">
+                  (Bruto: {stats.totalBruto.toLocaleString('nl-NL', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 })})
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Stat 2: Uren Gewerkt */}
