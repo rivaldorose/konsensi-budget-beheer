@@ -189,10 +189,10 @@ export function LanguageProvider({ children }) {
 
   if (loading) {
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a] flex items-center justify-center">
             <div className="text-center">
-                <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400 mx-auto"></div>
-                <p className="text-gray-600 text-sm mt-4">Instellingen laden...</p>
+                <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400 dark:border-gray-500 mx-auto"></div>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mt-4">Instellingen laden...</p>
             </div>
         </div>
     );

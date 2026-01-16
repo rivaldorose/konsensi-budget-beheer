@@ -3,15 +3,26 @@ import Layout from "./Layout.jsx";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
-// Loading fallback component
-const LoadingFallback = () => (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a] flex items-center justify-center">
-        <div className="text-center">
-            <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400 dark:border-gray-500"></div>
-            <p className="text-gray-600 dark:text-gray-400 text-sm mt-4">Laden...</p>
+// Loading fallback component - syncs with theme immediately to prevent flash
+const LoadingFallback = () => {
+    // Apply dark mode class immediately based on localStorage/system preference
+    React.useEffect(() => {
+        const saved = localStorage.getItem('theme');
+        const isDark = saved !== null ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (isDark) {
+            document.documentElement.classList.add('dark');
+        }
+    }, []);
+
+    return (
+        <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a] flex items-center justify-center">
+            <div className="text-center">
+                <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400 dark:border-gray-500"></div>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mt-4">Laden...</p>
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 // Lazy load large feature pages for code splitting
 const Dashboard = React.lazy(() => import("./Dashboard"));
