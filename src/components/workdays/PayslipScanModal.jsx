@@ -281,7 +281,6 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
         description: incomeDescription,
         amount: extractedData.netto_loon || 0,
         income_type: 'vast', // Vast inkomen van werkgever
-        date: extractedData.period_end, // Use end of period as the income date
         start_date: extractedData.period_start,
         end_date: extractedData.period_end,
         is_active: true,
@@ -292,7 +291,7 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
       console.log('Income record created for payslip:', {
         description: incomeDescription,
         amount: extractedData.netto_loon,
-        date: extractedData.period_end
+        period: `${extractedData.period_start} - ${extractedData.period_end}`
       });
 
       // Update workdays in this period to "gewerkt" and mark as paid
