@@ -262,20 +262,6 @@ export default function IncomePage() {
                             <span className="material-symbols-outlined text-[18px]">work</span>
                             <span>Status</span>
                         </button>
-                        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                            <SelectTrigger className="flex items-center gap-2 pl-4 pr-3 py-2 rounded-full bg-white dark:bg-[#1a2c26] border border-gray-200 dark:border-[#2A3F36] text-[#1F2937] dark:text-white hover:border-primary transition-all text-sm font-bold shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] w-auto min-w-[180px]">
-                                <span className="material-symbols-outlined text-primary">calendar_month</span>
-                                <SelectValue>{currentMonthLabel}</SelectValue>
-                                <span className="material-symbols-outlined text-[20px]">arrow_drop_down</span>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {months.map(month => (
-                                    <SelectItem key={month.value} value={month.value}>
-                                        {month.label}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
                     </div>
                 </div>
 
