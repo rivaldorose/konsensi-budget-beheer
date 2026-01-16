@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/components/utils/LanguageContext';
 import IncomeFormModal from '@/components/income/IncomeFormModal';
-import ScanIncomeModal from '@/components/income/ScanIncomeModal';
+import PayslipScanModal from '@/components/workdays/PayslipScanModal';
 import ImportStatementModal from '@/components/income/ImportStatementModal';
 import WorkStatusModal from '@/components/income/WorkStatusModal';
 import IncomeInfoModal from '@/components/income/IncomeInfoModal';
@@ -41,6 +41,7 @@ export default function IncomePage() {
     const [updateAmount, setUpdateAmount] = useState('');
     const [showInfoModal, setShowInfoModal] = useState(false);
     const [incomeType, setIncomeType] = useState('vast'); // For modal
+    const [employers, setEmployers] = useState([]);
 
     const months = [
         { value: '2025-01', label: 'januari 2025' },
@@ -79,11 +80,12 @@ export default function IncomePage() {
         try {
             const userData = await User.me();
             setUser(userData);
-            
+            setEmployers(userData.employers || []);
+
             const userFilter = { user_id: userData.id };
             const incomeData = await Income.filter(userFilter);
             setIncomes(incomeData);
-            
+
             const variableData = await VariableIncomeEntry.filter(userFilter);
             setVariableEntries(variableData);
         } catch (error) {
@@ -699,12 +701,16 @@ export default function IncomePage() {
                 income={editingIncome}
             />
 
-            <ScanIncomeModal
+            <PayslipScanModal
                 isOpen={showScanModal}
                 onClose={() => setShowScanModal(false)}
-                onSuccess={() => {
-                    setShowScanModal(false);
+                employers={employers}
+                onPayslipProcessed={(payslip, newEmployer) => {
+                    if (newEmployer && !employers.includes(newEmployer)) {
+                        setEmployers(prev => [...prev, newEmployer]);
+                    }
                     loadData();
+                    setShowScanModal(false);
                 }}
             />
 
