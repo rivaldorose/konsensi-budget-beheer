@@ -43,32 +43,24 @@ export default function IncomePage() {
     const [incomeType, setIncomeType] = useState('vast'); // For modal
     const [employers, setEmployers] = useState([]);
 
-    const months = [
-        { value: '2025-01', label: 'januari 2025' },
-        { value: '2025-02', label: 'februari 2025' },
-        { value: '2025-03', label: 'maart 2025' },
-        { value: '2025-04', label: 'april 2025' },
-        { value: '2025-05', label: 'mei 2025' },
-        { value: '2025-06', label: 'juni 2025' },
-        { value: '2025-07', label: 'juli 2025' },
-        { value: '2025-08', label: 'augustus 2025' },
-        { value: '2025-09', label: 'september 2025' },
-        { value: '2025-10', label: 'oktober 2025' },
-        { value: '2025-11', label: 'november 2025' },
-        { value: '2025-12', label: 'december 2025' },
-        { value: '2026-01', label: 'januari 2026' },
-        { value: '2026-02', label: 'februari 2026' },
-        { value: '2026-03', label: 'maart 2026' },
-        { value: '2026-04', label: 'april 2026' },
-        { value: '2026-05', label: 'mei 2026' },
-        { value: '2026-06', label: 'juni 2026' },
-        { value: '2026-07', label: 'juli 2026' },
-        { value: '2026-08', label: 'augustus 2026' },
-        { value: '2026-09', label: 'september 2026' },
-        { value: '2026-10', label: 'oktober 2026' },
-        { value: '2026-11', label: 'november 2026' },
-        { value: '2026-12', label: 'december 2026' },
-    ];
+    // Generate months dynamically: current month first, then going backwards
+    const months = useMemo(() => {
+        const monthNames = ['januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december'];
+        const result = [];
+        const now = new Date();
+
+        // Start from current month and go back 24 months
+        for (let i = 0; i < 24; i++) {
+            const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            const value = `${year}-${String(month + 1).padStart(2, '0')}`;
+            const label = `${monthNames[month]} ${year}`;
+            result.push({ value, label });
+        }
+
+        return result;
+    }, []);
 
     const currentMonthLabel = months.find(m => m.value === selectedMonth)?.label || selectedMonth;
 
@@ -597,7 +589,7 @@ export default function IncomePage() {
                                     </div>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {[...months].reverse().map(month => (
+                                    {months.map(month => (
                                         <SelectItem key={month.value} value={month.value}>
                                             {month.label}
                                         </SelectItem>
