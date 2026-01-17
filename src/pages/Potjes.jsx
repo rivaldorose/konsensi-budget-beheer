@@ -656,10 +656,11 @@ export default function Potjes() {
             const spent = potjeSpendings[potje.id] || 0;
             const remaining = (potje.monthly_budget || 0) - spent;
             const potjeProgress = (potje.monthly_budget || 0) > 0 ? (spent / potje.monthly_budget) * 100 : 0;
-            const savingsProgress = potje.pot_type === 'savings' && potje.target_amount
+            const isSavingsType = potje.pot_type === 'savings' || potje.pot_type === 'btw_reserve';
+            const savingsProgress = isSavingsType && potje.target_amount
               ? Math.min(100, ((potje.current_amount || 0) / potje.target_amount) * 100)
               : 0;
-            const savingsRemaining = potje.pot_type === 'savings'
+            const savingsRemaining = isSavingsType
               ? (potje.target_amount || 0) - (potje.current_amount || 0)
               : 0;
             const nibudPercentage = potje.category ? NIBUD_PERCENTAGES[potje.category] : null;
@@ -674,11 +675,11 @@ export default function Potjes() {
                   className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-soft hover:shadow-lift dark:hover:shadow-lift transition-shadow duration-300 relative border border-transparent hover:border-[#E5E7EB] dark:hover:border-[#3A4F46] group"
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <div className={`w-12 h-12 rounded-[24px] ${potje.pot_type === 'savings' ? 'bg-gray-50 dark:bg-[#2A3F36]' : potje.name === 'Bad Habits' ? 'bg-orange-50 dark:bg-accent-orange/10' : 'bg-blue-50 dark:bg-accent-blue/10'} flex items-center justify-center text-2xl border ${potje.pot_type === 'savings' ? 'border-[#E5E7EB] dark:border-[#2A3F36]' : potje.name === 'Bad Habits' ? 'border-orange-100 dark:border-accent-orange/20' : 'border-blue-100 dark:border-accent-blue/20'}`}>
-                      {potje.icon || '💰'}
+                    <div className={`w-12 h-12 rounded-[24px] ${potje.pot_type === 'btw_reserve' ? 'bg-amber-50 dark:bg-amber-500/10' : isSavingsType ? 'bg-gray-50 dark:bg-[#2A3F36]' : potje.name === 'Bad Habits' ? 'bg-orange-50 dark:bg-accent-orange/10' : 'bg-blue-50 dark:bg-accent-blue/10'} flex items-center justify-center text-2xl border ${potje.pot_type === 'btw_reserve' ? 'border-amber-200 dark:border-amber-500/30' : isSavingsType ? 'border-[#E5E7EB] dark:border-[#2A3F36]' : potje.name === 'Bad Habits' ? 'border-orange-100 dark:border-accent-orange/20' : 'border-blue-100 dark:border-accent-blue/20'}`}>
+                      {potje.pot_type === 'btw_reserve' ? <span className="material-symbols-outlined text-amber-600 dark:text-amber-400">account_balance</span> : (potje.icon || '💰')}
                     </div>
-                    <span className={`${potje.pot_type === 'savings' ? 'bg-[#B2FF78]/30 dark:bg-primary-green/15 text-green-800 dark:text-primary-green border border-[#B2FF78] dark:border-primary-green/30' : 'bg-gray-100 dark:bg-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] border border-[#E5E7EB] dark:border-[#3A4F46]'} text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full`}>
-                      {potje.pot_type === 'savings' ? 'Sparen' : 'Uitgaven'}
+                    <span className={`${potje.pot_type === 'btw_reserve' ? 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30' : isSavingsType ? 'bg-[#B2FF78]/30 dark:bg-primary-green/15 text-green-800 dark:text-primary-green border border-[#B2FF78] dark:border-primary-green/30' : 'bg-gray-100 dark:bg-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] border border-[#E5E7EB] dark:border-[#3A4F46]'} text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full`}>
+                      {potje.pot_type === 'btw_reserve' ? 'BTW Reserve' : isSavingsType ? 'Sparen' : 'Uitgaven'}
                           </span>
                   </div>
                   
@@ -693,13 +694,18 @@ export default function Potjes() {
                   
                   <div className="space-y-4">
                     <div className="flex justify-between text-xs text-gray-400 dark:text-text-secondary">
-                      <span>{potje.pot_type === 'savings' ? 'Maandelijks:' : 'Budget:'} {formatCurrency(potje.monthly_budget || 0)}</span>
+                      <span>{potje.pot_type === 'btw_reserve' ? 'Te reserveren:' : isSavingsType ? 'Maandelijks:' : 'Budget:'} {formatCurrency(potje.pot_type === 'btw_reserve' ? (potje.target_amount || 0) : (potje.monthly_budget || 0))}</span>
                     </div>
                     
                     <div className="bg-gray-100 dark:bg-[#2A3F36] rounded-full h-3 w-full overflow-hidden">
-                      {potje.pot_type === 'savings' ? (
-                        <div 
-                          className="bg-[#B2FF78] dark:bg-primary-green h-full rounded-full transition-all duration-500" 
+                      {potje.pot_type === 'btw_reserve' ? (
+                        <div
+                          className="bg-amber-500 dark:bg-amber-400 h-full rounded-full transition-all duration-500"
+                          style={{ width: `${savingsProgress}%` }}
+                        ></div>
+                      ) : isSavingsType ? (
+                        <div
+                          className="bg-[#B2FF78] dark:bg-primary-green h-full rounded-full transition-all duration-500"
                           style={{ width: `${savingsProgress}%` }}
                         ></div>
                       ) : (
@@ -713,14 +719,23 @@ export default function Potjes() {
                     <div className="flex justify-between items-end">
                       <div>
                         <span className="text-xs text-gray-500 dark:text-text-secondary block mb-1">
-                          {potje.pot_type === 'savings' ? 'Gespaard' : 'Uitgegeven'}
+                          {potje.pot_type === 'btw_reserve' ? 'Gereserveerd' : isSavingsType ? 'Gespaard' : 'Uitgegeven'}
                         </span>
-                        <span className={`text-2xl font-bold ${potje.pot_type === 'savings' ? 'text-status-green dark:text-primary-green' : 'text-gray-900 dark:text-text-primary'}`}>
-                          {potje.pot_type === 'savings' ? formatCurrency(potje.current_amount || 0) : formatCurrency(spent)}
+                        <span className={`text-2xl font-bold ${potje.pot_type === 'btw_reserve' ? 'text-amber-600 dark:text-amber-400' : isSavingsType ? 'text-status-green dark:text-primary-green' : 'text-gray-900 dark:text-text-primary'}`}>
+                          {isSavingsType ? formatCurrency(potje.current_amount || 0) : formatCurrency(spent)}
                         </span>
                       </div>
                       <div className="text-right">
-                        {potje.pot_type === 'savings' ? (
+                        {potje.pot_type === 'btw_reserve' ? (
+                          <>
+                            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium block">
+                              Voor BTW aangifte
+                            </span>
+                            <span className="text-[10px] text-gray-400 dark:text-text-tertiary mt-1 block flex items-center justify-end gap-1">
+                              <span className="material-symbols-outlined text-[12px]">event</span> Elk kwartaal
+                            </span>
+                          </>
+                        ) : isSavingsType ? (
                           <>
                             <span className="text-xs text-gray-400 dark:text-text-secondary font-medium block">
                               Nog {formatCurrency(savingsRemaining)} te gaan
@@ -762,15 +777,22 @@ export default function Potjes() {
                   </div>
                   
                   <div className="flex gap-3 mt-6 pt-5 border-t border-[#E5E7EB] dark:border-[#2A3F36]">
-                  {potje.pot_type === 'savings' ? (
+                  {potje.pot_type === 'btw_reserve' ? (
+                      <button
+                        onClick={() => handleViewActivity(potje)}
+                        className="flex-1 bg-amber-100 dark:bg-amber-500/20 border border-amber-200 dark:border-amber-500/30 hover:bg-amber-200 dark:hover:bg-amber-500/30 text-amber-700 dark:text-amber-400 py-2.5 rounded-[24px] font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">receipt_long</span> Bekijk facturen
+                      </button>
+                  ) : isSavingsType ? (
                       <>
-                        <button 
+                        <button
                           onClick={() => handleOpenDeposit(potje)}
                           className="flex-1 bg-[#B2FF78] dark:bg-primary-green hover:bg-[#a3eb6d] dark:hover:bg-light-green text-brand-dark dark:text-dark-bg py-2.5 rounded-[24px] font-bold text-sm transition-colors flex items-center justify-center gap-2"
                         >
                           <span className="material-symbols-outlined text-[18px]">sync_alt</span> Storten
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleSelectPot(potje)}
                           className="px-3 py-2 rounded-[24px] border border-[#E5E7EB] dark:border-[#2A3F36] hover:bg-gray-50 dark:hover:bg-[#2A3F36] text-[#6B7280] dark:text-white transition-colors"
                         >
@@ -778,7 +800,7 @@ export default function Potjes() {
                         </button>
                     </>
                   ) : (
-                      <button 
+                      <button
                         onClick={() => handleViewActivity(potje)}
                         className="flex-1 bg-white dark:bg-transparent border border-[#E5E7EB] dark:border-[#2A3F36] hover:bg-gray-50 dark:hover:bg-[#2A3F36] text-[#0d1b17] dark:text-white py-2.5 rounded-[24px] font-bold text-sm transition-colors flex items-center justify-center gap-2"
                       >
