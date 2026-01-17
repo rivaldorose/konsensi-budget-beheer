@@ -29,38 +29,7 @@ interface ParsedInvoice {
   confidence: number;
 }
 
-Deno.serve(async (req: Request) => {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
-  try {
-    const { fileBase64, mimeType } = await req.json();
-
-    if (!fileBase64) {
-      throw new Error('No file data provided');
-    }
-
-    // Get OpenAI API key from environment
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiApiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
-
-    // Use GPT-4 Vision to parse the invoice
-    const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an expert at parsing Dutch invoices (facturen). Extract all relevant information from the invoice image.
+const systemPrompt = `You are an expert at parsing Dutch invoices (facturen). Extract all relevant information from the invoice image.
 
 IMPORTANT: Dutch invoices use BTW (VAT/Value Added Tax). Common BTW percentages are:
 - 21% (standard rate for most goods/services)
@@ -112,37 +81,89 @@ CRITICAL VALIDATION:
 - vat_amount = subtotal * (vat_percentage / 100)
 - If you can only see the total with BTW, calculate backwards: subtotal = total / (1 + vat_percentage/100)
 - Always return numbers, not strings for amounts
-- Confidence should reflect how sure you are about the extracted data (0-1)`
-          },
+- Confidence should reflect how sure you are about the extracted data (0-1)
+- ONLY return the JSON object, no other text`;
+
+Deno.serve(async (req: Request) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  try {
+    const { fileBase64, mimeType } = await req.json();
+
+    if (!fileBase64) {
+      throw new Error('No file data provided');
+    }
+
+    // Get Anthropic API key from environment
+    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!anthropicApiKey) {
+      throw new Error('Anthropic API key not configured');
+    }
+
+    // Determine the media type for Claude
+    let mediaType = mimeType;
+    if (mimeType === 'application/pdf') {
+      // Claude supports PDF as document type
+      mediaType = 'application/pdf';
+    }
+
+    // Use Claude to parse the invoice
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': anthropicApiKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        messages: [
           {
             role: 'user',
             content: [
               {
-                type: 'text',
-                text: 'Parse this Dutch invoice and extract all relevant information. Focus on identifying the BTW (VAT) correctly.'
+                type: mimeType === 'application/pdf' ? 'document' : 'image',
+                source: {
+                  type: 'base64',
+                  media_type: mediaType,
+                  data: fileBase64,
+                },
               },
               {
-                type: 'image_url',
-                image_url: {
-                  url: `data:${mimeType};base64,${fileBase64}`
-                }
+                type: 'text',
+                text: 'Parse this Dutch invoice and extract all relevant information. Focus on identifying the BTW (VAT) correctly. Return ONLY a valid JSON object.'
               }
             ]
           }
         ],
-        response_format: { type: 'json_object' },
-        max_tokens: 2000,
+        system: systemPrompt,
       }),
     });
 
-    const visionData = await visionResponse.json();
-    const parsedContent = visionData.choices?.[0]?.message?.content;
+    const claudeData = await response.json();
+
+    if (claudeData.error) {
+      throw new Error(claudeData.error.message || 'Claude API error');
+    }
+
+    const parsedContent = claudeData.content?.[0]?.text;
 
     if (!parsedContent) {
       throw new Error('Failed to parse invoice');
     }
 
-    const result: ParsedInvoice = JSON.parse(parsedContent);
+    // Extract JSON from response (Claude might wrap it in markdown code blocks)
+    let jsonString = parsedContent;
+    const jsonMatch = parsedContent.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (jsonMatch) {
+      jsonString = jsonMatch[1].trim();
+    }
+
+    const result: ParsedInvoice = JSON.parse(jsonString);
 
     // Validate and ensure all required fields
     const validated: ParsedInvoice = {

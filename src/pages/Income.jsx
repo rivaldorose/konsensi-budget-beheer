@@ -260,13 +260,6 @@ export default function IncomePage() {
                             <span>Scan Afschrift</span>
                         </button>
                         <button
-                            onClick={() => setShowInvoiceModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:border-amber-300 dark:hover:border-amber-500/50 transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]"
-                        >
-                            <span className="material-symbols-outlined text-[18px]">receipt_long</span>
-                            <span>Scan Factuur</span>
-                        </button>
-                        <button
                             onClick={() => setShowWorkStatusModal(true)}
                             className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-gray-600 dark:text-konsensi-primary hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]"
                         >
@@ -622,16 +615,26 @@ export default function IncomePage() {
                             <div className="w-16 h-16 rounded-full bg-white dark:bg-card-elevated shadow-sm flex items-center justify-center mb-4 text-[#3D6456] dark:text-konsensi-primary">
                                 <span className="material-symbols-outlined text-3xl">document_scanner</span>
                             </div>
-                            <h3 className="font-bold text-[#3D6456] dark:text-white text-lg mb-2">Scan loonstrook</h3>
+                            <h3 className="font-bold text-[#3D6456] dark:text-white text-lg mb-2">Scan Document</h3>
                             <p className="text-sm text-gray-500 dark:text-text-secondary mb-6 leading-relaxed">
-                                Heb je een fysieke of digitale loonstrook? Scan hem direct voor automatische verwerking.
+                                Scan je loonstrook of factuur voor automatische verwerking.
                             </p>
-                            <button
-                                onClick={() => setShowScanModal(true)}
-                                className="w-full bg-[#b4ff7a] dark:bg-konsensi-primary text-[#3D6456] dark:text-black font-bold py-3 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all shadow-sm"
-                            >
-                                Scan Nu
-                            </button>
+                            <div className="w-full flex flex-col gap-3">
+                                <button
+                                    onClick={() => setShowScanModal(true)}
+                                    className="w-full bg-[#b4ff7a] dark:bg-konsensi-primary text-[#3D6456] dark:text-black font-bold py-3 rounded-full hover:shadow-lg hover:translate-y-[-2px] transition-all shadow-sm flex items-center justify-center gap-2"
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">description</span>
+                                    Scan Loonstrook
+                                </button>
+                                <button
+                                    onClick={() => setShowInvoiceModal(true)}
+                                    className="w-full bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 font-bold py-3 rounded-full hover:bg-amber-200 dark:hover:bg-amber-500/30 hover:shadow-lg hover:translate-y-[-2px] transition-all shadow-sm flex items-center justify-center gap-2 border border-amber-200 dark:border-amber-500/30"
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+                                    Scan Factuur (ZZP)
+                                </button>
+                            </div>
                         </div>
 
                         {/* 3. Tips Card */}
