@@ -14,6 +14,7 @@ import BankStatementScanModal from '@/components/income/BankStatementScanModal';
 import ImportStatementModal from '@/components/income/ImportStatementModal';
 import WorkStatusModal from '@/components/income/WorkStatusModal';
 import IncomeInfoModal from '@/components/income/IncomeInfoModal';
+import InvoiceScanModal from '@/components/income/InvoiceScanModal';
 import { formatCurrency } from '@/components/utils/formatters';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Link } from 'react-router-dom';
@@ -44,6 +45,7 @@ export default function IncomePage() {
     const [showInfoModal, setShowInfoModal] = useState(false);
     const [incomeType, setIncomeType] = useState('vast'); // For modal
     const [employers, setEmployers] = useState([]);
+    const [showInvoiceModal, setShowInvoiceModal] = useState(false);
 
     // Generate months dynamically: current month first, then going backwards
     const months = useMemo(() => {
@@ -256,6 +258,13 @@ export default function IncomePage() {
                         >
                             <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
                             <span>Scan Afschrift</span>
+                        </button>
+                        <button
+                            onClick={() => setShowInvoiceModal(true)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:border-amber-300 dark:hover:border-amber-500/50 transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]"
+                        >
+                            <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+                            <span>Scan Factuur</span>
                         </button>
                         <button
                             onClick={() => setShowWorkStatusModal(true)}
@@ -771,6 +780,15 @@ export default function IncomePage() {
                 isOpen={showWorkStatusModal}
                 onClose={() => setShowWorkStatusModal(false)}
                 onSave={() => loadData()}
+            />
+
+            <InvoiceScanModal
+                isOpen={showInvoiceModal}
+                onClose={() => setShowInvoiceModal(false)}
+                onSuccess={() => {
+                    setShowInvoiceModal(false);
+                    loadData();
+                }}
             />
 
             <IncomeInfoModal
