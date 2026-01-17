@@ -6,6 +6,7 @@ import { Debt } from '@/api/entities';
 import { Transaction } from '@/api/entities';
 import { User } from '@/api/entities';
 import { Pot } from '@/api/entities';
+import { Expense } from '@/api/entities';
 import { createPageUrl } from '@/utils';
 import AddTransactionModal from '@/components/budget/AddTransactionModal';
 import AddBudgetCategoryModal from '@/components/budget/AddBudgetCategoryModal';
@@ -23,7 +24,9 @@ export default function BudgetPlan() {
     const [selectedMonth, setSelectedMonth] = useState(new Date());
     const [showCategoryModal, setShowCategoryModal] = useState(false);
     const [showBankStatementModal, setShowBankStatementModal] = useState(false);
-    
+    const [deleteConfirm, setDeleteConfirm] = useState({ show: false, transaction: null });
+    const [deleting, setDeleting] = useState(false);
+
     // Financial data
     const [totalIncome, setTotalIncome] = useState(0);
     const [totalExpenses, setTotalExpenses] = useState(0);
@@ -291,6 +294,40 @@ export default function BudgetPlan() {
             console.error('Error loading budget data:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDeleteTransaction = async (transaction) => {
+        if (!transaction || !transaction.id) return;
+
+        setDeleting(true);
+        try {
+            const [type, id] = transaction.id.split('-');
+
+            switch (type) {
+                case 'income':
+                    await Income.delete(id);
+                    break;
+                case 'cost':
+                    await MonthlyCost.delete(id);
+                    break;
+                case 'debt':
+                    // Don't delete the debt itself, just skip for now
+                    // Debts should be managed on the debts page
+                    break;
+                case 'tx':
+                    await Transaction.delete(id);
+                    break;
+                default:
+                    console.error('Unknown transaction type:', type);
+            }
+
+            setDeleteConfirm({ show: false, transaction: null });
+            await loadData();
+        } catch (error) {
+            console.error('Error deleting transaction:', error);
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -753,17 +790,29 @@ export default function BudgetPlan() {
                                                 <p className="text-xs text-gray-500 dark:text-[#a1a1a1] font-medium mt-0.5">{tx.category} • {formatDate(tx.date)}</p>
                                     </div>
                                     </div>
-                                        <div className="flex items-center justify-between w-full sm:w-auto gap-6 pl-14 sm:pl-0">
+                                        <div className="flex items-center justify-between w-full sm:w-auto gap-4 pl-14 sm:pl-0">
                                             <span className={`font-extrabold text-lg ${
                                                 isIncome ? 'text-primary' : 'text-[#1F2937] dark:text-white'
                                             }`}>
                                                 {isIncome ? '+' : '-'}{formatCurrency(tx.amount)}
                                             </span>
                                             <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
-                                                isIncome 
+                                                isIncome
                                                     ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400'
                                                     : 'bg-gray-200 dark:bg-[#333] text-gray-600 dark:text-gray-300'
                                             }`}>Voltooid</span>
+                                            {!tx.id.startsWith('debt-') && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setDeleteConfirm({ show: true, transaction: tx });
+                                                    }}
+                                                    className="opacity-0 group-hover:opacity-100 size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 transition-all"
+                                                    title="Verwijderen"
+                                                >
+                                                    <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                </button>
+                                            )}
                                 </div>
                                 </div>
                                 );
@@ -818,6 +867,52 @@ export default function BudgetPlan() {
                     loadData();
                 }}
             />
+
+            {/* Delete Confirmation Modal */}
+            {deleteConfirm.show && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 max-w-md w-full shadow-xl">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="size-12 rounded-xl bg-red-100 dark:bg-red-500/20 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-red-600 dark:text-red-400 text-2xl">delete</span>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-[#1F2937] dark:text-white">Transactie verwijderen</h3>
+                                <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">Deze actie kan niet ongedaan worden gemaakt</p>
+                            </div>
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-300 mb-6">
+                            Weet je zeker dat je <span className="font-bold">{deleteConfirm.transaction?.description}</span> van {formatCurrency(deleteConfirm.transaction?.amount || 0)} wilt verwijderen?
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteConfirm({ show: false, transaction: null })}
+                                disabled={deleting}
+                                className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-[#333] text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-50 dark:hover:bg-[#222] transition-colors disabled:opacity-50"
+                            >
+                                Annuleren
+                            </button>
+                            <button
+                                onClick={() => handleDeleteTransaction(deleteConfirm.transaction)}
+                                disabled={deleting}
+                                className="flex-1 px-4 py-3 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {deleting ? (
+                                    <>
+                                        <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                                        Verwijderen...
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="material-symbols-outlined text-[20px]">delete</span>
+                                        Verwijderen
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
