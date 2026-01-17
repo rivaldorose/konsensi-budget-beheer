@@ -111,7 +111,7 @@ export default function InvoiceScanModal({ isOpen, onClose, onSuccess }) {
         description: extractedData.description || `Factuur aan ${extractedData.client_name}`,
         amount: extractedData.subtotal, // Net amount - this is the real income!
         income_type: 'extra', // Invoices are typically one-time income
-        start_date: extractedData.invoice_date,
+        date: extractedData.invoice_date, // Use date field for extra income
         is_active: true,
 
         // Invoice-specific fields
@@ -125,6 +125,43 @@ export default function InvoiceScanModal({ isOpen, onClose, onSuccess }) {
       };
 
       const income = await Income.create(incomeData);
+
+      // Create or update BTW Reserve potje
+      if (extractedData.vat_amount > 0) {
+        // Check if BTW potje exists
+        const { data: existingPots } = await supabase
+          .from('pots')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('pot_type', 'btw_reserve')
+          .limit(1);
+
+        if (existingPots && existingPots.length > 0) {
+          // Update existing BTW potje - add to current amount
+          const pot = existingPots[0];
+          await supabase
+            .from('pots')
+            .update({
+              current_amount: (pot.current_amount || 0) + extractedData.vat_amount,
+              target_amount: (pot.target_amount || 0) + extractedData.vat_amount
+            })
+            .eq('id', pot.id);
+        } else {
+          // Create new BTW Reserve potje
+          await supabase
+            .from('pots')
+            .insert({
+              user_id: user.id,
+              name: 'BTW Reserve',
+              description: 'Gereserveerd voor BTW aangifte aan de Belastingdienst',
+              target_amount: extractedData.vat_amount,
+              current_amount: extractedData.vat_amount,
+              pot_type: 'btw_reserve',
+              color: '#f59e0b', // Amber color
+              icon: 'account_balance'
+            });
+        }
+      }
 
       // Save detailed invoice record
       const { error: invoiceError } = await supabase
