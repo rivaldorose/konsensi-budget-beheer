@@ -495,7 +495,7 @@ export default function IncomePage() {
                         </div>
 
                         {/* 4. EXTRA INKOMEN CARD */}
-                        <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                        <div id="extra-income-section" className="bg-white dark:bg-[#1a1a1a] rounded-xl p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <div className="mb-6">
                                 <h3 className="text-lg font-bold text-[#3D6456] dark:text-white flex items-center gap-2">
                                     <span className="material-symbols-outlined text-[#b4ff7a] dark:text-konsensi-primary">redeem</span>
@@ -788,9 +788,24 @@ export default function IncomePage() {
             <InvoiceScanModal
                 isOpen={showInvoiceModal}
                 onClose={() => setShowInvoiceModal(false)}
-                onSuccess={() => {
+                onSuccess={(income, extractedData) => {
                     setShowInvoiceModal(false);
-                    loadData();
+
+                    // Navigate to the month of the invoice
+                    if (extractedData?.invoice_date) {
+                        const invoiceMonth = extractedData.invoice_date.substring(0, 7);
+                        setSelectedMonth(invoiceMonth);
+                    }
+
+                    // Reload data and scroll to extra income section
+                    loadData().then(() => {
+                        setTimeout(() => {
+                            const section = document.getElementById('extra-income-section');
+                            if (section) {
+                                section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        }, 300);
+                    });
                 }}
             />
 
