@@ -712,17 +712,25 @@ export default function IncomePage() {
                 onSave={async (data) => {
                     const finalData = {
                         ...data,
-                        income_type: incomeType,
                         user_id: user?.id
                     };
-                    if (editingIncome) {
-                        await Income.update(editingIncome.id, finalData);
-                    } else {
-                        await Income.create(finalData);
+                    try {
+                        if (editingIncome) {
+                            await Income.update(editingIncome.id, finalData);
+                        } else {
+                            await Income.create(finalData);
+                        }
+                        loadData();
+                        setShowFormModal(false);
+                        setEditingIncome(null);
+                    } catch (error) {
+                        console.error('Error saving income:', error);
+                        toast({
+                            title: '❌ Fout',
+                            description: 'Kon inkomen niet opslaan: ' + (error.message || 'Onbekende fout'),
+                            variant: 'destructive'
+                        });
                     }
-                    loadData();
-                    setShowFormModal(false);
-                    setEditingIncome(null);
                 }}
                 editingIncome={editingIncome}
                 income={editingIncome}
