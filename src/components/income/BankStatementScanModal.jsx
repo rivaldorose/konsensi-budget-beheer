@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { User, Pot } from "@/api/entities";
+import { User, Pot, Income, Expense } from "@/api/entities";
 import { supabase } from "@/lib/supabase";
 import { formatCurrency } from "@/components/utils/formatters";
 import { format } from "date-fns";
@@ -273,6 +273,9 @@ export default function BankStatementScanModal({ isOpen, onClose, onSuccess }) {
 
     setIsProcessing(true);
     try {
+      const user = await User.me();
+      if (!user) throw new Error('Niet ingelogd');
+
       // Get all transaction IDs from the database for this statement
       const { data: dbTransactions, error: fetchError } = await supabase
         .from('bank_statement_transactions')
@@ -283,17 +286,48 @@ export default function BankStatementScanModal({ isOpen, onClose, onSuccess }) {
       if (fetchError) throw fetchError;
 
       // Update each transaction with the potentially modified category
+      // AND create income/expense records for the budget plan
       for (let i = 0; i < transactions.length && i < dbTransactions.length; i++) {
+        const t = transactions[i];
+        const category = t.category || 'Overig';
+
+        // Update the bank_statement_transaction
         const { error: updateError } = await supabase
           .from('bank_statement_transactions')
           .update({
-            category: transactions[i].category || 'Overig',
+            category: category,
             is_imported: true,
             is_verified: true
           })
           .eq('id', dbTransactions[i].id);
 
         if (updateError) throw updateError;
+
+        // Create income or expense record based on transaction type
+        if (t.type === 'income') {
+          // Create income record
+          await Income.create({
+            user_id: user.id,
+            name: t.description || t.counterparty || 'Bankafschrift inkomen',
+            amount: Math.abs(t.amount),
+            income_type: 'variabel',
+            category: category === 'Salaris' ? 'salaris' : 'overig',
+            description: `Geïmporteerd van bankafschrift: ${t.counterparty || ''}`.trim(),
+            frequency: 'once',
+            start_date: t.date,
+            is_active: true
+          });
+        } else {
+          // Create expense record
+          await Expense.create({
+            user_id: user.id,
+            name: t.description || t.counterparty || 'Bankafschrift uitgave',
+            amount: Math.abs(t.amount),
+            category: category,
+            date: t.date,
+            notes: `Geïmporteerd van bankafschrift: ${t.counterparty || ''}`.trim()
+          });
+        }
       }
 
       onSuccess?.();
