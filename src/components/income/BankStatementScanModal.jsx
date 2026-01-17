@@ -1,0 +1,466 @@
+import React, { useState, useRef } from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { User } from "@/api/entities";
+import { supabase } from "@/lib/supabase";
+import { formatCurrency } from "@/components/utils/formatters";
+import { format } from "date-fns";
+import { nl } from "date-fns/locale";
+
+export default function BankStatementScanModal({ isOpen, onClose, onSuccess }) {
+  const [step, setStep] = useState('upload'); // upload, processing, success, review
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(null);
+  const [extractedData, setExtractedData] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const fileInputRef = useRef(null);
+
+  const handleCameraClick = () => {
+    // For now, open file input - could be extended to use camera API
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'text/csv'];
+    if (!validTypes.includes(file.type) && !file.name.endsWith('.csv')) {
+      setError('Alleen PDF, afbeeldingen (JPG/PNG) of CSV bestanden zijn toegestaan');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Bestand is te groot (max 10MB)');
+      return;
+    }
+
+    setError(null);
+    setIsProcessing(true);
+    setStep('processing');
+
+    try {
+      const user = await User.me();
+      if (!user) throw new Error('Niet ingelogd');
+
+      // Upload file to Supabase storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('bank-statements')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        // If bucket doesn't exist, try to continue without storage
+      }
+
+      // Get public URL if upload succeeded
+      let fileUrl = null;
+      if (uploadData) {
+        const { data: urlData } = supabase.storage
+          .from('bank-statements')
+          .getPublicUrl(fileName);
+        fileUrl = urlData?.publicUrl;
+      }
+
+      // Convert file to base64 for Edge Function
+      const base64 = await fileToBase64(file);
+
+      // Call Edge Function to parse bank statement
+      const { data: parseResult, error: parseError } = await supabase.functions.invoke(
+        'parse-bank-statement',
+        {
+          body: {
+            file_data: base64,
+            file_type: file.type,
+            file_name: file.name
+          }
+        }
+      );
+
+      if (parseError) throw parseError;
+
+      if (parseResult?.transactions && parseResult.transactions.length > 0) {
+        // Save statement metadata
+        const { data: statementData, error: statementError } = await supabase
+          .from('scanned_bank_statements')
+          .insert({
+            user_id: user.id,
+            file_name: file.name,
+            file_url: fileUrl,
+            total_income: parseResult.total_income || 0,
+            total_expenses: parseResult.total_expenses || 0,
+            transaction_count: parseResult.transactions.length,
+            ai_confidence: parseResult.confidence || 0,
+            status: 'completed'
+          })
+          .select()
+          .single();
+
+        if (statementError) throw statementError;
+
+        // Save transactions
+        const transactionsToInsert = parseResult.transactions.map(t => ({
+          user_id: user.id,
+          statement_id: statementData.id,
+          transaction_date: t.date,
+          description: t.description,
+          amount: Math.abs(t.amount),
+          transaction_type: t.type,
+          category: t.category || null,
+          counterparty: t.counterparty || null,
+          ai_confidence: t.confidence || parseResult.confidence || 0,
+          is_verified: false,
+          is_imported: false
+        }));
+
+        const { error: transError } = await supabase
+          .from('bank_statement_transactions')
+          .insert(transactionsToInsert);
+
+        if (transError) throw transError;
+
+        setExtractedData({
+          statementId: statementData.id,
+          totalIncome: parseResult.total_income || 0,
+          totalExpenses: parseResult.total_expenses || 0,
+          transactionCount: parseResult.transactions.length,
+          confidence: parseResult.confidence || 0
+        });
+        setTransactions(parseResult.transactions);
+        setStep('success');
+      } else {
+        setError('Geen transacties gevonden in het bestand. Controleer of het een geldig bankafschrift is.');
+        setStep('upload');
+      }
+    } catch (err) {
+      console.error('Error processing bank statement:', err);
+      setError(err.message || 'Er ging iets mis bij het verwerken van het bestand');
+      setStep('upload');
+    } finally {
+      setIsProcessing(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = reader.result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleClose = () => {
+    setStep('upload');
+    setError(null);
+    setExtractedData(null);
+    setTransactions([]);
+    setIsProcessing(false);
+    onClose();
+  };
+
+  const handleViewTransactions = () => {
+    setStep('review');
+  };
+
+  const handleConfirmAll = async () => {
+    if (!extractedData?.statementId) return;
+
+    setIsProcessing(true);
+    try {
+      // Mark all transactions as imported
+      const { error } = await supabase
+        .from('bank_statement_transactions')
+        .update({ is_imported: true, is_verified: true })
+        .eq('statement_id', extractedData.statementId);
+
+      if (error) throw error;
+
+      onSuccess?.();
+      handleClose();
+    } catch (err) {
+      console.error('Error confirming transactions:', err);
+      setError('Er ging iets mis bij het bevestigen');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-2xl p-0 gap-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] overflow-hidden">
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.csv,.jpg,.jpeg,.png,application/pdf,text/csv,image/*"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+
+        {step === 'upload' && (
+          <div className="p-10">
+            {/* Header */}
+            <div className="flex flex-col items-center text-center mb-10">
+              <div className="w-16 h-16 rounded-full bg-[#b4ff7a] dark:bg-emerald-500 flex items-center justify-center mb-6 shadow-lg dark:shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                <span className="material-symbols-outlined text-[#3D6456] dark:text-black text-[32px]">qr_code_scanner</span>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white font-display mb-3">
+                Scan Bankafschrift
+              </h2>
+              <p className="text-[15px] text-gray-500 dark:text-[#a1a1a1] max-w-md leading-relaxed">
+                Onze AI analyseert je afschrift om inkomsten en uitgaven automatisch te categoriseren.
+              </p>
+            </div>
+
+            {/* Upload Options */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+              <button
+                onClick={handleCameraClick}
+                className="bg-gray-50 dark:bg-[#2a2a2a] rounded-2xl p-6 text-center border-2 border-transparent hover:border-emerald-500 dark:hover:border-emerald-500 transition-all group"
+              >
+                <span className="material-symbols-outlined text-[40px] text-emerald-500 mb-4">photo_camera</span>
+                <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-2 font-display">Camera gebruiken</h3>
+                <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">Maak een foto met je webcam of mobiel.</p>
+              </button>
+              <button
+                onClick={handleFileUpload}
+                className="bg-gray-50 dark:bg-[#2a2a2a] rounded-2xl p-6 text-center border-2 border-transparent hover:border-emerald-500 dark:hover:border-emerald-500 transition-all group"
+              >
+                <span className="material-symbols-outlined text-[40px] text-emerald-500 mb-4">upload_file</span>
+                <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-2 font-display">Bestand uploaden</h3>
+                <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">Selecteer een PDF of afbeelding.</p>
+              </button>
+            </div>
+
+            {/* Tips */}
+            <div className="mb-10">
+              <h4 className="text-gray-900 dark:text-white text-base font-semibold mb-4 font-display">Tips voor een succesvolle analyse:</h4>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3 text-gray-500 dark:text-[#a1a1a1] text-sm">
+                  <span className="material-symbols-outlined text-emerald-500 text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  Zorg voor een scherp beeld
+                </li>
+                <li className="flex items-center gap-3 text-gray-500 dark:text-[#a1a1a1] text-sm">
+                  <span className="material-symbols-outlined text-emerald-500 text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  Gebruik een PDF voor de beste resultaten
+                </li>
+                <li className="flex items-center gap-3 text-gray-500 dark:text-[#a1a1a1] text-sm">
+                  <span className="material-symbols-outlined text-emerald-500 text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                  Zorg dat het hele document zichtbaar is
+                </li>
+              </ul>
+            </div>
+
+            {/* Privacy Notice */}
+            <div className="bg-blue-50 dark:bg-blue-500/10 rounded-xl p-4 border-l-4 border-blue-500 flex items-start gap-3 mb-10">
+              <span className="material-symbols-outlined text-blue-500 text-[20px] mt-0.5">lightbulb</span>
+              <p className="text-[13px] text-blue-800 dark:text-blue-300 leading-relaxed">
+                Privacy staat voorop. Je data wordt versleuteld verwerkt en alleen gebruikt voor jouw overzicht.
+              </p>
+            </div>
+
+            {/* Error */}
+            {error && (
+              <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-xl p-4 mb-6 flex items-start gap-3">
+                <span className="material-symbols-outlined text-red-500 text-[20px]">error</span>
+                <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
+              </div>
+            )}
+
+            {/* Cancel Button */}
+            <div className="flex justify-center">
+              <button
+                onClick={handleClose}
+                className="px-8 py-3 text-gray-500 dark:text-[#6b7280] font-bold hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                Annuleren
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 'processing' && (
+          <div className="p-10 flex flex-col items-center justify-center min-h-[400px]">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center mb-6 animate-pulse">
+              <span className="material-symbols-outlined text-emerald-500 text-[32px] animate-spin">progress_activity</span>
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white font-display mb-3">
+              Afschrift wordt verwerkt...
+            </h2>
+            <p className="text-gray-500 dark:text-[#a1a1a1] text-center max-w-sm">
+              Onze AI analyseert je bankafschrift en herkent automatisch alle transacties.
+            </p>
+          </div>
+        )}
+
+        {step === 'success' && extractedData && (
+          <div className="p-12 flex flex-col items-center">
+            {/* Success Icon */}
+            <div className="mb-8">
+              <span
+                className="material-symbols-outlined text-[80px] text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.4)]"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                check_circle
+              </span>
+            </div>
+
+            <h1 className="text-[32px] font-bold text-gray-900 dark:text-white text-center leading-tight mb-3 font-display">
+              Afschrift Succesvol Geanalyseerd!
+            </h1>
+            <p className="text-base text-gray-500 dark:text-[#a1a1a1] text-center mb-8 max-w-sm leading-relaxed">
+              Onze AI heeft {extractedData.transactionCount} transacties herkend en voor je klaargezet.
+            </p>
+
+            {/* Summary Card */}
+            <div className="w-full bg-gray-50 dark:bg-[#2a2a2a] rounded-2xl p-6 mb-8 border border-gray-200 dark:border-[#3a3a3a]/50">
+              <div className="flex flex-col md:flex-row justify-between gap-6 md:gap-4">
+                <div className="flex flex-col items-center md:items-start flex-1">
+                  <span className="text-[13px] font-semibold text-gray-500 dark:text-[#6b7280] uppercase tracking-wider mb-2">Totaal Inkomen</span>
+                  <span className="text-2xl font-bold text-emerald-500 font-display">{formatCurrency(extractedData.totalIncome)}</span>
+                </div>
+                <div className="hidden md:block w-px bg-gray-200 dark:bg-[#3a3a3a] h-auto my-1 opacity-50"></div>
+                <div className="flex flex-col items-center md:items-end flex-1 text-right">
+                  <span className="text-[13px] font-semibold text-gray-500 dark:text-[#6b7280] uppercase tracking-wider mb-2">Totaal Uitgaven</span>
+                  <span className="text-2xl font-bold text-red-500 font-display">{formatCurrency(extractedData.totalExpenses)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="w-full space-y-4">
+              <button
+                onClick={handleViewTransactions}
+                className="w-full bg-emerald-500 text-white dark:text-black font-bold text-base py-4 rounded-xl hover:bg-emerald-600 dark:hover:bg-emerald-400 transition-all font-display shadow-lg dark:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+              >
+                Transacties Controleren
+              </button>
+              <div className="flex justify-center">
+                <button
+                  onClick={() => { onSuccess?.(); handleClose(); }}
+                  className="text-[15px] text-gray-500 dark:text-[#a1a1a1] hover:text-gray-900 dark:hover:text-white transition-colors py-2"
+                >
+                  Naar Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === 'review' && (
+          <div className="flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-200 dark:border-[#2a2a2a]">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white font-display mb-1">Controleer je transacties</h1>
+              <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">Bankafschrift - {format(new Date(), 'MMMM yyyy', { locale: nl })}</p>
+            </div>
+
+            {/* Summary Stats */}
+            <div className="p-6 grid grid-cols-3 gap-4 border-b border-gray-200 dark:border-[#2a2a2a]">
+              <div className="bg-gray-50 dark:bg-[#2a2a2a] p-4 rounded-xl">
+                <p className="text-[11px] font-semibold text-gray-500 dark:text-[#a1a1a1] uppercase tracking-wider mb-1">Totaal Inkomen</p>
+                <p className="text-lg font-bold text-emerald-500 font-display">{formatCurrency(extractedData?.totalIncome || 0)}</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-[#2a2a2a] p-4 rounded-xl">
+                <p className="text-[11px] font-semibold text-gray-500 dark:text-[#a1a1a1] uppercase tracking-wider mb-1">Totaal Uitgaven</p>
+                <p className="text-lg font-bold text-red-500 font-display">{formatCurrency(extractedData?.totalExpenses || 0)}</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-[#2a2a2a] p-4 rounded-xl">
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-[11px] font-semibold text-gray-500 dark:text-[#a1a1a1] uppercase tracking-wider">AI Confidence</p>
+                  <span className="text-emerald-500 font-bold text-sm">{Math.round(extractedData?.confidence || 0)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-[#3a3a3a] h-2 rounded-full overflow-hidden">
+                  <div
+                    className="bg-emerald-500 h-full transition-all"
+                    style={{ width: `${extractedData?.confidence || 0}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Transactions Table */}
+            <div className="flex-1 overflow-auto p-6">
+              <div className="bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-xl overflow-hidden">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-[#2a2a2a] text-left bg-gray-50 dark:bg-[#0a0a0a]/50">
+                      <th className="p-4 text-[11px] font-semibold text-gray-500 dark:text-[#6b7280] uppercase tracking-wider">Status</th>
+                      <th className="p-4 text-[11px] font-semibold text-gray-500 dark:text-[#6b7280] uppercase tracking-wider">Datum</th>
+                      <th className="p-4 text-[11px] font-semibold text-gray-500 dark:text-[#6b7280] uppercase tracking-wider">Omschrijving</th>
+                      <th className="p-4 text-[11px] font-semibold text-gray-500 dark:text-[#6b7280] uppercase tracking-wider">Categorie</th>
+                      <th className="p-4 text-[11px] font-semibold text-gray-500 dark:text-[#6b7280] uppercase tracking-wider text-right">Bedrag</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-[#2a2a2a]">
+                    {transactions.map((transaction, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-[#222222] transition-colors">
+                        <td className="p-4">
+                          <span
+                            className="material-symbols-outlined text-emerald-500"
+                            style={{ fontVariationSettings: "'FILL' 1" }}
+                          >
+                            check_circle
+                          </span>
+                        </td>
+                        <td className="p-4 text-sm text-gray-900 dark:text-white">
+                          {transaction.date ? format(new Date(transaction.date), 'd MMM yyyy', { locale: nl }) : '-'}
+                        </td>
+                        <td className="p-4 text-sm font-medium text-gray-900 dark:text-white">{transaction.description}</td>
+                        <td className="p-4">
+                          <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-[#2a2a2a] text-gray-700 dark:text-gray-300 rounded-lg">
+                            {transaction.category || 'Overig'}
+                          </span>
+                        </td>
+                        <td className={`p-4 text-sm font-bold text-right ${
+                          transaction.type === 'income' ? 'text-emerald-500' : 'text-red-500'
+                        }`}>
+                          {transaction.type === 'income' ? '+' : '-'} {formatCurrency(Math.abs(transaction.amount))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="p-6 border-t border-gray-200 dark:border-[#2a2a2a] flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setStep('success')}
+                  className="px-6 py-3 text-gray-500 dark:text-[#a1a1a1] hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#2a2a2a] rounded-xl text-sm font-bold transition-all"
+                >
+                  Terug
+                </button>
+              </div>
+              <button
+                onClick={handleConfirmAll}
+                disabled={isProcessing}
+                className="w-full md:w-auto px-10 py-4 bg-emerald-500 text-white dark:text-black font-extrabold rounded-xl text-base font-display hover:bg-emerald-600 dark:hover:bg-emerald-400 transition-colors shadow-lg dark:shadow-[0_0_20px_rgba(16,185,129,0.2)] disabled:opacity-50"
+              >
+                {isProcessing ? 'Bezig...' : 'Alles Bevestigen & Opslaan'}
+              </button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
