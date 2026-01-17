@@ -1,98 +1,77 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { 
-    TrendingUp, 
-    Calendar,
-    Repeat,
-    Gift,
-    Lightbulb,
-    Clock
-} from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 export default function IncomeInfoModal({ isOpen, onClose }) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle className="text-xl font-bold flex items-center gap-2">
-                        <TrendingUp className="w-6 h-6 text-green-600" />
-                        Hoe werkt Inkomsten?
-                    </DialogTitle>
-                </DialogHeader>
-
-                <div className="space-y-6 py-4">
-                    {/* Introductie */}
-                    <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                        <p className="text-sm text-green-800">
-                            💰 Hier beheer je al je inkomsten. Dit helpt om een goed overzicht te krijgen van wat er binnenkomt.
-                        </p>
+            <DialogContent className="max-w-[500px] p-0 gap-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] rounded-[24px] overflow-hidden">
+                <div className="p-10">
+                    {/* Header */}
+                    <div className="flex flex-col items-center mb-10">
+                        <div className="w-14 h-14 rounded-full bg-blue-400/10 dark:bg-blue-500/20 flex items-center justify-center mb-4 border border-blue-400/30 dark:border-blue-500/30">
+                            <span className="material-symbols-outlined text-blue-500 dark:text-blue-400 text-3xl">info</span>
+                        </div>
+                        <h2 className="text-[24px] font-bold text-[#1F2937] dark:text-white text-center">
+                            Hoe werkt Inkomen?
+                        </h2>
                     </div>
 
-                    {/* Uitleg secties */}
-                    <div className="space-y-4">
-                        <div className="flex gap-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Repeat className="w-5 h-5 text-blue-600" />
+                    {/* Content Sections */}
+                    <div className="flex flex-col gap-8">
+                        {/* Vast Inkomen */}
+                        <div className="flex gap-5 items-start">
+                            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#10B981]/10 dark:bg-[#10b981]/20 flex items-center justify-center border border-[#10B981]/20 dark:border-[#10b981]/30">
+                                <span className="material-symbols-outlined text-[#10B981] text-2xl">bolt</span>
                             </div>
-                            <div>
-                                <h3 className="font-semibold text-gray-900">Vast Inkomen</h3>
-                                <p className="text-sm text-gray-600">
-                                    Terugkerend inkomen zoals salaris, uitkering of studiefinanciering. Dit wordt elke maand automatisch meegeteld.
+                            <div className="flex flex-col gap-1">
+                                <h3 className="text-[#1F2937] dark:text-white text-lg font-semibold leading-tight">
+                                    Vast Inkomen
+                                </h3>
+                                <p className="text-[#6B7280] dark:text-[#a1a1a1] text-sm leading-relaxed">
+                                    Dit is je basisinkomen dat elke maand terugkeert, zoals salaris, uitkering of zorgtoeslag. We gebruiken dit om je maandelijkse budget en vaste lasten te berekenen.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex gap-3">
-                            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Gift className="w-5 h-5 text-purple-600" />
+                        {/* Extra Inkomen */}
+                        <div className="flex gap-5 items-start">
+                            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#60A5FA]/10 dark:bg-[#3b82f6]/20 flex items-center justify-center border border-[#60A5FA]/20 dark:border-[#3b82f6]/30">
+                                <span className="material-symbols-outlined text-[#60A5FA] dark:text-[#3b82f6] text-2xl">redeem</span>
                             </div>
-                            <div>
-                                <h3 className="font-semibold text-gray-900">Extra Inkomen</h3>
-                                <p className="text-sm text-gray-600">
-                                    Eenmalige inkomsten zoals bonussen, cadeaus, verkoop of belastingteruggave. Dit telt alleen mee in de maand dat je het ontvangt.
+                            <div className="flex flex-col gap-1">
+                                <h3 className="text-[#1F2937] dark:text-white text-lg font-semibold leading-tight">
+                                    Extra Inkomen
+                                </h3>
+                                <p className="text-[#6B7280] dark:text-[#a1a1a1] text-sm leading-relaxed">
+                                    Eenmalige bedragen zoals bonussen, cadeaus of vakantiegeld. Dit geld is ideaal om extra af te lossen op schulden of om in je spaarpotjes te stoppen.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex gap-3">
-                            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Clock className="w-5 h-5 text-amber-600" />
+                        {/* Slimme Automatisering */}
+                        <div className="flex gap-5 items-start">
+                            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#10B981]/10 dark:bg-[#10b981]/20 flex items-center justify-center border border-[#10B981]/20 dark:border-[#10b981]/30">
+                                <span className="material-symbols-outlined text-[#10B981] text-2xl">document_scanner</span>
                             </div>
-                            <div>
-                                <h3 className="font-semibold text-gray-900">Variabel Inkomen</h3>
-                                <p className="text-sm text-gray-600">
-                                    Als je inkomen elke maand anders is (bijv. oproepkracht), kun je dit aangeven. Je kunt dan elke maand het bedrag bijwerken.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-3">
-                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Calendar className="w-5 h-5 text-green-600" />
-                            </div>
-                            <div>
-                                <h3 className="font-semibold text-gray-900">Frequentie</h3>
-                                <p className="text-sm text-gray-600">
-                                    Geef aan hoe vaak je betaald wordt: wekelijks, tweewekelijks, vierwekelijks of maandelijks. Het maandbedrag wordt automatisch berekend.
+                            <div className="flex flex-col gap-1">
+                                <h3 className="text-[#1F2937] dark:text-white text-lg font-semibold leading-tight">
+                                    Slimme Automatisering
+                                </h3>
+                                <p className="text-[#6B7280] dark:text-[#a1a1a1] text-sm leading-relaxed">
+                                    Je kunt loonstroken scannen! Onze AI leest de gegevens uit en verwerkt deze automatisch in je overzicht en werkschema.
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Tips */}
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                        <div className="flex items-start gap-2">
-                            <Lightbulb className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                            <div>
-                                <h4 className="font-semibold text-amber-900 mb-1">Tips</h4>
-                                <ul className="text-sm text-amber-800 space-y-1">
-                                    <li>• Voeg al je inkomstenbronnen toe voor een volledig overzicht</li>
-                                    <li>• Vergeet vakantiegeld en 13e maand niet!</li>
-                                    <li>• Bij variabel inkomen: update regelmatig je bedrag</li>
-                                    <li>• Scan je loonstrook om inkomen automatisch toe te voegen</li>
-                                </ul>
-                            </div>
-                        </div>
+                    {/* Footer Action */}
+                    <div className="mt-10">
+                        <button
+                            onClick={onClose}
+                            className="w-full bg-[#10B981] hover:bg-[#059669] text-white font-bold py-4 px-6 rounded-xl transition-all shadow-md shadow-[#10B981]/20 active:scale-[0.98]"
+                        >
+                            Begrepen
+                        </button>
                     </div>
                 </div>
             </DialogContent>

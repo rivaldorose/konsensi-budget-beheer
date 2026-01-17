@@ -79,21 +79,27 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
     setIsSubmitting(true);
 
     try {
+      // Ensure we have a valid income type
+      const type = incomeType || 'vast';
+
       const data = {
-        ...formData,
-        name: formData.description || formData.name,
-        income_type: incomeType,
+        name: formData.description || formData.name || 'Inkomen',
+        description: formData.description || '',
+        income_type: type,
         amount: parseFloat(formData.amount) || 0,
-        monthly_equivalent: incomeType === 'vast' ? monthlyEquivalent : null,
-        day_of_week: incomeType === 'vast' && needsDayOfWeek(formData.frequency) ? formData.day_of_week : null,
-        day_of_month: incomeType === 'vast' && needsDayOfMonth(formData.frequency) ? formData.day_of_month : null,
+        monthly_equivalent: type === 'vast' ? monthlyEquivalent : null,
+        day_of_week: type === 'vast' && needsDayOfWeek(formData.frequency) ? formData.day_of_week : null,
+        day_of_month: type === 'vast' && needsDayOfMonth(formData.frequency) ? formData.day_of_month : null,
         end_date: formData.end_date || null,
-        date: incomeType === 'extra' ? formData.date : null,
-        frequency: incomeType === 'vast' ? formData.frequency : null,
-        is_variable: incomeType === 'vast' ? formData.is_variable : false,
-        last_amount_update: formData.is_variable ? new Date().toISOString().split('T')[0] : null
+        date: type === 'extra' ? formData.date : null,
+        frequency: type === 'vast' ? formData.frequency : null,
+        is_variable: type === 'vast' ? formData.is_variable : false,
+        is_active: true,
+        category: formData.category || 'salaris',
+        start_date: formData.start_date || new Date().toISOString().split('T')[0]
       };
 
+      console.log('[IncomeFormModal] Submitting data:', data);
       await onSave(data);
     } finally {
       setIsSubmitting(false);
