@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { User, Pot, Income, Expense } from "@/api/entities";
+import { User, Pot, Income, Expense, Transaction } from "@/api/entities";
 import { supabase } from "@/lib/supabase";
 import { formatCurrency } from "@/components/utils/formatters";
 import { format } from "date-fns";
@@ -328,6 +328,16 @@ export default function BankStatementScanModal({ isOpen, onClose, onSuccess }) {
             notes: `Geïmporteerd van bankafschrift: ${t.counterparty || ''}`.trim()
           });
         }
+
+        // Also create transaction record for the budget plan transaction overview
+        await Transaction.create({
+          user_id: user.id,
+          type: t.type === 'income' ? 'income' : 'expense',
+          amount: Math.abs(t.amount),
+          description: t.description || t.counterparty || (t.type === 'income' ? 'Bankafschrift inkomen' : 'Bankafschrift uitgave'),
+          category: category,
+          date: t.date
+        });
       }
 
       onSuccess?.();
