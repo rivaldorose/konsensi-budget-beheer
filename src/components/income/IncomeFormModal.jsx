@@ -1,31 +1,33 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent } from "@/components/ui/card";
-import { Euro, Calendar as CalendarIcon, Info } from "lucide-react";
-import { 
-  paymentFrequencies, 
-  incomeCategories, 
-  daysOfWeek,
+import {
+  paymentFrequencies,
   calculateMonthlyEquivalent,
   needsDayOfWeek,
   needsDayOfMonth
 } from "../utils/frequencyHelpers";
 
+const daysOfWeek = [
+  { value: 1, label: 'Maandag' },
+  { value: 2, label: 'Dinsdag' },
+  { value: 3, label: 'Woensdag' },
+  { value: 4, label: 'Donderdag' },
+  { value: 5, label: 'Vrijdag' },
+  { value: 6, label: 'Zaterdag' },
+  { value: 0, label: 'Zondag' }
+];
+
 export default function IncomeFormModal({ income, isOpen, onClose, onSave, editingIncome }) {
-  // Use editingIncome if provided, otherwise fall back to income prop
   const incomeData = editingIncome || income;
-  
-  const [step, setStep] = useState(incomeData ? 2 : 1); // Start at step 1 (type selection) for new, step 2 for editing
+
+  const [step, setStep] = useState(incomeData ? 2 : 1);
   const [incomeType, setIncomeType] = useState(incomeData?.income_type || null);
-  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [formData, setFormData] = useState(incomeData || {
     description: '',
+    name: '',
     category: 'salaris',
     amount: '',
     frequency: 'monthly',
@@ -41,8 +43,7 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
   });
 
   const [monthlyEquivalent, setMonthlyEquivalent] = useState(0);
-  
-  // Reset step when modal opens/closes
+
   useEffect(() => {
     if (isOpen) {
       if (incomeData) {
@@ -64,292 +65,353 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
     if (incomeData) {
       setFormData({
         ...incomeData,
-        amount: incomeData.amount?.toString() || '', // Ensure amount is a string for the input field
-        day_of_week: incomeData.day_of_week || null, // Default to null if undefined
-        day_of_month: incomeData.day_of_month || 25, // Default to 25 if undefined
-        end_date: incomeData.end_date || '', // Default to empty string if undefined
-        notes: incomeData.notes || '' // Default to empty string if undefined
+        amount: incomeData.amount?.toString() || '',
+        day_of_week: incomeData.day_of_week || null,
+        day_of_month: incomeData.day_of_month || 25,
+        end_date: incomeData.end_date || '',
+        notes: incomeData.notes || ''
       });
     }
   }, [incomeData]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    const data = {
-      ...formData,
-      income_type: incomeType,
-      amount: parseFloat(formData.amount) || 0,
-      monthly_equivalent: incomeType === 'vast' ? monthlyEquivalent : null,
-      day_of_week: incomeType === 'vast' && needsDayOfWeek(formData.frequency) ? formData.day_of_week : null,
-      day_of_month: incomeType === 'vast' && needsDayOfMonth(formData.frequency) ? formData.day_of_month : null,
-      end_date: formData.end_date || null,
-      date: incomeType === 'extra' ? formData.date : null,
-      frequency: incomeType === 'vast' ? formData.frequency : null,
-      is_variable: incomeType === 'vast' ? formData.is_variable : false,
-      last_amount_update: formData.is_variable ? new Date().toISOString().split('T')[0] : null
-    };
+    try {
+      const data = {
+        ...formData,
+        name: formData.description || formData.name,
+        income_type: incomeType,
+        amount: parseFloat(formData.amount) || 0,
+        monthly_equivalent: incomeType === 'vast' ? monthlyEquivalent : null,
+        day_of_week: incomeType === 'vast' && needsDayOfWeek(formData.frequency) ? formData.day_of_week : null,
+        day_of_month: incomeType === 'vast' && needsDayOfMonth(formData.frequency) ? formData.day_of_month : null,
+        end_date: formData.end_date || null,
+        date: incomeType === 'extra' ? formData.date : null,
+        frequency: incomeType === 'vast' ? formData.frequency : null,
+        is_variable: incomeType === 'vast' ? formData.is_variable : false,
+        last_amount_update: formData.is_variable ? new Date().toISOString().split('T')[0] : null
+      };
 
-    onSave(data);
+      await onSave(data);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  
-  const handleTypeSelect = (type) => {
-    setIncomeType(type);
-    setStep(2);
-  };
 
-  // Add safety checks to ensure categoryInfo and freqInfo are always defined
-  const categoryInfo = incomeCategories.find(c => c.value === formData.category) || incomeCategories[0];
-  const freqInfo = paymentFrequencies.find(f => f.value === formData.frequency) || paymentFrequencies.find(f => f.value === 'monthly');
+  const handleClose = () => {
+    setStep(1);
+    setIncomeType(null);
+    setFormData({
+      description: '',
+      name: '',
+      category: 'salaris',
+      amount: '',
+      frequency: 'monthly',
+      start_date: new Date().toISOString().split('T')[0],
+      end_date: '',
+      day_of_week: null,
+      day_of_month: 25,
+      is_active: true,
+      is_variable: false,
+      notes: '',
+      income_type: 'vast',
+      date: new Date().toISOString().split('T')[0]
+    });
+    onClose();
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            {incomeData ? 'Inkomen Bewerken' : 'Inkomen Toevoegen'}
-          </DialogTitle>
-          {step === 1 && (
-            <p className="text-sm text-gray-500">Kies het type inkomen dat je wilt toevoegen</p>
-          )}
-        </DialogHeader>
-
-        {/* Step 1: Type Selection */}
-        {step === 1 && !incomeData && (
-          <div className="space-y-4 py-4">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-[600px] p-0 gap-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] rounded-[24px] overflow-hidden">
+        <div className="p-10 md:p-12">
+          {/* Header */}
+          <div className="flex justify-between items-start mb-2">
+            <h2 className="text-[28px] font-bold text-[#1F2937] dark:text-white font-display leading-tight tracking-tight">
+              {incomeData ? 'Inkomen Bewerken' : step === 1 ? 'Inkomen Toevoegen' : incomeType === 'vast' ? 'Vast Inkomen Toevoegen' : 'Extra Inkomen Toevoegen'}
+            </h2>
             <button
-              type="button"
-              onClick={() => setIncomeType('vast')}
-              className={`w-full p-4 rounded-xl border-2 text-left transition-all hover:border-green-400 hover:bg-green-50 ${
-                incomeType === 'vast' ? 'border-green-500 bg-green-50' : 'border-gray-200'
-              }`}
+              onClick={handleClose}
+              className="w-8 h-8 -mt-2 -mr-2 flex items-center justify-center text-gray-400 dark:text-[#6B7280] hover:text-gray-600 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"
             >
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">⚡</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Vast Inkomen</h3>
-                  <p className="text-sm text-gray-500">Terugkerend inkomen zoals salaris, uitkering of studiefinanciering</p>
-                </div>
-              </div>
+              <span className="material-symbols-outlined text-[24px]">close</span>
             </button>
-            
-            <button
-              type="button"
-              onClick={() => setIncomeType('extra')}
-              className={`w-full p-4 rounded-xl border-2 text-left transition-all hover:border-green-400 hover:bg-green-50 ${
-                incomeType === 'extra' ? 'border-green-500 bg-green-50' : 'border-gray-200'
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">✨</span>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Extra Inkomen</h3>
-                  <p className="text-sm text-gray-500">Eenmalige inkomsten zoals bonussen, cadeaus of terugbetalingen</p>
-                </div>
-              </div>
-            </button>
-            
-            <Button 
-              type="button"
-              onClick={() => setStep(2)}
-              disabled={!incomeType}
-              className="w-full bg-gray-900 hover:bg-gray-800 text-white mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Volgende
-            </Button>
-          </div>
-        )}
-
-        {/* Step 2: Form */}
-        {step === 2 && (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Beschrijving */}
-          <div>
-            <Label htmlFor="description">Beschrijving *</Label>
-            <Input
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder={incomeType === 'vast' ? "bijv. Salaris, uitkering, studiefinanciering..." : "bijv. Bonus, cadeau, terugbetaling..."}
-              required
-            />
           </div>
 
-          {/* Bedrag */}
-          <div>
-            <Label htmlFor="amount">Bedrag (€) *</Label>
-            <Input
-              id="amount"
-              type="number"
-              step="0.01"
-              min="0"
-              value={formData.amount}
-              onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
-              placeholder="0.00"
-              required
-            />
-          </div>
-
-          {/* Extra Inkomen: alleen datum */}
-          {incomeType === 'extra' && (
+          {/* Step 1: Type Selection */}
+          {step === 1 && !incomeData && (
             <>
-              <div>
-                <Label htmlFor="date">Datum ontvangen *</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                  required
-                />
-              </div>
+              <p className="text-[15px] text-gray-500 dark:text-[#a1a1a1] mb-8 leading-relaxed">
+                Kies het type inkomen dat je wilt toevoegen om je overzicht accuraat te houden.
+              </p>
 
-              {/* Info banner voor extra inkomen */}
-              <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg p-3">
-                <p className="text-sm text-red-700 dark:text-red-400">
-                  💡 Dit inkomen wordt alleen geteld in de geselecteerde maand
-                </p>
-              </div>
-            </>
-          )}
-
-          {/* Vast Inkomen: uitgebreide opties */}
-          {incomeType === 'vast' && (
-            <>
-              {/* Variabel inkomen toggle */}
-              <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="font-medium text-amber-900 dark:text-amber-400">Variabel inkomen?</p>
-                    <p className="text-sm text-amber-700 dark:text-amber-300">
-                      Aan zetten als je inkomen elke maand anders is (bijv. oproepkracht, onregelmatige diensten)
+              <div className="flex flex-col gap-4 mb-8">
+                {/* Vast Inkomen Option */}
+                <label className="cursor-pointer group relative">
+                  <input
+                    type="radio"
+                    name="income_type"
+                    className="sr-only"
+                    checked={incomeType === 'vast'}
+                    onChange={() => setIncomeType('vast')}
+                  />
+                  <div className={`flex flex-col p-6 rounded-[16px] transition-all ${
+                    incomeType === 'vast'
+                      ? 'bg-[#F0FDF4] dark:bg-[#10b981]/10 border-2 border-[#10B981]'
+                      : 'bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] hover:border-[#10B981] hover:bg-[#F0FDF4]/30 dark:hover:bg-[#10b981]/5'
+                  }`}>
+                    <div className="flex items-center gap-4 mb-3">
+                      <span
+                        className={`material-symbols-outlined text-[32px] ${incomeType === 'vast' ? 'text-[#10B981]' : 'text-gray-400 dark:text-[#a1a1a1] group-hover:text-[#10B981]'}`}
+                        style={{ fontVariationSettings: incomeType === 'vast' ? "'FILL' 1" : "'FILL' 0" }}
+                      >
+                        bolt
+                      </span>
+                      <h3 className="text-[18px] font-semibold text-[#1F2937] dark:text-white">Vast Inkomen</h3>
+                    </div>
+                    <p className="text-[14px] text-gray-500 dark:text-[#a1a1a1] leading-relaxed">
+                      Terugkerend inkomen zoals salaris, uitkering of studiefinanciering.
                     </p>
                   </div>
-                  <Switch
-                    checked={formData.is_variable || false}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_variable: checked }))}
-                  />
-                </div>
-                {formData.is_variable && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-                    💡 Je kunt het bedrag elke maand bijwerken via de bewerk-knop
-                  </p>
-                )}
-              </div>
-
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600 dark:text-gray-300">Is dit je huidige baan?</span>
-                <label className="flex items-center gap-1">
-                  <input
-                    type="radio"
-                    name="currentJob"
-                    checked={formData.is_active === true}
-                    onChange={() => setFormData(prev => ({ ...prev, is_active: true }))}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm text-gray-900 dark:text-gray-100">Ja</span>
                 </label>
-                <label className="flex items-center gap-1">
+
+                {/* Extra Inkomen Option */}
+                <label className="cursor-pointer group relative">
                   <input
                     type="radio"
-                    name="currentJob"
-                    checked={formData.is_active === false}
-                    onChange={() => setFormData(prev => ({ ...prev, is_active: false }))}
-                    className="w-4 h-4"
+                    name="income_type"
+                    className="sr-only"
+                    checked={incomeType === 'extra'}
+                    onChange={() => setIncomeType('extra')}
                   />
-                  <span className="text-sm text-gray-900 dark:text-gray-100">Nee</span>
+                  <div className={`flex flex-col p-6 rounded-[16px] transition-all ${
+                    incomeType === 'extra'
+                      ? 'bg-[#F0FDF4] dark:bg-[#10b981]/10 border-2 border-[#10B981]'
+                      : 'bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] hover:border-[#10B981] hover:bg-[#F0FDF4]/30 dark:hover:bg-[#10b981]/5'
+                  }`}>
+                    <div className="flex items-center gap-4 mb-3">
+                      <span
+                        className={`material-symbols-outlined text-[32px] ${incomeType === 'extra' ? 'text-[#10B981]' : 'text-gray-400 dark:text-[#a1a1a1] group-hover:text-[#10B981]'}`}
+                      >
+                        redeem
+                      </span>
+                      <h3 className="text-[18px] font-semibold text-[#1F2937] dark:text-white">Extra Inkomen</h3>
+                    </div>
+                    <p className="text-[14px] text-gray-500 dark:text-[#a1a1a1] leading-relaxed">
+                      Eenmalige inkomsten zoals bonussen, cadeaus of terugbetalingen.
+                    </p>
+                  </div>
                 </label>
               </div>
 
-              <div>
-                <Label htmlFor="start_date">Startdatum *</Label>
-                <Input
-                  id="start_date"
-                  type="date"
-                  value={formData.start_date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
-                  required
-                />
+              {/* Actions */}
+              <div className="flex flex-col gap-4">
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  disabled={!incomeType}
+                  className="w-full bg-[#10B981] text-white font-semibold py-[14px] rounded-[12px] hover:bg-[#059669] transition-all text-[16px] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Volgende
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="w-full text-gray-500 dark:text-[#a1a1a1] hover:text-gray-700 dark:hover:text-white transition-colors text-[15px] font-medium py-1"
+                >
+                  Annuleren
+                </button>
               </div>
-
-              <div>
-                <Label htmlFor="frequency">Hoe vaak ontvang je dit? *</Label>
-                <Select value={formData.frequency} onValueChange={(value) => setFormData(prev => ({ ...prev, frequency: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {paymentFrequencies.map((freq) => (
-                      <SelectItem key={freq.value} value={freq.value}>
-                        {freq.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Day of Month (for monthly frequencies) */}
-              {needsDayOfMonth(formData.frequency) && (
-                <div>
-                  <Label htmlFor="day_of_month">Op welke dag van de maand? *</Label>
-                  <Select 
-                    value={formData.day_of_month?.toString() || '25'} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, day_of_month: parseInt(value) }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                        <SelectItem key={day} value={day.toString()}>
-                          {day}e van de maand
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {/* Day of Week (for weekly frequencies) */}
-              {needsDayOfWeek(formData.frequency) && (
-                <div>
-                  <Label htmlFor="day_of_week">Op welke dag? *</Label>
-                  <Select 
-                    value={formData.day_of_week?.toString() || '5'} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, day_of_week: parseInt(value) }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {daysOfWeek.map((day) => (
-                        <SelectItem key={day.value} value={day.value.toString()}>
-                          {day.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </>
           )}
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
-            {!incomeData && (
-              <Button type="button" variant="outline" onClick={() => setStep(1)} className="flex-1">
-                Terug
-              </Button>
-            )}
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-              Annuleren
-            </Button>
-            <Button type="submit" className="flex-1 bg-[#4CAF50] hover:bg-[#2D6A31]">
-              {incomeData ? 'Bijwerken' : 'Toevoegen'}
-            </Button>
-          </div>
-        </form>
-        )}
+          {/* Step 2: Form */}
+          {step === 2 && (
+            <>
+              {/* Back link */}
+              {!incomeData && (
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="inline-flex items-center gap-1 text-[14px] text-[#10B981] hover:text-[#059669] font-bold transition-colors mb-8"
+                >
+                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                  Terug naar type selectie
+                </button>
+              )}
+
+              <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                {/* Omschrijving */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-[14px] font-bold text-gray-700 dark:text-[#a1a1a1] ml-1">Omschrijving *</label>
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] text-[20px]">chat_bubble</span>
+                    <input
+                      type="text"
+                      value={formData.description}
+                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder={incomeType === 'vast' ? "bijv. Salaris, Zorgtoeslag" : "bijv. Marktplaats verkoop, Bonus"}
+                      required
+                      className="w-full bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl py-4 pl-12 pr-4 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-[#6b7280] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 transition-all outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Bedrag */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-[14px] font-bold text-gray-700 dark:text-[#a1a1a1] ml-1">Bedrag (€) *</label>
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] text-[20px]">euro</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.amount}
+                      onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                      placeholder="0.00"
+                      required
+                      className="w-full bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl py-4 pl-12 pr-4 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-[#6b7280] focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 transition-all outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Extra Inkomen: alleen datum */}
+                {incomeType === 'extra' && (
+                  <>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[14px] font-bold text-gray-700 dark:text-[#a1a1a1] ml-1">Datum ontvangen *</label>
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] text-[20px]">calendar_today</span>
+                        <input
+                          type="date"
+                          value={formData.date}
+                          onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                          required
+                          className="w-full bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl py-4 pl-12 pr-4 text-gray-900 dark:text-white focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 transition-all outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Info banner */}
+                    <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl p-4 flex items-start gap-3">
+                      <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-[20px]">info</span>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
+                        Let op: Dit inkomen wordt alleen meegeteld in de geselecteerde maand.
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {/* Vast Inkomen: uitgebreide opties */}
+                {incomeType === 'vast' && (
+                  <>
+                    {/* Frequentie */}
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[14px] font-bold text-gray-700 dark:text-[#a1a1a1] ml-1">Frequentie *</label>
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] text-[20px]">repeat</span>
+                        <select
+                          value={formData.frequency}
+                          onChange={(e) => setFormData(prev => ({ ...prev, frequency: e.target.value }))}
+                          className="w-full bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl py-4 pl-12 pr-10 text-gray-900 dark:text-white focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 transition-all appearance-none cursor-pointer outline-none"
+                        >
+                          {paymentFrequencies.map((freq) => (
+                            <option key={freq.value} value={freq.value}>{freq.label}</option>
+                          ))}
+                        </select>
+                        <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] pointer-events-none">expand_more</span>
+                      </div>
+                    </div>
+
+                    {/* Betaaldag - Day of Month */}
+                    {needsDayOfMonth(formData.frequency) && (
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[14px] font-bold text-gray-700 dark:text-[#a1a1a1] ml-1">Betaaldag *</label>
+                        <div className="relative">
+                          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] text-[20px]">calendar_month</span>
+                          <select
+                            value={formData.day_of_month?.toString() || '25'}
+                            onChange={(e) => setFormData(prev => ({ ...prev, day_of_month: parseInt(e.target.value) }))}
+                            className="w-full bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl py-4 pl-12 pr-10 text-gray-900 dark:text-white focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 transition-all appearance-none cursor-pointer outline-none"
+                          >
+                            {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                              <option key={day} value={day}>{day}e van de maand</option>
+                            ))}
+                            <option value="0">Laatste dag van de maand</option>
+                          </select>
+                          <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] pointer-events-none">expand_more</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Day of Week */}
+                    {needsDayOfWeek(formData.frequency) && (
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[14px] font-bold text-gray-700 dark:text-[#a1a1a1] ml-1">Op welke dag? *</label>
+                        <div className="relative">
+                          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] text-[20px]">calendar_month</span>
+                          <select
+                            value={formData.day_of_week?.toString() || '5'}
+                            onChange={(e) => setFormData(prev => ({ ...prev, day_of_week: parseInt(e.target.value) }))}
+                            className="w-full bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl py-4 pl-12 pr-10 text-gray-900 dark:text-white focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 transition-all appearance-none cursor-pointer outline-none"
+                          >
+                            {daysOfWeek.map((day) => (
+                              <option key={day.value} value={day.value}>{day.label}</option>
+                            ))}
+                          </select>
+                          <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] pointer-events-none">expand_more</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Variabel inkomen toggle */}
+                    <div className="flex items-center justify-between py-2 px-1">
+                      <span className="text-[15px] font-bold text-[#1F2937] dark:text-white">Variabel inkomen?</span>
+                      <Switch
+                        checked={formData.is_variable || false}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_variable: checked }))}
+                      />
+                    </div>
+
+                    {/* Info banner for variable income */}
+                    <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-5 flex items-start gap-3">
+                      <span className="material-symbols-outlined text-amber-500 text-[22px] mt-0.5">info</span>
+                      <p className="text-[14px] text-amber-700 dark:text-amber-300 leading-relaxed">
+                        Dit is handig voor flexwerkers. We vragen je dan elke maand om je werkelijke inkomen te bevestigen.
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {/* Actions */}
+                <div className="flex flex-col gap-3 mt-6">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-[#10B981] hover:bg-[#059669] text-white font-bold py-4 rounded-full transition-all shadow-lg shadow-[#10B981]/20 flex items-center justify-center gap-2 text-lg disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                        Bezig...
+                      </>
+                    ) : (
+                      incomeData ? 'Bijwerken' : 'Toevoegen'
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    className="w-full bg-transparent hover:bg-gray-50 dark:hover:bg-[#2a2a2a] text-gray-500 dark:text-[#a1a1a1] font-bold py-3 rounded-full transition-all"
+                  >
+                    Annuleren
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
