@@ -9,6 +9,7 @@ import { Pot } from '@/api/entities';
 import { createPageUrl } from '@/utils';
 import AddTransactionModal from '@/components/budget/AddTransactionModal';
 import AddBudgetCategoryModal from '@/components/budget/AddBudgetCategoryModal';
+import BankStatementScanModal from '@/components/income/BankStatementScanModal';
 
 export default function BudgetPlan() {
     const [loading, setLoading] = useState(true);
@@ -21,6 +22,7 @@ export default function BudgetPlan() {
     const [period, setPeriod] = useState('Maand');
     const [selectedMonth, setSelectedMonth] = useState(new Date());
     const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [showBankStatementModal, setShowBankStatementModal] = useState(false);
     
     // Financial data
     const [totalIncome, setTotalIncome] = useState(0);
@@ -410,7 +412,14 @@ export default function BudgetPlan() {
                         </div>
                         <p className="text-gray-500 dark:text-[#a1a1a1] text-base md:text-lg font-medium pl-1">Stel je maandelijkse budget samen en houd overzicht</p>
                     </div>
-                    <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
+                        <button
+                            onClick={() => setShowBankStatementModal(true)}
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] text-gray-500 dark:text-[#a1a1a1] px-5 py-3 rounded-[24px] font-bold text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-gray-700 dark:hover:text-white transition-all shadow-sm"
+                        >
+                            <span className="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+                            <span>Scan Afschrift</span>
+                        </button>
                         <Link
                             to="/BudgetHelp"
                             className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] text-gray-500 dark:text-[#a1a1a1] px-5 py-3 rounded-[24px] font-bold text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-gray-700 dark:hover:text-white transition-all shadow-sm"
@@ -419,7 +428,7 @@ export default function BudgetPlan() {
                             <span>Hulp bij budget</span>
                         </Link>
                         <button
-                            className="flex-1 md:flex-none items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-[24px] font-bold text-sm hover:bg-[#059669] hover:scale-[1.02] transition-all shadow-lg shadow-primary/30"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-[24px] font-bold text-sm hover:bg-[#059669] hover:scale-[1.02] transition-all shadow-lg shadow-primary/30"
                             onClick={() => setShowCategoryModal(true)}
                         >
                             <span className="material-symbols-outlined text-[20px]">add</span>
@@ -798,6 +807,16 @@ export default function BudgetPlan() {
                 onClose={() => setShowCategoryModal(false)}
                 onSuccess={() => loadData()}
                 monthlyIncome={totalIncome}
+            />
+
+            {/* Bank Statement Scan Modal */}
+            <BankStatementScanModal
+                isOpen={showBankStatementModal}
+                onClose={() => setShowBankStatementModal(false)}
+                onSuccess={() => {
+                    setShowBankStatementModal(false);
+                    loadData();
+                }}
             />
         </div>
     );
