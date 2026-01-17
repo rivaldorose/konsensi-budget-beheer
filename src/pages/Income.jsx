@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/components/utils/LanguageContext';
 import IncomeFormModal from '@/components/income/IncomeFormModal';
 import PayslipScanModal from '@/components/workdays/PayslipScanModal';
+import BankStatementScanModal from '@/components/income/BankStatementScanModal';
 import ImportStatementModal from '@/components/income/ImportStatementModal';
 import WorkStatusModal from '@/components/income/WorkStatusModal';
 import IncomeInfoModal from '@/components/income/IncomeInfoModal';
@@ -27,6 +28,7 @@ export default function IncomePage() {
     const [loading, setLoading] = useState(true);
     const [showFormModal, setShowFormModal] = useState(false);
     const [showScanModal, setShowScanModal] = useState(false);
+    const [showBankStatementModal, setShowBankStatementModal] = useState(false);
     const [showImportModal, setShowImportModal] = useState(false);
     const [showWorkStatusModal, setShowWorkStatusModal] = useState(false);
     const [editingIncome, setEditingIncome] = useState(null);
@@ -249,10 +251,10 @@ export default function IncomePage() {
                             </button>
                         </Link>
                         <button
-                            onClick={() => setShowScanModal(true)}
+                            onClick={() => setShowBankStatementModal(true)}
                             className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-gray-600 dark:text-konsensi-primary hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]"
                         >
-                            <span className="material-symbols-outlined text-[18px]">photo_camera</span>
+                            <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
                             <span>Scan Afschrift</span>
                         </button>
                         <button
@@ -732,6 +734,15 @@ export default function IncomePage() {
                     }
                     loadData();
                     setShowScanModal(false);
+                }}
+            />
+
+            <BankStatementScanModal
+                isOpen={showBankStatementModal}
+                onClose={() => setShowBankStatementModal(false)}
+                onSuccess={() => {
+                    setShowBankStatementModal(false);
+                    loadData();
                 }}
             />
 

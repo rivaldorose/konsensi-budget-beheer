@@ -68,6 +68,8 @@ export const WishlistItem = createEntityWrapper('wishlist_items')
 export const Payslip = createEntityWrapper('payslips')
 export const VariableIncomeEntry = createEntityWrapper('variable_income_entries')
 export const NotificationRule = createEntityWrapper('notification_rules')
+export const ScannedBankStatement = createEntityWrapper('scanned_bank_statements')
+export const BankStatementTransaction = createEntityWrapper('bank_statement_transactions')
 
 // Auth wrapper - use supabase.auth directly
 export const User = {
