@@ -4,6 +4,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
 import { User, Income } from '@/api/entities';
 import { formatCurrency } from '@/components/utils/formatters';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
 // Dutch VAT rates
 const VAT_RATES = [
@@ -19,6 +21,7 @@ export default function InvoiceScanModal({ isOpen, onClose, onSuccess }) {
   const [extractedData, setExtractedData] = useState(null);
   const [fileUrl, setFileUrl] = useState('');
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Convert file to base64
   const fileToBase64 = (file) => {
@@ -195,7 +198,17 @@ export default function InvoiceScanModal({ isOpen, onClose, onSuccess }) {
 
       toast({
         title: '✅ Factuur opgeslagen!',
-        description: `Netto inkomen: ${formatCurrency(extractedData.subtotal)} | BTW te reserveren: ${formatCurrency(extractedData.vat_amount)}`
+        description: (
+          <div className="flex flex-col gap-2">
+            <span>Netto inkomen: {formatCurrency(extractedData.subtotal)} | BTW te reserveren: {formatCurrency(extractedData.vat_amount)}</span>
+            <button
+              onClick={() => navigate(createPageUrl('Income'))}
+              className="text-left text-sm text-blue-500 hover:text-blue-600 underline font-medium"
+            >
+              → Bekijk in Inkomsten
+            </button>
+          </div>
+        )
       });
 
       if (onSuccess) {
