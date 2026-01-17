@@ -195,17 +195,7 @@ export default function InvoiceScanModal({ isOpen, onClose, onSuccess }) {
 
       toast({
         title: '✅ Factuur opgeslagen!',
-        description: (
-          <div className="flex flex-col gap-2">
-            <span>Netto inkomen: {formatCurrency(extractedData.subtotal)} | BTW te reserveren: {formatCurrency(extractedData.vat_amount)}</span>
-            <button
-              onClick={() => window.location.reload()}
-              className="text-left text-sm text-blue-500 hover:text-blue-600 underline font-medium"
-            >
-              → Ververs pagina
-            </button>
-          </div>
-        )
+        description: `Netto inkomen: ${formatCurrency(extractedData.subtotal)} | BTW te reserveren: ${formatCurrency(extractedData.vat_amount)}`
       });
 
       if (onSuccess) {
