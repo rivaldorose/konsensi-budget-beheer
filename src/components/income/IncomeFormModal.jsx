@@ -127,16 +127,10 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
       <DialogContent className="max-w-[600px] p-0 gap-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] rounded-[24px] overflow-hidden">
         <div className="p-10 md:p-12">
           {/* Header */}
-          <div className="flex justify-between items-start mb-2">
+          <div className="mb-2">
             <h2 className="text-[28px] font-bold text-[#1F2937] dark:text-white font-display leading-tight tracking-tight">
               {incomeData ? 'Inkomen Bewerken' : step === 1 ? 'Inkomen Toevoegen' : incomeType === 'vast' ? 'Vast Inkomen Toevoegen' : 'Extra Inkomen Toevoegen'}
             </h2>
-            <button
-              onClick={handleClose}
-              className="w-8 h-8 -mt-2 -mr-2 flex items-center justify-center text-gray-400 dark:text-[#6B7280] hover:text-gray-600 dark:hover:text-white transition-colors rounded-full hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"
-            >
-              <span className="material-symbols-outlined text-[24px]">close</span>
-            </button>
           </div>
 
           {/* Step 1: Type Selection */}
