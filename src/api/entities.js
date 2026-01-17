@@ -70,6 +70,7 @@ export const VariableIncomeEntry = createEntityWrapper('variable_income_entries'
 export const NotificationRule = createEntityWrapper('notification_rules')
 export const ScannedBankStatement = createEntityWrapper('scanned_bank_statements')
 export const BankStatementTransaction = createEntityWrapper('bank_statement_transactions')
+export const Invoice = createEntityWrapper('invoices')
 
 // Auth wrapper - use supabase.auth directly
 export const User = {
