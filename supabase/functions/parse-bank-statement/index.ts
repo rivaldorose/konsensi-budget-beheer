@@ -22,122 +22,7 @@ interface ParseResult {
   confidence: number;
 }
 
-Deno.serve(async (req: Request) => {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
-  try {
-    const { file_data, file_type, file_name } = await req.json();
-
-    if (!file_data) {
-      throw new Error('No file data provided');
-    }
-
-    // Get OpenAI API key from environment
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiApiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
-
-    let extractedText = '';
-
-    // For images, use OpenAI Vision API
-    if (file_type.startsWith('image/')) {
-      const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openaiApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: `Extract all text from this bank statement image. Focus on transaction details including dates, descriptions, and amounts. Return the raw text content.`
-                },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: `data:${file_type};base64,${file_data}`
-                  }
-                }
-              ]
-            }
-          ],
-          max_tokens: 4000,
-        }),
-      });
-
-      const visionData = await visionResponse.json();
-      extractedText = visionData.choices?.[0]?.message?.content || '';
-    }
-    // For PDFs, extract text (simplified - in production you'd use a PDF parsing library)
-    else if (file_type === 'application/pdf') {
-      // For PDFs, we'll send it directly to GPT-4 Vision as it can handle PDFs
-      const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openaiApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: `Extract all text from this bank statement PDF. Focus on transaction details including dates, descriptions, and amounts. Return the raw text content.`
-                },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: `data:${file_type};base64,${file_data}`
-                  }
-                }
-              ]
-            }
-          ],
-          max_tokens: 4000,
-        }),
-      });
-
-      const visionData = await visionResponse.json();
-      extractedText = visionData.choices?.[0]?.message?.content || '';
-    }
-    // For CSV files, decode directly
-    else if (file_type === 'text/csv' || file_name?.endsWith('.csv')) {
-      const decoded = atob(file_data);
-      extractedText = decoded;
-    }
-    else {
-      throw new Error(`Unsupported file type: ${file_type}`);
-    }
-
-    if (!extractedText) {
-      throw new Error('Could not extract text from file');
-    }
-
-    // Use GPT to parse the extracted text into structured transactions
-    const parseResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a financial document parser specializing in Dutch bank statements. Parse the provided text and extract all transactions.
+const systemPrompt = `You are a financial document parser specializing in Dutch bank statements. Parse the provided bank statement and extract all transactions.
 
 For each transaction, determine:
 1. date: The transaction date in ISO format (YYYY-MM-DD)
@@ -170,26 +55,109 @@ Important:
 - The type field determines if it's income or expense
 - Calculate total_income as sum of all income transactions
 - Calculate total_expenses as sum of all expense transactions
-- Confidence is a number between 0 and 1 indicating parsing confidence`
+- Confidence is a number between 0 and 1 indicating parsing confidence
+- ONLY return the JSON object, no other text`;
+
+Deno.serve(async (req: Request) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  try {
+    const { file_data, file_type, file_name } = await req.json();
+
+    if (!file_data) {
+      throw new Error('No file data provided');
+    }
+
+    // Get Anthropic API key from environment
+    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    if (!anthropicApiKey) {
+      throw new Error('Anthropic API key not configured');
+    }
+
+    // For CSV files, decode and parse directly with Claude
+    let contentType: 'image' | 'document' | 'text' = 'image';
+    let mediaType = file_type;
+
+    if (file_type === 'application/pdf') {
+      contentType = 'document';
+      mediaType = 'application/pdf';
+    } else if (file_type === 'text/csv' || file_name?.endsWith('.csv')) {
+      contentType = 'text';
+    }
+
+    let messageContent: any[];
+
+    if (contentType === 'text') {
+      // For CSV, decode and send as text
+      const decoded = atob(file_data);
+      messageContent = [
+        {
+          type: 'text',
+          text: `Parse this bank statement CSV and extract all transactions:\n\n${decoded}`
+        }
+      ];
+    } else {
+      // For images and PDFs, send as base64
+      messageContent = [
+        {
+          type: contentType,
+          source: {
+            type: 'base64',
+            media_type: mediaType,
+            data: file_data,
           },
+        },
+        {
+          type: 'text',
+          text: 'Parse this Dutch bank statement and extract all transactions. Return ONLY a valid JSON object.'
+        }
+      ];
+    }
+
+    // Use Claude to parse the bank statement
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': anthropicApiKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        messages: [
           {
             role: 'user',
-            content: extractedText
+            content: messageContent
           }
         ],
-        response_format: { type: 'json_object' },
-        max_tokens: 4000,
+        system: systemPrompt,
       }),
     });
 
-    const parseData = await parseResponse.json();
-    const parsedContent = parseData.choices?.[0]?.message?.content;
+    const claudeData = await response.json();
 
-    if (!parsedContent) {
-      throw new Error('Failed to parse transactions');
+    if (claudeData.error) {
+      throw new Error(claudeData.error.message || 'Claude API error');
     }
 
-    const result: ParseResult = JSON.parse(parsedContent);
+    const parsedContent = claudeData.content?.[0]?.text;
+
+    if (!parsedContent) {
+      throw new Error('Failed to parse bank statement');
+    }
+
+    // Extract JSON from response (Claude might wrap it in markdown code blocks)
+    let jsonString = parsedContent;
+    const jsonMatch = parsedContent.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (jsonMatch) {
+      jsonString = jsonMatch[1].trim();
+    }
+
+    const result: ParseResult = JSON.parse(jsonString);
 
     // Validate and clean the result
     if (!result.transactions || !Array.isArray(result.transactions)) {
