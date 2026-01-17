@@ -710,7 +710,11 @@ export default function IncomePage() {
                     setEditingIncome(null);
                 }}
                 onSave={async (data) => {
-                    const finalData = { ...data, income_type: incomeType };
+                    const finalData = {
+                        ...data,
+                        income_type: incomeType,
+                        user_id: user?.id
+                    };
                     if (editingIncome) {
                         await Income.update(editingIncome.id, finalData);
                     } else {
