@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User } from "@/api/entities";
 import { Income } from "@/api/entities";
 import { MonthlyCost } from "@/api/entities";
@@ -7,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
 
 export default function Adempauze() {
+  const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -61,7 +63,7 @@ export default function Adempauze() {
 
       // Check if adempauze is active, if not redirect to dashboard
       if (!userData.adempauze_active) {
-        window.location.href = createPageUrl('Dashboard');
+        navigate(createPageUrl('Dashboard'));
         return;
       }
 
@@ -149,7 +151,7 @@ export default function Adempauze() {
           title: 'Adempauze gedeactiveerd',
           description: 'Je kunt de adempauze altijd opnieuw activeren.'
         });
-        window.location.href = createPageUrl('Dashboard');
+        navigate(createPageUrl('Dashboard'));
       } catch (error) {
         console.error("Error deactivating adempauze:", error);
         toast({
@@ -384,9 +386,9 @@ export default function Adempauze() {
                   );
                 })}
               </div>
-              <button 
+              <button
                 className="w-full bg-info dark:bg-info hover:bg-info/90 dark:hover:bg-info/80 text-white font-display font-semibold text-sm py-3 rounded-[24px] transition-colors shadow-sm"
-                onClick={() => window.location.href = createPageUrl('Dashboard')}
+                onClick={() => navigate(createPageUrl('Dashboard'))}
               >
                 Bekijk Actieplan
               </button>
