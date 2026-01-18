@@ -59,6 +59,12 @@ export default function Adempauze() {
       const userData = await User.me();
       setUser(userData);
 
+      // Check if adempauze is active, if not redirect to dashboard
+      if (!userData.adempauze_active) {
+        window.location.href = createPageUrl('Dashboard');
+        return;
+      }
+
       // Load income
       const incomes = await Income.filter({ user_id: userData.id });
       const monthlyIncome = incomes
