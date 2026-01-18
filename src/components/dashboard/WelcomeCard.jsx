@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function WelcomeCard({ user, level = 1, currentXP = 0, totalXP = 100, badges = [], motivationalMessage = "Een goed begin is het halve werk!", userTitle = "Schuld Sloper", loginStreak = 0 }) {
+  const [showXPInfo, setShowXPInfo] = useState(false);
   const today = new Date();
   // Format: "Dinsdag 30 December 2025"
   const formattedDate = new Intl.DateTimeFormat("nl-NL", {
@@ -65,8 +67,15 @@ export default function WelcomeCard({ user, level = 1, currentXP = 0, totalXP = 
       {/* XP Progress */}
       <div className="bg-white/60 dark:bg-card-elevated/40 backdrop-blur-sm rounded-2xl p-5 border border-white dark:border-border-main relative z-10">
         <div className="flex justify-between items-end mb-2">
-          <div>
+          <div className="flex items-center gap-2">
             <p className="font-bold text-konsensi-dark dark:text-white">{motivationalMessage}</p>
+            <button
+              onClick={() => setShowXPInfo(true)}
+              className="p-1 rounded-full hover:bg-gray-200/50 dark:hover:bg-white/10 transition-colors"
+              title="Hoe werkt XP?"
+            >
+              <span className="material-symbols-outlined text-konsensi-dark/40 dark:text-text-tertiary text-lg">help</span>
+            </button>
           </div>
           <div className="text-right">
             {hasXpBoost && (
@@ -90,6 +99,112 @@ export default function WelcomeCard({ user, level = 1, currentXP = 0, totalXP = 
           ></div>
         </div>
       </div>
+
+      {/* XP Info Modal */}
+      <Dialog open={showXPInfo} onOpenChange={setShowXPInfo}>
+        <DialogContent className="sm:max-w-md bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-konsensi-dark dark:text-white flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary dark:text-konsensi-primary">emoji_events</span>
+              Hoe werkt XP verdienen?
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-2">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Verdien XP (ervaringspunten) door actief bezig te zijn met je financiele doelen. Hoe meer XP je verdient, hoe hoger je level!
+            </p>
+
+            {/* XP Rewards List */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-konsensi-dark dark:text-white text-sm">XP Beloningen:</h4>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-blue-500 text-lg">login</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Dagelijks inloggen</span>
+                  </div>
+                  <span className="text-sm font-bold text-primary dark:text-konsensi-primary">+5 XP</span>
+                </div>
+
+                <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-orange-500 text-lg">add_circle</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Schuld toevoegen</span>
+                  </div>
+                  <span className="text-sm font-bold text-primary dark:text-konsensi-primary">+10 XP</span>
+                </div>
+
+                <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-purple-500 text-lg">calendar_month</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Betalingsregeling starten</span>
+                  </div>
+                  <span className="text-sm font-bold text-primary dark:text-konsensi-primary">+20 XP</span>
+                </div>
+
+                <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-green-500 text-lg">payments</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Betaling doen</span>
+                  </div>
+                  <span className="text-sm font-bold text-primary dark:text-konsensi-primary">+25 XP</span>
+                </div>
+
+                <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-emerald-500 text-lg">trending_up</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Extra betaling doen</span>
+                  </div>
+                  <span className="text-sm font-bold text-primary dark:text-konsensi-primary">+35 XP</span>
+                </div>
+
+                <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-yellow-500 text-lg">celebration</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Schuld volledig afgelost</span>
+                  </div>
+                  <span className="text-sm font-bold text-primary dark:text-konsensi-primary">+100 XP</span>
+                </div>
+              </div>
+            </div>
+
+            {/* XP Boost Info */}
+            <div className="p-3 bg-orange-50 dark:bg-orange-500/10 rounded-lg border border-orange-200 dark:border-orange-500/20">
+              <div className="flex items-start gap-2">
+                <span className="text-xl">🔥</span>
+                <div>
+                  <h5 className="font-semibold text-orange-700 dark:text-orange-400 text-sm">XP Boost</h5>
+                  <p className="text-xs text-orange-600 dark:text-orange-300 mt-1">
+                    Log 3 dagen achter elkaar in om een XP Boost te activeren! Je verdient dan extra XP op al je acties.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Level Up Info */}
+            <div className="p-3 bg-primary/10 dark:bg-konsensi-primary/10 rounded-lg border border-primary/20 dark:border-konsensi-primary/20">
+              <div className="flex items-start gap-2">
+                <span className="text-xl">⬆️</span>
+                <div>
+                  <h5 className="font-semibold text-konsensi-dark dark:text-konsensi-primary text-sm">Level Up</h5>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    Verzamel genoeg XP om naar het volgende level te stijgen. Elk level vereist meer XP, maar geeft ook meer status!
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setShowXPInfo(false)}
+            className="w-full mt-4 px-4 py-2 bg-primary dark:bg-konsensi-primary text-konsensi-dark font-semibold rounded-lg hover:opacity-90 transition-opacity"
+          >
+            Begrepen!
+          </button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
