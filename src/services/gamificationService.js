@@ -439,23 +439,32 @@ export const gamificationService = {
       const today = new Date().toISOString().split('T')[0];
 
       // Check if already logged in today
-      const { data: existingLogin } = await supabase
+      const { data: existingLogin, error: selectError } = await supabase
         .from("user_login_history")
         .select("*")
         .eq("user_id", userId)
         .eq("login_date", today)
-        .single();
+        .maybeSingle();
 
+      // If there's an existing login record, no XP
       if (existingLogin) {
-        // Already logged in today, no XP
         return { xpAwarded: false, xpAmount: 0 };
       }
 
-      // Record today's login
-      await supabase.from("user_login_history").insert({
-        user_id: userId,
-        login_date: today,
-      });
+      // Record today's login - use upsert to handle race conditions
+      const { error: insertError } = await supabase.from("user_login_history").upsert(
+        {
+          user_id: userId,
+          login_date: today,
+        },
+        { onConflict: 'user_id,login_date', ignoreDuplicates: true }
+      );
+
+      // If insert failed (e.g., duplicate or permission error), don't award XP
+      if (insertError) {
+        console.warn("Could not record login:", insertError.message);
+        return { xpAwarded: false, xpAmount: 0 };
+      }
 
       // Award XP for daily login
       const result = await this.addXP(userId, XP_REWARDS.DAILY_LOGIN, "daily_login");
