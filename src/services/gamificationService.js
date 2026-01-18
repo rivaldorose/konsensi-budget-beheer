@@ -480,16 +480,33 @@ export const gamificationService = {
   async recordSummaryView(userId) {
     try {
       const today = new Date().toISOString().split('T')[0];
-      const viewKey = `summary_viewed_${today}`;
 
-      // Check localStorage to see if already viewed today (simple client-side check)
-      if (typeof window !== 'undefined' && localStorage.getItem(viewKey)) {
+      // Check if already viewed today in database
+      const { data: existingView } = await supabase
+        .from("user_summary_views")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("view_date", today)
+        .maybeSingle();
+
+      // If already viewed today, no XP
+      if (existingView) {
         return { xpAwarded: false, xpAmount: 0 };
       }
 
-      // Mark as viewed
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(viewKey, 'true');
+      // Record today's view - use upsert to handle race conditions
+      const { error: insertError } = await supabase.from("user_summary_views").upsert(
+        {
+          user_id: userId,
+          view_date: today,
+        },
+        { onConflict: 'user_id,view_date', ignoreDuplicates: true }
+      );
+
+      // If insert failed, don't award XP
+      if (insertError) {
+        console.warn("Could not record summary view:", insertError.message);
+        return { xpAwarded: false, xpAmount: 0 };
       }
 
       // Award XP
