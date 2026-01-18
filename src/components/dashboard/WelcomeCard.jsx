@@ -130,6 +130,14 @@ export default function WelcomeCard({ user, level = 1, currentXP = 0, totalXP = 
 
                 <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg">
                   <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-cyan-500 text-lg">summarize</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Cent voor Cent samenvatting bekijken</span>
+                  </div>
+                  <span className="text-sm font-bold text-primary dark:text-konsensi-primary">+10 XP</span>
+                </div>
+
+                <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-[#2a2a2a] rounded-lg">
+                  <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-orange-500 text-lg">add_circle</span>
                     <span className="text-sm text-gray-700 dark:text-gray-300">Schuld toevoegen</span>
                   </div>
