@@ -13,6 +13,33 @@ export const XP_REWARDS = {
   DEBT_FULLY_PAID: 100,
 };
 
+// Dutch descriptions for XP reasons
+export const XP_REASON_DESCRIPTIONS = {
+  daily_login: 'Dagelijkse login',
+  debt_added: 'Schuld toegevoegd',
+  summary_viewed: 'Maandoverzicht bekeken',
+  payment_arrangement_started: 'Betalingsregeling gestart',
+  payment_made: 'Betaling gedaan',
+  extra_payment_made: 'Extra betaling gedaan',
+  fixed_cost_paid: 'Vaste lasten betaald',
+  debt_fully_paid: 'Schuld volledig afgelost',
+  badge_first_debt_added: 'Badge: Eerste Stap',
+  badge_first_payment: 'Badge: Betaler',
+  badge_first_debt_cleared: 'Badge: Schuldenvrij',
+  badge_streak_7: 'Badge: Weekstrijder',
+  badge_streak_30: 'Badge: Maandheld',
+  badge_streak_100: 'Badge: Consistentie Kampioen',
+  badge_debt_count_3: 'Badge: Overzichthouder',
+  badge_debt_count_5: 'Badge: Schuldenmeester',
+  badge_payments_10: 'Badge: Trouwe Betaler',
+  badge_payments_50: 'Badge: Betalingskoning',
+  badge_extra_payment: 'Badge: Overachiever',
+  badge_all_fixed_costs_paid: 'Badge: Vaste Lasten Held',
+  badge_level_5: 'Badge: Gevorderde',
+  badge_level_10: 'Badge: Expert',
+  badge_level_20: 'Badge: Meester',
+};
+
 // All available badges
 export const BADGES = {
   // Milestone badges
@@ -190,7 +217,7 @@ export const gamificationService = {
 
       // Update or insert level
       const existing = await supabaseService.filter("user_levels", { user_id: userId });
-      
+
       if (existing && existing.length > 0) {
         await supabaseService.update("user_levels", existing[0].id, {
           level: newLevel,
@@ -209,12 +236,33 @@ export const gamificationService = {
         });
       }
 
+      // Create XP notification
+      const reasonDescription = XP_REASON_DESCRIPTIONS[reason] || reason;
+      const leveledUp = newLevel > currentLevel.level;
+
+      try {
+        await supabase.from('notifications').insert({
+          user_id: userId,
+          type: 'achievement',
+          title: leveledUp
+            ? `🎉 Level Up! Je bent nu level ${newLevel}!`
+            : `+${amount} XP verdiend!`,
+          message: leveledUp
+            ? `${reasonDescription} - Je hebt ${amount} XP verdiend en bent gestegen naar level ${newLevel}!`
+            : `${reasonDescription}`,
+          is_read: false,
+        });
+      } catch (notifError) {
+        // Don't fail the XP award if notification fails
+        console.warn('Could not create XP notification:', notifError);
+      }
+
       return {
         level: newLevel,
         current_xp: remainingXP,
         xp_to_next_level: xpToNextLevel,
         total_xp: newTotalXP,
-        leveledUp: newLevel > currentLevel.level,
+        leveledUp: leveledUp,
       };
     } catch (error) {
       console.error("Error adding XP:", error);
