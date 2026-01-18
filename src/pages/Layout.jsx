@@ -1169,7 +1169,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                   <DropdownMenuSeparator className="bg-[#2a2a2a]" />
                   <DropdownMenuItem asChild>
                     <Link
-                      to={createPageUrl('NotificationSettings')}
+                      to={createPageUrl('Notifications')}
                       className="text-primary hover:bg-[#2a2a2a] flex items-center justify-center py-2"
                     >
                       Alle notificaties bekijken
@@ -1367,7 +1367,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                 <DropdownMenuSeparator className="bg-[#2a2a2a]" />
                 <DropdownMenuItem asChild>
                   <Link
-                    to={createPageUrl('NotificationSettings')}
+                    to={createPageUrl('Notifications')}
                     className="text-primary hover:bg-[#2a2a2a] flex items-center justify-center py-2"
                   >
                     Alle notificaties bekijken
