@@ -258,16 +258,25 @@ export default function CentVoorCent() {
       setAdvice(personalAdviceList);
 
       // Award XP for viewing the summary (once per day)
-      try {
-        const summaryResult = await gamificationService.recordSummaryView(userData.id);
-        if (summaryResult.xpAwarded) {
-          toast({
-            title: 'Samenvatting bekeken!',
-            description: `+${summaryResult.xpAmount} XP voor het bekijken van je financiële overzicht.`
-          });
+      // Only award if there's actual financial data to view
+      const hasFinancialData =
+        monthlyIncome > 0 ||
+        costs.length > 0 ||
+        pots.length > 0 ||
+        debts.length > 0;
+
+      if (hasFinancialData) {
+        try {
+          const summaryResult = await gamificationService.recordSummaryView(userData.id);
+          if (summaryResult.xpAwarded) {
+            toast({
+              title: 'Samenvatting bekeken!',
+              description: `+${summaryResult.xpAmount} XP voor het bekijken van je financiële overzicht.`
+            });
+          }
+        } catch (xpError) {
+          console.error("Error awarding summary XP:", xpError);
         }
-      } catch (xpError) {
-        console.error("Error awarding summary XP:", xpError);
       }
 
     } catch (error) {
