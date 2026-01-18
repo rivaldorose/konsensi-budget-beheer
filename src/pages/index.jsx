@@ -57,6 +57,7 @@ import Feedback from "./Feedback";
 import HelpSupport from "./HelpSupport";
 import FAQSettings from "./FAQSettings";
 import Notifications from "./Notifications";
+import NotificationDetail from "./NotificationDetail";
 import Login from "./Login";
 import SignUp from "./SignUp";
 import ForgotPassword from "./ForgotPassword";
@@ -159,6 +160,7 @@ function PagesContent() {
                 {/* Settings and smaller pages - static */}
                 <Route path="/Settings" element={<Settings />} />
                 <Route path="/Notifications" element={<Notifications />} />
+                <Route path="/NotificationDetail/:id" element={<NotificationDetail />} />
                 <Route path="/NotificationSettings" element={<NotificationSettings />} />
                 <Route path="/SecuritySettings" element={<SecuritySettings />} />
                 <Route path="/DisplaySettings" element={<DisplaySettings />} />

@@ -1089,7 +1089,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                           {groupedNotifications.today.map((notif) => (
                             <DropdownMenuItem
                               key={notif.id}
-                              onClick={() => handleMarkAsRead(notif.id)}
+                              onClick={() => navigate(`/NotificationDetail/${notif.id}`)}
                               className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
                             >
                               <div className="flex-shrink-0 mt-0.5">
@@ -1116,7 +1116,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                           {groupedNotifications.yesterday.map((notif) => (
                             <DropdownMenuItem
                               key={notif.id}
-                              onClick={() => handleMarkAsRead(notif.id)}
+                              onClick={() => navigate(`/NotificationDetail/${notif.id}`)}
                               className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
                             >
                               <div className="flex-shrink-0 mt-0.5">
@@ -1143,7 +1143,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                           {groupedNotifications.earlier.slice(0, 5).map((notif) => (
                             <DropdownMenuItem
                               key={notif.id}
-                              onClick={() => handleMarkAsRead(notif.id)}
+                              onClick={() => navigate(`/NotificationDetail/${notif.id}`)}
                               className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
                             >
                               <div className="flex-shrink-0 mt-0.5">
@@ -1316,7 +1316,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                         {groupedNotifications.today.slice(0, 3).map((notif) => (
                           <DropdownMenuItem
                             key={notif.id}
-                            onClick={() => handleMarkAsRead(notif.id)}
+                            onClick={() => navigate(`/NotificationDetail/${notif.id}`)}
                             className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
                           >
                             <div className="flex-shrink-0 mt-0.5">
@@ -1342,7 +1342,7 @@ function LayoutWithProvider({ children, currentPageName }) {
                         {groupedNotifications.yesterday.slice(0, 3).map((notif) => (
                           <DropdownMenuItem
                             key={notif.id}
-                            onClick={() => handleMarkAsRead(notif.id)}
+                            onClick={() => navigate(`/NotificationDetail/${notif.id}`)}
                             className={`flex items-start gap-3 p-3 cursor-pointer hover:bg-[#2a2a2a] ${!notif.is_read ? 'bg-[#1f2937]' : ''}`}
                           >
                             <div className="flex-shrink-0 mt-0.5">

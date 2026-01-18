@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Notification, User } from '@/api/entities';
 import { createPageUrl } from '@/utils';
 
 export default function NotificationsPage() {
+    const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all'); // all, unread, read
@@ -204,11 +205,17 @@ export default function NotificationsPage() {
                             {filteredNotifications.map((notification) => (
                                 <div
                                     key={notification.id}
-                                    className={`p-4 hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors ${
+                                    className={`p-4 hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors cursor-pointer relative ${
                                         !notification.is_read ? 'bg-blue-50/50 dark:bg-blue-500/5' : ''
                                     }`}
+                                    onClick={() => navigate(`/NotificationDetail/${notification.id}`)}
                                 >
                                     <div className="flex items-start gap-4">
+                                        {/* Unread indicator */}
+                                        {!notification.is_read && (
+                                            <div className="absolute left-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-blue-500"></div>
+                                        )}
+
                                         {/* Icon */}
                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${getNotificationColor(notification.type)}`}>
                                             <span className="material-symbols-outlined text-xl">
@@ -223,7 +230,7 @@ export default function NotificationsPage() {
                                                     <h3 className={`font-medium text-[#1F2937] dark:text-white ${!notification.is_read ? 'font-bold' : ''}`}>
                                                         {notification.title}
                                                     </h3>
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                                                         {notification.message}
                                                     </p>
                                                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
@@ -232,7 +239,7 @@ export default function NotificationsPage() {
                                                 </div>
 
                                                 {/* Actions */}
-                                                <div className="flex items-center gap-1 flex-shrink-0">
+                                                <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                                                     {!notification.is_read && (
                                                         <button
                                                             onClick={() => markAsRead(notification.id)}
@@ -249,13 +256,11 @@ export default function NotificationsPage() {
                                                     >
                                                         <span className="material-symbols-outlined text-gray-400 hover:text-red-500 text-lg">delete</span>
                                                     </button>
+                                                    <span className="material-symbols-outlined text-gray-300 dark:text-gray-600 text-lg ml-1">
+                                                        chevron_right
+                                                    </span>
                                                 </div>
                                             </div>
-
-                                            {/* Unread indicator */}
-                                            {!notification.is_read && (
-                                                <div className="absolute left-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-blue-500"></div>
-                                            )}
                                         </div>
                                     </div>
                                 </div>
