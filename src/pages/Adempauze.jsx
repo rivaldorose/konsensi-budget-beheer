@@ -61,9 +61,9 @@ export default function Adempauze() {
       const userData = await User.me();
       setUser(userData);
 
-      // Check if adempauze is active, if not redirect to dashboard
+      // If adempauze is not active, just set loading to false and show activation screen
       if (!userData.adempauze_active) {
-        navigate(createPageUrl('Dashboard'));
+        setLoading(false);
         return;
       }
 
@@ -141,6 +141,28 @@ export default function Adempauze() {
     }
   };
 
+  const handleActivate = async () => {
+    try {
+      await User.updateMe({
+        adempauze_active: true,
+        adempauze_activated_at: new Date().toISOString(),
+        adempauze_actions_completed: []
+      });
+      toast({
+        title: 'Adempauze geactiveerd',
+        description: 'Je hebt nu de rust om je situatie op orde te brengen.'
+      });
+      // Reload data to show the active state
+      loadData();
+    } catch (error) {
+      console.error("Error activating adempauze:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Fout bij activeren'
+      });
+    }
+  };
+
   const handleDeactivate = async () => {
     if (window.confirm("Weet je zeker dat je Adempauze wilt deactiveren?")) {
       try {
@@ -186,6 +208,68 @@ export default function Adempauze() {
           <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-primary dark:border-primary"></div>
           <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm mt-4">Laden...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Show activation screen if adempauze is not active
+  if (!user?.adempauze_active) {
+    return (
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white flex flex-col">
+        <main className="flex-grow w-full max-w-[800px] mx-auto p-4 md:p-8">
+          {/* Activation Card */}
+          <div className="bg-white dark:bg-[#1a2c26] rounded-3xl p-8 md:p-12 shadow-soft dark:shadow-lg border dark:border-[#2A3F36] text-center">
+            {/* Icon */}
+            <div className="bg-success/10 dark:bg-success/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="material-symbols-outlined text-success text-4xl">spa</span>
+            </div>
+
+            {/* Title */}
+            <h1 className="text-text-main dark:text-white font-display font-bold text-2xl md:text-3xl mb-4">
+              Adempauze
+            </h1>
+
+            {/* Description */}
+            <p className="text-text-body dark:text-[#9CA3AF] font-body text-base md:text-lg leading-relaxed max-w-[500px] mx-auto mb-8">
+              Heb je het financieel zwaar? Activeer Adempauze om even rust te krijgen.
+              Je schulden worden tijdelijk gepauzeerd zodat je de tijd hebt om je situatie op orde te brengen.
+            </p>
+
+            {/* Benefits */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              <div className="bg-gray-50 dark:bg-[#1a2c26]/50 rounded-2xl p-4 border dark:border-[#2A3F36]">
+                <span className="material-symbols-outlined text-success text-2xl mb-2">pause_circle</span>
+                <h3 className="font-display font-semibold text-sm text-text-main dark:text-white">Schulden gepauzeerd</h3>
+                <p className="text-text-sub dark:text-[#9CA3AF] text-xs mt-1">Tijdelijke rust van betalingen</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-[#1a2c26]/50 rounded-2xl p-4 border dark:border-[#2A3F36]">
+                <span className="material-symbols-outlined text-info text-2xl mb-2">self_improvement</span>
+                <h3 className="font-display font-semibold text-sm text-text-main dark:text-white">Mentale rust</h3>
+                <p className="text-text-sub dark:text-[#9CA3AF] text-xs mt-1">Focus op je welzijn</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-[#1a2c26]/50 rounded-2xl p-4 border dark:border-[#2A3F36]">
+                <span className="material-symbols-outlined text-purple-500 text-2xl mb-2">support</span>
+                <h3 className="font-display font-semibold text-sm text-text-main dark:text-white">Begeleiding</h3>
+                <p className="text-text-sub dark:text-[#9CA3AF] text-xs mt-1">Stap voor stap hulp</p>
+              </div>
+            </div>
+
+            {/* Activate Button */}
+            <button
+              onClick={handleActivate}
+              className="bg-success hover:bg-success/90 text-white font-display font-bold text-lg px-8 py-4 rounded-[24px] transition-all shadow-lg hover:shadow-xl hover:scale-105 duration-200 flex items-center justify-center gap-2 mx-auto"
+            >
+              <span className="material-symbols-outlined">spa</span>
+              Activeer Adempauze
+            </button>
+
+            {/* Note */}
+            <p className="text-text-sub dark:text-[#6B7280] font-body text-xs mt-6">
+              Je kunt Adempauze op elk moment weer deactiveren
+            </p>
+          </div>
+        </main>
+        <div className="h-12 w-full"></div>
       </div>
     );
   }
