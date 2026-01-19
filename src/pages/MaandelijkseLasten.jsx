@@ -401,9 +401,9 @@ export default function MaandelijkseLastenPage() {
                         </div>
                         <div className="flex flex-col gap-3">
                             {data.items.map((cost) => (
-                                <div 
-                                    key={cost.id} 
-                                    className="group flex items-center justify-between p-4 rounded-[24px] hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200 cursor-pointer"
+                                <div
+                                    key={cost.id}
+                                    className="group flex items-center justify-between p-4 rounded-[24px] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors border border-transparent hover:border-gray-200 dark:hover:border-[#3a3a3a] cursor-pointer"
                                     onClick={() => handleEdit(cost)}
                                 >
                                     <div className="flex items-center gap-4">
