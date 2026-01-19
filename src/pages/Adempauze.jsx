@@ -218,7 +218,7 @@ export default function Adempauze() {
       <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white flex flex-col">
         <main className="flex-grow w-full max-w-[800px] mx-auto p-4 md:p-8">
           {/* Activation Card */}
-          <div className="bg-white dark:bg-[#1a2c26] rounded-3xl p-8 md:p-12 shadow-soft dark:shadow-lg border dark:border-[#2A3F36] text-center">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-8 md:p-12 shadow-soft dark:shadow-lg border dark:border-[#2a2a2a] text-center">
             {/* Icon */}
             <div className="bg-success/10 dark:bg-success/20 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
               <span className="material-symbols-outlined text-success text-4xl">spa</span>
@@ -237,17 +237,17 @@ export default function Adempauze() {
 
             {/* Benefits */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="bg-gray-50 dark:bg-[#1a2c26]/50 rounded-2xl p-4 border dark:border-[#2A3F36]">
+              <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-2xl p-4 border dark:border-[#2a2a2a]">
                 <span className="material-symbols-outlined text-success text-2xl mb-2">pause_circle</span>
                 <h3 className="font-display font-semibold text-sm text-text-main dark:text-white">Schulden gepauzeerd</h3>
                 <p className="text-text-sub dark:text-[#9CA3AF] text-xs mt-1">Tijdelijke rust van betalingen</p>
               </div>
-              <div className="bg-gray-50 dark:bg-[#1a2c26]/50 rounded-2xl p-4 border dark:border-[#2A3F36]">
+              <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-2xl p-4 border dark:border-[#2a2a2a]">
                 <span className="material-symbols-outlined text-info text-2xl mb-2">self_improvement</span>
                 <h3 className="font-display font-semibold text-sm text-text-main dark:text-white">Mentale rust</h3>
                 <p className="text-text-sub dark:text-[#9CA3AF] text-xs mt-1">Focus op je welzijn</p>
               </div>
-              <div className="bg-gray-50 dark:bg-[#1a2c26]/50 rounded-2xl p-4 border dark:border-[#2A3F36]">
+              <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-2xl p-4 border dark:border-[#2a2a2a]">
                 <span className="material-symbols-outlined text-purple-500 text-2xl mb-2">support</span>
                 <h3 className="font-display font-semibold text-sm text-text-main dark:text-white">Begeleiding</h3>
                 <p className="text-text-sub dark:text-[#9CA3AF] text-xs mt-1">Stap voor stap hulp</p>
@@ -319,7 +319,7 @@ export default function Adempauze() {
           {/* LEFT COLUMN: Content */}
           <div className="flex flex-col gap-8">
             {/* 1. WELZIJN CHECK */}
-            <div className="bg-white dark:bg-[#1a2c26] rounded-3xl p-8 shadow-soft dark:shadow-lg border dark:border-[#2A3F36]">
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-8 shadow-soft dark:shadow-lg border dark:border-[#2a2a2a]">
               <div className="flex items-center gap-3 mb-6">
                 <h2 className="text-text-main dark:text-white font-display font-bold text-xl">💭 Hoe voel je je vandaag?</h2>
               </div>
@@ -332,7 +332,7 @@ export default function Adempauze() {
                         className={`w-full aspect-square max-w-[80px] rounded-[24px] border-2 ${
                           isSelected 
                             ? 'border-success dark:border-success bg-accent dark:bg-success/20 shadow-sm scale-110 ring-2 ring-accent dark:ring-success ring-offset-2' 
-                            : 'border-gray-200 dark:border-[#2A3F36] hover:border-success dark:hover:border-success hover:bg-accent/30 dark:hover:bg-success/10 hover:scale-105'
+                            : 'border-gray-200 dark:border-[#2a2a2a] hover:border-success dark:hover:border-success hover:bg-accent/30 dark:hover:bg-success/10 hover:scale-105'
                         } transition-all duration-200 flex items-center justify-center text-3xl md:text-4xl`}
                         onClick={() => handleWellbeingSelect(option.value)}
                       >
@@ -355,7 +355,7 @@ export default function Adempauze() {
               </div>
 
             {/* 2. RUST & HERSTEL TIPS */}
-            <div className="bg-white dark:bg-[#1a2c26] rounded-3xl p-8 shadow-soft dark:shadow-lg border dark:border-[#2A3F36]">
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-8 shadow-soft dark:shadow-lg border dark:border-[#2a2a2a]">
               <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-2">
                 <div>
                   <h2 className="text-text-main dark:text-white font-display font-bold text-xl flex items-center gap-2">
@@ -375,8 +375,8 @@ export default function Adempauze() {
                   { icon: 'nature_people', title: 'Naar Buiten', text: 'Zoek een park of natuurgebied op in de buurt.' },
                   { icon: 'edit_note', title: 'Schrijf het op', text: 'Schrijf je gedachten van je af in een dagboek.' }
                 ].map((tip, index) => (
-                  <div key={index} className="bg-gray-50 dark:bg-[#1a2c26]-elevated rounded-2xl p-5 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-lg transition-all duration-200 group cursor-pointer border dark:border-[#2A3F36]">
-                    <div className="bg-white dark:bg-[#1a2c26] w-10 h-10 rounded-[24px] flex items-center justify-center mb-3 shadow-sm text-primary dark:text-success group-hover:text-success dark:group-hover:text-success transition-colors border dark:border-[#2A3F36]">
+                  <div key={index} className="bg-gray-50 dark:bg-[#0a0a0a] rounded-2xl p-5 hover:-translate-y-1 hover:shadow-md dark:hover:shadow-lg transition-all duration-200 group cursor-pointer border dark:border-[#2a2a2a]">
+                    <div className="bg-white dark:bg-[#1a1a1a] w-10 h-10 rounded-[24px] flex items-center justify-center mb-3 shadow-sm text-primary dark:text-success group-hover:text-success dark:group-hover:text-success transition-colors border dark:border-[#2a2a2a]">
                       <span className="material-symbols-outlined">{tip.icon}</span>
                 </div>
                     <h3 className="font-display font-semibold text-[17px] text-text-main dark:text-white mb-1">{tip.title}</h3>
@@ -403,19 +403,19 @@ export default function Adempauze() {
           {/* RIGHT COLUMN: Sticky Sidebar */}
           <div className="flex flex-col gap-6 sticky top-24">
             {/* 1. JE STATUS */}
-            <div className="bg-white dark:bg-[#1a2c26] rounded-3xl p-6 shadow-soft dark:shadow-lg border border-gray-100 dark:border-[#2A3F36]">
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 shadow-soft dark:shadow-lg border border-gray-100 dark:border-[#2a2a2a]">
               <h2 className="text-text-main dark:text-white font-display font-bold text-lg mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined">analytics</span>
                 Je Status
               </h2>
               <div className="flex flex-col gap-4">
-                <div className="flex justify-between items-center border-b border-gray-100 dark:border-[#2A3F36] pb-3">
+                <div className="flex justify-between items-center border-b border-gray-100 dark:border-[#2a2a2a] pb-3">
                   <span className="text-text-sub dark:text-[#9CA3AF] font-body text-sm">Inkomen</span>
                   <span className="text-success dark:text-success font-display font-semibold text-base">
                     {formatCurrency(userData.income)}/mnd
                   </span>
                     </div>
-                <div className="flex justify-between items-center border-b border-gray-100 dark:border-[#2A3F36] pb-3">
+                <div className="flex justify-between items-center border-b border-gray-100 dark:border-[#2a2a2a] pb-3">
                   <span className="text-text-sub dark:text-[#9CA3AF] font-body text-sm">Schulden</span>
                   <span className="text-warning dark:text-warning font-display font-semibold text-base">
                     {formatCurrency(userData.debts)}
@@ -428,7 +428,7 @@ export default function Adempauze() {
                   </span>
             </div>
           </div>
-              <div className="mt-6 pt-4 border-t border-gray-100 dark:border-[#2A3F36] flex justify-between items-center">
+              <div className="mt-6 pt-4 border-t border-gray-100 dark:border-[#2a2a2a] flex justify-between items-center">
                 <div className="flex flex-col">
                   <span className="text-text-sub dark:text-[#9CA3AF] font-body text-xs">Actief sinds</span>
                   <span className="text-text-body dark:text-white font-body text-sm font-medium">
@@ -445,7 +445,7 @@ export default function Adempauze() {
             </div>
 
             {/* 2. VOLGENDE STAPPEN */}
-            <div className="bg-white dark:bg-[#1a2c26] rounded-3xl p-6 shadow-soft dark:shadow-lg border border-gray-100 dark:border-[#2A3F36]">
+            <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 shadow-soft dark:shadow-lg border border-gray-100 dark:border-[#2a2a2a]">
               <h2 className="text-text-main dark:text-white font-display font-bold text-lg mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-info dark:text-info">check_circle</span>
                 Volgende Stappen
@@ -457,7 +457,7 @@ export default function Adempauze() {
                     <label key={index} className={`flex items-start gap-3 cursor-pointer group ${isCompleted ? 'opacity-60' : ''}`}>
                       <input 
                         checked={isCompleted}
-                        className="mt-1 w-5 h-5 rounded border-gray-300 dark:border-[#2A3F36] text-success dark:text-success focus:ring-success/20 cursor-pointer" 
+                        className="mt-1 w-5 h-5 rounded border-gray-300 dark:border-[#2a2a2a] text-success dark:text-success focus:ring-success/20 cursor-pointer" 
                         type="checkbox"
                         onChange={() => handleActionToggle(step.key)}
                       />
