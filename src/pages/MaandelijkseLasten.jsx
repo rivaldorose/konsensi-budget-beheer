@@ -200,16 +200,16 @@ export default function MaandelijkseLastenPage() {
     }, [activeCosts]);
 
     const categoryLabels = {
-        wonen: '🏠 Wonen',
-        boodschappen: '🛒 Boodschappen',
-        utilities: '⚡ Nutsvoorzieningen',
-        verzekeringen: '🛡️ Verzekeringen',
-        abonnementen: '📱 Abonnementen',
-        streaming_diensten: '📺 Streaming',
-        bankkosten: '🏦 Bankkosten',
-        vervoer: '🚗 Vervoer',
-        leningen: '💳 Leningen',
-        other: '🧩 Overig'
+        wonen: 'Wonen',
+        boodschappen: 'Boodschappen',
+        utilities: 'Nutsvoorzieningen',
+        verzekeringen: 'Verzekeringen',
+        abonnementen: 'Abonnementen',
+        streaming_diensten: 'Streaming',
+        bankkosten: 'Bankkosten',
+        vervoer: 'Vervoer',
+        leningen: 'Leningen',
+        other: 'Overig'
     };
 
     const categoryEmojis = {
