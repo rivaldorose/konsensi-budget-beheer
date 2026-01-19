@@ -729,7 +729,7 @@ export default function CentVoorCent() {
                   {formatCurrency(monthlyData.debtRemaining)}
                 </p>
                 {/* Progress Bar */}
-                <div className="h-6 w-full bg-gray-100 dark:bg-[#1a1a1a]-elevated rounded-full overflow-hidden mb-2 border dark:border-[#2a2a2a]">
+                <div className="h-6 w-full bg-gray-100 dark:bg-[#0a0a0a] rounded-full overflow-hidden mb-2 border dark:border-[#2a2a2a]">
                   <div 
                     className="h-full bg-gradient-to-r from-red-400 to-red-600 dark:from-red-500 dark:to-konsensi-red transition-all duration-500" 
                     style={{ width: `${monthlyData.debtTotal > 0 ? ((monthlyData.debtPaid / monthlyData.debtTotal) * 100) : 0}%` }}
@@ -745,7 +745,7 @@ export default function CentVoorCent() {
               </div>
             </div>
             {/* Right Part: Breakdown Box */}
-            <div className="lg:w-[350px] bg-background-light dark:bg-[#1a1a1a]-elevated rounded-2xl dark:rounded-[24px] p-6 flex flex-col justify-center gap-4 border dark:border-[#2a2a2a]">
+            <div className="lg:w-[350px] bg-background-light dark:bg-[#0a0a0a] rounded-2xl dark:rounded-[24px] p-6 flex flex-col justify-center gap-4 border dark:border-[#2a2a2a]">
               <div className="flex justify-between items-center">
                 <span className="text-text-secondary dark:text-text-secondary text-sm font-medium">Afgelost deze maand</span>
                 <span className="text-[#8B5CF6] dark:text-konsensi-purple font-bold">{formatCurrency(monthlyData.debtPaid)}</span>
@@ -763,80 +763,89 @@ export default function CentVoorCent() {
           </section>
         )}
 
-        {/* 5. PERSOONLIJK ADVIES */}
-        {advice.length > 0 && (
-          <section className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 mb-8 border-l-4 border-primary dark:border-l-konsensi-green border dark:border-[#2a2a2a]">
-            <div className="flex items-center gap-3 mb-6 dark:mb-8">
-              <h3 className="text-primary-dark dark:text-white text-2xl font-bold flex items-center gap-2 dark:gap-3">
-                <span className="material-symbols-outlined dark:text-text-secondary">person</span> Jouw persoonlijke advies
+        {/* 5. PERSOONLIJK ADVIES & SLIMME TIPS - Combined Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Persoonlijk Advies */}
+          {advice.length > 0 && (
+            <section className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 border-l-4 border-primary dark:border-l-konsensi-green border dark:border-[#2a2a2a]">
+              <div className="flex items-center gap-3 mb-6 dark:mb-8 flex-wrap">
+                <h3 className="text-primary-dark dark:text-white text-xl font-bold flex items-center gap-2 dark:gap-3">
+                  <span className="material-symbols-outlined dark:text-text-secondary">person</span> Persoonlijk advies
+                </h3>
+                <span className="bg-primary/20 dark:bg-konsensi-green/20 text-primary-dark dark:text-konsensi-green text-xs font-bold px-2.5 py-1 rounded-full">
+                  Op basis van jouw data
+                </span>
+              </div>
+              <div className="flex flex-col gap-4">
+                {advice.slice(0, 3).map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-primary/10 dark:bg-konsensi-green/10 rounded-2xl p-4 flex gap-4 items-start group cursor-pointer hover:bg-primary/20 dark:hover:bg-konsensi-green/15 transition-colors border border-transparent hover:border-primary dark:hover:border-konsensi-green/30"
+                  >
+                    <div className="text-primary-dark dark:text-konsensi-green transform group-hover:scale-110 transition-transform shrink-0">
+                      <span className="material-symbols-outlined text-3xl">{item.icon}</span>
+                    </div>
+                    <div>
+                      <h4 className="text-primary-dark dark:text-white text-base font-bold dark:font-semibold mb-1">{item.title}</h4>
+                      <p className="text-text-secondary dark:text-text-secondary text-sm leading-relaxed">{item.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Slimme Geldzaken Tips */}
+          <section className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 border-l-4 border-amber-500 dark:border-l-amber-400 border dark:border-[#2a2a2a]">
+            <div className="flex items-center gap-3 mb-6 dark:mb-8 flex-wrap">
+              <h3 className="text-primary-dark dark:text-white text-xl font-bold flex items-center gap-2 dark:gap-3">
+                <span className="material-symbols-outlined text-amber-500 dark:text-amber-400">tips_and_updates</span> Slimme tips
               </h3>
-              <span className="bg-primary/20 dark:bg-konsensi-green/20 text-primary-dark dark:text-konsensi-green text-xs font-bold px-2.5 py-1 rounded-full">
-                Op basis van jouw data
+              <span className="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full">
+                Algemeen
               </span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {advice.map((item, index) => (
+            <div className="flex flex-col gap-4">
+              {ALGEMENE_TIPS.slice(0, 3).map((tip, index) => (
                 <div
                   key={index}
-                  className="bg-primary/10 dark:bg-konsensi-green/10 rounded-2xl p-6 flex flex-col gap-3 dark:gap-4 group cursor-pointer hover:bg-primary/20 dark:hover:bg-konsensi-green/15 transition-colors border border-transparent hover:border-primary dark:hover:border-konsensi-green/30"
+                  className="bg-amber-50 dark:bg-amber-500/10 rounded-2xl p-4 flex gap-4 items-start group cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-500/15 transition-colors border border-transparent hover:border-amber-400 dark:hover:border-amber-500/30"
                 >
-                  <div className="text-primary-dark dark:text-konsensi-green mb-2 dark:mb-1 transform group-hover:scale-110 transition-transform origin-left">
-                    <span className="material-symbols-outlined text-4xl">{item.icon}</span>
+                  <div className="text-amber-600 dark:text-amber-400 transform group-hover:scale-110 transition-transform shrink-0">
+                    <span className="material-symbols-outlined text-3xl">{tip.icon}</span>
                   </div>
-                  <h4 className="text-primary-dark dark:text-white text-lg font-bold dark:font-semibold">{item.title}</h4>
-                  <p className="text-text-secondary dark:text-text-secondary text-[15px] leading-relaxed">{item.text}</p>
+                  <div>
+                    <h4 className="text-amber-800 dark:text-white text-base font-bold dark:font-semibold mb-1">{tip.title}</h4>
+                    <p className="text-text-secondary dark:text-text-secondary text-sm leading-relaxed">{tip.text}</p>
+                  </div>
                 </div>
               ))}
             </div>
-          </section>
-        )}
-
-        {/* 6. ALGEMENE TIPS */}
-        <section className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 mb-8 border-l-4 border-amber-500 dark:border-l-amber-400 border dark:border-[#2a2a2a]">
-          <div className="flex items-center gap-3 mb-6 dark:mb-8">
-            <h3 className="text-primary-dark dark:text-white text-2xl font-bold flex items-center gap-2 dark:gap-3">
-              <span className="material-symbols-outlined text-amber-500 dark:text-amber-400">tips_and_updates</span> Slimme geldzaken tips
-            </h3>
-            <span className="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full">
-              Algemeen
-            </span>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {ALGEMENE_TIPS.slice(0, 3).map((tip, index) => (
-              <div
-                key={index}
-                className="bg-amber-50 dark:bg-amber-500/10 rounded-2xl p-6 flex flex-col gap-3 dark:gap-4 group cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-500/15 transition-colors border border-transparent hover:border-amber-400 dark:hover:border-amber-500/30"
-              >
-                <div className="text-amber-600 dark:text-amber-400 mb-2 dark:mb-1 transform group-hover:scale-110 transition-transform origin-left">
-                  <span className="material-symbols-outlined text-4xl">{tip.icon}</span>
-                </div>
-                <h4 className="text-amber-800 dark:text-white text-lg font-bold dark:font-semibold">{tip.title}</h4>
-                <p className="text-text-secondary dark:text-text-secondary text-[15px] leading-relaxed">{tip.text}</p>
+            {/* Show more tips toggle */}
+            <details className="mt-4">
+              <summary className="cursor-pointer text-amber-600 dark:text-amber-400 font-semibold hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-2 text-sm">
+                <span className="material-symbols-outlined text-lg">expand_more</span>
+                Meer tips bekijken
+              </summary>
+              <div className="flex flex-col gap-4 mt-4">
+                {ALGEMENE_TIPS.slice(3).map((tip, index) => (
+                  <div
+                    key={index}
+                    className="bg-amber-50 dark:bg-amber-500/10 rounded-2xl p-4 flex gap-4 items-start group cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-500/15 transition-colors border border-transparent hover:border-amber-400 dark:hover:border-amber-500/30"
+                  >
+                    <div className="text-amber-600 dark:text-amber-400 transform group-hover:scale-110 transition-transform shrink-0">
+                      <span className="material-symbols-outlined text-3xl">{tip.icon}</span>
+                    </div>
+                    <div>
+                      <h4 className="text-amber-800 dark:text-white text-base font-bold dark:font-semibold mb-1">{tip.title}</h4>
+                      <p className="text-text-secondary dark:text-text-secondary text-sm leading-relaxed">{tip.text}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          {/* Show more tips toggle */}
-          <details className="mt-6">
-            <summary className="cursor-pointer text-amber-600 dark:text-amber-400 font-semibold hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-2">
-              <span className="material-symbols-outlined text-lg">expand_more</span>
-              Meer tips bekijken
-            </summary>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-              {ALGEMENE_TIPS.slice(3).map((tip, index) => (
-                <div
-                  key={index}
-                  className="bg-amber-50 dark:bg-amber-500/10 rounded-2xl p-6 flex flex-col gap-3 dark:gap-4 group cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-500/15 transition-colors border border-transparent hover:border-amber-400 dark:hover:border-amber-500/30"
-                >
-                  <div className="text-amber-600 dark:text-amber-400 mb-2 dark:mb-1 transform group-hover:scale-110 transition-transform origin-left">
-                    <span className="material-symbols-outlined text-4xl">{tip.icon}</span>
-                  </div>
-                  <h4 className="text-amber-800 dark:text-white text-lg font-bold dark:font-semibold">{tip.title}</h4>
-                  <p className="text-text-secondary dark:text-text-secondary text-[15px] leading-relaxed">{tip.text}</p>
-                </div>
-              ))}
-            </div>
-          </details>
-        </section>
+            </details>
+          </section>
+        </div>
 
         {/* 7. VERGELIJKING */}
         <section className="max-w-[600px] mb-12">
