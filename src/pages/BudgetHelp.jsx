@@ -200,26 +200,7 @@ export default function BudgetHelp() {
                                 Praat met een coach
                                 <span className="material-symbols-outlined text-[20px] transition-transform group-hover:translate-x-1">arrow_forward</span>
                             </a>
-                            <p className="text-xs text-gray-400 dark:text-[#a1a1a1] mt-3">Eerste gesprek is gratis</p>
                         </div>
-
-                        {/* Extra Small Card: Downloads */}
-                        <a
-                            href="/budget-template.xlsx"
-                            download
-                            className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-[24px] p-5 flex items-center justify-between hover:border-primary/50 transition-colors cursor-pointer group shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="size-10 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] flex items-center justify-center text-gray-500 dark:text-white group-hover:text-primary transition-colors">
-                                    <span className="material-symbols-outlined">description</span>
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[#1F2937] dark:text-white font-medium text-sm">Download Template</span>
-                                    <span className="text-gray-400 dark:text-[#a1a1a1] text-xs">Excel Sheet (.xlsx)</span>
-                                </div>
-                            </div>
-                            <span className="material-symbols-outlined text-gray-400 group-hover:text-primary transition-colors">download</span>
-                        </a>
 
                         {/* Extra Resources Card */}
                         <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-[24px] p-6 shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
