@@ -48,7 +48,11 @@ export default function CentVoorCent() {
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    // Default to previous month (the month we're summarizing)
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  });
   const [monthlyData, setMonthlyData] = useState({
     totalIncome: 0,
     regularIncome: 0,
@@ -68,6 +72,11 @@ export default function CentVoorCent() {
     attentionPoints: []
   });
   const [advice, setAdvice] = useState([]);
+  const [summaryStatus, setSummaryStatus] = useState({
+    isNewSummaryAvailable: false,
+    hasViewedThisMonth: false,
+    summaryMonth: null
+  });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -94,16 +103,73 @@ export default function CentVoorCent() {
     }
   };
 
+  // Check if a new monthly summary is available (only on 1st-7th of the month)
+  const checkSummaryAvailability = async (userId) => {
+    const now = new Date();
+    const currentDay = now.getDate();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    // Summary is only "new" in the first 7 days of the month
+    const isFirstWeekOfMonth = currentDay <= 7;
+
+    // The summary month is the previous month
+    const summaryMonth = new Date(currentYear, currentMonth - 1, 1);
+    const summaryMonthKey = `${summaryMonth.getFullYear()}-${String(summaryMonth.getMonth() + 1).padStart(2, '0')}`;
+
+    // Check if user has already viewed this month's summary
+    const viewedKey = `cent_voor_cent_viewed_${userId}_${summaryMonthKey}`;
+    const hasViewed = localStorage.getItem(viewedKey) === 'true';
+
+    return {
+      isNewSummaryAvailable: isFirstWeekOfMonth && !hasViewed,
+      hasViewedThisMonth: hasViewed,
+      summaryMonth: summaryMonth,
+      summaryMonthKey: summaryMonthKey,
+      isFirstWeekOfMonth: isFirstWeekOfMonth
+    };
+  };
+
+  // Mark summary as viewed and award XP
+  const markSummaryAsViewed = async (userId, summaryMonthKey) => {
+    const viewedKey = `cent_voor_cent_viewed_${userId}_${summaryMonthKey}`;
+
+    // Only award XP if this is the first time viewing this month's summary
+    if (localStorage.getItem(viewedKey) !== 'true') {
+      localStorage.setItem(viewedKey, 'true');
+
+      // Award XP for viewing the NEW monthly summary
+      try {
+        const summaryResult = await gamificationService.recordSummaryView(userId);
+        if (summaryResult.xpAwarded) {
+          toast({
+            title: '📊 Maandoverzicht bekeken!',
+            description: `+${summaryResult.xpAmount} XP voor het bekijken van je maandelijkse samenvatting.`
+          });
+        }
+      } catch (xpError) {
+        console.error("Error awarding summary XP:", xpError);
+      }
+
+      return true;
+    }
+    return false;
+  };
+
   const loadData = async () => {
     try {
       setLoading(true);
       const userData = await User.me();
       setUser(userData);
 
+      // Check if new summary is available
+      const summaryAvailability = await checkSummaryAvailability(userData.id);
+      setSummaryStatus(summaryAvailability);
+
       // Get current month date range
       const monthStart = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 1);
       const monthEnd = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() + 1, 0);
-      
+
       // Get previous month for comparison
       const prevMonthStart = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth() - 1, 1);
       const prevMonthEnd = new Date(selectedMonth.getFullYear(), selectedMonth.getMonth(), 0);
@@ -257,26 +323,15 @@ export default function CentVoorCent() {
 
       setAdvice(personalAdviceList);
 
-      // Award XP for viewing the summary (once per day)
-      // Only award if there's actual financial data to view
-      const hasFinancialData =
-        monthlyIncome > 0 ||
-        costs.length > 0 ||
-        pots.length > 0 ||
-        debts.length > 0;
-
-      if (hasFinancialData) {
-        try {
-          const summaryResult = await gamificationService.recordSummaryView(userData.id);
-          if (summaryResult.xpAwarded) {
-            toast({
-              title: 'Samenvatting bekeken!',
-              description: `+${summaryResult.xpAmount} XP voor het bekijken van je financiële overzicht.`
-            });
-          }
-        } catch (xpError) {
-          console.error("Error awarding summary XP:", xpError);
-        }
+      // Only award XP if this is a NEW monthly summary (first week of month, not yet viewed)
+      if (summaryAvailability.isNewSummaryAvailable) {
+        await markSummaryAsViewed(userData.id, summaryAvailability.summaryMonthKey);
+        // Update status after marking as viewed
+        setSummaryStatus(prev => ({
+          ...prev,
+          isNewSummaryAvailable: false,
+          hasViewedThisMonth: true
+        }));
       }
 
     } catch (error) {
@@ -498,17 +553,112 @@ END:VEVENT
 
   const expenseDiff = monthlyData.totalExpenses - monthlyData.previousMonthExpenses;
 
+  // Calculate days until next summary
+  const getDaysUntilNextSummary = () => {
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const diffTime = nextMonth - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  // Check if we should show the "waiting" state
+  const showWaitingState = !summaryStatus.isFirstWeekOfMonth && !summaryStatus.hasViewedThisMonth;
+
+  // If we're outside the first week and haven't viewed, show waiting state
+  if (showWaitingState && !loading) {
+    const daysUntil = getDaysUntilNextSummary();
+    return (
+      <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] font-display text-[#1F2937] dark:text-white antialiased">
+        <main className="flex-1 w-full max-w-[800px] mx-auto p-4 md:p-8 flex flex-col items-center justify-center min-h-[80vh]">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-8 md:p-12 shadow-card dark:shadow-dark-card border dark:border-[#2a2a2a] text-center max-w-lg w-full">
+            {/* Animated Calendar Icon */}
+            <div className="relative w-24 h-24 mx-auto mb-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl animate-pulse"></div>
+              <div className="relative w-full h-full bg-white dark:bg-[#2a2a2a] rounded-2xl border-2 border-blue-500/30 dark:border-blue-400/30 flex items-center justify-center">
+                <span className="material-symbols-outlined text-5xl text-blue-500 dark:text-blue-400">calendar_month</span>
+              </div>
+            </div>
+
+            <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white mb-3">
+              Nog even geduld...
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 text-lg mb-6">
+              Je maandelijkse samenvatting is beschikbaar op de <strong className="text-blue-600 dark:text-blue-400">1e van de maand</strong>.
+            </p>
+
+            {/* Countdown */}
+            <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-2xl p-6 mb-6 border dark:border-[#2a2a2a]">
+              <p className="text-sm text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Volgende samenvatting over</p>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-4xl md:text-5xl font-extrabold text-blue-600 dark:text-blue-400">{daysUntil}</span>
+                <span className="text-xl text-gray-600 dark:text-gray-400">{daysUntil === 1 ? 'dag' : 'dagen'}</span>
+              </div>
+            </div>
+
+            {/* Info Box */}
+            <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4 text-left">
+              <div className="flex gap-3">
+                <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 mt-0.5">lightbulb</span>
+                <div>
+                  <p className="text-amber-800 dark:text-amber-300 font-semibold text-sm mb-1">Waarom wachten?</p>
+                  <p className="text-amber-700 dark:text-amber-400 text-sm">
+                    We verzamelen al je financiële gegevens van deze maand om je een compleet en nuttig overzicht te geven.
+                    Je krijgt een melding zodra je samenvatting klaar is!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* XP Teaser */}
+            <div className="mt-6 flex items-center justify-center gap-2 text-sm">
+              <span className="material-symbols-outlined text-purple-500 dark:text-purple-400">stars</span>
+              <span className="text-gray-600 dark:text-gray-400">
+                Bekijk je samenvatting voor <strong className="text-purple-600 dark:text-purple-400">+10 XP</strong>
+              </span>
+            </div>
+          </div>
+
+          {/* Previous summaries link */}
+          <button
+            onClick={() => {
+              // Allow viewing previous summaries
+              setSummaryStatus(prev => ({ ...prev, isFirstWeekOfMonth: true }));
+            }}
+            className="mt-6 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 text-sm flex items-center gap-2 transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">history</span>
+            Bekijk eerdere samenvattingen
+          </button>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] font-display text-[#1F2937] dark:text-white antialiased">
       {/* Main Content Wrapper */}
       <main className="flex-1 w-full max-w-[1400px] mx-auto p-4 md:p-8">
+        {/* New Summary Banner - shown when viewing for the first time */}
+        {summaryStatus.hasViewedThisMonth && summaryStatus.isFirstWeekOfMonth && (
+          <div className="mb-6 bg-gradient-to-r from-green-500/10 to-emerald-500/10 dark:from-green-500/20 dark:to-emerald-500/20 border border-green-500/20 dark:border-green-500/30 rounded-2xl p-4 flex items-center gap-4">
+            <div className="p-2 bg-green-500/20 rounded-xl">
+              <span className="material-symbols-outlined text-green-600 dark:text-green-400 text-2xl">check_circle</span>
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-green-800 dark:text-green-300">Samenvatting bekeken!</p>
+              <p className="text-sm text-green-700 dark:text-green-400">Je hebt je maandoverzicht van {formatMonthYear(summaryStatus.summaryMonth)} bekeken.</p>
+            </div>
+          </div>
+        )}
+
         {/* Header Section */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h2 className="text-primary-dark dark:text-white text-[32px] font-extrabold leading-tight">Cent voor Cent</h2>
             <p className="text-text-tertiary dark:text-text-secondary text-base">Jouw maandelijkse financiële reflectie</p>
           </div>
-          <button 
+          <button
             className="flex items-center gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-[24px] px-4 py-2.5 text-text-main dark:text-white font-semibold shadow-sm hover:border-primary dark:hover:border-konsensi-green transition-colors cursor-pointer group"
             onClick={() => {/* Open month picker */}}
           >

@@ -466,6 +466,9 @@ export const gamificationService = {
         return { xpAwarded: false, xpAmount: 0 };
       }
 
+      // Check if we need to create monthly summary notification (on 1st-7th of month)
+      await this.checkMonthlySummaryNotification(userId);
+
       // Award XP for daily login
       const result = await this.addXP(userId, XP_REWARDS.DAILY_LOGIN, "daily_login");
 
@@ -476,29 +479,33 @@ export const gamificationService = {
     }
   },
 
-  // Record summary view and award XP if first view today
+  // Record summary view and award XP if first view of NEW monthly summary
+  // Only awards XP once per month (when new summary becomes available on 1st)
   async recordSummaryView(userId) {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const now = new Date();
+      // Summary month key is the PREVIOUS month (the month being summarized)
+      const summaryMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const summaryMonthKey = `${summaryMonth.getFullYear()}-${String(summaryMonth.getMonth() + 1).padStart(2, '0')}`;
 
-      // Check if already viewed today in database
+      // Check if already viewed this month's summary in database
       const { data: existingView } = await supabase
         .from("user_summary_views")
         .select("*")
         .eq("user_id", userId)
-        .eq("view_date", today)
+        .eq("view_date", summaryMonthKey)
         .maybeSingle();
 
-      // If already viewed today, no XP
+      // If already viewed this month's summary, no XP
       if (existingView) {
         return { xpAwarded: false, xpAmount: 0 };
       }
 
-      // Record today's view - use upsert to handle race conditions
+      // Record this month's summary view - use upsert to handle race conditions
       const { error: insertError } = await supabase.from("user_summary_views").upsert(
         {
           user_id: userId,
-          view_date: today,
+          view_date: summaryMonthKey,
         },
         { onConflict: 'user_id,view_date', ignoreDuplicates: true }
       );
@@ -516,6 +523,58 @@ export const gamificationService = {
     } catch (error) {
       console.error("Error recording summary view:", error);
       return { xpAwarded: false, xpAmount: 0 };
+    }
+  },
+
+  // Check and create monthly summary notification on 1st of the month
+  async checkMonthlySummaryNotification(userId) {
+    try {
+      const now = new Date();
+      const currentDay = now.getDate();
+
+      // Only create notification on the 1st-7th of the month
+      if (currentDay > 7) {
+        return { notificationCreated: false };
+      }
+
+      // Summary month is the previous month
+      const summaryMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const summaryMonthKey = `${summaryMonth.getFullYear()}-${String(summaryMonth.getMonth() + 1).padStart(2, '0')}`;
+      const monthName = new Intl.DateTimeFormat('nl-NL', { month: 'long' }).format(summaryMonth);
+
+      // Check if notification for this month already exists
+      const notificationKey = `summary_${summaryMonthKey}`;
+      const { data: existingNotification } = await supabase
+        .from('notifications')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('type', 'summary_available')
+        .like('message', `%${summaryMonthKey}%`)
+        .maybeSingle();
+
+      if (existingNotification) {
+        return { notificationCreated: false, alreadyExists: true };
+      }
+
+      // Create the notification
+      const { error: notifError } = await supabase.from('notifications').insert({
+        user_id: userId,
+        type: 'summary_available',
+        title: `📊 Je ${monthName} samenvatting is klaar!`,
+        message: `Bekijk je financiële overzicht van ${monthName} en verdien 10 XP! [${summaryMonthKey}]`,
+        is_read: false,
+        link: '/CentVoorCent'
+      });
+
+      if (notifError) {
+        console.warn('Could not create summary notification:', notifError);
+        return { notificationCreated: false };
+      }
+
+      return { notificationCreated: true, monthName };
+    } catch (error) {
+      console.error('Error checking monthly summary notification:', error);
+      return { notificationCreated: false };
     }
   },
 
