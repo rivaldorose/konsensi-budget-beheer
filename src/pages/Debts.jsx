@@ -916,8 +916,8 @@ export default function Debts() {
       {/* VTLB Info Modal */}
       {showVtlbInfo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl w-full max-w-md shadow-2xl">
-            <div className="p-6 border-b border-gray-100 dark:border-[#2a2a2a] flex items-center justify-between">
+          <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-100 dark:border-[#2a2a2a] flex items-center justify-between sticky top-0 bg-white dark:bg-[#1a1a1a]">
               <h3 className="text-lg font-bold text-[#131d0c] dark:text-white font-display flex items-center gap-2">
                 <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">calculate</span>
               Wat is VTLB?
@@ -935,23 +935,110 @@ export default function Debts() {
               <p className="text-gray-700 dark:text-[#a1a1a1]">
               Dit is het bedrag dat je <strong>minimaal nodig hebt om van te leven</strong>. De rest kun je gebruiken om schulden af te lossen.
             </p>
-              <div className="bg-gray-50 dark:bg-[#2a2a2a] rounded-xl p-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-[#a1a1a1]">Je inkomen</span>
-                  <span className="font-medium text-[#131d0c] dark:text-white">{formatCurrency(user?.monthly_income || 0)}</span>
+
+              {/* Berekening sectie */}
+              <div className="bg-gray-50 dark:bg-[#2a2a2a] rounded-xl p-4 space-y-3">
+                <h4 className="font-bold text-[#131d0c] dark:text-white text-sm flex items-center gap-2">
+                  <span className="material-symbols-outlined text-blue-500 !text-[18px]">functions</span>
+                  Jouw berekening
+                </h4>
+
+                {vtblData ? (
+                  <>
+                    {/* VTLB berekening breakdown */}
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-[#a1a1a1]">Vast inkomen</span>
+                        <span className="font-medium text-[#131d0c] dark:text-white">{formatCurrency(vtblData.vastInkomen || 0)}</span>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-[#a1a1a1]">Vaste lasten</span>
+                        <span className="font-medium text-red-600 dark:text-red-400">- {formatCurrency(vtblData.vasteLasten || 0)}</span>
+                      </div>
+
+                      {vtblData.huidigeRegelingen > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-[#a1a1a1]">Lopende regelingen</span>
+                          <span className="font-medium text-purple-600 dark:text-purple-400">- {formatCurrency(vtblData.huidigeRegelingen)}</span>
+                        </div>
+                      )}
+
+                      <div className="border-t border-gray-200 dark:border-[#3a3a3a] pt-2 flex justify-between">
+                        <span className="font-medium text-[#131d0c] dark:text-white">= Beschikbaar</span>
+                        <span className="font-medium text-[#131d0c] dark:text-white">{formatCurrency(vtblData.beschikbaar || 0)}</span>
+                      </div>
+                    </div>
+
+                    {/* Aanpassingen indien aanwezig */}
+                    {vtblData.adjustments && vtblData.adjustments.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-[#3a3a3a]">
+                        <p className="text-xs font-semibold text-gray-500 dark:text-[#a1a1a1] mb-2 uppercase tracking-wide">VTLB Aanpassingen:</p>
+                        <div className="space-y-1 text-xs">
+                          {vtblData.adjustments.map((adj, idx) => (
+                            <div key={idx} className="flex justify-between text-gray-600 dark:text-[#a1a1a1]">
+                              <span className="capitalize">{adj.reason}</span>
+                              <span className={adj.amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                                {adj.amount >= 0 ? '+' : ''}{formatCurrency(adj.amount)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Budget verdeling */}
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-[#3a3a3a]">
+                      <p className="text-xs font-semibold text-gray-500 dark:text-[#a1a1a1] mb-2 uppercase tracking-wide">Aanbevolen verdeling:</p>
+                      <div className="space-y-1 text-xs">
+                        <div className="flex justify-between text-gray-600 dark:text-[#a1a1a1]">
+                          <span>Tussenlasten (60%)</span>
+                          <span>{formatCurrency(vtblData.tussenlasten || 0)}</span>
+                        </div>
+                        <div className="flex justify-between text-gray-600 dark:text-[#a1a1a1]">
+                          <span>Buffer (25%)</span>
+                          <span>{formatCurrency(vtblData.buffer || 0)}</span>
+                        </div>
+                        <div className="flex justify-between font-medium text-blue-600 dark:text-blue-400">
+                          <span>Afloscapaciteit (15%)</span>
+                          <span>{formatCurrency(vtblData.aflosCapaciteit || 0)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  /* Fallback naar simpele berekening */
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-[#a1a1a1]">Je inkomen</span>
+                      <span className="font-medium text-[#131d0c] dark:text-white">{formatCurrency(user?.monthly_income || 0)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-[#a1a1a1]">Min: VTLB (levensonderhoud)</span>
+                      <span className="font-medium text-red-600 dark:text-red-400">- {formatCurrency((user?.monthly_income || 0) - availableBudget)}</span>
+                    </div>
+                    <div className="border-t border-gray-200 dark:border-[#3a3a3a] pt-2 flex justify-between">
+                      <span className="font-bold text-[#131d0c] dark:text-white">= Afloscapaciteit</span>
+                      <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(availableBudget)}</span>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-[#a1a1a1]">Min: VTLB (levensonderhoud)</span>
-                  <span className="font-medium text-red-600 dark:text-red-400">- {formatCurrency((user?.monthly_income || 0) - availableBudget)}</span>
-              </div>
-                <div className="border-t border-gray-200 dark:border-[#2a2a2a] pt-2 flex justify-between">
-                  <span className="font-medium text-[#131d0c] dark:text-white">= Afloscapaciteit</span>
-                  <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(availableBudget)}</span>
-              </div>
-            </div>
+
               <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">
               💡 Dit bedrag kun je maandelijks gebruiken voor betalingsregelingen met schuldeisers.
             </p>
+
+              <button
+                onClick={() => {
+                  setShowVtlbInfo(false);
+                  window.location.href = createPageUrl('VTLBCalculator');
+                }}
+                className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+              >
+                <span className="material-symbols-outlined !text-[20px]">edit</span>
+                VTLB aanpassen
+              </button>
           </div>
           </div>
         </div>
