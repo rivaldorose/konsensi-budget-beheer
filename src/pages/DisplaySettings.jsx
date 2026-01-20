@@ -284,8 +284,8 @@ export default function DisplaySettings() {
                     </div>
                   </div>
                   <div className="relative w-full md:w-auto">
-                    <select 
-                      className="appearance-none w-full md:w-40 bg-gray-50 dark:bg-[#1a1a1a]-elevated border border-gray-200 dark:border-[#2a2a2a] rounded-[24px] py-2.5 pl-4 pr-10 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-konsensi-green/20 focus:border-konsensi-green transition-all cursor-pointer"
+                    <select
+                      className="appearance-none w-full md:w-40 bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] py-2.5 pl-4 pr-10 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-konsensi-green/20 focus:border-konsensi-green transition-all cursor-pointer"
                       value={language}
                       onChange={async (e) => {
                         const newLang = e.target.value;
@@ -298,7 +298,7 @@ export default function DisplaySettings() {
                       }}
                     >
                       {languages.map(lang => (
-                        <option key={lang.code} value={lang.code}>{lang.name}</option>
+                        <option key={lang.code} value={lang.code} className="bg-white dark:bg-[#2a2a2a] text-gray-900 dark:text-white">{lang.name}</option>
                       ))}
                     </select>
                     <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none text-xl">expand_more</span>
@@ -318,7 +318,7 @@ export default function DisplaySettings() {
                   </div>
                   <div className="flex flex-wrap gap-6 pl-0 md:pl-[44px] mt-2">
                     <label className="flex items-center gap-3 cursor-pointer group">
-                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-[#2a2a2a] group-hover:border-konsensi-green transition-colors bg-white dark:bg-[#1a1a1a]-elevated">
+                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-[#2a2a2a] group-hover:border-konsensi-green transition-colors bg-white dark:bg-[#2a2a2a]">
                         <input 
                           className="peer sr-only" 
                           name="theme" 
@@ -337,7 +337,7 @@ export default function DisplaySettings() {
                       <span className="text-gray-900 dark:text-white text-sm">Licht</span>
                     </label>
                     <label className="flex items-center gap-3 cursor-pointer group">
-                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-[#2a2a2a] group-hover:border-konsensi-green transition-colors bg-white dark:bg-[#1a1a1a]-elevated">
+                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-[#2a2a2a] group-hover:border-konsensi-green transition-colors bg-white dark:bg-[#2a2a2a]">
                         <input 
                           className="peer sr-only" 
                           name="theme" 
@@ -356,7 +356,7 @@ export default function DisplaySettings() {
                       <span className="text-gray-900 dark:text-white text-sm">Donker</span>
                     </label>
                     <label className="flex items-center gap-3 cursor-pointer group">
-                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-[#2a2a2a] group-hover:border-konsensi-green transition-colors bg-white dark:bg-[#1a1a1a]-elevated">
+                      <div className="relative flex items-center justify-center w-5 h-5 rounded-full border border-gray-300 dark:border-[#2a2a2a] group-hover:border-konsensi-green transition-colors bg-white dark:bg-[#2a2a2a]">
                         <input 
                           className="peer sr-only" 
                           name="theme" 
@@ -394,13 +394,13 @@ export default function DisplaySettings() {
                     </div>
                   </div>
                   <div className="relative w-full md:w-auto">
-                    <select 
-                      className="appearance-none w-full md:w-40 bg-gray-50 dark:bg-[#1a1a1a]-elevated border border-gray-200 dark:border-[#2a2a2a] rounded-[24px] py-2.5 pl-4 pr-10 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-konsensi-green/20 focus:border-konsensi-green transition-all cursor-pointer"
+                    <select
+                      className="appearance-none w-full md:w-40 bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] py-2.5 pl-4 pr-10 text-sm font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-konsensi-green/20 focus:border-konsensi-green transition-all cursor-pointer"
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
                     >
                       {currencies.map(curr => (
-                        <option key={curr.code} value={curr.code}>{curr.name} ({curr.symbol})</option>
+                        <option key={curr.code} value={curr.code} className="bg-white dark:bg-[#2a2a2a] text-gray-900 dark:text-white">{curr.name} ({curr.symbol})</option>
                       ))}
                     </select>
                     <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 pointer-events-none text-xl">expand_more</span>
