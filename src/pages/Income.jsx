@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Income, VariableIncomeEntry, User } from '@/api/entities';
+import { Income, VariableIncomeEntry, User, WorkDay } from '@/api/entities';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -46,6 +46,7 @@ export default function IncomePage() {
     const [incomeType, setIncomeType] = useState('vast'); // For modal
     const [employers, setEmployers] = useState([]);
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+    const [workDays, setWorkDays] = useState([]);
 
     // Generate months dynamically: current month first, then going backwards
     const months = useMemo(() => {
@@ -84,6 +85,10 @@ export default function IncomePage() {
 
             const variableData = await VariableIncomeEntry.filter(userFilter);
             setVariableEntries(variableData);
+
+            // Load work days for estimated income calculation
+            const workDayData = await WorkDay.filter(userFilter);
+            setWorkDays(workDayData);
         } catch (error) {
             console.error('Error loading data:', error);
             toast({
@@ -150,6 +155,42 @@ export default function IncomePage() {
     }, [extraIncomeThisMonth]);
 
     const totalMonth = totalFixed + totalExtra;
+
+    // Calculate estimated income from work schedule for selected month
+    const workScheduleEstimate = useMemo(() => {
+        // Filter work days for selected month
+        const monthWorkDays = workDays.filter(wd => {
+            const workDayMonth = wd.date?.substring(0, 7);
+            return workDayMonth === selectedMonth;
+        });
+
+        // Calculate totals for worked and planned days
+        const workedDays = monthWorkDays.filter(d => d.status === 'gewerkt');
+        const plannedDays = monthWorkDays.filter(d => d.status === 'gepland');
+
+        const workedHours = workedDays.reduce((sum, d) => sum + (parseFloat(d.hours_worked) || 0), 0);
+        const workedEarned = workedDays.reduce((sum, d) => sum + (parseFloat(d.calculated_amount) || 0), 0);
+
+        const plannedHours = plannedDays.reduce((sum, d) => sum + (parseFloat(d.hours_worked) || 0), 0);
+        const plannedEarned = plannedDays.reduce((sum, d) => {
+            const hours = parseFloat(d.hours_worked) || 0;
+            const rate = parseFloat(d.hourly_rate) || 0;
+            return sum + (hours * rate);
+        }, 0);
+
+        const totalHours = workedHours + plannedHours;
+        const totalEstimated = workedEarned + plannedEarned;
+
+        return {
+            workedHours,
+            workedEarned,
+            plannedHours,
+            plannedEarned,
+            totalHours,
+            totalEstimated,
+            hasData: monthWorkDays.length > 0
+        };
+    }, [workDays, selectedMonth]);
 
     // Calculate year statistics based on selected month's year
     const yearStats = useMemo(() => {
@@ -610,7 +651,65 @@ export default function IncomePage() {
                             </div>
                         </div>
 
-                        {/* 2. Scan Action Card */}
+                        {/* 2. Werkschema Schatting Card */}
+                        {workScheduleEstimate.hasData && (
+                            <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-lg">
+                                            <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-[18px]">calendar_month</span>
+                                        </div>
+                                        <h3 className="font-bold text-[#3D6456] dark:text-white text-sm">Werkschema Schatting</h3>
+                                    </div>
+                                    <Link to={createPageUrl('WorkSchedule')}>
+                                        <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 hover:text-[#3D6456] dark:hover:text-white text-[18px] cursor-pointer">open_in_new</span>
+                                    </Link>
+                                </div>
+
+                                {/* Estimated Total */}
+                                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 mb-4 border border-blue-100 dark:border-blue-800/30">
+                                    <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Geschat eind van de maand</p>
+                                    <p className="text-2xl font-extrabold text-blue-700 dark:text-blue-300">
+                                        ~{formatCurrency(workScheduleEstimate.totalEstimated)}
+                                    </p>
+                                    <p className="text-xs text-blue-500 dark:text-blue-400 mt-1">
+                                        {Math.round(workScheduleEstimate.totalHours)} uur totaal
+                                    </p>
+                                </div>
+
+                                {/* Breakdown */}
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                            <span className="text-gray-600 dark:text-gray-400">Gewerkt</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="font-bold text-[#3D6456] dark:text-white">{formatCurrency(workScheduleEstimate.workedEarned)}</span>
+                                            <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">({Math.round(workScheduleEstimate.workedHours)}u)</span>
+                                        </div>
+                                    </div>
+                                    {workScheduleEstimate.plannedHours > 0 && (
+                                        <div className="flex justify-between items-center text-sm">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                                <span className="text-gray-600 dark:text-gray-400">Gepland</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="font-bold text-[#3D6456] dark:text-white">~{formatCurrency(workScheduleEstimate.plannedEarned)}</span>
+                                                <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">({Math.round(workScheduleEstimate.plannedHours)}u)</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-3 italic">
+                                    * Schatting op basis van je werkschema
+                                </p>
+                            </div>
+                        )}
+
+                        {/* 3. Scan Action Card */}
                         <div className="bg-[#fafcf8] dark:bg-[#1a1a1a] rounded-xl p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-[#2a2a2a] flex flex-col items-center text-center" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
                             <div className="w-16 h-16 rounded-full bg-white dark:bg-card-elevated shadow-sm flex items-center justify-center mb-4 text-[#3D6456] dark:text-konsensi-primary">
                                 <span className="material-symbols-outlined text-3xl">document_scanner</span>
