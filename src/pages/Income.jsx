@@ -651,63 +651,74 @@ export default function IncomePage() {
                             </div>
                         </div>
 
-                        {/* 2. Werkschema Schatting Card */}
-                        {workScheduleEstimate.hasData && (
-                            <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-lg">
-                                            <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-[18px]">calendar_month</span>
-                                        </div>
-                                        <h3 className="font-bold text-[#3D6456] dark:text-white text-sm">Werkschema Schatting</h3>
+                        {/* 2. Werkschema Schatting Card - Always show */}
+                        <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <div className="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-lg">
+                                        <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 text-[18px]">calendar_month</span>
                                     </div>
-                                    <Link to={createPageUrl('WorkSchedule')}>
-                                        <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 hover:text-[#3D6456] dark:hover:text-white text-[18px] cursor-pointer">open_in_new</span>
-                                    </Link>
+                                    <h3 className="font-bold text-[#3D6456] dark:text-white text-sm">Werkschema Schatting</h3>
                                 </div>
+                                <Link to={createPageUrl('WorkSchedule')}>
+                                    <span className="material-symbols-outlined text-gray-400 dark:text-gray-500 hover:text-[#3D6456] dark:hover:text-white text-[18px] cursor-pointer">open_in_new</span>
+                                </Link>
+                            </div>
 
-                                {/* Estimated Total */}
-                                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 mb-4 border border-blue-100 dark:border-blue-800/30">
-                                    <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Geschat eind van de maand</p>
-                                    <p className="text-2xl font-extrabold text-blue-700 dark:text-blue-300">
-                                        ~{formatCurrency(workScheduleEstimate.totalEstimated)}
-                                    </p>
-                                    <p className="text-xs text-blue-500 dark:text-blue-400 mt-1">
-                                        {Math.round(workScheduleEstimate.totalHours)} uur totaal
-                                    </p>
-                                </div>
-
-                                {/* Breakdown */}
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-center text-sm">
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                            <span className="text-gray-600 dark:text-gray-400">Gewerkt</span>
-                                        </div>
-                                        <div className="text-right">
-                                            <span className="font-bold text-[#3D6456] dark:text-white">{formatCurrency(workScheduleEstimate.workedEarned)}</span>
-                                            <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">({Math.round(workScheduleEstimate.workedHours)}u)</span>
-                                        </div>
+                            {workScheduleEstimate.hasData ? (
+                                <>
+                                    {/* Estimated Total */}
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 mb-4 border border-blue-100 dark:border-blue-800/30">
+                                        <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Geschat eind van de maand</p>
+                                        <p className="text-2xl font-extrabold text-blue-700 dark:text-blue-300">
+                                            ~{formatCurrency(workScheduleEstimate.totalEstimated)}
+                                        </p>
+                                        <p className="text-xs text-blue-500 dark:text-blue-400 mt-1">
+                                            {Math.round(workScheduleEstimate.totalHours)} uur totaal
+                                        </p>
                                     </div>
-                                    {workScheduleEstimate.plannedHours > 0 && (
+
+                                    {/* Breakdown */}
+                                    <div className="space-y-3">
                                         <div className="flex justify-between items-center text-sm">
                                             <div className="flex items-center gap-2">
-                                                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                                <span className="text-gray-600 dark:text-gray-400">Gepland</span>
+                                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                                <span className="text-gray-600 dark:text-gray-400">Gewerkt</span>
                                             </div>
                                             <div className="text-right">
-                                                <span className="font-bold text-[#3D6456] dark:text-white">~{formatCurrency(workScheduleEstimate.plannedEarned)}</span>
-                                                <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">({Math.round(workScheduleEstimate.plannedHours)}u)</span>
+                                                <span className="font-bold text-[#3D6456] dark:text-white">{formatCurrency(workScheduleEstimate.workedEarned)}</span>
+                                                <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">({Math.round(workScheduleEstimate.workedHours)}u)</span>
                                             </div>
                                         </div>
-                                    )}
-                                </div>
+                                        {workScheduleEstimate.plannedHours > 0 && (
+                                            <div className="flex justify-between items-center text-sm">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                                    <span className="text-gray-600 dark:text-gray-400">Gepland</span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="font-bold text-[#3D6456] dark:text-white">~{formatCurrency(workScheduleEstimate.plannedEarned)}</span>
+                                                    <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">({Math.round(workScheduleEstimate.plannedHours)}u)</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
 
-                                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-3 italic">
-                                    * Schatting op basis van je werkschema
-                                </p>
-                            </div>
-                        )}
+                                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-3 italic">
+                                        * Schatting op basis van je werkschema
+                                    </p>
+                                </>
+                            ) : (
+                                <div className="text-center py-4">
+                                    <p className="text-gray-400 dark:text-gray-500 text-sm">
+                                        Geen werkdagen gevonden voor deze maand.
+                                    </p>
+                                    <Link to={createPageUrl('WorkSchedule')} className="text-blue-500 hover:text-blue-600 text-xs mt-2 inline-block">
+                                        Voeg werkdagen toe →
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
 
                         {/* 3. Scan Action Card */}
                         <div className="bg-[#fafcf8] dark:bg-[#1a1a1a] rounded-xl p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-[#2a2a2a] flex flex-col items-center text-center" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
