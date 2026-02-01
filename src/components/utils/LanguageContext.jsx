@@ -113,6 +113,18 @@ export function LanguageProvider({ children }) {
 
   useEffect(() => {
     const bootstrap = async () => {
+      // TEMPORARY BYPASS: Skip database calls when unavailable
+      // TODO: Remove this bypass when database is back online
+      const BYPASS_AUTH = false;
+
+      if (BYPASS_AUTH) {
+        console.log('⚠️ LANGUAGE BYPASS ACTIVE - Using defaults');
+        setTranslations({});
+        setLanguage('nl');
+        setLoading(false);
+        return;
+      }
+
       try {
         const [translationData, user] = await Promise.all([
           Translation.list(undefined, 1000).catch(() => []),
@@ -136,7 +148,7 @@ export function LanguageProvider({ children }) {
 
         if (user && user.language_preference) {
           setLanguage(user.language_preference);
-          
+
           // Set RTL for Arabic
           if (user.language_preference === 'ar') {
             document.documentElement.setAttribute('dir', 'rtl');
