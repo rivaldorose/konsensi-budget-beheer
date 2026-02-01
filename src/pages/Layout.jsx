@@ -260,8 +260,18 @@ function LayoutWithProvider({ children, currentPageName }) {
   }, [showConfirmModal, user]);
 
   React.useEffect(() => {
+    // TEMPORARY BYPASS: Skip auth when database is unavailable
+    // TODO: Remove this bypass when database is back online
+    const BYPASS_AUTH = false;
+
     // Handle root route redirect
     if (location.pathname === '/') {
+      if (BYPASS_AUTH) {
+        console.log('⚠️ AUTH BYPASS ACTIVE - Redirecting to Dashboard');
+        window.location.href = '/Dashboard';
+        return;
+      }
+
       const handleRootRedirect = async () => {
         try {
 
@@ -308,6 +318,24 @@ function LayoutWithProvider({ children, currentPageName }) {
     }
 
     const loadInitialUser = async () => {
+      // TEMPORARY BYPASS: Skip auth when database is unavailable
+      // TODO: Remove this bypass when database is back online
+      const BYPASS_AUTH = false;
+
+      if (BYPASS_AUTH) {
+        console.log('⚠️ AUTH BYPASS ACTIVE - Database unavailable mode');
+        // Set mock user data so the app can render
+        setUser({
+          id: 'bypass-user',
+          email: 'bypass@temp.com',
+          full_name: 'Tijdelijke Gebruiker',
+          monthly_income: 2500,
+          onboarding_completed: true
+        });
+        setCheckingOnboarding(false);
+        return;
+      }
+
       try {
 
         const userData = await User.me();
