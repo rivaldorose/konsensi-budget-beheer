@@ -43,7 +43,7 @@ const StepHeader = ({ step, title, subtitle, isCompleted, isCurrent }) => (
 
 export default function ArrangementStappenplanModal({ debt, isOpen, onClose }) {
   const [view, setView] = useState('choice');
-  const [activeTab, setActiveTab] = useState('keuzes'); // 'keuzes' | 'stappenplan' | 'vtlb'
+  // Tab state removed - showing choices directly
   const [activeStep, setActiveStep] = useState("stap1");
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -610,7 +610,6 @@ Bijlage: kopie invorderingsbrief`;
   useEffect(() => {
     if (isOpen) {
       setView('choice');
-      setActiveTab('keuzes');
       setDisputeData(null);
       setPartialData(null);
       setAlreadyPaidData(null);
@@ -1205,7 +1204,25 @@ const handleMarkVerjaringAsSent = async () => {
       userEmail: user.email || '',
       monthlyAmount: calculation?.voorstel?.toString() || prev.monthlyAmount || '',
     }));
-  }, [user, calculation]);
+
+    // Auto-collapse sections when data is filled
+    if (fullName && parsedAddress) {
+      setUserSectionOpen(false);
+    }
+    // Auto-fill creditor data from debt if available
+    if (debt) {
+      setPaymentFormData(prev => ({
+        ...prev,
+        creditorAddress: debt.creditor_address || prev.creditorAddress || '',
+        creditorPostcode: debt.creditor_postcode || prev.creditorPostcode || '',
+        creditorCity: debt.creditor_city || prev.creditorCity || '',
+      }));
+      // Collapse creditor section - creditor name is always known from debt
+      setCreditorSectionOpen(false);
+    }
+    // Collapse details section - date and amounts are pre-filled
+    setDetailsSectionOpen(false);
+  }, [user, calculation, debt]);
 
   // 🆕 NIEUWE FUNCTIE: Opslaan betalingsregelingsbrief
   const handleSavePaymentLetter = async () => {
@@ -1279,7 +1296,7 @@ const handleMarkVerjaringAsSent = async () => {
                         </div>
                     </CardContent>
                 </Card>
-                 <Button variant="ghost" onClick={() => { setView('proposal'); setActiveTab('stappenplan'); setModificationType(''); }} className="w-full">
+                 <Button variant="ghost" onClick={() => { setView('proposal'); setModificationType(''); }} className="w-full">
                     Toch een nieuwe regeling voor een andere schuld starten?
                  </Button>
             </div>
@@ -1304,7 +1321,7 @@ const handleMarkVerjaringAsSent = async () => {
                 </CardContent>
             </Card>
 
-            <Card onClick={() => { setView('proposal'); setActiveTab('stappenplan'); setModificationType(''); }} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
+            <Card onClick={() => { setView('proposal'); setModificationType(''); }} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
                 <CardContent className="p-4 flex items-start gap-4">
                     <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400"/>
                     <div>
@@ -1364,7 +1381,7 @@ const handleMarkVerjaringAsSent = async () => {
   
   const renderLoweringAmountView = () => (
     <div className="space-y-4">
-      <Button variant="ghost" onClick={() => { setView('choice'); setActiveTab('keuzes'); }}>{'< Terug naar keuzes'}</Button>
+      <Button variant="ghost" onClick={() => { setView('choice'); }}>{'< Terug naar keuzes'}</Button>
       <h3 className="text-lg font-semibold">Verlaging maandbedrag</h3>
       <p className="text-sm text-gray-600 dark:text-gray-400">Je huidige regeling is {formatCurrency(debt.monthly_payment || 0)} per maand. Wat is het nieuwe bedrag dat je maandelijks wél kunt betalen?</p>
       <div>
@@ -1392,7 +1409,7 @@ const handleMarkVerjaringAsSent = async () => {
 
   const renderPaymentHolidayView = () => (
     <div className="space-y-4">
-      <Button variant="ghost" onClick={() => { setView('choice'); setActiveTab('keuzes'); }}>{'< Terug naar keuzes'}</Button>
+      <Button variant="ghost" onClick={() => { setView('choice'); }}>{'< Terug naar keuzes'}</Button>
       <h3 className="text-lg font-semibold">Betalingsvakantie</h3>
       <p className="text-sm text-gray-600 dark:text-gray-400">Voor hoeveel maanden wil je de betalingen pauzeren? (Normaal is 1-3 maanden)</p>
       <div>
@@ -1420,7 +1437,7 @@ const handleMarkVerjaringAsSent = async () => {
   
   const renderStopCounselingView = () => (
      <div className="space-y-4">
-      <Button variant="ghost" onClick={() => { setView('choice'); setActiveTab('keuzes'); }}>{'< Terug naar keuzes'}</Button>
+      <Button variant="ghost" onClick={() => { setView('choice'); }}>{'< Terug naar keuzes'}</Button>
       <h3 className="text-lg font-semibold">Stopzetten regeling & aanmelden schuldhulp</h3>
       <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
         <CardContent className="p-4">
@@ -1450,7 +1467,7 @@ const handleMarkVerjaringAsSent = async () => {
       senderName={user?.full_name || 'Gebruiker'}
       onSend={() => handleMarkModificationAsSent(modificationType)}
       sendButtonText="Ik heb het verzoek verstuurd"
-      onBack={() => { setView('choice'); setActiveTab('keuzes'); }}
+      onBack={() => { setView('choice'); }}
       backText="Terug naar keuzes"
       calculation={calculation}
       tipText={getLetterTip()}
@@ -1791,7 +1808,7 @@ const handleMarkVerjaringAsSent = async () => {
   // 🆕 NIEUW: Render functie voor betalingsregeling formulier
   const renderPaymentArrangementForm = () => (
     <div className="space-y-4">
-      <Button variant="ghost" onClick={() => { setView('choice'); setActiveTab('keuzes'); }}>{'< Terug naar keuzes'}</Button>
+      <Button variant="ghost" onClick={() => { setView('choice'); }}>{'< Terug naar keuzes'}</Button>
       <h3 className="text-lg font-semibold">📋 Betalingsregelingsbrief Opstellen</h3>
       
       <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
@@ -1807,13 +1824,19 @@ const handleMarkVerjaringAsSent = async () => {
         <Card>
           <CardContent className="p-4">
             <CollapsibleTrigger className="w-full group">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-1">
                 <h4 className="font-semibold text-sm flex items-center gap-2">
                   <UserIcon className="w-4 h-4" />
                   Jouw Gegevens
+                  {!userSectionOpen && paymentFormData.userName && (
+                    <span className="text-xs font-normal text-green-600 dark:text-green-400">✓ Ingevuld</span>
+                  )}
                 </h4>
                 <ChevronDown className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform group-data-[state=open]:rotate-180`} />
               </div>
+              {!userSectionOpen && paymentFormData.userName && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-left">{paymentFormData.userName} — {paymentFormData.userAddress}, {paymentFormData.userPostcode} {paymentFormData.userCity}</p>
+              )}
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-3">
               <div>
@@ -1874,13 +1897,19 @@ const handleMarkVerjaringAsSent = async () => {
         <Card>
           <CardContent className="p-4">
             <CollapsibleTrigger className="w-full group">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-1">
                 <h4 className="font-semibold text-sm flex items-center gap-2">
                   <Building className="w-4 h-4" />
                   Schuldeiser Gegevens
+                  {!creditorSectionOpen && debt?.creditor_name && (
+                    <span className="text-xs font-normal text-green-600 dark:text-green-400">✓ Ingevuld</span>
+                  )}
                 </h4>
                 <ChevronDown className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform group-data-[state=open]:rotate-180`} />
               </div>
+              {!creditorSectionOpen && debt?.creditor_name && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-left">{debt.creditor_name}</p>
+              )}
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-3">
               <div>
@@ -1935,13 +1964,19 @@ const handleMarkVerjaringAsSent = async () => {
         <Card>
           <CardContent className="p-4">
             <CollapsibleTrigger className="w-full group">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-1">
                 <h4 className="font-semibold text-sm flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Brief Details
+                  {!detailsSectionOpen && debt?.amount && (
+                    <span className="text-xs font-normal text-green-600 dark:text-green-400">✓ Ingevuld</span>
+                  )}
                 </h4>
                 <ChevronDown className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform group-data-[state=open]:rotate-180`} />
               </div>
+              {!detailsSectionOpen && debt?.amount && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-left">{formatCurrency(debt.amount)} — {debt.case_number || 'Geen dossiernummer'}</p>
+              )}
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-3">
               <div>
@@ -2153,15 +2188,6 @@ const handleMarkVerjaringAsSent = async () => {
     );
   };
 
-  // Check if current view is a sub-view (letter, form, etc.) that should hide tabs
-  const isSubView = view !== 'choice' && view !== 'proposal';
-
-  const tabClass = (tab) => `flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-colors ${
-    activeTab === tab
-      ? 'bg-[#10b981] text-white'
-      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2a2a2a]'
-  }`;
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -2172,34 +2198,17 @@ const handleMarkVerjaringAsSent = async () => {
           {debt && <p className="text-muted-foreground">{debt.creditor_name}</p>}
         </DialogHeader>
 
-        {/* Tab Navigation - hide when in sub-views */}
-        {!isSubView && (
-          <div className="flex gap-1 bg-gray-100 dark:bg-[#2a2a2a] p-1 rounded-lg">
-            <button className={tabClass('keuzes')} onClick={() => { setActiveTab('keuzes'); setView('choice'); }}>
-              Keuzes
-            </button>
-            <button className={tabClass('stappenplan')} onClick={() => { setActiveTab('stappenplan'); setView('proposal'); }}>
-              Stappenplan
-            </button>
-            <button className={tabClass('vtlb')} onClick={() => setActiveTab('vtlb')}>
-              VTLB Berekening
-            </button>
-          </div>
-        )}
-
-        {/* Tab Content */}
-        {activeTab === 'keuzes' && view === 'choice' && renderChoiceView()}
-        {activeTab === 'stappenplan' && view === 'proposal' && renderProposalView()}
-        {activeTab === 'vtlb' && !isSubView && renderVtlbTab()}
+        {/* Main Content */}
+        {view === 'choice' && renderChoiceView()}
 
         {/* Sub-views (forms, letters, etc.) */}
         {view === 'payment-arrangement-form' && renderPaymentArrangementForm()}
         {view === 'payment-letter' && renderPaymentLetterView()}
-        {view === 'dispute' && <DisputeForm onGenerateLetter={handleGenerateDisputeLetter} onBack={() => { setView('choice'); setActiveTab('keuzes'); }} debt={debt} />}
-        {view === 'partial-recognition' && <PartialRecognitionForm debt={debt} onGenerateLetter={handleGeneratePartialLetter} onBack={() => { setView('choice'); setActiveTab('keuzes'); }} />}
-        {view === 'already-paid' && <AlreadyPaidForm debt={debt} onGenerateLetter={handleGenerateAlreadyPaidLetter} onBack={() => { setView('choice'); setActiveTab('keuzes'); }} />}
-        {view === 'verjaring' && <VerjaringForm debt={debt} onGenerateLetter={handleGenerateVerjaringLetter} onBack={() => { setView('choice'); setActiveTab('keuzes'); }} />}
-        {view === 'incassokosten' && <IncassokostenForm debt={debt} onGenerateLetter={handleGenerateIncassokostenLetter} onBack={() => { setView('choice'); setActiveTab('keuzes'); }} />}
+        {view === 'dispute' && <DisputeForm onGenerateLetter={handleGenerateDisputeLetter} onBack={() => { setView('choice'); }} debt={debt} />}
+        {view === 'partial-recognition' && <PartialRecognitionForm debt={debt} onGenerateLetter={handleGeneratePartialLetter} onBack={() => { setView('choice'); }} />}
+        {view === 'already-paid' && <AlreadyPaidForm debt={debt} onGenerateLetter={handleGenerateAlreadyPaidLetter} onBack={() => { setView('choice'); }} />}
+        {view === 'verjaring' && <VerjaringForm debt={debt} onGenerateLetter={handleGenerateVerjaringLetter} onBack={() => { setView('choice'); }} />}
+        {view === 'incassokosten' && <IncassokostenForm debt={debt} onGenerateLetter={handleGenerateIncassokostenLetter} onBack={() => { setView('choice'); }} />}
         {view === 'dispute-letter' && renderDisputeLetterView()}
         {view === 'partial-letter' && renderPartialLetterView()}
         {view === 'already-paid-letter' && renderAlreadyPaidLetterView()}
