@@ -173,7 +173,7 @@ export default function DebtWizard({ isOpen, onClose, onSave }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[480px] max-h-[90vh] flex flex-col bg-white dark:bg-[#0a0a0a] border-gray-200 dark:border-[#2a2a2a]">
+      <DialogContent className="sm:max-w-[480px] max-h-[90vh] flex flex-col bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-gray-900 dark:text-white">Nieuwe Schuld Toevoegen</DialogTitle>
           <div className="text-sm text-gray-500 dark:text-[#a1a1a1] pt-2">
@@ -191,7 +191,7 @@ export default function DebtWizard({ isOpen, onClose, onSave }) {
             </Button>
           )}
           {step < TOTAL_STEPS && (
-            <Button onClick={handleNext} disabled={!validateStep()} className="w-full sm:w-auto ml-auto bg-[#10b981] hover:bg-[#059669] text-black dark:text-black">
+            <Button onClick={handleNext} disabled={!validateStep()} className="w-full sm:w-auto ml-auto bg-[#10b981] hover:bg-[#059669] text-white">
               Volgende
             </Button>
           )}
@@ -199,7 +199,7 @@ export default function DebtWizard({ isOpen, onClose, onSave }) {
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className="w-full sm:w-auto bg-[#10b981] hover:bg-[#059669] text-black dark:text-black ml-auto"
+              className="w-full sm:w-auto bg-[#10b981] hover:bg-[#059669] text-white ml-auto"
             >
               {isSaving ? "Opslaan..." : "Opslaan"}
             </Button>
