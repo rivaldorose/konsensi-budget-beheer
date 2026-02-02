@@ -16,10 +16,10 @@ export default function WelcomeTour({ isOpen, onClose }) {
                     <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto">
                         <span className="text-4xl">🚀</span>
                     </div>
-                    <p className="text-gray-700 text-lg">Konsensi helpt je je financiën onder controle krijgen,
+                    <p className="text-gray-700 dark:text-gray-300 text-lg">Konsensi helpt je je financiën onder controle krijgen,
  zonder oordeel en op jouw tempo
       </p>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 dark:text-gray-400">
                         Laten we je laten zien hoe het werkt!
                     </p>
                 </div>
@@ -30,17 +30,17 @@ export default function WelcomeTour({ isOpen, onClose }) {
     description: 'Verdien punten en badges',
     content:
     <div className="space-y-4">
-                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-6 border-2 border-purple-200">
+                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg p-6 border-2 border-purple-200 dark:border-purple-800">
                         <div className="flex items-center gap-4 mb-4">
                             <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
                                 <Star className="w-8 h-8 text-white" fill="white" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-xl text-gray-900">Level Systeem</h3>
-                                <p className="text-sm text-gray-600">Verdien XP en level up!</p>
+                                <h3 className="font-bold text-xl text-gray-900 dark:text-white">Level Systeem</h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">Verdien XP en level up!</p>
                             </div>
                         </div>
-                        <ul className="space-y-2 text-sm text-gray-700">
+                        <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                             <li className="flex items-center gap-2">
                                 <Trophy className="w-4 h-4 text-yellow-500" />
                                 Prestaties behalen
@@ -55,7 +55,7 @@ export default function WelcomeTour({ isOpen, onClose }) {
                             </li>
                         </ul>
                     </div>
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
                         Elke stap die je zet wordt beloond met XP en badges. Hoe actiever je bent, hoe sneller je level stijgt!
                     </p>
                 </div>
@@ -66,21 +66,21 @@ export default function WelcomeTour({ isOpen, onClose }) {
     description: 'Je financiële overzicht',
     content:
     <div className="space-y-4">
-                    <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                        <h4 className="font-semibold text-gray-900 mb-2">💰 Inkomsten & Uitgaven</h4>
-                        <p className="text-sm text-gray-700">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">💰 Inkomsten & Uitgaven</h4>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
                             Houd je maandelijkse inkomsten en uitgaven bij voor een compleet overzicht.
                         </p>
                     </div>
-                    <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                        <h4 className="font-semibold text-gray-900 mb-2">🏺 Spaarpotjes</h4>
-                        <p className="text-sm text-gray-700">
+                    <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">🏺 Spaarpotjes</h4>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
                             Organiseer je geld in verschillende potjes voor specifieke doelen.
                         </p>
                     </div>
-                    <div className="bg-red-50 rounded-lg p-4 border border-red-200">
-                        <h4 className="font-semibold text-gray-900 mb-2">💳 Schulden Beheer</h4>
-                        <p className="text-sm text-gray-700">
+                    <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
+                        <h4 className="font-semibold text-gray-900 dark:text-white mb-2">💳 Schulden Beheer</h4>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
                             Krijg controle over je schulden met strategieën en betalingsplannen.
                         </p>
                     </div>
@@ -92,24 +92,24 @@ export default function WelcomeTour({ isOpen, onClose }) {
     description: 'Persoonlijke financiële tips',
     content:
     <div className="space-y-4">
-                    <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-lg p-6 border-2 border-cyan-200">
+                    <div className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 rounded-lg p-6 border-2 border-cyan-200 dark:border-cyan-800">
                         <div className="flex items-center gap-3 mb-4">
                             <span className="text-4xl">🤖</span>
                             <div>
-                                <h3 className="font-bold text-xl text-gray-900">YO-L Budget Coach</h3>
-                                <p className="text-sm text-gray-600">Je persoonlijke assistent</p>
+                                <h3 className="font-bold text-xl text-gray-900 dark:text-white">YO-L Budget Coach</h3>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">Je persoonlijke assistent</p>
                             </div>
                         </div>
-                        <p className="text-gray-700 mb-3">
+                        <p className="text-gray-700 dark:text-gray-300 mb-3">
                             Stel vragen, krijg advies en laat je begeleiden bij financiële beslissingen.
                         </p>
-                        <div className="bg-white rounded-lg p-3 border border-cyan-200">
-                            <p className="text-sm text-gray-600 italic">
+                        <div className="bg-white dark:bg-[#1a1a1a] rounded-lg p-3 border border-cyan-200 dark:border-cyan-800">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 italic">
                                 "Hoe kan ik €100 per maand besparen?"
                             </p>
                         </div>
                     </div>
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
                         De AI-coach analyseert je situatie en geeft gepersonaliseerde tips op basis van jouw data.
                     </p>
                 </div>
@@ -120,8 +120,8 @@ export default function WelcomeTour({ isOpen, onClose }) {
     description: 'Volg deze stappen',
     content:
     <div className="space-y-4">
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6 border-2 border-green-300">
-                        <h3 className="font-bold text-xl text-gray-900 mb-4">Start vandaag nog! 🚀</h3>
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-6 border-2 border-green-300 dark:border-green-800">
+                        <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-4">Start vandaag nog! 🚀</h3>
                         <ol className="space-y-3">
                             {[
           { num: 1, text: 'Voeg je inkomen toe', icon: '💰' },
@@ -134,7 +134,7 @@ export default function WelcomeTour({ isOpen, onClose }) {
                                     <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
                                         {step.num}
                                     </div>
-                                    <span className="text-gray-700">{step.icon} {step.text}</span>
+                                    <span className="text-gray-700 dark:text-gray-300">{step.icon} {step.text}</span>
                                 </li>
           )}
                         </ol>
@@ -178,10 +178,10 @@ export default function WelcomeTour({ isOpen, onClose }) {
             className="pt-6">
 
                         <div className="mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                                 {steps[currentStep].title}
                             </h2>
-                            <p className="text-gray-600">{steps[currentStep].description}</p>
+                            <p className="text-gray-600 dark:text-gray-400">{steps[currentStep].description}</p>
                         </div>
 
                         <div className="mb-6">

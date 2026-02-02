@@ -315,39 +315,39 @@ const TourTooltip = ({ step, stepIndex, totalSteps, targetRect, onNext, onPrev, 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4"
+          className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4"
         >
           {/* Close button */}
           <button 
             onClick={onClose}
-            className="absolute top-3 right-3 p-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="absolute top-3 right-3 p-1 hover:bg-gray-100 dark:hover:bg-[#2a2a2a] rounded-full transition-colors"
           >
-            <X className="w-5 h-5 text-gray-400" />
+            <X className="w-5 h-5 text-gray-400 dark:text-[#a1a1a1]" />
           </button>
-          
+
           {/* Progress dots */}
           <div className="flex gap-1 mb-4">
             {Array.from({ length: totalSteps }).map((_, i) => (
-              <div 
+              <div
                 key={i}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === stepIndex 
-                    ? 'w-6 bg-[var(--konsensi-primary)]' 
-                    : i < stepIndex 
-                      ? 'w-1.5 bg-[var(--konsensi-primary)]' 
-                      : 'w-1.5 bg-gray-200'
+                  i === stepIndex
+                    ? 'w-6 bg-[var(--konsensi-primary)]'
+                    : i < stepIndex
+                      ? 'w-1.5 bg-[var(--konsensi-primary)]'
+                      : 'w-1.5 bg-gray-200 dark:bg-[#3a3a3a]'
                 }`}
               />
             ))}
           </div>
-          
+
           {/* Content */}
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{step.title}</h3>
-          <p className="text-gray-600 mb-6">{step.content}</p>
-          
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{step.title}</h3>
+          <p className="text-gray-600 dark:text-[#a1a1a1] mb-6">{step.content}</p>
+
           {/* Navigation */}
           <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-400">
+            <div className="text-sm text-gray-400 dark:text-[#6b7280]">
               {stepIndex + 1} / {totalSteps}
             </div>
             
@@ -390,7 +390,7 @@ const TourTooltip = ({ step, stepIndex, totalSteps, targetRect, onNext, onPrev, 
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      className="fixed z-[9999] bg-white rounded-2xl shadow-2xl p-4"
+      className="fixed z-[9999] bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl p-4"
       style={{
         top: position.top,
         left: position.left,
@@ -399,36 +399,36 @@ const TourTooltip = ({ step, stepIndex, totalSteps, targetRect, onNext, onPrev, 
       }}
     >
       {/* Close button */}
-      <button 
+      <button
         onClick={onClose}
-        className="absolute top-3 right-3 p-1 hover:bg-gray-100 rounded-full transition-colors"
+        className="absolute top-3 right-3 p-1 hover:bg-gray-100 dark:hover:bg-[#2a2a2a] rounded-full transition-colors"
       >
-        <X className="w-5 h-5 text-gray-400" />
+        <X className="w-5 h-5 text-gray-400 dark:text-[#a1a1a1]" />
       </button>
-      
+
       {/* Progress dots */}
       <div className="flex gap-1 mb-4">
         {Array.from({ length: totalSteps }).map((_, i) => (
-          <div 
+          <div
             key={i}
             className={`h-1.5 rounded-full transition-all ${
-              i === stepIndex 
-                ? 'w-6 bg-[var(--konsensi-primary)]' 
-                : i < stepIndex 
-                  ? 'w-1.5 bg-[var(--konsensi-primary)]' 
-                  : 'w-1.5 bg-gray-200'
+              i === stepIndex
+                ? 'w-6 bg-[var(--konsensi-primary)]'
+                : i < stepIndex
+                  ? 'w-1.5 bg-[var(--konsensi-primary)]'
+                  : 'w-1.5 bg-gray-200 dark:bg-[#3a3a3a]'
             }`}
           />
         ))}
       </div>
-      
+
       {/* Content */}
-      <h3 className="text-xl font-bold text-gray-900 mb-2">{step.title}</h3>
-      <p className="text-gray-600 mb-6">{step.content}</p>
-      
+      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{step.title}</h3>
+      <p className="text-gray-600 dark:text-[#a1a1a1] mb-6">{step.content}</p>
+
       {/* Navigation */}
       <div className="flex items-center justify-between">
-        <div className="text-sm text-gray-400">
+        <div className="text-sm text-gray-400 dark:text-[#6b7280]">
           {stepIndex + 1} / {totalSteps}
         </div>
         

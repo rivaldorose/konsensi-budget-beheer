@@ -20,7 +20,7 @@ export default function Step4DateStatus({ formData, updateFormData }) {
           type="date"
           value={formData.origin_date}
           onChange={(e) => updateFormData({ origin_date: e.target.value })}
-          className="bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] text-gray-900 dark:text-white [color-scheme:dark]"
+          className="bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] text-gray-900 dark:text-white dark:[color-scheme:dark]"
         />
       </div>
       <div className="space-y-2">

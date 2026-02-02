@@ -6,7 +6,7 @@ const SummaryRow = ({ label, value, onEdit, step }) => (
   <div className="flex justify-between items-start py-3 border-b border-gray-100 dark:border-[#2a2a2a] last:border-b-0">
     <div>
       <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">{label}</p>
-      <p className="font-medium text-gray-900 dark:text-[#10b981]">{value || 'N.v.t.'}</p>
+      <p className="font-medium text-gray-900 dark:text-white">{value || 'N.v.t.'}</p>
     </div>
     {onEdit && (
       <Button
@@ -38,7 +38,7 @@ export default function Step6Summary({ formData, goToStep }) {
 
   return (
     <div className="space-y-4">
-       <h3 className="text-lg font-semibold text-gray-900 dark:text-[#10b981] pb-2">✅ Controleer je gegevens</h3>
+       <h3 className="text-lg font-semibold text-gray-900 dark:text-white pb-2">✅ Controleer je gegevens</h3>
 
       <div className="border border-gray-200 dark:border-[#2a2a2a] rounded-xl p-4 bg-white dark:bg-[#1a1a1a]">
         <SummaryRow 
