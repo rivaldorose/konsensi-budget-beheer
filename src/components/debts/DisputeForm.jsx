@@ -52,14 +52,14 @@ export default function DisputeForm({ onGenerateLetter, onBack }) {
       <h3 className="text-lg font-semibold">{t('dispute.why')}</h3>
       
       <RadioGroup value={reason} onValueChange={setReason}>
-        <div className="flex items-start space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-gray-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-300">
+        <div className="flex items-start space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-card-elevated has-[:checked]:bg-blue-50 dark:has-[:checked]:bg-blue-900/20 has-[:checked]:border-blue-300 dark:has-[:checked]:border-blue-700">
           <RadioGroupItem value="never_received" id="r1" />
           <div className="flex-1">
             <p className="font-medium">{t('dispute.neverReceived')}</p>
           </div>
         </div>
 
-        <div className="flex items-start space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-gray-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-300">
+        <div className="flex items-start space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-card-elevated has-[:checked]:bg-blue-50 dark:has-[:checked]:bg-blue-900/20 has-[:checked]:border-blue-300 dark:has-[:checked]:border-blue-700">
           <RadioGroupItem value="already_paid" id="r2" />
           <div className="flex-1">
             <p className="font-medium">{t('dispute.alreadyPaid')}</p>
@@ -72,7 +72,7 @@ export default function DisputeForm({ onGenerateLetter, onBack }) {
           </div>
         </div>
 
-        <div className="flex items-start space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-gray-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-300">
+        <div className="flex items-start space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-card-elevated has-[:checked]:bg-blue-50 dark:has-[:checked]:bg-blue-900/20 has-[:checked]:border-blue-300 dark:has-[:checked]:border-blue-700">
           <RadioGroupItem value="cancelled" id="r3" />
           <div className="flex-1">
             <p className="font-medium">{t('dispute.cancelled')}</p>
@@ -82,7 +82,7 @@ export default function DisputeForm({ onGenerateLetter, onBack }) {
           </div>
         </div>
 
-        <div className="flex items-start space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-gray-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-300">
+        <div className="flex items-start space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-card-elevated has-[:checked]:bg-blue-50 dark:has-[:checked]:bg-blue-900/20 has-[:checked]:border-blue-300 dark:has-[:checked]:border-blue-700">
           <RadioGroupItem value="amount_wrong" id="r4" />
           <div className="flex-1">
             <p className="font-medium">{t('dispute.amountWrong')}</p>
@@ -92,7 +92,7 @@ export default function DisputeForm({ onGenerateLetter, onBack }) {
           </div>
         </div>
 
-        <div className="flex items-start space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-gray-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-300">
+        <div className="flex items-start space-x-2 rounded-lg border p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-card-elevated has-[:checked]:bg-blue-50 dark:has-[:checked]:bg-blue-900/20 has-[:checked]:border-blue-300 dark:has-[:checked]:border-blue-700">
           <RadioGroupItem value="other" id="r5" />
           <div className="flex-1">
             <p className="font-medium">{t('dispute.otherReasonTitle')}</p>
@@ -103,14 +103,14 @@ export default function DisputeForm({ onGenerateLetter, onBack }) {
         </div>
       </RadioGroup>
 
-      <Card className="bg-amber-50 border-amber-200">
+      <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="font-bold text-amber-900">{t('dispute.dontForget')}</h4>
-              <p className="text-sm text-amber-800 mt-1 mb-3">{t('dispute.addAttachments')}</p>
-              <ul className="list-disc pl-5 space-y-1 text-sm text-amber-800">
+              <h4 className="font-bold text-amber-900 dark:text-amber-200">{t('dispute.dontForget')}</h4>
+              <p className="text-sm text-amber-800 dark:text-amber-300 mt-1 mb-3">{t('dispute.addAttachments')}</p>
+              <ul className="list-disc pl-5 space-y-1 text-sm text-amber-800 dark:text-amber-300">
                 <li><span className="font-semibold">{t('dispute.ifPaid')}</span> {t('dispute.proofOfPayment')}</li>
                 <li><span className="font-semibold">{t('dispute.ifCancelled')}</span> {t('dispute.cancellationConfirmation')}</li>
                 <li><span className="font-semibold">{t('dispute.ifContract')}</span> {t('dispute.contractOrCorrespondence')}</li>

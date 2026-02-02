@@ -625,7 +625,7 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                       <h2 className="text-lg font-semibold text-text-main dark:text-text-primary">Betalingsgeschiedenis</h2>
                     </div>
                     <div className="flex items-center gap-3">
-                      <button 
+                      <button
                         onClick={() => setShowPaymentModal(true)}
                         className="text-primary dark:text-primary-green text-sm font-semibold hover:underline"
                       >
@@ -636,30 +636,12 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                       </button>
                     </div>
                   </div>
-                  
+
                   {loadingPayments ? (
                     <div className="text-center py-8 text-text-light dark:text-text-tertiary">Laden...</div>
                   ) : payments.length === 0 ? (
-                    <div className="bg-[#F5F3FF] dark:bg-accent-purple/10 rounded-xl p-6 mt-4 border border-purple-100 dark:border-accent-purple/20 flex flex-col items-center text-center">
-                      <div className="bg-white/50 dark:bg-accent-purple/20 p-3 rounded-full mb-3">
-                        <span className="material-symbols-outlined text-accent-purple dark:text-accent-purple !text-5xl">description</span>
-                      </div>
-                      <h3 className="text-lg font-semibold text-text-main dark:text-text-primary mb-2">Start een Stappenplan</h3>
-                      <p className="text-sm text-text-muted dark:text-text-secondary mb-6 max-w-sm">
-                        Kies welke actie je wilt ondernemen om grip te krijgen op deze schuld.
-                      </p>
-                      <button 
-                        onClick={() => setShowArrangementModal(true)}
-                        className="w-full sm:w-auto px-8 h-12 rounded-xl text-white font-semibold flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] transition-transform"
-                        style={{ background: 'linear-gradient(90deg, #8B5CF6 0%, #60A5FA 100%)' }}
-                      >
-                        <span>Start Stappenplan</span>
-                        <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                      </button>
-                      <div className="flex items-center gap-2 mt-4 text-xs text-text-muted dark:text-text-tertiary italic">
-                        <span className="material-symbols-outlined text-primary dark:text-primary-green !text-sm filled-icon">check_circle</span>
-                        <span>In het stappenplan kun je verschillende brieven opstellen...</span>
-                      </div>
+                    <div className="text-center py-6 text-text-muted dark:text-text-tertiary text-sm">
+                      Nog geen betalingen geregistreerd.
                     </div>
                   ) : (
                     <div className="space-y-2 mt-4">
@@ -681,7 +663,32 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                   )}
                 </div>
 
-                {/* 3. Documenten Card */}
+                {/* 3. Stappenplan Card */}
+                <div className="bg-white dark:bg-dark-card rounded-xl shadow-card dark:shadow-soft p-6 hover:shadow-hover dark:hover:shadow-card transition-shadow duration-300">
+                  <div className="bg-[#F5F3FF] dark:bg-accent-purple/10 rounded-xl p-6 border border-purple-100 dark:border-accent-purple/20 flex flex-col items-center text-center">
+                    <div className="bg-white/50 dark:bg-accent-purple/20 p-3 rounded-full mb-3">
+                      <span className="material-symbols-outlined text-accent-purple dark:text-accent-purple !text-5xl">description</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-text-main dark:text-text-primary mb-2">Start een Stappenplan</h3>
+                    <p className="text-sm text-text-muted dark:text-text-secondary mb-6 max-w-sm">
+                      Kies welke actie je wilt ondernemen om grip te krijgen op deze schuld.
+                    </p>
+                    <button
+                      onClick={() => setShowArrangementModal(true)}
+                      className="w-full sm:w-auto px-8 h-12 rounded-xl text-white font-semibold flex items-center justify-center gap-2 shadow-lg hover:scale-[1.02] transition-transform"
+                      style={{ background: 'linear-gradient(90deg, #8B5CF6 0%, #60A5FA 100%)' }}
+                    >
+                      <span>Start Stappenplan</span>
+                      <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                    </button>
+                    <div className="flex items-center gap-2 mt-4 text-xs text-text-muted dark:text-text-tertiary italic">
+                      <span className="material-symbols-outlined text-primary dark:text-primary-green !text-sm filled-icon">check_circle</span>
+                      <span>In het stappenplan kun je verschillende brieven opstellen...</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. Documenten Card */}
                 <div className="bg-white dark:bg-dark-card rounded-xl shadow-card dark:shadow-soft p-6 hover:shadow-hover dark:hover:shadow-card transition-shadow duration-300">
                   <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center gap-2">

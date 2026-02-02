@@ -226,7 +226,7 @@ export default function IncassokostenForm({ debt, onGenerateLetter, onBack }) {
                         <CollapsibleContent className="space-y-3">
                             <div>
                                 <Label>Naam schuldeiser</Label>
-                                <Input value={debt?.creditor_name || ''} disabled className="bg-gray-50 dark:bg-[#2a2a2a]" />
+                                <Input value={debt?.creditor_name || ''} disabled className="bg-gray-50 dark:bg-card-elevated" />
                             </div>
                             <div>
                                 <Label htmlFor="ik_creditor_department">Afdeling (optioneel)</Label>
@@ -277,11 +277,11 @@ export default function IncassokostenForm({ debt, onGenerateLetter, onBack }) {
                         <CollapsibleContent className="space-y-3">
                             <div>
                                 <Label>Schuldbedrag</Label>
-                                <Input value={formatCurrency(debt?.amount || 0)} disabled className="bg-gray-50 dark:bg-[#2a2a2a]" />
+                                <Input value={formatCurrency(debt?.amount || 0)} disabled className="bg-gray-50 dark:bg-card-elevated" />
                             </div>
                             <div>
                                 <Label>Dossiernummer</Label>
-                                <Input value={debt?.case_number || 'Niet ingevuld'} disabled className="bg-gray-50 dark:bg-[#2a2a2a]" />
+                                <Input value={debt?.case_number || 'Niet ingevuld'} disabled className="bg-gray-50 dark:bg-card-elevated" />
                             </div>
                             <div>
                                 <Label htmlFor="ik_received_date">Datum ontvangst brief *</Label>

@@ -178,7 +178,7 @@ export default function AlreadyPaidForm({ debt, onGenerateLetter, onBack }) {
                         <CollapsibleContent className="space-y-3">
                             <div>
                                 <Label>Naam schuldeiser</Label>
-                                <Input value={debt?.creditor_name || ''} disabled className="bg-gray-50" />
+                                <Input value={debt?.creditor_name || ''} disabled className="bg-gray-50 dark:bg-card-elevated" />
                             </div>
                             <div>
                                 <Label htmlFor="creditor_department">Afdeling (optioneel)</Label>
@@ -223,11 +223,11 @@ export default function AlreadyPaidForm({ debt, onGenerateLetter, onBack }) {
                         <CollapsibleContent className="space-y-3">
                             <div>
                                 <Label>Schuldbedrag</Label>
-                                <Input value={`€${(debt?.amount || 0).toFixed(2)}`} disabled className="bg-gray-50" />
+                                <Input value={`€${(debt?.amount || 0).toFixed(2)}`} disabled className="bg-gray-50 dark:bg-card-elevated" />
                             </div>
                             <div>
                                 <Label>Dossiernummer</Label>
-                                <Input value={debt?.case_number || 'Niet ingevuld'} disabled className="bg-gray-50" />
+                                <Input value={debt?.case_number || 'Niet ingevuld'} disabled className="bg-gray-50 dark:bg-card-elevated" />
                             </div>
                             <div>
                                 <Label htmlFor="received_letter_date">Datum ontvangst brief schuldeiser</Label>
@@ -264,15 +264,15 @@ export default function AlreadyPaidForm({ debt, onGenerateLetter, onBack }) {
                 </Card>
             </Collapsible>
 
-            <Card className="bg-amber-50 border-amber-200">
+            <Card className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
                 <CardContent className="p-4 flex items-start gap-3">
-                    <AlertTriangle className="h-8 w-8 text-amber-600 flex-shrink-0" />
+                    <AlertTriangle className="h-8 w-8 text-amber-600 dark:text-amber-400 flex-shrink-0" />
                     <div>
-                        <h4 className="font-bold text-amber-900">BELANGRIJK: Bewijs toevoegen!</h4>
-                        <p className="text-sm text-amber-800 mt-1">
+                        <h4 className="font-bold text-amber-900 dark:text-amber-200">BELANGRIJK: Bewijs toevoegen!</h4>
+                        <p className="text-sm text-amber-800 dark:text-amber-300 mt-1">
                             Voeg je bankafschrift als bijlage toe aan de e-mail. Zonder bewijs zal de schuldeiser je melding waarschijnlijk negeren.
                         </p>
-                         <Button variant="link" size="sm" className="p-0 h-auto mt-1 text-amber-900">
+                         <Button variant="link" size="sm" className="p-0 h-auto mt-1 text-amber-900 dark:text-amber-200">
                            <Download className="w-3 h-3 mr-1"/> Hoe download ik een afschrift?
                         </Button>
                     </div>
