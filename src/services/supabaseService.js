@@ -36,11 +36,41 @@ export const supabaseService = {
 
     let query = supabase.from(table).select('*')
 
-    // Apply filters
+    // Apply filters with support for advanced operators
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         if (Array.isArray(value)) {
           query = query.in(key, value)
+        } else if (typeof value === 'object' && value.operator) {
+          // Support advanced operators like { operator: 'in', value: [...] }
+          switch (value.operator) {
+            case 'in':
+              query = query.in(key, value.value)
+              break
+            case 'neq':
+              query = query.neq(key, value.value)
+              break
+            case 'gt':
+              query = query.gt(key, value.value)
+              break
+            case 'gte':
+              query = query.gte(key, value.value)
+              break
+            case 'lt':
+              query = query.lt(key, value.value)
+              break
+            case 'lte':
+              query = query.lte(key, value.value)
+              break
+            case 'like':
+              query = query.like(key, value.value)
+              break
+            case 'ilike':
+              query = query.ilike(key, value.value)
+              break
+            default:
+              query = query.eq(key, value.value || value)
+          }
         } else {
           query = query.eq(key, value)
         }

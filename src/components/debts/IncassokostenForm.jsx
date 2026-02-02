@@ -51,12 +51,33 @@ export default function IncassokostenForm({ debt, onGenerateLetter, onBack }) {
             try {
                 const userData = await User.me();
                 setUser(userData);
+
+                // Parse user name from voornaam/achternaam or full_name
+                const fullName = [userData.voornaam, userData.achternaam].filter(Boolean).join(' ') || userData.full_name || '';
+
+                // Parse adres field: may contain "Straat 123, 1234AB Plaats"
+                let parsedAddress = userData.adres || userData.address || '';
+                let parsedPostcode = userData.postal_code || '';
+                let parsedCity = userData.city || '';
+
+                if (parsedAddress && (!parsedPostcode || !parsedCity)) {
+                    const addressParts = parsedAddress.split(',').map(s => s.trim());
+                    if (addressParts.length >= 2) {
+                        parsedAddress = addressParts[0];
+                        const postcodeMatch = addressParts[1].match(/^(\d{4}\s?[A-Za-z]{2})\s+(.+)$/);
+                        if (postcodeMatch) {
+                            parsedPostcode = parsedPostcode || postcodeMatch[1];
+                            parsedCity = parsedCity || postcodeMatch[2];
+                        }
+                    }
+                }
+
                 setFormData(prev => ({
                     ...prev,
-                    user_name: userData.full_name || '',
-                    user_address: userData.address || '',
-                    user_postcode: userData.postal_code || '',
-                    user_city: userData.city || '',
+                    user_name: fullName,
+                    user_address: parsedAddress,
+                    user_postcode: parsedPostcode,
+                    user_city: parsedCity,
                     user_email: userData.email || '',
                     // Auto-fill creditor data from debt
                     creditor_address: debt?.creditor_address || prev.creditor_address || '',
@@ -64,7 +85,7 @@ export default function IncassokostenForm({ debt, onGenerateLetter, onBack }) {
                     creditor_city: debt?.creditor_city || prev.creditor_city || '',
                 }));
                 // Auto-collapse sections when user data is filled
-                if (userData.full_name && userData.address) {
+                if (fullName && parsedAddress) {
                     setUserSectionOpen(false);
                 }
                 // Collapse creditor section - name is always known
