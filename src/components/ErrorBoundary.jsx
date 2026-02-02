@@ -42,6 +42,17 @@ export class ErrorBoundary extends React.Component {
             >
               Pagina opnieuw laden
             </button>
+            {this.state.error && (
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+                  Technische details
+                </summary>
+                <pre className="mt-2 p-3 bg-gray-100 dark:bg-[#0a0a0a] rounded-lg text-xs text-red-600 dark:text-red-400 overflow-auto max-h-40 whitespace-pre-wrap break-words">
+                  {this.state.error.toString()}
+                  {this.state.errorInfo?.componentStack}
+                </pre>
+              </details>
+            )}
           </div>
         </div>
       );
