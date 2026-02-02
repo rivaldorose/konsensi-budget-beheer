@@ -10,15 +10,15 @@ import { berekenMaxIncasso } from '@/components/utils/debtCalculators';
 
 const Section = ({ title, children }) => (
     <div className="space-y-4">
-        <h3 className="text-sm font-semibold uppercase text-gray-500 tracking-wider">{title}</h3>
+        <h3 className="text-sm font-semibold uppercase text-gray-500 dark:text-gray-400 tracking-wider">{title}</h3>
         <div className="space-y-4">{children}</div>
     </div>
 );
 
 const BreakdownRow = ({ label, value }) => (
     <div className="flex justify-between items-center text-sm">
-        <span className="text-gray-600">{label}:</span>
-        <span className="font-medium text-gray-900">€{value.toFixed(2)}</span>
+        <span className="text-gray-600 dark:text-gray-400">{label}:</span>
+        <span className="font-medium text-gray-900 dark:text-gray-100">€{value.toFixed(2)}</span>
     </div>
 );
 
@@ -145,7 +145,7 @@ export default function PartialRecognitionForm({ debt, onGenerateLetter, onBack 
             </Section>
 
             <Section title="Jouw berekening">
-                 <Card className="bg-gray-50">
+                 <Card className="bg-gray-50 dark:bg-card-elevated">
                     <CardContent className="p-4 space-y-2">
                         <BreakdownRow label="Hoofdsom erkend" value={erkend.hoofdsom} />
                         <BreakdownRow label="Rente erkend" value={erkend.rente} />
@@ -174,7 +174,7 @@ export default function PartialRecognitionForm({ debt, onGenerateLetter, onBack 
                         <div className="text-2xl font-bold">€{wettelijkMaxIncasso.toFixed(2)}</div>
                         <p className="text-xs text-muted-foreground">Volgens Besluit Incassokosten (BIK)</p>
                          {incassoGevorderd > wettelijkMaxIncasso && (
-                            <div className="mt-2 p-2 bg-red-50 text-red-700 border border-red-200 rounded-md text-xs flex items-start gap-2">
+                            <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 rounded-md text-xs flex items-start gap-2">
                                <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                                <span>De gevorderde incassokosten (€{incassoGevorderd.toFixed(2)}) zijn hoger dan het wettelijk maximum. Je kunt dit betwisten.</span>
                             </div>

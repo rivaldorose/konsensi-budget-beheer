@@ -104,10 +104,10 @@ export default function VerjaringForm({ debt, onGenerateLetter, onBack }) {
                 <p className="text-sm text-muted-foreground">Vul de gegevens in volgens het Juridisch Loket template.</p>
             </div>
 
-            <Card className="bg-yellow-50 border-yellow-200">
+            <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
                 <CardContent className="p-4 flex items-start gap-3">
-                    <AlertTriangle className="h-5 w-5 text-yellow-600 flex-shrink-0" />
-                    <div className="text-sm text-yellow-800">
+                    <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
+                    <div className="text-sm text-yellow-800 dark:text-yellow-200">
                         <p className="font-semibold mb-1">Let op: Verjaring is complex</p>
                         <p>Deze brief is geschikt als je denkt dat de schuld verjaard is. De Juridisch Loket template vraagt de schuldeiser om bewijs als ze denken dat het niet verjaard is.</p>
                     </div>
@@ -183,7 +183,7 @@ export default function VerjaringForm({ debt, onGenerateLetter, onBack }) {
                         <CollapsibleContent className="space-y-3">
                             <div>
                                 <Label>Naam schuldeiser</Label>
-                                <Input value={debt?.creditor_name || ''} disabled className="bg-gray-50" />
+                                <Input value={debt?.creditor_name || ''} disabled className="bg-gray-50 dark:bg-card-elevated" />
                             </div>
                             <div>
                                 <Label htmlFor="creditor_department">Afdeling (optioneel)</Label>
@@ -234,11 +234,11 @@ export default function VerjaringForm({ debt, onGenerateLetter, onBack }) {
                         <CollapsibleContent className="space-y-3">
                             <div>
                                 <Label>Schuldbedrag</Label>
-                                <Input value={`€${(debt?.amount || 0).toFixed(2)}`} disabled className="bg-gray-50" />
+                                <Input value={`€${(debt?.amount || 0).toFixed(2)}`} disabled className="bg-gray-50 dark:bg-card-elevated" />
                             </div>
                             <div>
                                 <Label>Dossiernummer</Label>
-                                <Input value={debt?.case_number || 'Niet ingevuld'} disabled className="bg-gray-50" />
+                                <Input value={debt?.case_number || 'Niet ingevuld'} disabled className="bg-gray-50 dark:bg-card-elevated" />
                             </div>
                             <div>
                                 <Label htmlFor="received_letter_date">Datum ontvangst brief schuldeiser *</Label>
@@ -250,11 +250,11 @@ export default function VerjaringForm({ debt, onGenerateLetter, onBack }) {
                 </Card>
             </Collapsible>
 
-            <Card className="bg-blue-50 border-blue-200">
+            <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
                 <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                        <AlertTriangle className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                        <div className="text-sm text-blue-800">
+                        <AlertTriangle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                        <div className="text-sm text-blue-800 dark:text-blue-200">
                             <p className="font-semibold mb-1">💡 Tip van het Juridisch Loket</p>
                             <p>Deze brief legt de bewijslast bij de schuldeiser. Als zij niet binnen 14 dagen met bewijs komen dat de schuld NIET verjaard is, mag je ervan uitgaan dat het dossier wordt gesloten.</p>
                         </div>
