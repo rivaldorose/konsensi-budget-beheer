@@ -478,11 +478,11 @@ Bijlage: kopie invorderingsbrief`;
       const currentUser = await UserEntity.me(); // Use UserEntity
       
       const [existingArrangement, proposals, allIncomes, allCosts, allDebts] = await Promise.all([
-        ArrangementProgress.filter({ debt_id: debt.id }, '-created_date', 1).then(res => res[0]),
-        PaymentPlanProposal.filter({ debt_id: debt.id, template_type: { operator: 'in', value: ['dispute', 'partial_recognition', 'already_paid', 'verjaring'] } }, '-sent_date', 1),
-        Income.filter({ user_id: currentUser.id }),
-        MonthlyCost.filter({ user_id: currentUser.id }),
-        Debt.filter({ user_id: currentUser.id })
+        ArrangementProgress.filter({ debt_id: debt.id }, '-created_date', 1).then(res => res[0]).catch(() => null),
+        PaymentPlanProposal.filter({ debt_id: debt.id, template_type: { operator: 'in', value: ['dispute', 'partial_recognition', 'already_paid', 'verjaring'] } }, '-sent_date', 1).catch(() => []),
+        Income.filter({ user_id: currentUser.id }).catch(() => []),
+        MonthlyCost.filter({ user_id: currentUser.id }).catch(() => []),
+        Debt.filter({ user_id: currentUser.id }).catch(() => [])
       ]);
       
       const latestProposal = proposals[0];
@@ -501,7 +501,7 @@ Bijlage: kopie invorderingsbrief`;
       
       setUser(currentUser);
 
-      const vtblCalcResult = await vtblService.calculateVtbl(allIncomes, allCosts, allDebts);
+      const vtblCalcResult = await vtblService.calculateVtbl(allIncomes || [], allCosts || [], allDebts || []).catch(() => null);
 
       const { 
         vastInkomen = 0, 
@@ -549,11 +549,16 @@ Bijlage: kopie invorderingsbrief`;
 
       let arr = existingArrangement;
       if (!arr) {
-        arr = await ArrangementProgress.create({ 
-          debt_id: debt.id,
-          vtbl_calculation: calc,
-          proposed_amount: calc.voorstel
-        });
+        try {
+          arr = await ArrangementProgress.create({
+            debt_id: debt.id,
+            vtbl_calculation: calc,
+            proposed_amount: calc.voorstel
+          });
+        } catch (arrError) {
+          console.warn("Could not create arrangement progress:", arrError);
+          arr = { step_1_completed: false, step_2_completed: false, step_3_completed: false };
+        }
       }
       setArrangement(arr);
       
@@ -597,11 +602,8 @@ Bijlage: kopie invorderingsbrief`;
 
     } catch (error) {
       console.error("Error loading stappenplan data:", error);
-      toast({
-        title: "Fout",
-        description: "Kon gegevens voor stappenplan niet laden.",
-        variant: "destructive",
-      });
+      // Don't block the user with an error toast - they can still use the forms
+      // The choice view will still work even without VTBL calculation
     } finally {
       setLoading(false);
     }
@@ -1296,7 +1298,7 @@ const handleMarkVerjaringAsSent = async () => {
                         </div>
                     </CardContent>
                 </Card>
-                 <Button variant="ghost" onClick={() => { setView('proposal'); setModificationType(''); }} className="w-full">
+                 <Button variant="ghost" onClick={() => { loadUserDataIntoForm(); setView('payment-arrangement-form'); setModificationType(''); }} className="w-full">
                     Toch een nieuwe regeling voor een andere schuld starten?
                  </Button>
             </div>
@@ -1306,8 +1308,8 @@ const handleMarkVerjaringAsSent = async () => {
     return (
         <div className="space-y-4 pt-4">
             <h3 className="text-lg font-semibold text-center">Wat is de situatie met {debt.creditor_name}?</h3>
-            
-            {/* 🆕 NIEUWE OPTIE: JURIDISCH LOKET BETALINGSREGELING */}
+
+            {/* BETALINGSREGELING - met VTBL voorstel automatisch ingevuld */}
             <Card onClick={() => {
               loadUserDataIntoForm();
               setView('payment-arrangement-form');
@@ -1316,17 +1318,19 @@ const handleMarkVerjaringAsSent = async () => {
                     <FileText className="w-8 h-8 text-green-600 dark:text-green-400"/>
                     <div>
                         <h4 className="font-bold">📋 Betalingsregeling Opstellen</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Template van het Juridisch Loket - professioneel en volledig.</p>
-                    </div>
-                </CardContent>
-            </Card>
-
-            <Card onClick={() => { setView('proposal'); setModificationType(''); }} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
-                <CardContent className="p-4 flex items-start gap-4">
-                    <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400"/>
-                    <div>
-                        <h4 className="font-bold">Automatisch Voorstel (VTBL)</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Laat ons een voorstel genereren op basis van je budget.</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Template van het Juridisch Loket — automatisch voorstel op basis van je VTBL berekening.
+                        </p>
+                        {calculation?.voorstel > 0 && (
+                          <p className="text-xs text-green-600 dark:text-green-400 mt-1 font-medium">
+                            💡 VTBL voorstel: {formatCurrency(calculation.voorstel)}/maand (~{calculation.looptijd} maanden)
+                          </p>
+                        )}
+                        {calculation && !calculation.isHaalbaar && !calculation.canPayInFull && (
+                          <p className="text-xs text-orange-600 dark:text-orange-400 mt-1 font-medium">
+                            ⚠️ Geen afloscapaciteit — pauzeringsverzoek wordt voorgesteld
+                          </p>
+                        )}
                     </div>
                 </CardContent>
             </Card>
@@ -1811,10 +1815,44 @@ const handleMarkVerjaringAsSent = async () => {
       <Button variant="ghost" onClick={() => { setView('choice'); }}>{'< Terug naar keuzes'}</Button>
       <h3 className="text-lg font-semibold">📋 Betalingsregelingsbrief Opstellen</h3>
       
+      {/* VTBL voorstel tonen als berekening beschikbaar is */}
+      {calculation && (
+        <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+          <CardContent className="p-4">
+            {calculation.canPayInFull ? (
+              <div>
+                <p className="text-sm font-semibold text-green-800 dark:text-green-200">✅ Je kunt deze schuld in één keer betalen!</p>
+                <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                  Schuldbedrag: {formatCurrency(debt?.amount || 0)} — je hebt genoeg afloscapaciteit.
+                </p>
+              </div>
+            ) : calculation.isHaalbaar ? (
+              <div>
+                <p className="text-sm font-semibold text-green-800 dark:text-green-200">
+                  💡 VTBL Voorstel: {formatCurrency(calculation.voorstel)}/maand (~{calculation.looptijd} maanden)
+                </p>
+                <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                  Afloscapaciteit: {formatCurrency(calculation.aflosCapaciteit)} — Ruimte voor nieuw: {formatCurrency(calculation.ruimteVoorNieuw)}
+                </p>
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm font-semibold text-orange-800 dark:text-orange-200">
+                  ⚠️ Geen afloscapaciteit beschikbaar — pauzeringsverzoek wordt voorgesteld
+                </p>
+                <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
+                  Je volledige capaciteit is al benut voor bestaande regelingen.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
         <CardContent className="p-4">
           <p className="text-sm text-blue-800 dark:text-blue-200">
-            💡 <strong>Template van het Juridisch Loket</strong> - Vul de gegevens in en we genereren een professionele brief voor je.
+            📋 <strong>Template van het Juridisch Loket</strong> — Jouw gegevens en schuldeiser zijn automatisch ingevuld. Klik op de secties om te wijzigen.
           </p>
         </CardContent>
       </Card>
@@ -2198,8 +2236,18 @@ const handleMarkVerjaringAsSent = async () => {
           {debt && <p className="text-muted-foreground">{debt.creditor_name}</p>}
         </DialogHeader>
 
+        {/* Loading state */}
+        {loading && view === 'choice' && (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 animate-spin text-green-600 mx-auto mb-3" />
+              <p className="text-sm text-gray-500 dark:text-gray-400">Gegevens laden...</p>
+            </div>
+          </div>
+        )}
+
         {/* Main Content */}
-        {view === 'choice' && renderChoiceView()}
+        {!loading && view === 'choice' && renderChoiceView()}
 
         {/* Sub-views (forms, letters, etc.) */}
         {view === 'payment-arrangement-form' && renderPaymentArrangementForm()}
