@@ -28,13 +28,13 @@ import { formatCurrency } from "@/components/utils/formatters";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'; // Added from outline
 
 const StepHeader = ({ step, title, subtitle, isCompleted, isCurrent }) => (
-  <div className={`flex items-start gap-4 p-4 rounded-lg transition-all ${isCurrent ? 'bg-green-50 border-green-200' : 'bg-gray-50'}`}>
-    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isCompleted ? 'bg-green-500' : 'bg-gray-300'}`}>
-      {isCompleted ? <CheckCircle2 className="w-6 h-6 text-white" /> : <span className="text-lg font-bold text-gray-600">{step}</span>}
+  <div className={`flex items-start gap-4 p-4 rounded-lg transition-all ${isCurrent ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-50 dark:bg-[#2a2a2a]'}`}>
+    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isCompleted ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-700'}`}>
+      {isCompleted ? <CheckCircle2 className="w-6 h-6 text-white" /> : <span className="text-lg font-bold text-gray-600 dark:text-gray-400 dark:text-gray-300">{step}</span>}
     </div>
     <div>
-      <h3 className="font-bold text-gray-900">{title}</h3>
-      <p className="text-sm text-gray-600">{subtitle}</p>
+      <h3 className="font-bold text-gray-900 dark:text-white">{title}</h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400">{subtitle}</p>
     </div>
   </div>
 );
@@ -1057,30 +1057,30 @@ const handleMarkVerjaringAsSent = async () => {
         return (
             <div className="space-y-4 pt-4">
                 <h3 className="text-lg font-semibold text-center">Wat wil je aanpassen aan je regeling met {debt.creditor_name}?</h3>
-                <Card onClick={() => {setView('lowering_amount'); setModificationType('lowering_amount');}} className="cursor-pointer hover:bg-gray-50">
+                <Card onClick={() => {setView('lowering_amount'); setModificationType('lowering_amount');}} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
                     <CardContent className="p-4 flex items-start gap-4">
                         <ChevronsRight className="w-8 h-8 text-orange-600"/>
                         <div>
                             <h4 className="font-bold">Verlaging maandbedrag</h4>
-                            <p className="text-sm text-gray-600">Als je het huidige bedrag niet meer kunt betalen.</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Als je het huidige bedrag niet meer kunt betalen.</p>
                         </div>
                     </CardContent>
                 </Card>
-                <Card onClick={() => {setView('payment_holiday'); setModificationType('payment_holiday');}} className="cursor-pointer hover:bg-gray-50">
+                <Card onClick={() => {setView('payment_holiday'); setModificationType('payment_holiday');}} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
                     <CardContent className="p-4 flex items-start gap-4">
-                        <Clock className="w-8 h-8 text-blue-600"/>
+                        <Clock className="w-8 h-8 text-blue-600 dark:text-blue-400"/>
                         <div>
                             <h4 className="font-bold">Betalingsvakantie</h4>
-                            <p className="text-sm text-gray-600">Pauzeer je betalingen tijdelijk door onvoorziene omstandigheden.</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Pauzeer je betalingen tijdelijk door onvoorziene omstandigheden.</p>
                         </div>
                     </CardContent>
                 </Card>
-                <Card onClick={() => {setView('stop_debt_counseling'); setModificationType('stop_debt_counseling');}} className="cursor-pointer hover:bg-gray-50">
+                <Card onClick={() => {setView('stop_debt_counseling'); setModificationType('stop_debt_counseling');}} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
                     <CardContent className="p-4 flex items-start gap-4">
-                        <AlertTriangle className="w-8 h-8 text-red-600"/>
+                        <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400"/>
                         <div>
                             <h4 className="font-bold">Regeling stoppen & schuldhulp</h4>
-                            <p className="text-sm text-gray-600">Als je de regeling niet meer kunt voortzetten en professionele hulp zoekt.</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Als je de regeling niet meer kunt voortzetten en professionele hulp zoekt.</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -1099,58 +1099,58 @@ const handleMarkVerjaringAsSent = async () => {
             <Card onClick={() => {
               loadUserDataIntoForm();
               setView('payment-arrangement-form');
-            }} className="cursor-pointer hover:bg-gray-50 border-2 border-green-200">
+            }} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a] border-2 border-green-200 dark:border-green-800">
                 <CardContent className="p-4 flex items-start gap-4">
-                    <FileText className="w-8 h-8 text-green-600"/>
+                    <FileText className="w-8 h-8 text-green-600 dark:text-green-400"/>
                     <div>
                         <h4 className="font-bold">📋 Betalingsregeling Opstellen</h4>
-                        <p className="text-sm text-gray-600">Template van het Juridisch Loket - professioneel en volledig.</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Template van het Juridisch Loket - professioneel en volledig.</p>
                     </div>
                 </CardContent>
             </Card>
 
-            <Card onClick={() => { setView('proposal'); setModificationType(''); }} className="cursor-pointer hover:bg-gray-50">
+            <Card onClick={() => { setView('proposal'); setModificationType(''); }} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
                 <CardContent className="p-4 flex items-start gap-4">
-                    <BookOpen className="w-8 h-8 text-blue-600"/>
+                    <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400"/>
                     <div>
                         <h4 className="font-bold">Automatisch Voorstel (VTBL)</h4>
-                        <p className="text-sm text-gray-600">Laat ons een voorstel genereren op basis van je budget.</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Laat ons een voorstel genereren op basis van je budget.</p>
                     </div>
                 </CardContent>
             </Card>
-             <Card onClick={() => setView('already-paid')} className="cursor-pointer hover:bg-gray-50">
+             <Card onClick={() => setView('already-paid')} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
                 <CardContent className="p-4 flex items-start gap-4">
-                    <CheckCircle2 className="w-8 h-8 text-blue-600"/>
+                    <CheckCircle2 className="w-8 h-8 text-blue-600 dark:text-blue-400"/>
                     <div>
                         <h4 className="font-bold">Ik heb dit al betaald</h4>
-                        <p className="text-sm text-gray-600">We sturen een betalingsbewijs naar de schuldeiser.</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">We sturen een betalingsbewijs naar de schuldeiser.</p>
                     </div>
                 </CardContent>
             </Card>
-             <Card onClick={() => setView('partial-recognition')} className="cursor-pointer hover:bg-gray-50">
+             <Card onClick={() => setView('partial-recognition')} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
                 <CardContent className="p-4 flex items-start gap-4">
                     <FileWarning className="w-8 h-8 text-yellow-600"/>
                     <div>
                         <h4 className="font-bold">Het bedrag klopt niet (gedeeltelijk)</h4>
-                        <p className="text-sm text-gray-600">We erkennen een deel van de schuld en betwisten de rest.</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">We erkennen een deel van de schuld en betwisten de rest.</p>
                     </div>
                 </CardContent>
             </Card>
-            <Card onClick={() => setView('verjaring')} className="cursor-pointer hover:bg-gray-50">
+            <Card onClick={() => setView('verjaring')} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
                 <CardContent className="p-4 flex items-start gap-4">
                     <Clock className="w-8 h-8 text-purple-600"/>
                     <div>
                         <h4 className="font-bold">De schuld is te oud (verjaard)</h4>
-                        <p className="text-sm text-gray-600">We controleren de verjaringstermijn en stellen een brief op.</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">We controleren de verjaringstermijn en stellen een brief op.</p>
                     </div>
                 </CardContent>
             </Card>
-            <Card onClick={() => setView('dispute')} className="cursor-pointer hover:bg-gray-50">
+            <Card onClick={() => setView('dispute')} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
                 <CardContent className="p-4 flex items-start gap-4">
                     <MessageSquareWarning className="w-8 h-8 text-orange-600"/>
                     <div>
                         <h4 className="font-bold">Ik erken de schuld NIET</h4>
-                        <p className="text-sm text-gray-600">We stellen een brief op om de schuld volledig te betwisten.</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">We stellen een brief op om de schuld volledig te betwisten.</p>
                     </div>
                 </CardContent>
             </Card>
@@ -1162,7 +1162,7 @@ const handleMarkVerjaringAsSent = async () => {
     <div className="space-y-4">
       <Button variant="ghost" onClick={() => setView('choice')}>{'< Terug naar keuzes'}</Button>
       <h3 className="text-lg font-semibold">Verlaging maandbedrag</h3>
-      <p className="text-sm text-gray-600">Je huidige regeling is {formatCurrency(debt.monthly_payment || 0)} per maand. Wat is het nieuwe bedrag dat je maandelijks wél kunt betalen?</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400">Je huidige regeling is {formatCurrency(debt.monthly_payment || 0)} per maand. Wat is het nieuwe bedrag dat je maandelijks wél kunt betalen?</p>
       <div>
         <Label htmlFor="newAmount">Nieuw maandbedrag</Label>
         <Input 
@@ -1190,7 +1190,7 @@ const handleMarkVerjaringAsSent = async () => {
     <div className="space-y-4">
       <Button variant="ghost" onClick={() => setView('choice')}>{'< Terug naar keuzes'}</Button>
       <h3 className="text-lg font-semibold">Betalingsvakantie</h3>
-      <p className="text-sm text-gray-600">Voor hoeveel maanden wil je de betalingen pauzeren? (Normaal is 1-3 maanden)</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400">Voor hoeveel maanden wil je de betalingen pauzeren? (Normaal is 1-3 maanden)</p>
       <div>
         <Label htmlFor="duration">Aantal maanden</Label>
         <Input 
@@ -1218,12 +1218,12 @@ const handleMarkVerjaringAsSent = async () => {
      <div className="space-y-4">
       <Button variant="ghost" onClick={() => setView('choice')}>{'< Terug naar keuzes'}</Button>
       <h3 className="text-lg font-semibold">Stopzetten regeling & aanmelden schuldhulp</h3>
-      <Card className="bg-yellow-50 border-yellow-200">
+      <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
         <CardContent className="p-4">
-            <p className="text-sm text-yellow-800">Dit is een serieuze stap. De brief informeert de schuldeiser dat je stopt met betalen en dat een professionele schuldhulpverlener contact zal opnemen.</p>
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">Dit is een serieuze stap. De brief informeert de schuldeiser dat je stopt met betalen en dat een professionele schuldhulpverlener contact zal opnemen.</p>
         </CardContent>
       </Card>
-      <p className="text-sm text-gray-600">Je kunt in de gegenereerde brief zelf invullen bij welke instantie je je hebt aangemeld.</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400">Je kunt in de gegenereerde brief zelf invullen bij welke instantie je je hebt aangemeld.</p>
       <Button 
         onClick={() => {
             setLetterContent(generateStopCounselingLetter(user, debt));
@@ -1239,11 +1239,11 @@ const handleMarkVerjaringAsSent = async () => {
   const renderModificationLetterView = () => (
     <div className="space-y-4">
       <Button variant="ghost" onClick={() => setView('choice')} className="mb-2">{'< Terug naar keuzes'}</Button>
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-blue-800">Gebruik deze brief om per e-mail of post naar de schuldeiser te sturen. Pas de tekst aan waar nodig.</p>
+            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-blue-800 dark:text-blue-200">Gebruik deze brief om per e-mail of post naar de schuldeiser te sturen. Pas de tekst aan waar nodig.</p>
           </div>
         </CardContent>
       </Card>
@@ -1251,7 +1251,7 @@ const handleMarkVerjaringAsSent = async () => {
       <Textarea 
         value={letterContent}
         onChange={(e) => setLetterContent(e.target.value)}
-        className="h-64 text-sm bg-white"
+        className="h-64 text-sm bg-white dark:bg-[#1a1a1a] dark:text-white dark:border-[#2a2a2a]"
       />
 
       <div className="flex gap-2">
@@ -1282,22 +1282,22 @@ const handleMarkVerjaringAsSent = async () => {
     if (calculation.canPayInFull) {
         return (
             <div className="space-y-4">
-                <Card className="bg-green-50 border-green-200">
+                <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
                     <CardContent className="p-4">
-                        <h4 className="font-semibold text-green-800 mb-2">{t('debtSuggestion.canPayInFullTitle')}</h4>
-                        <p className="text-sm text-green-700">{t('debtSuggestion.canPayInFullInfo')}</p>
+                        <h4 className="font-semibold text-green-800 dark:text-green-200 mb-2">{t('debtSuggestion.canPayInFullTitle')}</h4>
+                        <p className="text-sm text-green-700 dark:text-green-300">{t('debtSuggestion.canPayInFullInfo')}</p>
                     </CardContent>
                 </Card>
                  <Card>
                     <CardContent className="p-4 space-y-2 text-sm">
                         <div className="flex justify-between"><span>{t('debtSuggestion.debtAmountLabel')}:</span> <span className="font-medium">{formatCurrency(calculation.debtAmount)}</span></div>
-                        <div className="flex justify-between"><span>{t('debtSuggestion.availableAmountLabel')}:</span> <span className="font-medium text-green-600">{formatCurrency(calculation.ruimteVoorNieuw)}</span></div>
+                        <div className="flex justify-between"><span>{t('debtSuggestion.availableAmountLabel')}:</span> <span className="font-medium text-green-600 dark:text-green-400">{formatCurrency(calculation.ruimteVoorNieuw)}</span></div>
                     </CardContent>
                 </Card>
-                <Card className="bg-gray-50">
+                <Card className="bg-gray-50 dark:bg-[#2a2a2a]">
                     <CardContent className="p-4">
                         <p className="text-sm font-semibold mb-2">💡 {t('debtSuggestion.adviceTitle')}:</p>
-                        <p className="text-sm text-gray-800">{t('debtSuggestion.adviceContent')}</p>
+                        <p className="text-sm text-gray-800 dark:text-gray-200">{t('debtSuggestion.adviceContent')}</p>
                     </CardContent>
                 </Card>
                 {!arrangement?.step_1_completed && (
@@ -1313,17 +1313,17 @@ const handleMarkVerjaringAsSent = async () => {
     return (
         <div className="space-y-4">
             {calculation.isHaalbaar ? (
-                <Card className="bg-green-50 border-green-200">
+                <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
                     <CardContent className="p-4">
-                        <h4 className="font-semibold text-green-800 mb-2">✅ Goed nieuws! Er is ruimte voor een regeling.</h4>
-                        <p className="text-sm text-green-700">Op basis van je inkomsten en lasten, kunnen we een realistisch voorstel doen.</p>
+                        <h4 className="font-semibold text-green-800 dark:text-green-200 mb-2">✅ Goed nieuws! Er is ruimte voor een regeling.</h4>
+                        <p className="text-sm text-green-700 dark:text-green-300">Op basis van je inkomsten en lasten, kunnen we een realistisch voorstel doen.</p>
                     </CardContent>
                 </Card>
             ) : (
-                <Card className="bg-orange-50 border-orange-200">
+                <Card className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
                     <CardContent className="p-4">
-                        <h4 className="font-semibold text-orange-800 mb-2">🚨 Let op: Geen financiële ruimte.</h4>
-                        <p className="text-sm text-orange-700">Je budget is volledig benut. We maken een 'schuldrust' brief om tijd te winnen.</p>
+                        <h4 className="font-semibold text-orange-800 dark:text-orange-200 mb-2">🚨 Let op: Geen financiële ruimte.</h4>
+                        <p className="text-sm text-orange-700 dark:text-orange-300">Je budget is volledig benut. We maken een 'schuldrust' brief om tijd te winnen.</p>
                     </CardContent>
                 </Card>
             )}
@@ -1333,10 +1333,10 @@ const handleMarkVerjaringAsSent = async () => {
                     <div className="flex justify-between"><span>Vast inkomen:</span> <span className="font-medium">{formatCurrency(calculation.vastInkomen)}</span></div>
                     <div className="flex justify-between"><span>- Vaste lasten:</span> <span className="font-medium">{formatCurrency(calculation.vasteLasten)}</span></div>
                     <div className="flex justify-between border-t pt-2 mt-2"><strong>Beschikbaar voor levensonderhoud:</strong> <strong className="font-medium">{formatCurrency(calculation.beschikbaar)}</strong></div>
-                    <div className="flex justify-between text-xs text-gray-500"><span>  (Na vaste lasten)</span></div>
-                    <div className="flex justify-between text-xs text-gray-500"><span>  - Waarvan Tussenlasten Budget (60%):</span> <span className="font-medium">{formatCurrency(calculation.tussenlastenBudget)}</span></div>
-                    <div className="flex justify-between text-xs text-gray-500"><span>  - Waarvan Buffer Budget (25%):</span> <span className="font-medium">{formatCurrency(calculation.bufferBudget)}</span></div>
-                    <div className="flex justify-between text-xs text-gray-500"><span>  - Waarvan Afloscapaciteit (15%):</span> <span className="font-medium">{formatCurrency(calculation.aflosCapaciteit)}</span></div>
+                    <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400"><span>  (Na vaste lasten)</span></div>
+                    <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400"><span>  - Waarvan Tussenlasten Budget (60%):</span> <span className="font-medium">{formatCurrency(calculation.tussenlastenBudget)}</span></div>
+                    <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400"><span>  - Waarvan Buffer Budget (25%):</span> <span className="font-medium">{formatCurrency(calculation.bufferBudget)}</span></div>
+                    <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400"><span>  - Waarvan Afloscapaciteit (15%):</span> <span className="font-medium">{formatCurrency(calculation.aflosCapaciteit)}</span></div>
                 </CardContent>
             </Card>
             
@@ -1351,13 +1351,13 @@ const handleMarkVerjaringAsSent = async () => {
                 </CardContent>
             </Card>
             
-            <Card className="bg-gray-50">
+            <Card className="bg-gray-50 dark:bg-[#2a2a2a]">
                 <CardContent className="p-4">
                     <p className="text-sm font-semibold mb-2">💡 Ons voorstel voor {debt.creditor_name}:</p>
                     {calculation.isHaalbaar ? (
-                        <p className="text-lg font-bold text-green-700">{formatCurrency(calculation.voorstel)} / maand <span className="text-sm font-normal text-gray-600">(~{calculation.looptijd} maanden)</span></p>
+                        <p className="text-lg font-bold text-green-700 dark:text-green-300">{formatCurrency(calculation.voorstel)} / maand <span className="text-sm font-normal text-gray-600 dark:text-gray-400">(~{calculation.looptijd} maanden)</span></p>
                     ) : (
-                        <p className="text-lg font-bold text-orange-700">Pauzeringsverzoek (Schuldrust)</p>
+                        <p className="text-lg font-bold text-orange-700 dark:text-orange-300">Pauzeringsverzoek (Schuldrust)</p>
                     )}
                 </CardContent>
             </Card>
@@ -1374,17 +1374,17 @@ const handleMarkVerjaringAsSent = async () => {
   
   const renderStep2 = () => (
     <div className="space-y-4">
-        <Card className="bg-blue-50 border-blue-200">
+        <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
             <CardContent className="p-4 flex items-start gap-3">
-                <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-blue-800">Gebruik deze automatisch opgestelde brief om per e-mail of post naar de schuldeiser te sturen. Alle belangrijke informatie staat er al in.</p>
+                <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-blue-800 dark:text-blue-200">Gebruik deze automatisch opgestelde brief om per e-mail of post naar de schuldeiser te sturen. Alle belangrijke informatie staat er al in.</p>
             </CardContent>
         </Card>
         
         <Textarea 
             readOnly
             value={letterContent}
-            className="h-64 text-sm bg-white"
+            className="h-64 text-sm bg-white dark:bg-[#1a1a1a] dark:text-white dark:border-[#2a2a2a]"
         />
 
         <div className="flex gap-2">
@@ -1408,10 +1408,10 @@ const handleMarkVerjaringAsSent = async () => {
 
   const renderStep3 = () => (
       <div className="space-y-4">
-          <Card className="bg-blue-50 border-blue-200">
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
               <CardContent className="p-4">
-                  <h4 className="font-semibold text-blue-800">✅ Goed werk! Je bent nu in de wachtfase.</h4>
-                  <p className="text-sm text-blue-700 mt-1">
+                  <h4 className="font-semibold text-blue-800 dark:text-blue-200">✅ Goed werk! Je bent nu in de wachtfase.</h4>
+                  <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
                       Je hebt alles gedaan wat je nu kunt doen. Sluit dit venster en kom over 2-3 weken terug om de reactie van {debt.creditor_name} vast te leggen.
                   </p>
               </CardContent>
@@ -1525,13 +1525,13 @@ const handleMarkVerjaringAsSent = async () => {
     <div className="space-y-4">
       <Button variant="ghost" onClick={onBack} className="mb-2">{'< Terug'}</Button>
       <h3 className="text-lg font-semibold">{title}</h3>
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
         <CardContent className="p-4">
-          <p className="text-sm text-blue-800">Controleer de brief, pas aan waar nodig, en verstuur deze per e-mail of post. Voeg relevante bewijsstukken toe als bijlage!</p>
+          <p className="text-sm text-blue-800 dark:text-blue-200">Controleer de brief, pas aan waar nodig, en verstuur deze per e-mail of post. Voeg relevante bewijsstukken toe als bijlage!</p>
         </CardContent>
       </Card>
       
-      <Textarea value={letterContent} onChange={(e) => setLetterContent(e.target.value)} className="h-64 text-sm bg-white" />
+      <Textarea value={letterContent} onChange={(e) => setLetterContent(e.target.value)} className="h-64 text-sm bg-white dark:bg-[#1a1a1a] dark:text-white dark:border-[#2a2a2a]" />
 
       <div className="flex gap-2">
         <Button variant="outline" onClick={downloadTxtFile} className="flex-1"><Download className="w-4 h-4 mr-2" /> Download (.txt)</Button>
@@ -1592,9 +1592,9 @@ const handleMarkVerjaringAsSent = async () => {
       <Button variant="ghost" onClick={() => setView('choice')}>{'< Terug naar keuzes'}</Button>
       <h3 className="text-lg font-semibold">📋 Betalingsregelingsbrief Opstellen</h3>
       
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
         <CardContent className="p-4">
-          <p className="text-sm text-blue-800">
+          <p className="text-sm text-blue-800 dark:text-blue-200">
             💡 <strong>Template van het Juridisch Loket</strong> - Vul de gegevens in en we genereren een professionele brief voor je.
           </p>
         </CardContent>
@@ -1610,7 +1610,7 @@ const handleMarkVerjaringAsSent = async () => {
                   <UserIcon className="w-4 h-4" />
                   Jouw Gegevens
                 </h4>
-                <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform group-data-[state=open]:rotate-180`} />
+                <ChevronDown className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform group-data-[state=open]:rotate-180`} />
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-3">
@@ -1677,13 +1677,13 @@ const handleMarkVerjaringAsSent = async () => {
                   <Building className="w-4 h-4" />
                   Schuldeiser Gegevens
                 </h4>
-                <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform group-data-[state=open]:rotate-180`} />
+                <ChevronDown className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform group-data-[state=open]:rotate-180`} />
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-3">
               <div>
                 <Label>Naam schuldeiser</Label>
-                <Input value={debt.creditor_name} disabled className="bg-gray-50" />
+                <Input value={debt.creditor_name} disabled className="bg-gray-50 dark:bg-[#2a2a2a]" />
               </div>
               <div>
                 <Label htmlFor="creditorDepartment">Afdeling (optioneel)</Label>
@@ -1738,17 +1738,17 @@ const handleMarkVerjaringAsSent = async () => {
                   <FileText className="w-4 h-4" />
                   Brief Details
                 </h4>
-                <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform group-data-[state=open]:rotate-180`} />
+                <ChevronDown className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform group-data-[state=open]:rotate-180`} />
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-3">
               <div>
                 <Label>Totaal schuldbedrag</Label>
-                <Input value={formatCurrency(debt.amount || 0)} disabled className="bg-gray-50" />
+                <Input value={formatCurrency(debt.amount || 0)} disabled className="bg-gray-50 dark:bg-[#2a2a2a]" />
               </div>
               <div>
                 <Label>Dossiernummer</Label>
-                <Input value={debt.case_number || 'Niet ingevuld'} disabled className="bg-gray-50" />
+                <Input value={debt.case_number || 'Niet ingevuld'} disabled className="bg-gray-50 dark:bg-[#2a2a2a]" />
               </div>
               <div>
                 <Label htmlFor="receivedLetterDate">Datum ontvangst brief schuldeiser</Label>
@@ -1770,7 +1770,7 @@ const handleMarkVerjaringAsSent = async () => {
                   placeholder="Bijv. 50.00"
                 />
                 {calculation?.voorstel && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     💡 Volgens VTBL: {formatCurrency(calculation.voorstel)}
                   </p>
                 )}
@@ -1843,9 +1843,9 @@ const handleMarkVerjaringAsSent = async () => {
       
       <h3 className="text-lg font-semibold">📄 Jouw Betalingsregelingsbrief</h3>
       
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
         <CardContent className="p-4">
-          <p className="text-sm text-blue-800">
+          <p className="text-sm text-blue-800 dark:text-blue-200">
             ✅ De brief is klaar! Kopieer de tekst of download het bestand en verstuur het naar de schuldeiser.
           </p>
         </CardContent>
@@ -1854,7 +1854,7 @@ const handleMarkVerjaringAsSent = async () => {
       <Textarea 
         value={letterContent}
         onChange={(e) => setLetterContent(e.target.value)}
-        className="h-96 text-sm bg-white font-mono"
+        className="h-96 text-sm bg-white dark:bg-[#1a1a1a] font-mono"
       />
 
       <div className="flex gap-2">
@@ -1876,16 +1876,16 @@ const handleMarkVerjaringAsSent = async () => {
       </Button>
 
       {/* 🆕 DISCLAIMER SECTIE */}
-      <Card className="bg-blue-50 border-blue-200 mt-6">
+      <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 mt-6">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-blue-900 mb-1">
+              <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
                 Deze brief template komt van het Juridisch Loket
               </p>
-              <p className="text-xs text-blue-700">
-                Meer info: <a href="https://www.juridischloket.nl" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900">juridischloket.nl</a>
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                Meer info: <a href="https://www.juridischloket.nl" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900 dark:text-blue-100">juridischloket.nl</a>
               </p>
             </div>
           </div>
@@ -1893,31 +1893,31 @@ const handleMarkVerjaringAsSent = async () => {
       </Card>
 
       {/* 🆕 CHECKLIST SECTIE */}
-      <Card className="bg-green-50 border-green-200">
+      <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
         <CardContent className="p-4">
           <h4 className="text-sm font-bold text-green-900 mb-3 flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5" />
             Zo stel je een betalingsregeling voor:
           </h4>
-          <ul className="space-y-2 text-xs text-green-800">
+          <ul className="space-y-2 text-xs text-green-800 dark:text-green-200">
             <li className="flex items-start gap-2">
-              <span className="text-green-600 font-bold flex-shrink-0">□</span>
+              <span className="text-green-600 dark:text-green-400 font-bold flex-shrink-0">□</span>
               <span>Maak een overzicht van uw inkomsten en uitgaven waaruit blijkt wat u kunt betalen</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-600 font-bold flex-shrink-0">□</span>
+              <span className="text-green-600 dark:text-green-400 font-bold flex-shrink-0">□</span>
               <span>Stuur onze voorbeeldbrief met het overzicht naar de schuldeiser of het incassobureau. Vraag om een schriftelijke reactie</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-600 font-bold flex-shrink-0">□</span>
+              <span className="text-green-600 dark:text-green-400 font-bold flex-shrink-0">□</span>
               <span>U kunt alvast een eerste betaling doen. Hiermee laat u aan de andere partij zien dat u zich aan de regeling wilt houden</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-600 font-bold flex-shrink-0">□</span>
+              <span className="text-green-600 dark:text-green-400 font-bold flex-shrink-0">□</span>
               <span>Krijgt u alleen een mondelinge reactie, bijvoorbeeld via de telefoon? Of krijgt u helemaal geen reactie? Bel dan met de andere partij en vraag om een schriftelijke bevestiging</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-600 font-bold flex-shrink-0">□</span>
+              <span className="text-green-600 dark:text-green-400 font-bold flex-shrink-0">□</span>
               <span>Gaat de andere partij niet akkoord? Dan heeft u helaas weinig mogelijkheden. Een schuldeiser of een incassobureau is niet verplicht om een betalingsregeling met u af te spreken</span>
             </li>
           </ul>
@@ -1925,13 +1925,13 @@ const handleMarkVerjaringAsSent = async () => {
       </Card>
 
       {/* 🆕 BELANGRIJK OM TE WETEN SECTIE */}
-      <Card className="bg-yellow-50 border-yellow-200">
+      <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
         <CardContent className="p-4">
-          <h4 className="text-sm font-bold text-yellow-900 mb-2 flex items-center gap-2">
+          <h4 className="text-sm font-bold text-yellow-900 dark:text-yellow-100 mb-2 flex items-center gap-2">
             <AlertTriangle className="w-5 h-5" />
             Belangrijk om te weten:
           </h4>
-          <p className="text-xs text-yellow-800">
+          <p className="text-xs text-yellow-800 dark:text-yellow-200">
             Verstuur de brief per post of e-mail. Heeft u bewijs nodig dat de ander uw brief heeft ontvangen? Bijvoorbeeld omdat u naar de rechter, een geschillencommissie of de Huurcommissie wilt? Dan is het voldoende bewijs als de ander schriftelijk op uw brief of e-mail reageert.
           </p>
         </CardContent>
