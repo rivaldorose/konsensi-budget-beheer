@@ -318,38 +318,56 @@ ${userName}`;
       optionalPaymentText = `Ik heb alvast ${formatCurrency(parseFloat(firstPaymentAmount))} aan u betaald.`;
     }
 
-    // ✅ ALLEEN DE BRIEFTEKST - geen disclaimer/checklist meer
-    const letter = `${userName || '[naam]'}
-${userAddress || '[adres]'}
-${userPostcode || '[postcode]'} ${userCity || '[woonplaats]'}
-${userEmail || '[e-mail]'}
+    // ✅ Officieel Juridisch Loket template
+    const formattedDate = new Date(receivedLetterDate).toLocaleDateString('nl-NL');
+    const todayFormatted = new Date().toLocaleDateString('nl-NL');
+    const monthlyFormatted = formatCurrency(parseFloat(monthlyAmount) || 0);
+
+    let paymentSentence = '';
+    if (includeFirstPayment && firstPaymentDate) {
+      const fpDate = new Date(firstPaymentDate).toLocaleDateString('nl-NL');
+      if (firstPaymentAmount) {
+        paymentSentence = ` Op ${fpDate} zal ik de eerste termijn van ${formatCurrency(parseFloat(firstPaymentAmount))} overmaken.`;
+      } else {
+        paymentSentence = ` Op ${fpDate} zal ik de eerste termijn overmaken.`;
+      }
+    } else if (includeFirstPayment && firstPaymentAmount) {
+      paymentSentence = ` Ik heb de eerste termijn van ${formatCurrency(parseFloat(firstPaymentAmount))} reeds overgemaakt.`;
+    }
+
+    const letter = `${userName || '<uw naam>'}
+${userAddress || '<adres>'}
+${userPostcode || '<postcode>'} ${userCity || '<woonplaats>'}
+${userEmail || '<e-mail>'}
 
 Aan
+
 ${creditorName}
-${creditorDepartment || '[afdeling]'}
-${creditorAddress || '[adres]'}
-${creditorPostcode || '[postcode]'} ${creditorCity || '[plaats]'}
+${creditorDepartment || '<afdeling>'}
+${creditorAddress || '<adres>'}
+${creditorPostcode || '<postcode>'} ${creditorCity || '<plaats>'}
 
-${userCity || '[woonplaats]'}, ${new Date().toLocaleDateString('nl-NL')}
+${userCity || '<woonplaats>'}, ${todayFormatted}
+Onderwerp:      betalingsregeling
+Kenmerk:         ${caseNumber}
 
-Onderwerp: betalingsregeling
-Kenmerk: ${caseNumber}
 
 Geachte heer, mevrouw,
 
-Op ${new Date(receivedLetterDate).toLocaleDateString('nl-NL')} ontving ik van u een brief waarin u een bedrag van ${totalAmount} van mij vraagt. Helaas kan ik dit bedrag niet in één keer betalen. Daarom wil ik u vragen om een betalingsregeling.
+Op ${formattedDate} ontving ik van u een brief waarin u namens ${creditorName} een bedrag van €\u00A0${(debt.amount || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2 })} van mij vordert. Ik weet dat ik dit bedrag aan ${creditorName} verschuldigd ben, maar ik ben gelet op mijn inkomsten en uitgaven niet in staat dit bedrag in één keer te betalen.
 
-Als ik kijk naar mijn inkomsten en uitgaven, kan ik iedere maand ${formatCurrency(parseFloat(monthlyAmount) || 0)} betalen. Zo betaal ik de schuld binnen ${numberOfMonths} maanden af. ${optionalPaymentText}
+Ik verzoek u om een betalingsregeling met mij te treffen zodat ik de vordering in termijnen kan aflossen. Ik zou de vordering graag in ${numberOfMonths} gelijke termijnen van ${monthlyFormatted} voldoen.${paymentSentence}
 
-Graag hoor ik binnen 14 dagen of u met mijn voorstel akkoord gaat.
+Graag hoor ik binnen 14 dagen na dagtekening van deze brief of u met mijn betalingsvoorstel akkoord gaat. Verder vraag ik u om tijdens deze correspondentie verdere incassomaatregelen op te schorten om onnodige extra kosten te voorkomen.
 
-Ik wacht uw reactie af.
+Ik wacht uw spoedige reactie af.
 
 Met vriendelijke groet,
 
-${userName || '[naam en handtekening]'}
 
-Bijlage: overzicht inkomsten en uitgaven`;
+${userName || '<naam en handtekening>'}
+
+Bijlage: kopie invorderingsbrief`;
 
     return letter;
   }, [paymentFormData, debt, formatCurrency]);
@@ -1858,10 +1876,10 @@ const handleMarkVerjaringAsSent = async () => {
       onBack={() => setView('payment-arrangement-form')}
       backText="Terug naar formulier"
       calculation={calculation}
-      tipText="Vergeet niet de datum en het bedrag in te vullen voordat je op verzenden klikt."
-      infoTitle="Uw Rechten"
-      infoText="Een schuldeiser is niet verplicht een betalingsregeling te accepteren, maar de meeste zullen een redelijk voorstel serieus overwegen."
-      attachmentName="Overzicht_inkomsten_en_uitgaven.pdf"
+      tipText="Stuur altijd een kopie van de invorderingsbrief mee als bijlage."
+      infoTitle="Juridisch Loket Template"
+      infoText="Dit is het officiële template van het Juridisch Loket. Een schuldeiser is niet verplicht een betalingsregeling te accepteren, maar de meeste zullen een redelijk voorstel serieus overwegen."
+      attachmentName="Kopie invorderingsbrief"
       showDisclaimer={true}
       showChecklist={true}
     />
