@@ -17,6 +17,7 @@ import DebtChallengesWidget from "../components/debts/DebtChallengesWidget";
 import DebtAchievementsModal from "../components/debts/DebtAchievementsModal";
 import DebtsInfoModal from "../components/debts/DebtsInfoModal";
 import ScanDebtModal from "../components/debts/ScanDebtModal";
+import ArrangementStappenplanModal from "../components/debts/ArrangementStappenplanModal";
 import { createPageUrl } from "@/utils";
 import { formatCurrency } from "@/components/utils/formatters";
 
@@ -79,6 +80,8 @@ export default function Debts() {
   const [showVtlbInfo, setShowVtlbInfo] = useState(false);
   const [showScanModal, setShowScanModal] = useState(false);
   const [showAddChoiceModal, setShowAddChoiceModal] = useState(false);
+  const [showStappenplan, setShowStappenplan] = useState(false);
+  const [stappenplanDebt, setStappenplanDebt] = useState(null);
     const [filters, setFilters] = useState({
         status: 'all',
         creditorType: 'all',
@@ -731,15 +734,28 @@ export default function Debts() {
                         </div>
                       </td>
                         <td className="py-4 px-6 text-right">
-                          <button
-                            className="text-blue-600 dark:text-blue-400 text-sm font-semibold hover:text-green-500 dark:hover:text-green-400 transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewDetails(debt);
-                            }}
-                        >
-                          Details
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              className="text-purple-600 dark:text-purple-400 text-sm font-semibold hover:text-green-500 dark:hover:text-green-400 transition-colors flex items-center gap-1"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setStappenplanDebt(debt);
+                                setShowStappenplan(true);
+                              }}
+                            >
+                              <span className="material-symbols-outlined !text-[16px]">route</span>
+                              Stappenplan
+                            </button>
+                            <button
+                              className="text-blue-600 dark:text-blue-400 text-sm font-semibold hover:text-green-500 dark:hover:text-green-400 transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleViewDetails(debt);
+                              }}
+                            >
+                              Details
+                            </button>
+                          </div>
                       </td>
                       </tr>
                   );
@@ -866,6 +882,15 @@ export default function Debts() {
         isOpen={showScanModal}
         onClose={() => setShowScanModal(false)}
         onDebtScanned={handleDebtScanned}
+      />
+
+      <ArrangementStappenplanModal
+        debt={stappenplanDebt}
+        isOpen={showStappenplan}
+        onClose={() => {
+          setShowStappenplan(false);
+          setStappenplanDebt(null);
+        }}
       />
 
       {/* Add Choice Modal (Mobile) */}
