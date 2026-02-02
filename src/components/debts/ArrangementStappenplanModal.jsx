@@ -41,10 +41,11 @@ const StepHeader = ({ step, title, subtitle, isCompleted, isCurrent }) => (
 
 export default function ArrangementStappenplanModal({ debt, isOpen, onClose }) {
   const [view, setView] = useState('choice');
+  const [activeTab, setActiveTab] = useState('keuzes'); // 'keuzes' | 'stappenplan' | 'vtlb'
   const [activeStep, setActiveStep] = useState("stap1");
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
-  
+
   const [calculation, setCalculation] = useState(null);
   const [arrangement, setArrangement] = useState(null);
   const [user, setUser] = useState(null);
@@ -492,6 +493,7 @@ Bijlage: overzicht inkomsten en uitgaven`;
   useEffect(() => {
     if (isOpen) {
       setView('choice');
+      setActiveTab('keuzes');
       setDisputeData(null);
       setPartialData(null);
       setAlreadyPaidData(null);
@@ -997,18 +999,39 @@ const handleMarkVerjaringAsSent = async () => {
     }
   };
 
-  // 🆕 NIEUWE FUNCTIE: Laad gebruiker gegevens in formulier
+  // Laad gebruiker gegevens in formulier vanuit profiel
   const loadUserDataIntoForm = useCallback(() => {
     if (!user) return;
-    
+
+    // Construct full name from voornaam + achternaam, fallback to full_name
+    const fullName = [user.voornaam, user.achternaam].filter(Boolean).join(' ') || user.full_name || '';
+
+    // Parse adres field: may contain "Straat 123, 1234AB Plaats" or just "Straat 123"
+    let parsedAddress = user.adres || user.address || '';
+    let parsedPostcode = user.postal_code || '';
+    let parsedCity = user.city || '';
+
+    // Try to extract postcode and city from adres if not set separately
+    if (parsedAddress && (!parsedPostcode || !parsedCity)) {
+      const addressParts = parsedAddress.split(',').map(s => s.trim());
+      if (addressParts.length >= 2) {
+        parsedAddress = addressParts[0];
+        const postcodeMatch = addressParts[1].match(/^(\d{4}\s?[A-Za-z]{2})\s+(.+)$/);
+        if (postcodeMatch) {
+          parsedPostcode = parsedPostcode || postcodeMatch[1];
+          parsedCity = parsedCity || postcodeMatch[2];
+        }
+      }
+    }
+
     setPaymentFormData(prev => ({
       ...prev,
-      userName: user.full_name || '',
-      userAddress: user.address || '',
-      userPostcode: user.postal_code || '',
-      userCity: user.city || '',
+      userName: fullName,
+      userAddress: parsedAddress,
+      userPostcode: parsedPostcode,
+      userCity: parsedCity,
       userEmail: user.email || '',
-      monthlyAmount: calculation?.voorstel?.toString() || '',
+      monthlyAmount: calculation?.voorstel?.toString() || prev.monthlyAmount || '',
     }));
   }, [user, calculation]);
 
@@ -1084,7 +1107,7 @@ const handleMarkVerjaringAsSent = async () => {
                         </div>
                     </CardContent>
                 </Card>
-                 <Button variant="ghost" onClick={() => { setView('proposal'); setModificationType(''); }} className="w-full">
+                 <Button variant="ghost" onClick={() => { setView('proposal'); setActiveTab('stappenplan'); setModificationType(''); }} className="w-full">
                     Toch een nieuwe regeling voor een andere schuld starten?
                  </Button>
             </div>
@@ -1109,7 +1132,7 @@ const handleMarkVerjaringAsSent = async () => {
                 </CardContent>
             </Card>
 
-            <Card onClick={() => { setView('proposal'); setModificationType(''); }} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
+            <Card onClick={() => { setView('proposal'); setActiveTab('stappenplan'); setModificationType(''); }} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
                 <CardContent className="p-4 flex items-start gap-4">
                     <BookOpen className="w-8 h-8 text-blue-600 dark:text-blue-400"/>
                     <div>
@@ -1160,7 +1183,7 @@ const handleMarkVerjaringAsSent = async () => {
   
   const renderLoweringAmountView = () => (
     <div className="space-y-4">
-      <Button variant="ghost" onClick={() => setView('choice')}>{'< Terug naar keuzes'}</Button>
+      <Button variant="ghost" onClick={() => { setView('choice'); setActiveTab('keuzes'); }}>{'< Terug naar keuzes'}</Button>
       <h3 className="text-lg font-semibold">Verlaging maandbedrag</h3>
       <p className="text-sm text-gray-600 dark:text-gray-400">Je huidige regeling is {formatCurrency(debt.monthly_payment || 0)} per maand. Wat is het nieuwe bedrag dat je maandelijks wél kunt betalen?</p>
       <div>
@@ -1188,7 +1211,7 @@ const handleMarkVerjaringAsSent = async () => {
 
   const renderPaymentHolidayView = () => (
     <div className="space-y-4">
-      <Button variant="ghost" onClick={() => setView('choice')}>{'< Terug naar keuzes'}</Button>
+      <Button variant="ghost" onClick={() => { setView('choice'); setActiveTab('keuzes'); }}>{'< Terug naar keuzes'}</Button>
       <h3 className="text-lg font-semibold">Betalingsvakantie</h3>
       <p className="text-sm text-gray-600 dark:text-gray-400">Voor hoeveel maanden wil je de betalingen pauzeren? (Normaal is 1-3 maanden)</p>
       <div>
@@ -1216,7 +1239,7 @@ const handleMarkVerjaringAsSent = async () => {
   
   const renderStopCounselingView = () => (
      <div className="space-y-4">
-      <Button variant="ghost" onClick={() => setView('choice')}>{'< Terug naar keuzes'}</Button>
+      <Button variant="ghost" onClick={() => { setView('choice'); setActiveTab('keuzes'); }}>{'< Terug naar keuzes'}</Button>
       <h3 className="text-lg font-semibold">Stopzetten regeling & aanmelden schuldhulp</h3>
       <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
         <CardContent className="p-4">
@@ -1238,7 +1261,7 @@ const handleMarkVerjaringAsSent = async () => {
 
   const renderModificationLetterView = () => (
     <div className="space-y-4">
-      <Button variant="ghost" onClick={() => setView('choice')} className="mb-2">{'< Terug naar keuzes'}</Button>
+      <Button variant="ghost" onClick={() => { setView('choice'); setActiveTab('keuzes'); }} className="mb-2">{'< Terug naar keuzes'}</Button>
       <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
@@ -1500,8 +1523,7 @@ const handleMarkVerjaringAsSent = async () => {
     ];
 
     return (
-      <div className="space-y-4">
-        <Button variant="ghost" onClick={() => setView('choice')}>{'< Terug naar keuzes'}</Button>
+      <div className="space-y-4 pt-4">
         <div className="px-4">
           <Progress value={progress} className="w-full" />
         </div>
@@ -1589,7 +1611,7 @@ const handleMarkVerjaringAsSent = async () => {
   // 🆕 NIEUW: Render functie voor betalingsregeling formulier
   const renderPaymentArrangementForm = () => (
     <div className="space-y-4">
-      <Button variant="ghost" onClick={() => setView('choice')}>{'< Terug naar keuzes'}</Button>
+      <Button variant="ghost" onClick={() => { setView('choice'); setActiveTab('keuzes'); }}>{'< Terug naar keuzes'}</Button>
       <h3 className="text-lg font-semibold">📋 Betalingsregelingsbrief Opstellen</h3>
       
       <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
@@ -1940,6 +1962,106 @@ const handleMarkVerjaringAsSent = async () => {
   );
   
 
+  const renderVtlbTab = () => {
+    if (loading || !calculation) return <div className="flex justify-center items-center h-40"><Loader2 className="w-6 h-6 animate-spin" /></div>;
+
+    return (
+      <div className="space-y-4 pt-4">
+        <h3 className="text-lg font-semibold dark:text-white">VTLB Berekening</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Op basis van je inkomsten, vaste lasten en lopende regelingen berekenen we hoeveel je kunt aflossen.
+        </p>
+
+        <Card>
+          <CardContent className="p-4 space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Vast inkomen:</span>
+              <span className="font-semibold dark:text-white">{formatCurrency(calculation.vastInkomen)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">- Vaste lasten:</span>
+              <span className="font-semibold dark:text-white">{formatCurrency(calculation.vasteLasten)}</span>
+            </div>
+            <div className="flex justify-between border-t dark:border-[#2a2a2a] pt-2">
+              <span className="font-semibold dark:text-white">Beschikbaar voor levensonderhoud:</span>
+              <span className="font-bold dark:text-white">{formatCurrency(calculation.beschikbaar)}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4 space-y-3 text-sm">
+            <h4 className="font-semibold dark:text-white mb-2">Verdeling beschikbaar budget</h4>
+            <div className="flex justify-between text-gray-600 dark:text-gray-400">
+              <span>Tussenlasten Budget (60%):</span>
+              <span className="font-medium">{formatCurrency(calculation.tussenlastenBudget)}</span>
+            </div>
+            <div className="flex justify-between text-gray-600 dark:text-gray-400">
+              <span>Buffer Budget (25%):</span>
+              <span className="font-medium">{formatCurrency(calculation.bufferBudget)}</span>
+            </div>
+            <div className="flex justify-between text-gray-600 dark:text-gray-400">
+              <span>Afloscapaciteit (15%):</span>
+              <span className="font-medium">{formatCurrency(calculation.aflosCapaciteit)}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4 space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">Afloscapaciteit:</span>
+              <span className="font-semibold dark:text-white">{formatCurrency(calculation.aflosCapaciteit)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600 dark:text-gray-400">- Huidige regelingen:</span>
+              <span className="font-semibold dark:text-white">{formatCurrency(calculation.huidigeRegelingen)}</span>
+            </div>
+            <div className={`flex justify-between border-t dark:border-[#2a2a2a] pt-2 font-bold ${calculation.isHaalbaar || calculation.canPayInFull ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              <span>Ruimte voor nieuwe regeling:</span>
+              <span>{formatCurrency(calculation.ruimteVoorNieuw)}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {calculation.canPayInFull && (
+          <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+            <CardContent className="p-4">
+              <h4 className="font-semibold text-green-800 dark:text-green-200 mb-1">Je kunt deze schuld in één keer betalen!</h4>
+              <p className="text-sm text-green-700 dark:text-green-300">
+                Schuldbedrag: {formatCurrency(calculation.debtAmount)} — Beschikbaar: {formatCurrency(calculation.ruimteVoorNieuw)}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!calculation.canPayInFull && (
+          <Card className="bg-gray-50 dark:bg-[#2a2a2a]">
+            <CardContent className="p-4">
+              <p className="text-sm font-semibold dark:text-white mb-1">Ons voorstel voor {debt?.creditor_name}:</p>
+              {calculation.isHaalbaar ? (
+                <p className="text-lg font-bold text-green-700 dark:text-green-300">
+                  {formatCurrency(calculation.voorstel)} / maand <span className="text-sm font-normal text-gray-600 dark:text-gray-400">(~{calculation.looptijd} maanden)</span>
+                </p>
+              ) : (
+                <p className="text-lg font-bold text-orange-700 dark:text-orange-300">Geen ruimte — Pauzeringsverzoek (Schuldrust)</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
+
+  // Check if current view is a sub-view (letter, form, etc.) that should hide tabs
+  const isSubView = view !== 'choice' && view !== 'proposal';
+
+  const tabClass = (tab) => `flex-1 py-2 px-3 text-sm font-medium rounded-lg transition-colors ${
+    activeTab === tab
+      ? 'bg-[#10b981] text-white'
+      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#2a2a2a]'
+  }`;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -1950,14 +2072,33 @@ const handleMarkVerjaringAsSent = async () => {
           {debt && <p className="text-muted-foreground">{debt.creditor_name}</p>}
         </DialogHeader>
 
-        {view === 'choice' && renderChoiceView()}
-        {view === 'proposal' && renderProposalView()}
+        {/* Tab Navigation - hide when in sub-views */}
+        {!isSubView && (
+          <div className="flex gap-1 bg-gray-100 dark:bg-[#2a2a2a] p-1 rounded-lg">
+            <button className={tabClass('keuzes')} onClick={() => { setActiveTab('keuzes'); setView('choice'); }}>
+              Keuzes
+            </button>
+            <button className={tabClass('stappenplan')} onClick={() => { setActiveTab('stappenplan'); setView('proposal'); }}>
+              Stappenplan
+            </button>
+            <button className={tabClass('vtlb')} onClick={() => setActiveTab('vtlb')}>
+              VTLB Berekening
+            </button>
+          </div>
+        )}
+
+        {/* Tab Content */}
+        {activeTab === 'keuzes' && view === 'choice' && renderChoiceView()}
+        {activeTab === 'stappenplan' && view === 'proposal' && renderProposalView()}
+        {activeTab === 'vtlb' && !isSubView && renderVtlbTab()}
+
+        {/* Sub-views (forms, letters, etc.) */}
         {view === 'payment-arrangement-form' && renderPaymentArrangementForm()}
         {view === 'payment-letter' && renderPaymentLetterView()}
-        {view === 'dispute' && <DisputeForm onGenerateLetter={handleGenerateDisputeLetter} onBack={() => setView('choice')} debt={debt} />}
-        {view === 'partial-recognition' && <PartialRecognitionForm debt={debt} onGenerateLetter={handleGeneratePartialLetter} onBack={() => setView('choice')} />}
-        {view === 'already-paid' && <AlreadyPaidForm debt={debt} onGenerateLetter={handleGenerateAlreadyPaidLetter} onBack={() => setView('choice')} />}
-        {view === 'verjaring' && <VerjaringForm debt={debt} onGenerateLetter={handleGenerateVerjaringLetter} onBack={() => setView('choice')} />}
+        {view === 'dispute' && <DisputeForm onGenerateLetter={handleGenerateDisputeLetter} onBack={() => { setView('choice'); setActiveTab('keuzes'); }} debt={debt} />}
+        {view === 'partial-recognition' && <PartialRecognitionForm debt={debt} onGenerateLetter={handleGeneratePartialLetter} onBack={() => { setView('choice'); setActiveTab('keuzes'); }} />}
+        {view === 'already-paid' && <AlreadyPaidForm debt={debt} onGenerateLetter={handleGenerateAlreadyPaidLetter} onBack={() => { setView('choice'); setActiveTab('keuzes'); }} />}
+        {view === 'verjaring' && <VerjaringForm debt={debt} onGenerateLetter={handleGenerateVerjaringLetter} onBack={() => { setView('choice'); setActiveTab('keuzes'); }} />}
         {view === 'dispute-letter' && renderDisputeLetterView()}
         {view === 'partial-letter' && renderPartialLetterView()}
         {view === 'already-paid-letter' && renderAlreadyPaidLetterView()}

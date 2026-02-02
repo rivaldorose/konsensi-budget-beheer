@@ -737,11 +737,22 @@ export default function CentVoorCent() {
                 </div>
                 <p className="text-text-tertiary dark:text-text-secondary text-sm font-medium">€{monthlyData.debtPaid.toFixed(2)} afgelost deze maand</p>
               </div>
-              <div>
-                <span className="inline-flex items-center gap-2 bg-blue-50 dark:bg-konsensi-blue/15 text-blue-600 dark:text-konsensi-blue text-sm font-bold px-4 py-2 dark:py-3 rounded-[24px] dark:rounded-[24px] border dark:border-konsensi-blue/20">
-                  <span className="material-symbols-outlined text-lg">calendar_month</span>
-                  Als je €500/maand aflost, ben je over 27 maanden schuldenvrij! 📅
-                </span>
+              <div className="space-y-2">
+                {monthlyData.monthlyArrangements > 0 && monthlyData.debtRemaining > 0 ? (
+                  <span className="inline-flex items-center gap-2 bg-blue-50 dark:bg-konsensi-blue/15 text-blue-600 dark:text-konsensi-blue text-sm font-bold px-4 py-2 dark:py-3 rounded-[24px] border dark:border-konsensi-blue/20">
+                    <span className="material-symbols-outlined text-lg">calendar_month</span>
+                    Met je huidige aflossing van {formatCurrency(monthlyData.monthlyArrangements)}/maand ben je over {Math.ceil(monthlyData.debtRemaining / monthlyData.monthlyArrangements)} maanden schuldenvrij! 📅
+                  </span>
+                ) : monthlyData.debtRemaining > 0 ? (
+                  <span className="inline-flex items-center gap-2 bg-orange-50 dark:bg-konsensi-orange/15 text-orange-600 dark:text-konsensi-orange text-sm font-bold px-4 py-2 dark:py-3 rounded-[24px] border dark:border-konsensi-orange/20">
+                    <span className="material-symbols-outlined text-lg">info</span>
+                    Er zijn nog geen actieve betalingsregelingen. Start een stappenplan om een regeling te treffen.
+                  </span>
+                ) : null}
+                <p className="text-[11px] text-text-tertiary dark:text-text-secondary leading-relaxed px-1">
+                  <span className="material-symbols-outlined text-[13px] align-middle mr-0.5">info</span>
+                  Berekening op basis van je huidige actieve betalingsregelingen en totale openstaande schuld. Zonder rekening te houden met rente, incassokosten of wijzigingen in je afloscapaciteit.
+                </p>
               </div>
             </div>
             {/* Right Part: Breakdown Box */}
