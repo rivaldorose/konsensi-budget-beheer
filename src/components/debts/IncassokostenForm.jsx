@@ -58,13 +58,27 @@ export default function IncassokostenForm({ debt, onGenerateLetter, onBack }) {
                     user_postcode: userData.postal_code || '',
                     user_city: userData.city || '',
                     user_email: userData.email || '',
+                    // Auto-fill creditor data from debt
+                    creditor_address: debt?.creditor_address || prev.creditor_address || '',
+                    creditor_postcode: debt?.creditor_postcode || prev.creditor_postcode || '',
+                    creditor_city: debt?.creditor_city || prev.creditor_city || '',
                 }));
+                // Auto-collapse sections when user data is filled
+                if (userData.full_name && userData.address) {
+                    setUserSectionOpen(false);
+                }
+                // Collapse creditor section - name is always known
+                if (debt?.creditor_name) {
+                    setCreditorSectionOpen(false);
+                }
+                // Collapse details - debt amount and case number are known
+                setDetailsSectionOpen(false);
             } catch (error) {
                 console.error('Error loading user:', error);
             }
         };
         loadUser();
-    }, []);
+    }, [debt]);
 
     const handleChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -127,13 +141,19 @@ export default function IncassokostenForm({ debt, onGenerateLetter, onBack }) {
                 <Card>
                     <CardContent className="p-4">
                         <CollapsibleTrigger className="w-full">
-                            <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center justify-between mb-1">
                                 <h4 className="font-semibold text-sm flex items-center gap-2">
                                     <UserIcon className="w-4 h-4" />
                                     Jouw Gegevens
+                                    {!userSectionOpen && formData.user_name && (
+                                        <span className="text-xs font-normal text-green-600 dark:text-green-400">✓ Ingevuld</span>
+                                    )}
                                 </h4>
                                 <ChevronDown className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${userSectionOpen ? 'rotate-180' : ''}`} />
                             </div>
+                            {!userSectionOpen && formData.user_name && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 text-left">{formData.user_name} — {formData.user_address}, {formData.user_postcode} {formData.user_city}</p>
+                            )}
                         </CollapsibleTrigger>
                         <CollapsibleContent className="space-y-3">
                             <div>
@@ -168,13 +188,19 @@ export default function IncassokostenForm({ debt, onGenerateLetter, onBack }) {
                 <Card>
                     <CardContent className="p-4">
                         <CollapsibleTrigger className="w-full">
-                            <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center justify-between mb-1">
                                 <h4 className="font-semibold text-sm flex items-center gap-2">
                                     <Building className="w-4 h-4" />
                                     Schuldeiser Gegevens
+                                    {!creditorSectionOpen && debt?.creditor_name && (
+                                        <span className="text-xs font-normal text-green-600 dark:text-green-400">✓ Ingevuld</span>
+                                    )}
                                 </h4>
                                 <ChevronDown className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${creditorSectionOpen ? 'rotate-180' : ''}`} />
                             </div>
+                            {!creditorSectionOpen && debt?.creditor_name && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 text-left">{debt.creditor_name}</p>
+                            )}
                         </CollapsibleTrigger>
                         <CollapsibleContent className="space-y-3">
                             <div>
@@ -213,13 +239,19 @@ export default function IncassokostenForm({ debt, onGenerateLetter, onBack }) {
                 <Card>
                     <CardContent className="p-4">
                         <CollapsibleTrigger className="w-full">
-                            <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center justify-between mb-1">
                                 <h4 className="font-semibold text-sm flex items-center gap-2">
                                     <FileText className="w-4 h-4" />
                                     Brief Details
+                                    {!detailsSectionOpen && debt?.amount && (
+                                        <span className="text-xs font-normal text-green-600 dark:text-green-400">✓ Ingevuld</span>
+                                    )}
                                 </h4>
                                 <ChevronDown className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${detailsSectionOpen ? 'rotate-180' : ''}`} />
                             </div>
+                            {!detailsSectionOpen && debt?.amount && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 text-left">{formatCurrency(debt.amount)} — {debt.case_number || 'Geen dossiernummer'}</p>
+                            )}
                         </CollapsibleTrigger>
                         <CollapsibleContent className="space-y-3">
                             <div>
