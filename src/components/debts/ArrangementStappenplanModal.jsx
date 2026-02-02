@@ -17,6 +17,7 @@ import { PaymentPlanProposal } from "@/api/entities";
 import { VtblSetting } from "@/api/entities";
 import { useToast } from "@/components/ui/use-toast";
 import { useTranslation } from "@/components/utils/LanguageContext";
+import EmailPreview from './EmailPreview';
 import DisputeForm from './DisputeForm';
 import PartialRecognitionForm from './PartialRecognitionForm';
 import AlreadyPaidForm from './AlreadyPaidForm';
@@ -1260,43 +1261,22 @@ const handleMarkVerjaringAsSent = async () => {
   );
 
   const renderModificationLetterView = () => (
-    <div className="space-y-4">
-      <Button variant="ghost" onClick={() => { setView('choice'); setActiveTab('keuzes'); }} className="mb-2">{'< Terug naar keuzes'}</Button>
-      <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-blue-800 dark:text-blue-200">Gebruik deze brief om per e-mail of post naar de schuldeiser te sturen. Pas de tekst aan waar nodig.</p>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Textarea 
-        value={letterContent}
-        onChange={(e) => setLetterContent(e.target.value)}
-        className="h-64 text-sm bg-white dark:bg-[#1a1a1a] dark:text-white dark:border-[#2a2a2a]"
-      />
-
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={downloadTxtFile} className="flex-1">
-          <Download className="w-4 h-4 mr-2" /> Download (.txt)
-        </Button>
-        <Button variant="outline" onClick={copyToClipboard} className="flex-1">
-          {copied ? <CheckCircle2 className="w-4 h-4 mr-2 text-green-500"/> : <Copy className="w-4 h-4 mr-2" />}
-          {copied ? 'Gekopieerd!' : 'Kopieer Tekst'}
-        </Button>
-      </div>
-      
-      <Button 
-        onClick={() => {
-            handleMarkModificationAsSent(modificationType);
-        }}
-        className="w-full bg-green-600 hover:bg-green-700"
-      >
-        <CheckCircle2 className="w-4 h-4 mr-2"/>
-        Ik heb het verzoek verstuurd
-      </Button>
-    </div>
+    <EmailPreview
+      letterContent={letterContent}
+      onLetterChange={(val) => setLetterContent(val)}
+      recipientName={debt?.creditor_name || 'Schuldeiser'}
+      recipientType={debt?.creditor_type || 'Schuldeiser'}
+      subject={getLetterSubject()}
+      senderName={user?.full_name || 'Gebruiker'}
+      onSend={() => handleMarkModificationAsSent(modificationType)}
+      sendButtonText="Ik heb het verzoek verstuurd"
+      onBack={() => { setView('choice'); setActiveTab('keuzes'); }}
+      backText="Terug naar keuzes"
+      calculation={calculation}
+      tipText={getLetterTip()}
+      infoTitle="Uw Rechten"
+      infoText="Een schuldeiser is verplicht uw verzoek serieus in overweging te nemen. Bewaar altijd een kopie van uw correspondentie."
+    />
   );
   
   const renderStep1 = () => {
@@ -1396,37 +1376,20 @@ const handleMarkVerjaringAsSent = async () => {
   };
   
   const renderStep2 = () => (
-    <div className="space-y-4">
-        <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-            <CardContent className="p-4 flex items-start gap-3">
-                <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-blue-800 dark:text-blue-200">Gebruik deze automatisch opgestelde brief om per e-mail of post naar de schuldeiser te sturen. Alle belangrijke informatie staat er al in.</p>
-            </CardContent>
-        </Card>
-        
-        <Textarea 
-            readOnly
-            value={letterContent}
-            className="h-64 text-sm bg-white dark:bg-[#1a1a1a] dark:text-white dark:border-[#2a2a2a]"
-        />
-
-        <div className="flex gap-2">
-            <Button variant="outline" onClick={downloadTxtFile} className="flex-1">
-                <Download className="w-4 h-4 mr-2" /> Download (.txt)
-            </Button>
-            <Button variant="outline" onClick={copyToClipboard} className="flex-1">
-                {copied ? <CheckCircle2 className="w-4 h-4 mr-2 text-green-500"/> : <Copy className="w-4 h-4 mr-2" />}
-                {copied ? 'Gekopieerd!' : 'Kopieer Tekst'}
-            </Button>
-        </div>
-
-        {!arrangement?.step_2_completed && (
-            <Button onClick={() => handleStepCompletion(2)} className="w-full bg-green-600 hover:bg-green-700">
-                <CheckCircle2 className="w-4 h-4 mr-2"/>
-                Ik heb de brief verstuurd
-            </Button>
-        )}
-    </div>
+    <EmailPreview
+      letterContent={letterContent}
+      onLetterChange={(val) => setLetterContent(val)}
+      recipientName={debt?.creditor_name || 'Schuldeiser'}
+      recipientType={debt?.creditor_type || 'Schuldeiser'}
+      subject={getLetterSubject()}
+      senderName={user?.full_name || 'Gebruiker'}
+      onSend={!arrangement?.step_2_completed ? () => handleStepCompletion(2) : undefined}
+      sendButtonText="Ik heb de brief verstuurd"
+      calculation={calculation}
+      tipText="Alle belangrijke informatie staat al in de brief. Controleer en verstuur per e-mail of post."
+      infoTitle="Automatisch Opgesteld"
+      infoText="Deze brief is automatisch opgesteld op basis van je VTLB-berekening en financiële gegevens."
+    />
   );
 
   const renderStep3 = () => (
@@ -1543,68 +1506,91 @@ const handleMarkVerjaringAsSent = async () => {
     );
   };
   
-  const GenericLetterView = ({ onBack, title, letterContent, onLetterChange, onMarkAsSent, markAsSentText }) => (
-    <div className="space-y-4">
-      <Button variant="ghost" onClick={onBack} className="mb-2">{'< Terug'}</Button>
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-        <CardContent className="p-4">
-          <p className="text-sm text-blue-800 dark:text-blue-200">Controleer de brief, pas aan waar nodig, en verstuur deze per e-mail of post. Voeg relevante bewijsstukken toe als bijlage!</p>
-        </CardContent>
-      </Card>
-      
-      <Textarea value={letterContent} onChange={(e) => setLetterContent(e.target.value)} className="h-64 text-sm bg-white dark:bg-[#1a1a1a] dark:text-white dark:border-[#2a2a2a]" />
+  const getLetterSubject = (viewType) => {
+    if (viewType === 'dispute' || isDisputeContext) return `Betwisting vordering - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
+    if (viewType === 'partial' || isPartialContext) return `Gedeeltelijke erkenning - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
+    if (viewType === 'already-paid' || isAlreadyPaidContext) return `Betaalde rekening - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
+    if (viewType === 'verjaring' || isVerjaringContext) return `Verjaarde rekening - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
+    if (modificationType === 'lowering_amount') return `Verzoek verlaging maandbedrag - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
+    if (modificationType === 'payment_holiday') return `Verzoek betalingsvakantie - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
+    if (modificationType === 'stop_debt_counseling') return `Stopzetting regeling - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
+    return `Betalingsvoorstel inzake dossier ${debt?.case_number || '[Dossiernummer]'}`;
+  };
 
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={downloadTxtFile} className="flex-1"><Download className="w-4 h-4 mr-2" /> Download (.txt)</Button>
-        <Button variant="outline" onClick={copyToClipboard} className="flex-1">{copied ? <CheckCircle2 className="w-4 h-4 mr-2 text-green-500"/> : <Copy className="w-4 h-4 mr-2" />}{copied ? 'Gekopieerd!' : 'Kopieer Tekst'}</Button>
-      </div>
-      
-      <Button onClick={onMarkAsSent} className="w-full bg-green-600 hover:bg-green-700"><CheckCircle2 className="w-4 h-4 mr-2"/>{markAsSentText}</Button>
-    </div>
+  const getLetterTip = (viewType) => {
+    if (viewType === 'dispute') return 'Voeg bewijsstukken toe zoals betalingsbewijzen of correspondentie.';
+    if (viewType === 'already-paid') return 'Vergeet niet het betalingsbewijs als bijlage mee te sturen!';
+    if (viewType === 'verjaring') return 'Een schuld verjaart na 5 jaar (consumentenschulden) of 20 jaar (overig).';
+    if (modificationType === 'payment_holiday') return 'Een betalingsvakantie is meestal 1-3 maanden. Leg uw situatie goed uit.';
+    return 'Vergeet niet de datum en het bedrag te controleren voordat je verstuurt.';
+  };
+
+  const GenericLetterView = ({ onBack, title, letterContent: content, onLetterChange, onMarkAsSent, markAsSentText, viewType, attachmentName: attachment }) => (
+    <EmailPreview
+      letterContent={content || letterContent}
+      onLetterChange={(val) => setLetterContent(val)}
+      recipientName={debt?.creditor_name || 'Schuldeiser'}
+      recipientType={debt?.creditor_type || 'Schuldeiser'}
+      subject={getLetterSubject(viewType)}
+      senderName={user?.full_name || 'Gebruiker'}
+      onSend={onMarkAsSent}
+      sendButtonText={markAsSentText}
+      onBack={onBack}
+      backText="Terug"
+      calculation={calculation}
+      attachmentName={attachment}
+      tipText={getLetterTip(viewType)}
+      infoTitle="Uw Rechten"
+      infoText="Een schuldeiser is verplicht uw verzoek serieus in overweging te nemen. Bewaar altijd een kopie van uw correspondentie."
+    />
   );
 
   const renderDisputeLetterView = () => (
-    <GenericLetterView 
+    <GenericLetterView
         onBack={() => setView('dispute')}
         title="Brief Betwisting Vordering"
         letterContent={letterContent}
         onLetterChange={setLetterContent}
         onMarkAsSent={handleMarkDisputeAsSent}
         markAsSentText="Ik heb de betwisting verstuurd"
+        viewType="dispute"
     />
   );
 
   const renderPartialLetterView = () => (
-    <GenericLetterView 
+    <GenericLetterView
         onBack={() => setView('partial-recognition')}
         title="Brief Gedeeltelijke Erkenning"
         letterContent={letterContent}
         onLetterChange={setLetterContent}
         onMarkAsSent={handleMarkPartialAsSent}
         markAsSentText="Ik heb de brief verstuurd"
+        viewType="partial"
     />
   );
 
   const renderAlreadyPaidLetterView = () => (
-    <GenericLetterView 
+    <GenericLetterView
         onBack={() => setView('already-paid')}
         title="Brief 'Al Betaald'"
         letterContent={letterContent}
         onLetterChange={setLetterContent}
         onMarkAsSent={handleMarkAlreadyPaidAsSent}
         markAsSentText="Ik heb de brief en bewijs verstuurd"
+        viewType="already-paid"
+        attachmentName="Bewijs_van_betaling.pdf"
     />
   );
 
   const renderVerjaringLetterView = () => (
-     <GenericLetterView 
+     <GenericLetterView
         onBack={() => setView('verjaring')}
         title="Brief Beroep op Verjaring"
         letterContent={letterContent}
         onLetterChange={setLetterContent}
         onMarkAsSent={handleMarkVerjaringAsSent}
         markAsSentText="Ik heb de brief verstuurd"
+        viewType="verjaring"
     />
   );
 
@@ -1858,107 +1844,27 @@ const handleMarkVerjaringAsSent = async () => {
     </div>
   );
 
-  // 🔧 AANGEPAST: Render functie met APARTE secties voor disclaimer/checklist
+  // 🔧 AANGEPAST: Render met EmailPreview component
   const renderPaymentLetterView = () => (
-    <div className="space-y-4">
-      <Button variant="ghost" onClick={() => setView('payment-arrangement-form')}>{'< Terug naar formulier'}</Button>
-      
-      <h3 className="text-lg font-semibold">📄 Jouw Betalingsregelingsbrief</h3>
-      
-      <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-        <CardContent className="p-4">
-          <p className="text-sm text-blue-800 dark:text-blue-200">
-            ✅ De brief is klaar! Kopieer de tekst of download het bestand en verstuur het naar de schuldeiser.
-          </p>
-        </CardContent>
-      </Card>
-      
-      <Textarea 
-        value={letterContent}
-        onChange={(e) => setLetterContent(e.target.value)}
-        className="h-96 text-sm bg-white dark:bg-[#1a1a1a] font-mono"
-      />
-
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={downloadTxtFile} className="flex-1">
-          <Download className="w-4 h-4 mr-2" /> Download (.txt)
-        </Button>
-        <Button variant="outline" onClick={copyToClipboard} className="flex-1">
-          {copied ? <CheckCircle2 className="w-4 h-4 mr-2 text-green-500"/> : <Copy className="w-4 h-4 mr-2" />}
-          {copied ? 'Gekopieerd!' : 'Kopieer Tekst'}
-        </Button>
-      </div>
-      
-      <Button 
-        onClick={handleSavePaymentLetter}
-        className="w-full bg-green-600 hover:bg-green-700"
-      >
-        <CheckCircle2 className="w-4 h-4 mr-2"/>
-        Opslaan & Markeren als Verstuurd
-      </Button>
-
-      {/* 🆕 DISCLAIMER SECTIE */}
-      <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 mt-6">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
-                Deze brief template komt van het Juridisch Loket
-              </p>
-              <p className="text-xs text-blue-700 dark:text-blue-300">
-                Meer info: <a href="https://www.juridischloket.nl" target="_blank" rel="noopener noreferrer" className="underline hover:text-blue-900 dark:text-blue-100">juridischloket.nl</a>
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 🆕 CHECKLIST SECTIE */}
-      <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-        <CardContent className="p-4">
-          <h4 className="text-sm font-bold text-green-900 mb-3 flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
-            Zo stel je een betalingsregeling voor:
-          </h4>
-          <ul className="space-y-2 text-xs text-green-800 dark:text-green-200">
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 dark:text-green-400 font-bold flex-shrink-0">□</span>
-              <span>Maak een overzicht van uw inkomsten en uitgaven waaruit blijkt wat u kunt betalen</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 dark:text-green-400 font-bold flex-shrink-0">□</span>
-              <span>Stuur onze voorbeeldbrief met het overzicht naar de schuldeiser of het incassobureau. Vraag om een schriftelijke reactie</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 dark:text-green-400 font-bold flex-shrink-0">□</span>
-              <span>U kunt alvast een eerste betaling doen. Hiermee laat u aan de andere partij zien dat u zich aan de regeling wilt houden</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 dark:text-green-400 font-bold flex-shrink-0">□</span>
-              <span>Krijgt u alleen een mondelinge reactie, bijvoorbeeld via de telefoon? Of krijgt u helemaal geen reactie? Bel dan met de andere partij en vraag om een schriftelijke bevestiging</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-600 dark:text-green-400 font-bold flex-shrink-0">□</span>
-              <span>Gaat de andere partij niet akkoord? Dan heeft u helaas weinig mogelijkheden. Een schuldeiser of een incassobureau is niet verplicht om een betalingsregeling met u af te spreken</span>
-            </li>
-          </ul>
-        </CardContent>
-      </Card>
-
-      {/* 🆕 BELANGRIJK OM TE WETEN SECTIE */}
-      <Card className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
-        <CardContent className="p-4">
-          <h4 className="text-sm font-bold text-yellow-900 dark:text-yellow-100 mb-2 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5" />
-            Belangrijk om te weten:
-          </h4>
-          <p className="text-xs text-yellow-800 dark:text-yellow-200">
-            Verstuur de brief per post of e-mail. Heeft u bewijs nodig dat de ander uw brief heeft ontvangen? Bijvoorbeeld omdat u naar de rechter, een geschillencommissie of de Huurcommissie wilt? Dan is het voldoende bewijs als de ander schriftelijk op uw brief of e-mail reageert.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+    <EmailPreview
+      letterContent={letterContent}
+      onLetterChange={(val) => setLetterContent(val)}
+      recipientName={debt?.creditor_name || 'Schuldeiser'}
+      recipientType={debt?.creditor_type || 'Schuldeiser'}
+      subject={`Betalingsregeling - Dossier ${debt?.case_number || '[Dossiernummer]'}`}
+      senderName={user?.full_name || 'Gebruiker'}
+      onSend={handleSavePaymentLetter}
+      sendButtonText="Opslaan & Markeren als Verstuurd"
+      onBack={() => setView('payment-arrangement-form')}
+      backText="Terug naar formulier"
+      calculation={calculation}
+      tipText="Vergeet niet de datum en het bedrag in te vullen voordat je op verzenden klikt."
+      infoTitle="Uw Rechten"
+      infoText="Een schuldeiser is niet verplicht een betalingsregeling te accepteren, maar de meeste zullen een redelijk voorstel serieus overwegen."
+      attachmentName="Overzicht_inkomsten_en_uitgaven.pdf"
+      showDisclaimer={true}
+      showChecklist={true}
+    />
   );
   
 
@@ -2064,7 +1970,7 @@ const handleMarkVerjaringAsSent = async () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             Jouw Stappenplan
