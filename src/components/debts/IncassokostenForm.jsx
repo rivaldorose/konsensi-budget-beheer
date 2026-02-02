@@ -92,8 +92,8 @@ export default function IncassokostenForm({ debt, onGenerateLetter, onBack }) {
                 if (debt?.creditor_name) {
                     setCreditorSectionOpen(false);
                 }
-                // Collapse details - debt amount and case number are known
-                setDetailsSectionOpen(false);
+                // Keep details section OPEN - user needs to fill incasso_amount
+                // setDetailsSectionOpen stays true (default)
             } catch (error) {
                 console.error('Error loading user:', error);
             }
