@@ -22,6 +22,7 @@ import DisputeForm from './DisputeForm';
 import PartialRecognitionForm from './PartialRecognitionForm';
 import AlreadyPaidForm from './AlreadyPaidForm';
 import VerjaringForm from './VerjaringForm';
+import IncassokostenForm from './IncassokostenForm';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { incomeService, monthlyCostService, debtService, vtblService } from "@/components/services";
@@ -64,6 +65,7 @@ export default function ArrangementStappenplanModal({ debt, isOpen, onClose }) {
   const [partialData, setPartialData] = useState(null);
   const [alreadyPaidData, setAlreadyPaidData] = useState(null);
   const [verjaringData, setVerjaringData] = useState(null);
+  const [incassokostenData, setIncassokostenData] = useState(null);
 
   // 🆕 NIEUWE STATE VOOR BETALINGSREGELINGSBRIEF
   const [paymentFormData, setPaymentFormData] = useState({
@@ -298,6 +300,102 @@ Met vriendelijke groet,
 ${userName}`;
   }, []);
 
+  const generateIncassokostenLetter = useCallback((user, debt, data) => {
+    const userName = data.user_name || user?.full_name || '<uw naam>';
+    const userAddress = data.user_address || '<adres>';
+    const userPostcode = data.user_postcode || '<postcode>';
+    const userCity = data.user_city || '<woonplaats>';
+    const userEmail = data.user_email || '<e-mail>';
+
+    const creditorName = debt.creditor_name || '<naam incassobureau/bedrijf>';
+    const creditorDept = data.creditor_department || '<afdeling>';
+    const creditorAddress = data.creditor_address || '<adres>';
+    const creditorPostcode = data.creditor_postcode || '<postcode>';
+    const creditorCity = data.creditor_city || '<woonplaats>';
+
+    const caseNumber = debt.case_number || '<dossiernummer of kenmerk>';
+    const receivedDate = data.received_letter_date ? new Date(data.received_letter_date).toLocaleDateString('nl-NL') : '<datum>';
+    const debtAmount = `€\u00A0${(debt.amount || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`;
+    const incassoAmount = `€\u00A0${parseFloat(data.incasso_amount || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`;
+    const productName = data.product_name || '<naam product of dienst>';
+    const documentType = data.document_type || 'rekening';
+    const todayFormatted = new Date().toLocaleDateString('nl-NL');
+
+    const contactPersonName = data.contact_person_name || '';
+    const greeting = contactPersonName ? `Geachte heer, mevrouw ${contactPersonName},` : 'Geachte heer, mevrouw,';
+
+    // Build reason paragraph based on selected reason
+    let reasonText = '';
+    switch (data.reason) {
+      case 'A':
+        reasonText = 'Volgens de wet moet u mij namelijk eerst een betalingsherinnering sturen. Dit heeft u niet gedaan.';
+        break;
+      case 'B': {
+        const issues = (data.reason_b_issues || []).map(i => `• ${i}`).join('\n');
+        reasonText = `U stuurde mij namelijk een herinneringsbrief die niet klopt. Hierin staat:\n\n${issues}\n\nUw herinneringsbrief voldoet daarom niet aan de eisen van de wet. U mag dus geen incassokosten rekenen.`;
+        break;
+      }
+      case 'C': {
+        const paymentDate = data.reason_c_payment_date ? new Date(data.reason_c_payment_date).toLocaleDateString('nl-NL') : '<datum>';
+        const paymentRef = data.reason_c_payment_reference || '<betalingskenmerk>';
+        reasonText = `Ik heb de rekening namelijk al betaald na de herinnering die u eerder stuurde. Ik betaalde op ${paymentDate} en vermeldde daarbij het kenmerk ${paymentRef}. De rekening is dus op tijd betaald.`;
+        break;
+      }
+      case 'D': {
+        const maxAmount = `€\u00A0${parseFloat(data.reason_d_max_amount || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`;
+        reasonText = `De incassokosten die u rekent zijn namelijk te hoog. Volgens de wet mag u maximaal ${maxAmount} rekenen.`;
+        break;
+      }
+      default:
+        reasonText = '<kies reden A, B, C, of D>';
+    }
+
+    // Original payment status line
+    let originalPaymentLine = '';
+    if (data.original_payment_status === 'paid') {
+      const paidDate = data.original_paid_date ? new Date(data.original_paid_date).toLocaleDateString('nl-NL') : '<datum>';
+      originalPaymentLine = `Het originele bedrag van ${debtAmount} betaalde ik al op ${paidDate}.`;
+    } else {
+      originalPaymentLine = `Ik zal het originele bedrag van ${debtAmount} zo snel mogelijk aan u betalen.`;
+    }
+
+    return `${userName}
+${userAddress}
+${userPostcode} ${userCity}
+${userEmail}
+
+Aan
+${creditorName}
+${creditorDept}
+${creditorAddress}
+${creditorPostcode} ${creditorCity}
+
+${userCity}, ${todayFormatted}
+
+Kenmerk: ${caseNumber}
+Onderwerp: bezwaar incassokosten
+
+
+${greeting}
+
+Op ${receivedDate} kreeg ik van u een ${documentType}. Hieruit blijkt dat ik ${debtAmount} moet betalen voor ${productName}. Bovenop dat bedrag rekent u incassokosten van ${incassoAmount}.
+
+Ik ben het niet eens met deze incassokosten. ${reasonText}
+
+De incassokosten die u vraagt, betaal ik daarom niet.
+
+${originalPaymentLine}
+
+Ik verzoek u daarom het dossier te sluiten en mij dit binnen 7 dagen schriftelijk te laten weten. Krijg ik binnen 7 dagen geen reactie? Dan ga ik ervan uit dat u het dossier sluit en mij geen brieven meer stuurt.
+
+Ik wacht uw reactie af.
+
+Met vriendelijke groet,
+
+
+${userName}`;
+  }, []);
+
   // 🔧 AANGEPAST: Genereer ALLEEN de brieftekst (zonder disclaimer/checklist)
   const generateJuridischLoketLetter = useCallback(() => {
     const {
@@ -318,38 +416,56 @@ ${userName}`;
       optionalPaymentText = `Ik heb alvast ${formatCurrency(parseFloat(firstPaymentAmount))} aan u betaald.`;
     }
 
-    // ✅ ALLEEN DE BRIEFTEKST - geen disclaimer/checklist meer
-    const letter = `${userName || '[naam]'}
-${userAddress || '[adres]'}
-${userPostcode || '[postcode]'} ${userCity || '[woonplaats]'}
-${userEmail || '[e-mail]'}
+    // ✅ Officieel Juridisch Loket template
+    const formattedDate = new Date(receivedLetterDate).toLocaleDateString('nl-NL');
+    const todayFormatted = new Date().toLocaleDateString('nl-NL');
+    const monthlyFormatted = formatCurrency(parseFloat(monthlyAmount) || 0);
+
+    let paymentSentence = '';
+    if (includeFirstPayment && firstPaymentDate) {
+      const fpDate = new Date(firstPaymentDate).toLocaleDateString('nl-NL');
+      if (firstPaymentAmount) {
+        paymentSentence = ` Op ${fpDate} zal ik de eerste termijn van ${formatCurrency(parseFloat(firstPaymentAmount))} overmaken.`;
+      } else {
+        paymentSentence = ` Op ${fpDate} zal ik de eerste termijn overmaken.`;
+      }
+    } else if (includeFirstPayment && firstPaymentAmount) {
+      paymentSentence = ` Ik heb de eerste termijn van ${formatCurrency(parseFloat(firstPaymentAmount))} reeds overgemaakt.`;
+    }
+
+    const letter = `${userName || '<uw naam>'}
+${userAddress || '<adres>'}
+${userPostcode || '<postcode>'} ${userCity || '<woonplaats>'}
+${userEmail || '<e-mail>'}
 
 Aan
+
 ${creditorName}
-${creditorDepartment || '[afdeling]'}
-${creditorAddress || '[adres]'}
-${creditorPostcode || '[postcode]'} ${creditorCity || '[plaats]'}
+${creditorDepartment || '<afdeling>'}
+${creditorAddress || '<adres>'}
+${creditorPostcode || '<postcode>'} ${creditorCity || '<plaats>'}
 
-${userCity || '[woonplaats]'}, ${new Date().toLocaleDateString('nl-NL')}
+${userCity || '<woonplaats>'}, ${todayFormatted}
+Onderwerp:      betalingsregeling
+Kenmerk:         ${caseNumber}
 
-Onderwerp: betalingsregeling
-Kenmerk: ${caseNumber}
 
 Geachte heer, mevrouw,
 
-Op ${new Date(receivedLetterDate).toLocaleDateString('nl-NL')} ontving ik van u een brief waarin u een bedrag van ${totalAmount} van mij vraagt. Helaas kan ik dit bedrag niet in één keer betalen. Daarom wil ik u vragen om een betalingsregeling.
+Op ${formattedDate} ontving ik van u een brief waarin u namens ${creditorName} een bedrag van €\u00A0${(debt.amount || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2 })} van mij vordert. Ik weet dat ik dit bedrag aan ${creditorName} verschuldigd ben, maar ik ben gelet op mijn inkomsten en uitgaven niet in staat dit bedrag in één keer te betalen.
 
-Als ik kijk naar mijn inkomsten en uitgaven, kan ik iedere maand ${formatCurrency(parseFloat(monthlyAmount) || 0)} betalen. Zo betaal ik de schuld binnen ${numberOfMonths} maanden af. ${optionalPaymentText}
+Ik verzoek u om een betalingsregeling met mij te treffen zodat ik de vordering in termijnen kan aflossen. Ik zou de vordering graag in ${numberOfMonths} gelijke termijnen van ${monthlyFormatted} voldoen.${paymentSentence}
 
-Graag hoor ik binnen 14 dagen of u met mijn voorstel akkoord gaat.
+Graag hoor ik binnen 14 dagen na dagtekening van deze brief of u met mijn betalingsvoorstel akkoord gaat. Verder vraag ik u om tijdens deze correspondentie verdere incassomaatregelen op te schorten om onnodige extra kosten te voorkomen.
 
-Ik wacht uw reactie af.
+Ik wacht uw spoedige reactie af.
 
 Met vriendelijke groet,
 
-${userName || '[naam en handtekening]'}
 
-Bijlage: overzicht inkomsten en uitgaven`;
+${userName || '<naam en handtekening>'}
+
+Bijlage: kopie invorderingsbrief`;
 
     return letter;
   }, [paymentFormData, debt, formatCurrency]);
@@ -710,6 +826,8 @@ Bijlage: overzicht inkomsten en uitgaven`;
         filename = `bewijs_al_betaald_${debt.creditor_name}.txt`;
     } else if (isVerjaringContext || view === 'verjaring-letter') {
         filename = `beroep_verjaring_${debt.creditor_name}.txt`;
+    } else if (view === 'incassokosten-letter') {
+        filename = `bezwaar_incassokosten_${debt.creditor_name}.txt`;
     } else if (view === 'payment-letter') {
         filename = `betalingsregeling_juridisch_loket_${debt.creditor_name}.txt`;
     }
@@ -760,6 +878,13 @@ Bijlage: overzicht inkomsten en uitgaven`;
     const letter = generateVerjaringLetter(user, debt, data);
     setLetterContent(letter);
     setView('verjaring-letter');
+  };
+
+  const handleGenerateIncassokostenLetter = (data) => {
+    setIncassokostenData(data);
+    const letter = generateIncassokostenLetter(user, debt, data);
+    setLetterContent(letter);
+    setView('incassokosten-letter');
   };
 
   const handleMarkDisputeAsSent = async () => {
@@ -960,6 +1085,52 @@ const handleMarkVerjaringAsSent = async () => {
         });
     }
 };
+
+  const handleMarkIncassokostenAsSent = async () => {
+    if (!debt || !incassokostenData || !letterContent) {
+        toast({ title: "Fout", description: "Kon de benodigde gegevens niet vinden.", variant: "destructive" });
+        return;
+    }
+
+    try {
+        await Debt.update(debt.id, {
+            status: 'wachtend',
+        });
+
+        await PaymentPlanProposal.create({
+            debt_id: debt.id,
+            template_type: 'incassokosten_bezwaar',
+            letter_content: letterContent,
+            sent_date: new Date().toISOString().split('T')[0],
+            status: 'sent',
+            ...incassokostenData
+        });
+
+        let arr = arrangement;
+        if (!arr) {
+          arr = await ArrangementProgress.create({ debt_id: debt.id });
+        }
+        await ArrangementProgress.update(arr.id, {
+          step_1_completed: true,
+          step_2_completed: true,
+          letter_sent_date: new Date().toISOString().split('T')[0],
+        });
+
+        toast({
+            title: "Verstuurd!",
+            description: "De status van de schuld is bijgewerkt naar 'Wachtend'.",
+        });
+
+        onClose();
+    } catch (error) {
+        console.error("Failed to mark 'incassokosten bezwaar' as sent:", error);
+        toast({
+            title: "Fout",
+            description: "Er is iets misgegaan bij het opslaan van de gegevens.",
+            variant: "destructive",
+        });
+    }
+  };
 
   const handleMarkModificationAsSent = async (templateType) => {
     if (!debt || !letterContent) {
@@ -1175,6 +1346,15 @@ const handleMarkVerjaringAsSent = async () => {
                     <div>
                         <h4 className="font-bold">Ik erken de schuld NIET</h4>
                         <p className="text-sm text-gray-600 dark:text-gray-400">We stellen een brief op om de schuld volledig te betwisten.</p>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card onClick={() => setView('incassokosten')} className="cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] dark:bg-[#2a2a2a]">
+                <CardContent className="p-4 flex items-start gap-4">
+                    <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400"/>
+                    <div>
+                        <h4 className="font-bold">Bezwaar tegen incassokosten</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Maak bezwaar tegen onterechte incassokosten via het Juridisch Loket template.</p>
                     </div>
                 </CardContent>
             </Card>
@@ -1511,6 +1691,7 @@ const handleMarkVerjaringAsSent = async () => {
     if (viewType === 'partial' || isPartialContext) return `Gedeeltelijke erkenning - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
     if (viewType === 'already-paid' || isAlreadyPaidContext) return `Betaalde rekening - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
     if (viewType === 'verjaring' || isVerjaringContext) return `Verjaarde rekening - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
+    if (viewType === 'incassokosten') return `Bezwaar incassokosten - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
     if (modificationType === 'lowering_amount') return `Verzoek verlaging maandbedrag - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
     if (modificationType === 'payment_holiday') return `Verzoek betalingsvakantie - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
     if (modificationType === 'stop_debt_counseling') return `Stopzetting regeling - Dossier ${debt?.case_number || '[Dossiernummer]'}`;
@@ -1521,6 +1702,7 @@ const handleMarkVerjaringAsSent = async () => {
     if (viewType === 'dispute') return 'Voeg bewijsstukken toe zoals betalingsbewijzen of correspondentie.';
     if (viewType === 'already-paid') return 'Vergeet niet het betalingsbewijs als bijlage mee te sturen!';
     if (viewType === 'verjaring') return 'Een schuld verjaart na 5 jaar (consumentenschulden) of 20 jaar (overig).';
+    if (viewType === 'incassokosten') return 'U heeft 7 dagen om bezwaar te maken. Stuur de brief aangetekend.';
     if (modificationType === 'payment_holiday') return 'Een betalingsvakantie is meestal 1-3 maanden. Leg uw situatie goed uit.';
     return 'Vergeet niet de datum en het bedrag te controleren voordat je verstuurt.';
   };
@@ -1591,6 +1773,18 @@ const handleMarkVerjaringAsSent = async () => {
         onMarkAsSent={handleMarkVerjaringAsSent}
         markAsSentText="Ik heb de brief verstuurd"
         viewType="verjaring"
+    />
+  );
+
+  const renderIncassokostenLetterView = () => (
+    <GenericLetterView
+        onBack={() => setView('incassokosten')}
+        title="Brief Bezwaar Incassokosten"
+        letterContent={letterContent}
+        onLetterChange={setLetterContent}
+        onMarkAsSent={handleMarkIncassokostenAsSent}
+        markAsSentText="Ik heb de brief verstuurd"
+        viewType="incassokosten"
     />
   );
 
@@ -1858,10 +2052,10 @@ const handleMarkVerjaringAsSent = async () => {
       onBack={() => setView('payment-arrangement-form')}
       backText="Terug naar formulier"
       calculation={calculation}
-      tipText="Vergeet niet de datum en het bedrag in te vullen voordat je op verzenden klikt."
-      infoTitle="Uw Rechten"
-      infoText="Een schuldeiser is niet verplicht een betalingsregeling te accepteren, maar de meeste zullen een redelijk voorstel serieus overwegen."
-      attachmentName="Overzicht_inkomsten_en_uitgaven.pdf"
+      tipText="Stuur altijd een kopie van de invorderingsbrief mee als bijlage."
+      infoTitle="Juridisch Loket Template"
+      infoText="Dit is het officiële template van het Juridisch Loket. Een schuldeiser is niet verplicht een betalingsregeling te accepteren, maar de meeste zullen een redelijk voorstel serieus overwegen."
+      attachmentName="Kopie invorderingsbrief"
       showDisclaimer={true}
       showChecklist={true}
     />
@@ -2005,10 +2199,12 @@ const handleMarkVerjaringAsSent = async () => {
         {view === 'partial-recognition' && <PartialRecognitionForm debt={debt} onGenerateLetter={handleGeneratePartialLetter} onBack={() => { setView('choice'); setActiveTab('keuzes'); }} />}
         {view === 'already-paid' && <AlreadyPaidForm debt={debt} onGenerateLetter={handleGenerateAlreadyPaidLetter} onBack={() => { setView('choice'); setActiveTab('keuzes'); }} />}
         {view === 'verjaring' && <VerjaringForm debt={debt} onGenerateLetter={handleGenerateVerjaringLetter} onBack={() => { setView('choice'); setActiveTab('keuzes'); }} />}
+        {view === 'incassokosten' && <IncassokostenForm debt={debt} onGenerateLetter={handleGenerateIncassokostenLetter} onBack={() => { setView('choice'); setActiveTab('keuzes'); }} />}
         {view === 'dispute-letter' && renderDisputeLetterView()}
         {view === 'partial-letter' && renderPartialLetterView()}
         {view === 'already-paid-letter' && renderAlreadyPaidLetterView()}
         {view === 'verjaring-letter' && renderVerjaringLetterView()}
+        {view === 'incassokosten-letter' && renderIncassokostenLetterView()}
         {view === 'lowering_amount' && renderLoweringAmountView()}
         {view === 'payment_holiday' && renderPaymentHolidayView()}
         {view === 'stop_debt_counseling' && renderStopCounselingView()}
