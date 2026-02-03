@@ -1,10 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Debt, User } from '@/api/entities';
 import { useToast } from '@/components/ui/use-toast';
 import { gamificationService, XP_REWARDS } from "@/services/gamificationService";
+import { vtblService } from "@/components/services";
 
 import Step1Type from './Step1Type';
 import Step2Creditor from './Step2Creditor';
@@ -35,13 +36,25 @@ export default function DebtWizard({ isOpen, onClose, onSave }) {
     payment_iban: '',
     payment_account_name: '',
     payment_reference: '',
-    notes: ''
+    notes: '',
+    original_creditor: '',
+    monthly_payment: ''
   };
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState(initialFormData);
   const [isSaving, setIsSaving] = useState(false);
+  const [vtblBudget, setVtblBudget] = useState(null);
   const { toast } = useToast();
+
+  // Fetch VTLB budget for sustainability check
+  useEffect(() => {
+    if (isOpen) {
+      vtblService.calculateVtbl().then(result => {
+        if (result) setVtblBudget(result.aflosCapaciteit || 0);
+      }).catch(() => {});
+    }
+  }, [isOpen]);
 
   const handleNext = () => setStep(prev => Math.min(prev + 1, TOTAL_STEPS));
   const handleBack = () => setStep(prev => Math.max(prev - 1, 1));
@@ -99,14 +112,15 @@ export default function DebtWizard({ isOpen, onClose, onSave }) {
         payment_iban: formData.payment_iban,
         payment_account_name: formData.payment_account_name,
         payment_reference: formData.payment_reference,
-        notes: formData.notes
+        notes: formData.notes,
+        original_creditor: (formData.creditor_type === 'incassobureau' || formData.creditor_type === 'deurwaarder') ? formData.original_creditor : null
       };
 
       dataToSave.amount = dataToSave.principal_amount + dataToSave.collection_costs + dataToSave.interest_amount;
-      
+
       // Voor een betalingsregeling status, kopieer de terugbetalingsinfo
-      if (dataToSave.status === 'betalingsregeling' && dataToSave.repayment_amount) {
-          dataToSave.monthly_payment = dataToSave.repayment_amount;
+      if (dataToSave.status === 'betalingsregeling') {
+          dataToSave.monthly_payment = parseFloat(formData.monthly_payment) || (dataToSave.repayment_amount || 0);
           dataToSave.payment_plan_date = new Date().toISOString().split('T')[0];
       }
 
@@ -131,6 +145,8 @@ export default function DebtWizard({ isOpen, onClose, onSave }) {
         description: `De schuld is succesvol toegevoegd. +${xpAwarded} XP`,
       });
       onSave(); // Refresh data on the main page
+      setFormData(initialFormData); // Reset form
+      setStep(1); // Reset to first step
       onClose(); // Close the modal
     } catch (error) {
       console.error("Error saving debt:", error);
@@ -159,7 +175,7 @@ export default function DebtWizard({ isOpen, onClose, onSave }) {
       case 3:
         return <Step3Amount formData={formData} updateFormData={updateFormData} />;
       case 4:
-        return <Step4DateStatus formData={formData} updateFormData={updateFormData} />;
+        return <Step4DateStatus formData={formData} updateFormData={updateFormData} vtblBudget={vtblBudget} />;
       case 5:
         return <Step5Optional formData={formData} updateFormData={updateFormData} />;
       case 6:

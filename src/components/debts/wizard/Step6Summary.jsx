@@ -65,14 +65,30 @@ export default function Step6Summary({ formData, goToStep }) {
             onEdit={goToStep}
             step={4}
         />
-        <SummaryRow 
-            label="Status" 
+        <SummaryRow
+            label="Status"
             value={statusLabels[formData.status]}
             onEdit={goToStep}
             step={4}
         />
-        <SummaryRow 
-            label="Dossiernummer" 
+        {formData.status === 'betalingsregeling' && formData.monthly_payment && (
+          <SummaryRow
+              label="Betalingsregeling"
+              value={`€${parseFloat(formData.monthly_payment).toFixed(2)} per maand`}
+              onEdit={goToStep}
+              step={4}
+          />
+        )}
+        {(formData.creditor_type === 'incassobureau' || formData.creditor_type === 'deurwaarder') && formData.original_creditor && (
+          <SummaryRow
+              label="Opdrachtgever"
+              value={formData.original_creditor}
+              onEdit={goToStep}
+              step={2}
+          />
+        )}
+        <SummaryRow
+            label="Dossiernummer"
             value={formData.case_number}
             onEdit={goToStep}
             step={5}
