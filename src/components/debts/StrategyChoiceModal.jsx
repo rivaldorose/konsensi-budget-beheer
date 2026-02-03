@@ -223,7 +223,7 @@ const NewStrategyCard = ({
     );
 };
 
-export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, onStrategyChosen }) {
+export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, vtblData, onStrategyChosen }) {
     const { toast } = useToast();
     const { t } = useTranslation();
     const [strategies, setStrategies] = useState(null);
@@ -391,18 +391,84 @@ export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, on
 
                 <div className="overflow-y-auto max-h-[calc(90vh-180px)] p-6 space-y-6">
                     {(!monthlyBudget || monthlyBudget <= 0) ? (
-                        <div className="text-center py-12">
-                            <span className="material-symbols-outlined text-5xl text-text-muted dark:text-text-tertiary mb-4 block">calculate</span>
-                            <h3 className="text-lg font-semibold text-text-main dark:text-text-primary mb-2">Geen budget beschikbaar</h3>
-                            <p className="text-sm text-text-muted dark:text-text-secondary mb-4">
-                                Ga naar de VTLB-calculator om je afloscapaciteit te berekenen.
-                            </p>
-                            <Button
-                                onClick={() => window.location.href = '/vtlb-calculator'}
-                                className="bg-primary dark:bg-primary-green text-white dark:text-dark-bg hover:bg-primary-dark dark:hover:bg-light-green font-semibold"
-                            >
-                                VTLB Berekenen
-                            </Button>
+                        <div className="py-8 space-y-6">
+                            <div className="text-center">
+                                <div className="w-16 h-16 rounded-2xl bg-status-orange/10 dark:bg-accent-orange/10 flex items-center justify-center mx-auto mb-4">
+                                    <span className="material-symbols-outlined text-4xl text-status-orange dark:text-accent-orange">account_balance_wallet</span>
+                                </div>
+                                <h3 className="text-lg font-bold text-text-main dark:text-text-primary mb-2">Geen afloscapaciteit berekend</h3>
+                                <p className="text-sm text-text-muted dark:text-text-secondary max-w-sm mx-auto">
+                                    Om een strategie te kiezen moet de app eerst weten hoeveel je maandelijks kunt aflossen. Dit wordt automatisch berekend op basis van je gegevens.
+                                </p>
+                            </div>
+
+                            {/* Explain WHY there's no budget */}
+                            <div className="bg-gray-50 dark:bg-dark-card-elevated rounded-2xl p-5 border border-gray-200 dark:border-dark-border-accent space-y-4">
+                                <h4 className="text-sm font-bold text-text-main dark:text-text-primary flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-lg text-status-orange dark:text-accent-orange">help</span>
+                                    Waarom is er geen budget?
+                                </h4>
+
+                                {vtblData && vtblData.vastInkomen === 0 ? (
+                                    <div className="flex gap-3 items-start">
+                                        <span className="material-symbols-outlined text-lg text-status-orange dark:text-accent-orange mt-0.5 shrink-0">money_off</span>
+                                        <div>
+                                            <p className="text-sm font-semibold text-text-main dark:text-text-primary">Er is geen inkomen ingevuld</p>
+                                            <p className="text-xs text-text-muted dark:text-text-tertiary mt-0.5">
+                                                Ga naar <strong>Inkomen</strong> en vul je maandelijkse inkomsten in. De app berekent daarna automatisch je afloscapaciteit.
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : vtblData && vtblData.beschikbaar <= 0 ? (
+                                    <div className="flex gap-3 items-start">
+                                        <span className="material-symbols-outlined text-lg text-status-orange dark:text-accent-orange mt-0.5 shrink-0">trending_down</span>
+                                        <div>
+                                            <p className="text-sm font-semibold text-text-main dark:text-text-primary">Je uitgaven zijn hoger dan je inkomen</p>
+                                            <p className="text-xs text-text-muted dark:text-text-tertiary mt-0.5">
+                                                Je inkomen is {formatCurrency(vtblData.vastInkomen || 0)} maar je vaste lasten zijn {formatCurrency(vtblData.vasteLasten || 0)}{vtblData.huidigeRegelingen > 0 ? ` + ${formatCurrency(vtblData.huidigeRegelingen)} lopende regelingen` : ''}. Er blijft niets over om mee af te lossen.
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-3 items-start">
+                                        <span className="material-symbols-outlined text-lg text-text-muted dark:text-text-tertiary mt-0.5 shrink-0">info</span>
+                                        <div>
+                                            <p className="text-sm font-semibold text-text-main dark:text-text-primary">Gegevens ontbreken</p>
+                                            <p className="text-xs text-text-muted dark:text-text-tertiary mt-0.5">
+                                                Vul je inkomen en maandelijkse lasten in zodat de app je afloscapaciteit kan berekenen.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Action buttons */}
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                {vtblData && vtblData.vastInkomen === 0 ? (
+                                    <Button
+                                        onClick={() => { onClose(); window.location.href = '/Income'; }}
+                                        className="flex-1 bg-primary dark:bg-primary-green text-white dark:text-dark-bg hover:bg-primary-dark dark:hover:bg-light-green font-semibold"
+                                    >
+                                        <span className="material-symbols-outlined text-lg mr-2">payments</span>
+                                        Inkomen invullen
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        onClick={() => { onClose(); window.location.href = '/MaandelijkseLasten'; }}
+                                        className="flex-1 bg-primary dark:bg-primary-green text-white dark:text-dark-bg hover:bg-primary-dark dark:hover:bg-light-green font-semibold"
+                                    >
+                                        <span className="material-symbols-outlined text-lg mr-2">tune</span>
+                                        Lasten bekijken
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="outline"
+                                    onClick={onClose}
+                                    className="flex-1 border-gray-200 dark:border-dark-border text-text-main dark:text-text-primary hover:bg-gray-50 dark:hover:bg-dark-card-elevated"
+                                >
+                                    Sluiten
+                                </Button>
+                            </div>
                         </div>
                     ) : (
                         <>
