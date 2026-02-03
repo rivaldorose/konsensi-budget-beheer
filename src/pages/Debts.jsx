@@ -855,6 +855,7 @@ export default function Debts() {
         isOpen={showStrategyModal}
         onClose={() => setShowStrategyModal(false)}
         monthlyBudget={vtblData?.aflosCapaciteit > 0 ? vtblData.aflosCapaciteit : (availableBudget > 0 ? availableBudget : 0)}
+        vtblData={vtblData}
         onStrategyChosen={loadDebts}
       />
 
