@@ -262,7 +262,7 @@ export default function CentVoorCent() {
       if (debtsWithArrangements.length > 0) {
         goodThings.push({ emoji: '✅', text: `${debtsWithArrangements.length} actieve betalingsregeling(en) lopen netjes door.` });
       }
-      if (totalFixedCosts > 0 && totalFixedCosts <= totalIncome * 0.5) {
+      if (totalIncome > 0 && totalFixedCosts > 0 && totalFixedCosts <= totalIncome * 0.5) {
         goodThings.push({ emoji: '🏠', text: `Je vaste lasten zijn ${Math.round((totalFixedCosts / totalIncome) * 100)}% van je inkomen. Dat is gezond.` });
       }
 
@@ -282,7 +282,7 @@ export default function CentVoorCent() {
         attentionPoints.push({ emoji: '🚨', text: `Je hebt ${formatCurrency(debtRemaining)} aan openstaande schulden zonder actieve betalingsregeling.` });
       }
 
-      if (totalFixedCosts > totalIncome * 0.5) {
+      if (totalIncome > 0 && totalFixedCosts > totalIncome * 0.5) {
         attentionPoints.push({ emoji: '📊', text: `Je vaste lasten zijn ${Math.round((totalFixedCosts / totalIncome) * 100)}% van je inkomen. Dat is aan de hoge kant.` });
       }
 
@@ -338,15 +338,15 @@ export default function CentVoorCent() {
         });
       }
 
-      // Advice based on fixed costs ratio
-      if (totalFixedCosts > totalIncome * 0.6) {
+      // Advice based on fixed costs ratio (only when income > 0)
+      if (totalIncome > 0 && totalFixedCosts > totalIncome * 0.6) {
         personalAdviceList.push({
           icon: 'content_cut',
           title: 'Vaste lasten te hoog',
           text: `Je vaste lasten zijn ${Math.round((totalFixedCosts / totalIncome) * 100)}% van je inkomen (max aanbevolen: 50%). Vergelijk je energie- en internetprovider of bekijk je abonnementen.`,
           type: 'personal'
         });
-      } else if (totalFixedCosts > totalIncome * 0.5) {
+      } else if (totalIncome > 0 && totalFixedCosts > totalIncome * 0.5) {
         personalAdviceList.push({
           icon: 'tune',
           title: 'Vaste lasten optimaliseren',
