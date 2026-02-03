@@ -24,24 +24,55 @@ const LoadingFallback = () => {
     );
 };
 
+// Helper: retry dynamic import with auto-reload on chunk load failure
+// This handles the case where a new deployment changes chunk hashes
+// and users with stale tabs try to load old (now deleted) chunks
+const lazyWithRetry = (importFn) => {
+    return React.lazy(() =>
+        importFn().catch((error) => {
+            // Only auto-reload for chunk load failures, not other errors
+            if (
+                error.message?.includes('Failed to fetch dynamically imported module') ||
+                error.message?.includes('Loading chunk') ||
+                error.message?.includes('Loading CSS chunk')
+            ) {
+                const hasReloaded = sessionStorage.getItem('chunk_reload');
+                if (!hasReloaded) {
+                    sessionStorage.setItem('chunk_reload', '1');
+                    window.location.reload();
+                    return { default: () => null };
+                }
+                // Already tried reloading once, clear flag and let error boundary handle it
+                sessionStorage.removeItem('chunk_reload');
+            }
+            throw error;
+        })
+    );
+};
+
+// Clear the reload flag on successful page load
+if (sessionStorage.getItem('chunk_reload')) {
+    sessionStorage.removeItem('chunk_reload');
+}
+
 // Lazy load large feature pages for code splitting
-const Dashboard = React.lazy(() => import("./Dashboard"));
-const Debts = React.lazy(() => import("./Debts"));
-const CentVoorCent = React.lazy(() => import("./CentVoorCent"));
-const VTLBCalculator = React.lazy(() => import("./VTLBCalculator"));
-const OnboardingNew = React.lazy(() => import("./OnboardingNew"));
-const Potjes = React.lazy(() => import("./Potjes"));
-const BudgetPlan = React.lazy(() => import("./BudgetPlan"));
-const Income = React.lazy(() => import("./Income"));
-const MaandelijkseLasten = React.lazy(() => import("./MaandelijkseLasten"));
-const VasteLastenCheck = React.lazy(() => import("./VasteLastenCheck"));
-const WorkSchedule = React.lazy(() => import("./WorkSchedule"));
-const Adempauze = React.lazy(() => import("./Adempauze"));
-const AdempauzeCalculator = React.lazy(() => import("./AdempauzeCalculator"));
-const Wishlist = React.lazy(() => import("./Wishlist"));
-const BudgetHelp = React.lazy(() => import("./BudgetHelp"));
-const CoachChat = React.lazy(() => import("./CoachChat"));
-const VideoCall = React.lazy(() => import("./VideoCall"));
+const Dashboard = lazyWithRetry(() => import("./Dashboard"));
+const Debts = lazyWithRetry(() => import("./Debts"));
+const CentVoorCent = lazyWithRetry(() => import("./CentVoorCent"));
+const VTLBCalculator = lazyWithRetry(() => import("./VTLBCalculator"));
+const OnboardingNew = lazyWithRetry(() => import("./OnboardingNew"));
+const Potjes = lazyWithRetry(() => import("./Potjes"));
+const BudgetPlan = lazyWithRetry(() => import("./BudgetPlan"));
+const Income = lazyWithRetry(() => import("./Income"));
+const MaandelijkseLasten = lazyWithRetry(() => import("./MaandelijkseLasten"));
+const VasteLastenCheck = lazyWithRetry(() => import("./VasteLastenCheck"));
+const WorkSchedule = lazyWithRetry(() => import("./WorkSchedule"));
+const Adempauze = lazyWithRetry(() => import("./Adempauze"));
+const AdempauzeCalculator = lazyWithRetry(() => import("./AdempauzeCalculator"));
+const Wishlist = lazyWithRetry(() => import("./Wishlist"));
+const BudgetHelp = lazyWithRetry(() => import("./BudgetHelp"));
+const CoachChat = lazyWithRetry(() => import("./CoachChat"));
+const VideoCall = lazyWithRetry(() => import("./VideoCall"));
 
 // Keep smaller/frequently accessed pages static
 import TermsOfService from "./TermsOfService";
