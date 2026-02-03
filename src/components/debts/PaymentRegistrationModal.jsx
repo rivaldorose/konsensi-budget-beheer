@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,12 +10,105 @@ import { DebtPayment } from "@/api/entities";
 import { PaymentDocument } from "@/api/entities";
 import { Transaction } from "@/api/entities";
 import { User } from "@/api/entities";
-import { UploadPrivateFile, ExtractDataFromUploadedFile, UploadFile } from "@/api/integrations";
 import { useToast } from "@/components/ui/use-toast";
-import { Calendar, DollarSign, Loader2, CheckCircle2, Sparkles, Upload, X, FileText, Wand2 } from "lucide-react";
+import { Calendar, DollarSign, Loader2, CheckCircle2, Sparkles, Upload, X, FileText, Wand2, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatCurrency } from "@/components/utils/formatters";
 import { gamificationService, XP_REWARDS } from "@/services/gamificationService";
+import { supabase } from "@/lib/supabase";
+
+// Parse PDF text to extract payment data
+async function parsePdfText(file) {
+  const pdfjsLib = await import('pdfjs-dist');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+  let fullText = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(item => item.str).join(' ');
+    fullText += pageText + '\n';
+  }
+
+  return extractPaymentData(fullText);
+}
+
+// Extract payment info from text using common Dutch bank statement patterns
+function extractPaymentData(text) {
+  const result = { amount: null, date: null, description: null, method: null };
+
+  // Amount patterns: €123,45 or EUR 123,45 or 123.45 or 1.234,56
+  const amountPatterns = [
+    /€\s*([\d.,]+)/,
+    /EUR\s*([\d.,]+)/i,
+    /bedrag[:\s]*([\d.,]+)/i,
+    /totaal[:\s]*€?\s*([\d.,]+)/i,
+    /af[:\s]*€?\s*([\d.,]+)/i,
+  ];
+
+  for (const pattern of amountPatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      // Handle Dutch number format: 1.234,56 -> 1234.56
+      let numStr = match[1].replace(/\./g, '').replace(',', '.');
+      const parsed = parseFloat(numStr);
+      if (parsed > 0 && parsed < 1000000) {
+        result.amount = parsed;
+        break;
+      }
+    }
+  }
+
+  // Date patterns: DD-MM-YYYY, DD/MM/YYYY, DD.MM.YYYY, YYYY-MM-DD
+  const datePatterns = [
+    /(\d{2})[-/.](\d{2})[-/.](\d{4})/,
+    /(\d{4})[-/.](\d{2})[-/.](\d{2})/,
+  ];
+
+  for (const pattern of datePatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      let year, month, day;
+      if (match[1].length === 4) {
+        [, year, month, day] = match;
+      } else {
+        [, day, month, year] = match;
+      }
+      const dateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime()) && date.getFullYear() >= 2020) {
+        result.date = dateStr;
+        break;
+      }
+    }
+  }
+
+  // Description: look for omschrijving/kenmerk/referentie
+  const descPatterns = [
+    /omschrijving[:\s]*(.{5,80})/i,
+    /kenmerk[:\s]*(.{5,50})/i,
+    /referentie[:\s]*(.{5,50})/i,
+    /betreft[:\s]*(.{5,80})/i,
+  ];
+
+  for (const pattern of descPatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      result.description = match[1].trim();
+      break;
+    }
+  }
+
+  // Payment method
+  if (/incasso/i.test(text)) result.method = 'incasso';
+  else if (/overboek|overboeking|overschrijving/i.test(text)) result.method = 'bank_transfer';
+  else if (/ideal|i\.?deal/i.test(text)) result.method = 'bank_transfer';
+
+  return result;
+}
 
 export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaymentAdded }) {
   const [amount, setAmount] = useState("");
@@ -28,6 +121,7 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [extracting, setExtracting] = useState(false);
+  const [extractionResult, setExtractionResult] = useState(null);
   const fileInputRef = useRef(null);
   const { toast } = useToast();
 
@@ -40,87 +134,56 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
     const file = e.target.files[0];
     if (!file) return;
 
-    // Check file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
     if (!validTypes.includes(file.type)) {
       toast({ title: "Ongeldig bestandstype", description: "Alleen JPG, PNG en PDF bestanden zijn toegestaan.", variant: "destructive" });
       return;
     }
 
-    // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast({ title: "Bestand te groot", description: "Maximale bestandsgrootte is 10MB.", variant: "destructive" });
       return;
     }
 
     setSelectedFile(file);
+    setExtractionResult(null);
 
-    // Automatically extract data from the file
-    await extractDataFromFile(file);
+    if (file.type === 'application/pdf') {
+      await extractFromPdf(file);
+    }
   };
 
-  const extractDataFromFile = async (file) => {
+  const extractFromPdf = async (file) => {
     setExtracting(true);
     try {
-      // 1. Upload file first (use UploadFile for public URL needed for extraction)
-      // The AI service requires a publicly accessible URL for processing.
-      const { file_url } = await UploadFile({ file });
+      const data = await parsePdfText(file);
+      setExtractionResult(data);
 
-      // 2. Define schema for extraction
-      const schema = {
-        type: "object",
-        properties: {
-          amount: {
-            type: "number",
-            description: "Het betaalde bedrag in euro's (alleen het nummer, geen valutasymbool)"
-          },
-          payment_date: {
-            type: "string",
-            description: "De betalingsdatum in het formaat YYYY-MM-DD"
-          },
-          description: {
-            type: "string",
-            description: "Omschrijving van de betaling of betalingskenmerk"
-          },
-          recipient: {
-            type: "string",
-            description: "Naam van de ontvanger/begunstigde"
-          }
-        }
-      };
+      let filled = 0;
+      if (data.amount) { setAmount(data.amount.toFixed(2)); filled++; }
+      if (data.date) { setPaymentDate(data.date); filled++; }
+      if (data.description) { setNotes(data.description); filled++; }
+      if (data.method) { setPaymentMethod(data.method); filled++; }
 
-      // 3. Extract data using AI
-      const result = await ExtractDataFromUploadedFile({
-        file_url: file_url,
-        json_schema: schema
-      });
-
-      if (result.status === "success" && result.output) {
-        const data = result.output;
-        
-        // Fill form fields with extracted data
-        if (data.amount) setAmount(data.amount.toString());
-        if (data.payment_date) setPaymentDate(data.payment_date);
-        if (data.description) setNotes(data.description);
-
-        toast({ 
-          title: "✨ Gegevens uitgelezen!", 
-          description: "Controleer de ingevulde velden en pas aan indien nodig.",
+      if (filled > 0) {
+        toast({
+          title: `${filled} veld${filled > 1 ? 'en' : ''} automatisch ingevuld`,
+          description: "Controleer de gegevens en bevestig.",
           variant: "success"
         });
       } else {
-        toast({ 
-          title: "Kon gegevens niet uitlezen", 
-          description: "Vul de gegevens handmatig in.", 
-          variant: "destructive" 
+        toast({
+          title: "Geen gegevens gevonden",
+          description: "Vul de gegevens handmatig in.",
+          variant: "destructive"
         });
       }
     } catch (error) {
-      console.error("Error extracting data:", error);
-      toast({ 
-        title: "Fout bij uitlezen", 
-        description: "Vul de gegevens handmatig in.", 
-        variant: "destructive" 
+      console.error("Error parsing PDF:", error);
+      toast({
+        title: "Kon PDF niet lezen",
+        description: "Vul de gegevens handmatig in.",
+        variant: "destructive"
       });
     } finally {
       setExtracting(false);
@@ -129,9 +192,8 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
 
   const handleRemoveFile = () => {
     setSelectedFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    setExtractionResult(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSubmit = async (e) => {
@@ -140,27 +202,28 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
 
     try {
       const paymentAmount = parseFloat(amount);
-      
+
       if (!paymentAmount || paymentAmount <= 0) {
         toast({ title: "Ongeldig bedrag", description: "Vul een geldig bedrag in.", variant: "destructive" });
         setSaving(false);
         return;
       }
 
-      // 1. Upload file for permanent storage if selected
-      let fileInfo = null;
+      // 1. Upload file to Supabase Storage if selected
+      let fileUrl = null;
       if (selectedFile) {
         setUploading(true);
         try {
-          const { file_uri } = await UploadPrivateFile({ file: selectedFile });
-          fileInfo = {
-            name: selectedFile.name,
-            uri: file_uri,
-            size: selectedFile.size
-          };
+          const fileName = `${Date.now()}-${selectedFile.name}`;
+          const { data, error } = await supabase.storage
+            .from('attachments')
+            .upload(fileName, selectedFile);
+          if (!error && data) {
+            const { data: urlData } = supabase.storage.from('attachments').getPublicUrl(data.path);
+            fileUrl = urlData?.publicUrl || null;
+          }
         } catch (error) {
           console.error("Error uploading file:", error);
-          toast({ title: "Upload mislukt", description: "Kon bankafschrift niet uploaden, maar betaling wordt wel opgeslagen.", variant: "destructive" });
         } finally {
           setUploading(false);
         }
@@ -171,59 +234,55 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
         debt_id: debt.id,
         amount: paymentAmount,
         payment_date: paymentDate,
+        date: paymentDate,
         payment_method: paymentMethod,
         notes: notes,
         status: "betaald"
       });
 
-      // 3. Save document if uploaded
-      if (fileInfo) {
+      // 3. Save document reference if uploaded
+      if (fileUrl && newPayment) {
         await PaymentDocument.create({
           debt_id: debt.id,
           payment_id: newPayment.id,
           document_type: 'betalingsbewijs',
-          file_name: fileInfo.name,
-          file_uri: fileInfo.uri,
-          file_size: fileInfo.size,
-        });
+          file_name: selectedFile.name,
+          file_url: fileUrl,
+          file_uri: fileUrl,
+          file_size: selectedFile.size,
+        }).catch(err => console.error("Error saving document:", err));
       }
 
-      // 4. CREATE AUTOMATIC TRANSACTION FOR THIS PAYMENT
+      // 4. Create automatic transaction
       await Transaction.create({
         type: 'expense',
         amount: paymentAmount,
         description: `Aflossing ${debt.creditor_name}`,
-        category: 'debt_payments', // Fixed category for debt payments
+        category: 'debt_payments',
         date: paymentDate
-      });
+      }).catch(err => console.error("Error creating transaction:", err));
 
-      // 5. Calculate CORRECT amount_paid by summing ALL payments
+      // 5. Calculate correct amount_paid
       const allPayments = await DebtPayment.filter({ debt_id: debt.id });
       const correctAmountPaid = allPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
       const debtIsNowFullyPaid = correctAmountPaid >= debt.amount;
 
-      // 6. Update debt with CORRECT amount_paid
-      const updateData = {
-        amount_paid: correctAmountPaid,
-      };
+      const updateData = { amount_paid: correctAmountPaid };
 
-      // 7. Award XP for payment
+      // 6. Award XP
       let xpAwarded = 0;
       try {
         const currentUser = await User.me();
         if (currentUser?.id) {
-          // Award XP for making a payment
           await gamificationService.addXP(currentUser.id, XP_REWARDS.PAYMENT_MADE, "payment_made");
           xpAwarded = XP_REWARDS.PAYMENT_MADE;
 
-          // Award bonus XP for extra payment (payment higher than monthly payment arrangement)
           const monthlyPayment = debt.monthly_payment || debt.repayment_amount || 0;
           if (monthlyPayment > 0 && paymentAmount > monthlyPayment) {
             await gamificationService.addXP(currentUser.id, XP_REWARDS.EXTRA_PAYMENT_MADE, "extra_payment_made");
             xpAwarded += XP_REWARDS.EXTRA_PAYMENT_MADE;
           }
 
-          // Award bonus XP if debt is fully paid
           if (debtIsNowFullyPaid && debt.status !== 'afbetaald') {
             await gamificationService.addXP(currentUser.id, XP_REWARDS.DEBT_FULLY_PAID, "debt_fully_paid");
             xpAwarded += XP_REWARDS.DEBT_FULLY_PAID;
@@ -233,49 +292,32 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
         console.error("Error awarding XP:", xpError);
       }
 
-      // 8. If fully paid for the first time, update status and show celebration
+      // 7. Handle fully paid or normal flow
       if (debtIsNowFullyPaid && debt.status !== 'afbetaald') {
         updateData.status = 'afbetaald';
-
-        // Update database EERST
         await Debt.update(debt.id, updateData);
 
-        // Dan celebration tonen
         setIsFullyPaid(true);
         setCelebrating(true);
 
-        // Show celebration for 3 seconds, DAN refresh parent data, DAN close
         setTimeout(async () => {
           setCelebrating(false);
-
-          // EERST: Refresh parent data
           if (onPaymentAdded) await onPaymentAdded();
-
-          // DAN: Toast
           toast({
-            title: "🎉 Schuld afgelost!",
+            title: "Schuld afgelost!",
             description: `${debt.creditor_name} is volledig afbetaald! +${xpAwarded} XP`,
           });
-
-          // LAATSTE: Modal sluiten
           onClose();
         }, 3000);
       } else {
-        // Normale flow: update en direct door
         await Debt.update(debt.id, updateData);
-
-        // EERST: Refresh parent data
         if (onPaymentAdded) await onPaymentAdded();
-
-        // DAN: Toast
         toast({
           title: isAlreadyPaid ? "Betaling toegevoegd" : `Betaling geregistreerd +${xpAwarded} XP`,
           description: isAlreadyPaid
             ? "Historische betaling is succesvol toegevoegd!"
             : `Nog ${formatCurrency(debt.amount - correctAmountPaid)} te gaan!`,
         });
-
-        // LAATSTE: Modal sluiten
         onClose();
       }
 
@@ -287,19 +329,13 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
   };
 
   const handleQuickAmount = (percentage) => {
-    if (isAlreadyPaid) {
-      // For already paid debts, suggest the original debt amount
-      const quickAmount = debt.amount * percentage;
-      setAmount(quickAmount.toFixed(2));
-    } else {
-      const quickAmount = remainingAmount * percentage;
-      setAmount(quickAmount.toFixed(2));
-    }
+    const base = isAlreadyPaid ? debt.amount : remainingAmount;
+    setAmount((base * percentage).toFixed(2));
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border">
         <AnimatePresence mode="wait">
           {celebrating ? (
             <motion.div
@@ -310,26 +346,19 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
               className="py-12 text-center"
             >
               <motion.div
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  rotate: [0, 10, -10, 0]
-                }}
-                transition={{ 
-                  duration: 0.5,
-                  repeat: Infinity,
-                  repeatDelay: 0.5
-                }}
+                animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 0.5 }}
               >
-                <Sparkles className="w-24 h-24 text-yellow-500 mx-auto mb-4" />
+                <Sparkles className="w-24 h-24 text-yellow-500 dark:text-accent-yellow mx-auto mb-4" />
               </motion.div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                🎉 Gefeliciteerd! 🎉
+              <h2 className="text-3xl font-bold text-text-main dark:text-text-primary mb-2">
+                Gefeliciteerd!
               </h2>
-              <p className="text-xl text-gray-700 mb-2">
+              <p className="text-xl text-text-muted dark:text-text-secondary mb-2">
                 Je hebt {debt.creditor_name} volledig afbetaald!
               </p>
-              <p className="text-lg text-green-600 font-semibold">
-                {formatCurrency(debt.amount)} schuld-vrij! 💪
+              <p className="text-lg text-primary dark:text-primary-green font-semibold">
+                {formatCurrency(debt.amount)} schuld-vrij!
               </p>
               <motion.div
                 animate={{ y: [0, -10, 0] }}
@@ -347,139 +376,137 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
               exit={{ opacity: 0 }}
             >
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-green-600" />
+                <DialogTitle className="flex items-center gap-2 text-text-main dark:text-text-primary">
+                  <DollarSign className="w-5 h-5 text-primary dark:text-primary-green" />
                   {isAlreadyPaid ? "Historische Betaling Toevoegen" : "Betaling Registreren"}
                 </DialogTitle>
               </DialogHeader>
 
               <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-                {/* Debt info */}
-                <div className={`${isAlreadyPaid ? 'bg-purple-50 border-purple-200' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4`}>
-                  <p className="font-semibold text-gray-900">{debt.creditor_name}</p>
+                {/* Debt info card */}
+                <div className={`rounded-xl p-4 border ${isAlreadyPaid
+                  ? 'bg-purple-50 dark:bg-accent-purple/10 border-purple-200 dark:border-accent-purple/20'
+                  : 'bg-blue-50 dark:bg-accent-blue/10 border-blue-200 dark:border-accent-blue/20'
+                }`}>
+                  <p className="font-semibold text-text-main dark:text-text-primary">{debt.creditor_name}</p>
                   <div className="flex justify-between text-sm mt-2">
-                    <span className="text-gray-600">Totaal schuld:</span>
-                    <span className="font-bold">{formatCurrency(debt.amount)}</span>
+                    <span className="text-text-muted dark:text-text-secondary">Totaal schuld:</span>
+                    <span className="font-bold text-text-main dark:text-text-primary">{formatCurrency(debt.amount)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Al betaald:</span>
-                    <span className="font-bold text-green-600">{formatCurrency(debt.amount_paid || 0)}</span>
+                    <span className="text-text-muted dark:text-text-secondary">Al betaald:</span>
+                    <span className="font-bold text-primary dark:text-primary-green">{formatCurrency(debt.amount_paid || 0)}</span>
                   </div>
                   {!isAlreadyPaid && (
-                    <div className="flex justify-between text-sm pt-2 border-t border-blue-300 mt-2">
-                      <span className="text-gray-900 font-medium">Nog te gaan:</span>
-                      <span className="font-bold text-orange-600">{formatCurrency(remainingAmount)}</span>
+                    <div className="flex justify-between text-sm pt-2 border-t border-blue-300 dark:border-accent-blue/30 mt-2">
+                      <span className="text-text-main dark:text-text-primary font-medium">Nog te gaan:</span>
+                      <span className="font-bold text-accent-orange dark:text-accent-orange">{formatCurrency(remainingAmount)}</span>
                     </div>
                   )}
                   {isAlreadyPaid && (
-                    <div className="mt-3 p-2 bg-purple-100 rounded text-xs text-purple-800">
-                      💡 Deze schuld is al afbetaald. Je voegt nu een historische betaling toe.
+                    <div className="mt-3 p-2 bg-purple-100 dark:bg-accent-purple/20 rounded-lg text-xs text-purple-800 dark:text-purple-300">
+                      Deze schuld is al afbetaald. Je voegt nu een historische betaling toe.
                     </div>
                   )}
                 </div>
 
-                {/* File upload with AI extraction */}
+                {/* Bank statement upload */}
                 <div>
-                  <Label>Bankafschrift (optioneel)</Label>
+                  <Label className="text-text-main dark:text-text-primary">Bankafschrift uploaden</Label>
+                  <p className="text-xs text-text-muted dark:text-text-tertiary mt-0.5 mb-2">Upload een PDF en de gegevens worden automatisch ingevuld</p>
+
                   {extracting && (
-                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
-                      <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+                    <div className="p-3 bg-blue-50 dark:bg-accent-blue/10 border border-blue-200 dark:border-accent-blue/20 rounded-xl flex items-center gap-3 mb-2">
+                      <Loader2 className="w-5 h-5 text-accent-blue animate-spin flex-shrink-0" />
                       <div>
-                        <p className="text-sm font-medium text-blue-900">Gegevens uitlezen...</p>
-                        <p className="text-xs text-blue-700">AI leest het bankafschrift uit</p>
+                        <p className="text-sm font-medium text-blue-900 dark:text-blue-300">PDF wordt gelezen...</p>
+                        <p className="text-xs text-blue-700 dark:text-blue-400">Gegevens worden automatisch herkend</p>
                       </div>
                     </div>
                   )}
-                  <div className="mt-2">
-                    {!selectedFile ? (
-                      <label className="cursor-pointer">
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*,.pdf"
-                          onChange={handleFileSelect}
-                          className="hidden"
-                          disabled={extracting}
-                        />
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-green-500 transition-colors text-center">
-                          <div className="flex items-center justify-center gap-2 mb-2">
-                            <Upload className="w-8 h-8 text-gray-400" />
-                            <Wand2 className="w-5 h-5 text-purple-500" />
-                          </div>
-                          <p className="text-sm text-gray-600 font-medium">Klik om bankafschrift te uploaden</p>
-                          <p className="text-xs text-gray-500 mt-1">AI leest automatisch bedrag en datum uit</p>
-                          <p className="text-xs text-gray-400 mt-1">JPG, PNG of PDF (max 10MB)</p>
-                        </div>
-                      </label>
-                    ) : (
-                      <div className="border border-green-200 bg-green-50 rounded-lg p-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-5 h-5 text-green-600" />
-                          <div>
-                            <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">{selectedFile.name}</p>
-                            <p className="text-xs text-gray-500">{(selectedFile.size / 1024).toFixed(0)} KB</p>
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={handleRemoveFile}
-                          className="h-8 w-8 text-gray-400 hover:text-red-500"
-                          disabled={extracting}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
+
+                  {extractionResult && !extracting && (
+                    <div className="p-3 bg-emerald-50 dark:bg-primary-green/10 border border-emerald-200 dark:border-primary-green/20 rounded-xl flex items-center gap-3 mb-2">
+                      <CheckCircle2 className="w-5 h-5 text-primary dark:text-primary-green flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-emerald-900 dark:text-emerald-300">Gegevens uitgelezen!</p>
+                        <p className="text-xs text-emerald-700 dark:text-emerald-400">Controleer hieronder en bevestig.</p>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
+
+                  {!selectedFile ? (
+                    <label className="cursor-pointer block">
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".pdf,image/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        disabled={extracting}
+                      />
+                      <div className="border-2 border-dashed border-gray-300 dark:border-dark-border-accent rounded-xl p-5 hover:border-primary dark:hover:border-primary-green transition-colors text-center group">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <Upload className="w-8 h-8 text-text-muted dark:text-text-tertiary group-hover:text-primary dark:group-hover:text-primary-green transition-colors" />
+                          <Wand2 className="w-5 h-5 text-accent-purple" />
+                        </div>
+                        <p className="text-sm text-text-main dark:text-text-primary font-medium">Klik om bankafschrift te uploaden</p>
+                        <p className="text-xs text-text-muted dark:text-text-tertiary mt-1">PDF wordt automatisch gelezen en ingevuld</p>
+                        <p className="text-xs text-text-muted dark:text-text-tertiary mt-0.5">PDF, JPG of PNG (max 10MB)</p>
+                      </div>
+                    </label>
+                  ) : (
+                    <div className="border border-emerald-200 dark:border-primary-green/30 bg-emerald-50 dark:bg-primary-green/10 rounded-xl p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="w-5 h-5 text-primary dark:text-primary-green flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-text-main dark:text-text-primary truncate">{selectedFile.name}</p>
+                          <p className="text-xs text-text-muted dark:text-text-tertiary">{(selectedFile.size / 1024).toFixed(0)} KB</p>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleRemoveFile}
+                        className="h-8 w-8 text-text-muted dark:text-text-tertiary hover:text-status-red dark:hover:text-accent-red flex-shrink-0"
+                        disabled={extracting}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Quick amount buttons */}
                 {!isAlreadyPaid && (
                   <div>
-                    <Label className="text-sm text-gray-600 mb-2 block">Snel invullen:</Label>
+                    <Label className="text-sm text-text-muted dark:text-text-secondary mb-2 block">Snel invullen:</Label>
                     <div className="grid grid-cols-4 gap-2">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleQuickAmount(0.25)}
-                      >
-                        25%
-                      </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleQuickAmount(0.50)}
-                      >
-                        50%
-                      </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleQuickAmount(0.75)}
-                      >
-                        75%
-                      </Button>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleQuickAmount(1)}
-                        className="font-bold"
-                      >
-                        Alles
-                      </Button>
+                      {[
+                        { label: '25%', value: 0.25 },
+                        { label: '50%', value: 0.50 },
+                        { label: '75%', value: 0.75 },
+                        { label: 'Alles', value: 1 },
+                      ].map(({ label, value }) => (
+                        <Button
+                          key={label}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleQuickAmount(value)}
+                          className={`border-gray-200 dark:border-dark-border-accent text-text-main dark:text-text-primary hover:bg-gray-50 dark:hover:bg-dark-card-elevated ${value === 1 ? 'font-bold' : ''}`}
+                        >
+                          {label}
+                        </Button>
+                      ))}
                     </div>
                   </div>
                 )}
 
                 {/* Amount */}
                 <div>
-                  <Label htmlFor="amount">Bedrag (€) *</Label>
+                  <Label htmlFor="amount" className="text-text-main dark:text-text-primary">Bedrag (€) *</Label>
                   <Input
                     id="amount"
                     type="number"
@@ -489,34 +516,36 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="0.00"
                     required
+                    className="bg-gray-50 dark:bg-dark-card-elevated border-gray-200 dark:border-dark-border-accent text-text-main dark:text-text-primary"
                   />
                   {isAlreadyPaid && parseFloat(amount) > debt.amount && (
-                    <p className="text-xs text-orange-600 mt-1">
-                      ⚠️ Bedrag is hoger dan de oorspronkelijke schuld
+                    <p className="text-xs text-accent-orange mt-1 flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3" /> Bedrag is hoger dan de oorspronkelijke schuld
                     </p>
                   )}
                 </div>
 
                 {/* Date */}
                 <div>
-                  <Label htmlFor="date">Datum *</Label>
+                  <Label htmlFor="date" className="text-text-main dark:text-text-primary">Datum *</Label>
                   <Input
                     id="date"
                     type="date"
                     value={paymentDate}
                     onChange={(e) => setPaymentDate(e.target.value)}
                     required
+                    className="bg-gray-50 dark:bg-dark-card-elevated border-gray-200 dark:border-dark-border-accent text-text-main dark:text-text-primary"
                   />
                 </div>
 
                 {/* Payment method */}
                 <div>
-                  <Label htmlFor="method">Betaalmethode</Label>
+                  <Label htmlFor="method" className="text-text-main dark:text-text-primary">Betaalmethode</Label>
                   <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-gray-50 dark:bg-dark-card-elevated border-gray-200 dark:border-dark-border-accent text-text-main dark:text-text-primary">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border">
                       <SelectItem value="bank_transfer">Overschrijving</SelectItem>
                       <SelectItem value="incasso">Automatische incasso</SelectItem>
                       <SelectItem value="contant">Contant</SelectItem>
@@ -527,25 +556,36 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
 
                 {/* Notes */}
                 <div>
-                  <Label htmlFor="notes">Notities (optioneel)</Label>
+                  <Label htmlFor="notes" className="text-text-main dark:text-text-primary">Notities (optioneel)</Label>
                   <Input
                     id="notes"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Bijv. referentienummer"
+                    className="bg-gray-50 dark:bg-dark-card-elevated border-gray-200 dark:border-dark-border-accent text-text-main dark:text-text-primary placeholder:text-text-muted dark:placeholder:text-text-tertiary"
                   />
                 </div>
 
                 {/* Actions */}
                 <div className="flex gap-3 pt-4">
-                  <Button type="button" variant="outline" onClick={onClose} className="flex-1" disabled={saving || uploading || extracting}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClose}
+                    className="flex-1 border-gray-200 dark:border-dark-border text-text-main dark:text-text-primary hover:bg-gray-50 dark:hover:bg-dark-card-elevated"
+                    disabled={saving || uploading || extracting}
+                  >
                     Annuleren
                   </Button>
-                  <Button type="submit" disabled={saving || uploading || extracting} className="flex-1 bg-green-600 hover:bg-green-700">
+                  <Button
+                    type="submit"
+                    disabled={saving || uploading || extracting}
+                    className="flex-1 bg-primary dark:bg-primary-green text-white dark:text-dark-bg hover:bg-primary-dark dark:hover:bg-light-green font-semibold"
+                  >
                     {(saving || uploading) ? (
                       <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {uploading ? 'Uploaden...' : 'Opslaan...'}</>
                     ) : (
-                      <><CheckCircle2 className="w-4 h-4 mr-2" /> Registreren</>
+                      <><CheckCircle2 className="w-4 h-4 mr-2" /> Bevestigen</>
                     )}
                   </Button>
                 </div>

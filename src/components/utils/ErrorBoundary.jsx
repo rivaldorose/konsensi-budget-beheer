@@ -14,6 +14,7 @@ export class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
+    this.setState({ error, errorInfo });
   }
 
   render() {
@@ -35,6 +36,17 @@ export class ErrorBoundary extends React.Component {
               <RefreshCw className="w-4 h-4 mr-2" />
               Pagina verversen
             </Button>
+            {this.state.error && (
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-xs text-gray-400 hover:text-gray-600">
+                  Technische details
+                </summary>
+                <pre className="mt-2 p-3 bg-gray-100 rounded-lg text-xs text-red-600 overflow-auto max-h-40 whitespace-pre-wrap break-words">
+                  {this.state.error.toString()}
+                  {this.state.errorInfo?.componentStack}
+                </pre>
+              </details>
+            )}
           </div>
         </div>
       );
