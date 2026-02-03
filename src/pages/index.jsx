@@ -134,6 +134,13 @@ function _getCurrentPage(url) {
     }
 
     // Check for lazy loaded pages
+    // Handle sub-routes that should map to parent page name
+    const subRouteMap = { 'samenvatting': 'CentVoorCent' };
+    const urlParts = url.split('/').filter(Boolean);
+    if (urlParts.length >= 2 && subRouteMap[urlParts[urlParts.length - 1].toLowerCase()]) {
+        return subRouteMap[urlParts[urlParts.length - 1].toLowerCase()];
+    }
+
     const lazyPages = ['debts', 'centvoorcent', 'centvoorcentarchief', 'vtlbcalculator', 'potjes', 'budgetplan', 'budgethelp', 'income', 'maandelijkselasten', 'vastelastencheck', 'workschedule', 'adempauze', 'adempauzecalculator', 'wishlist', 'coachchat', 'videocall'];
     if (lazyPages.includes(urlLastPart.toLowerCase())) {
         return urlLastPart.charAt(0).toUpperCase() + urlLastPart.slice(1);
@@ -172,7 +179,8 @@ function PagesContent() {
                 <Route path="/" element={<LazyRoute component={Dashboard} />} />
                 <Route path="/Dashboard" element={<LazyRoute component={Dashboard} />} />
                 <Route path="/debts" element={<LazyRoute component={Debts} />} />
-                <Route path="/CentVoorCent" element={<LazyRoute component={CentVoorCent} />} />
+                <Route path="/CentVoorCent" element={<LazyRoute component={CentVoorCentArchief} />} />
+                <Route path="/CentVoorCent/samenvatting" element={<LazyRoute component={CentVoorCent} />} />
                 <Route path="/CentVoorCentArchief" element={<LazyRoute component={CentVoorCentArchief} />} />
                 <Route path="/VTLBCalculator" element={<LazyRoute component={VTLBCalculator} />} />
                 <Route path="/onboarding" element={<LazyRoute component={OnboardingNew} />} />

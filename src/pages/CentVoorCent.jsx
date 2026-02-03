@@ -512,11 +512,11 @@ export default function CentVoorCent() {
 
           {/* Previous summaries link */}
           <button
-            onClick={() => navigate('/CentVoorCentArchief')}
+            onClick={() => navigate('/CentVoorCent')}
             className="mt-6 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-green text-sm flex items-center gap-2 transition-colors"
           >
-            <span className="material-symbols-outlined text-lg">history</span>
-            Bekijk eerdere samenvattingen
+            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            Terug naar overzicht
           </button>
         </main>
       </div>
@@ -548,11 +548,11 @@ export default function CentVoorCent() {
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate('/CentVoorCentArchief')}
+              onClick={() => navigate('/CentVoorCent')}
               className="flex items-center gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-[24px] px-4 py-2.5 text-text-muted dark:text-text-secondary font-semibold shadow-sm hover:border-primary dark:hover:border-konsensi-green hover:text-primary dark:hover:text-konsensi-green transition-colors cursor-pointer group"
             >
-              <span className="material-symbols-outlined text-lg">history</span>
-              <span>Archief</span>
+              <span className="material-symbols-outlined text-lg">arrow_back</span>
+              <span>Overzicht</span>
             </button>
             <button
               className="flex items-center gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-[24px] px-4 py-2.5 text-text-main dark:text-white font-semibold shadow-sm hover:border-primary dark:hover:border-konsensi-green transition-colors cursor-pointer group"
