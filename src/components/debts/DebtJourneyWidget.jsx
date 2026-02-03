@@ -71,7 +71,13 @@ export default function DebtJourneyWidget({
           </div>
           <div>
             <h3 className="font-semibold text-lg text-[#1F2937] dark:text-white">Jouw Schuldreis</h3>
-            <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">Je bent goed op weg naar €0!</p>
+            <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">
+              {totalPaid > 0 && overallProgress >= 50
+                ? 'Je bent goed op weg naar €0!'
+                : totalPaid > 0
+                ? `Al ${formatCurrency(totalPaid)} afgelost. Ga zo door!`
+                : 'Registreer je eerste betaling om te starten.'}
+            </p>
           </div>
         </div>
 
