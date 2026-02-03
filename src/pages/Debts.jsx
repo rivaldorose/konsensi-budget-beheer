@@ -480,9 +480,9 @@ export default function Debts() {
             <div className="flex flex-wrap items-center gap-3">
               <button
             onClick={() => setShowFilters(true)}
-                className="h-11 px-5 rounded-xl border-2 border-gray-300 dark:border-[#2a2a2a] bg-white dark:bg-transparent text-gray-700 dark:text-white font-semibold text-sm hover:border-gray-400 dark:hover:border-[#3a3a3a] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] flex items-center gap-2 transition-all"
+                className="h-11 px-5 rounded-xl border-2 border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card text-text-main dark:text-text-primary font-semibold text-sm hover:border-primary/30 dark:hover:border-primary-green/30 hover:bg-primary/5 dark:hover:bg-primary-green/5 flex items-center gap-2 transition-all"
               >
-                <span className="material-symbols-outlined !text-[18px] text-gray-500 dark:text-[#a1a1a1]">filter_list</span>
+                <span className="material-symbols-outlined !text-[18px] text-primary dark:text-primary-green">filter_list</span>
                 Filters
               </button>
               <button
@@ -854,7 +854,7 @@ export default function Debts() {
       <StrategyChoiceModal
         isOpen={showStrategyModal}
         onClose={() => setShowStrategyModal(false)}
-        monthlyBudget={availableBudget > 0 ? availableBudget : 100}
+        monthlyBudget={vtblData?.aflosCapaciteit > 0 ? vtblData.aflosCapaciteit : (availableBudget > 0 ? availableBudget : 0)}
         onStrategyChosen={loadDebts}
       />
 

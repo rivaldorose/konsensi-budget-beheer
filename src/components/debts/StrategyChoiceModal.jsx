@@ -22,51 +22,47 @@ const StrategyComparisonChart = ({ strategies }) => {
     const proportionalHeight = (proportionalInterest / maxInterest) * 100;
 
     return (
-        <div className="bg-gray-50 dark:bg-[#1a1a1a] rounded-2xl p-6 border border-gray-200 dark:border-[#2a2a2a]">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Vergelijking Rentekosten</h3>
+        <div className="bg-gray-50 dark:bg-dark-card-elevated rounded-2xl p-6 border border-gray-200 dark:border-dark-border-accent">
+            <h3 className="text-lg font-semibold text-text-main dark:text-text-primary mb-4">Vergelijking Rentekosten</h3>
             <div className="flex items-end justify-center gap-8 h-48">
-                {/* Sneeuwbal */}
                 <div className="flex flex-col items-center">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                    <span className="text-sm font-medium text-text-muted dark:text-text-secondary mb-2">
                         {formatCurrency(snowballInterest)}
                     </span>
                     <div
-                        className="w-16 bg-blue-500 rounded-t-lg transition-all duration-500"
+                        className="w-16 bg-status-blue dark:bg-accent-blue rounded-t-lg transition-all duration-500"
                         style={{ height: `${Math.max(snowballHeight, 10)}%` }}
                     />
-                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">Sneeuwbal</span>
+                    <span className="text-xs text-text-muted dark:text-text-tertiary mt-2">Sneeuwbal</span>
                 </div>
-                {/* Lawine */}
                 <div className="flex flex-col items-center">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                    <span className="text-sm font-medium text-text-muted dark:text-text-secondary mb-2">
                         {formatCurrency(avalancheInterest)}
                     </span>
                     <div
-                        className="w-16 bg-purple-500 rounded-t-lg transition-all duration-500"
+                        className="w-16 bg-status-purple dark:bg-accent-purple rounded-t-lg transition-all duration-500"
                         style={{ height: `${Math.max(avalancheHeight, 10)}%` }}
                     />
-                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">Lawine</span>
+                    <span className="text-xs text-text-muted dark:text-text-tertiary mt-2">Lawine</span>
                 </div>
-                {/* Gelijkmatig */}
                 <div className="flex flex-col items-center">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                    <span className="text-sm font-medium text-text-muted dark:text-text-secondary mb-2">
                         {formatCurrency(proportionalInterest)}
                     </span>
                     <div
-                        className="w-16 bg-emerald-500 rounded-t-lg transition-all duration-500"
+                        className="w-16 bg-primary dark:bg-primary-green rounded-t-lg transition-all duration-500"
                         style={{ height: `${Math.max(proportionalHeight, 10)}%` }}
                     />
-                    <span className="text-xs text-gray-500 dark:text-gray-400 mt-2">Gelijkmatig</span>
+                    <span className="text-xs text-text-muted dark:text-text-tertiary mt-2">Gelijkmatig</span>
                 </div>
             </div>
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+            <p className="text-center text-sm text-text-muted dark:text-text-tertiary mt-4">
                 Lagere balk = minder rente betalen
             </p>
         </div>
     );
 };
 
-// New Strategy Card Component with expanded details
 const NewStrategyCard = ({
     type,
     title,
@@ -74,6 +70,7 @@ const NewStrategyCard = ({
     icon,
     iconBg,
     borderColor,
+    borderColorDark,
     howItWorks,
     example,
     whyChoose,
@@ -88,14 +85,13 @@ const NewStrategyCard = ({
 
     return (
         <div
-            className={`bg-white dark:bg-[#1a1a1a] rounded-2xl border-2 transition-all duration-200 cursor-pointer
+            className={`bg-white dark:bg-dark-card rounded-2xl border-2 transition-all duration-200 cursor-pointer
                 ${isSelected
-                    ? `${borderColor} ring-2 ring-offset-2 dark:ring-offset-[#0a0a0a] ring-emerald-500`
-                    : 'border-gray-200 dark:border-[#2a2a2a] hover:border-gray-300 dark:hover:border-[#3a3a3a]'
+                    ? `${borderColor} ${borderColorDark} ring-2 ring-offset-2 dark:ring-offset-dark-bg ring-primary dark:ring-primary-green`
+                    : 'border-gray-200 dark:border-dark-border hover:border-gray-300 dark:hover:border-dark-border-accent'
                 }`}
             onClick={() => onSelect(type)}
         >
-            {/* Header */}
             <div className="p-5">
                 <div className="flex items-start gap-4">
                     <div className={`w-12 h-12 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
@@ -103,40 +99,39 @@ const NewStrategyCard = ({
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
+                            <h3 className="text-lg font-semibold text-text-main dark:text-text-primary">{title}</h3>
                             {isSelected && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 dark:bg-primary-green/15 text-primary dark:text-primary-green">
                                     <Check className="w-3 h-3 mr-1" />
                                     Geselecteerd
                                 </span>
                             )}
                         </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{subtitle}</p>
+                        <p className="text-sm text-text-muted dark:text-text-secondary mt-0.5">{subtitle}</p>
                     </div>
                 </div>
 
-                {/* Result summary */}
                 {isLoading ? (
                     <div className="mt-4 flex items-center justify-center py-4">
-                        <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                        <Loader2 className="w-5 h-5 animate-spin text-text-muted dark:text-text-tertiary" />
                     </div>
                 ) : result && (
                     <div className="mt-4 grid grid-cols-2 gap-3">
-                        <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-3">
-                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs mb-1">
+                        <div className="bg-gray-50 dark:bg-dark-card-elevated rounded-xl p-3">
+                            <div className="flex items-center gap-2 text-text-muted dark:text-text-tertiary text-xs mb-1">
                                 <Clock className="w-3.5 h-3.5" />
                                 Schuldenvrij
                             </div>
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            <p className="text-sm font-semibold text-text-main dark:text-text-primary">
                                 {result.total_months} maanden
                             </p>
                         </div>
-                        <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-3">
-                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-xs mb-1">
+                        <div className="bg-gray-50 dark:bg-dark-card-elevated rounded-xl p-3">
+                            <div className="flex items-center gap-2 text-text-muted dark:text-text-tertiary text-xs mb-1">
                                 <TrendingDown className="w-3.5 h-3.5" />
                                 Totale rente
                             </div>
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            <p className="text-sm font-semibold text-text-main dark:text-text-primary">
                                 {formatCurrency(result.total_interest)}
                             </p>
                         </div>
@@ -144,14 +139,13 @@ const NewStrategyCard = ({
                 )}
             </div>
 
-            {/* Expandable Details */}
-            <div className="border-t border-gray-100 dark:border-[#2a2a2a]">
+            <div className="border-t border-gray-100 dark:border-dark-border">
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
                         setIsExpanded(!isExpanded);
                     }}
-                    className="w-full px-5 py-3 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                    className="w-full px-5 py-3 flex items-center justify-between text-sm text-text-muted dark:text-text-secondary hover:text-text-main dark:hover:text-text-primary transition-colors"
                 >
                     <span>Meer informatie</span>
                     {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -159,43 +153,39 @@ const NewStrategyCard = ({
 
                 {isExpanded && (
                     <div className="px-5 pb-5 space-y-4">
-                        {/* How it works */}
                         <div>
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Hoe het werkt</h4>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">{howItWorks}</p>
+                            <h4 className="text-sm font-medium text-text-main dark:text-text-primary mb-2">Hoe het werkt</h4>
+                            <p className="text-sm text-text-muted dark:text-text-secondary">{howItWorks}</p>
                         </div>
 
-                        {/* Example */}
-                        <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-4">
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Voorbeeld</h4>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">{example}</p>
+                        <div className="bg-gray-50 dark:bg-dark-card-elevated rounded-xl p-4">
+                            <h4 className="text-sm font-medium text-text-main dark:text-text-primary mb-2">Voorbeeld</h4>
+                            <p className="text-sm text-text-muted dark:text-text-secondary">{example}</p>
                         </div>
 
-                        {/* Why choose */}
                         <div>
-                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Waarom deze kiezen?</h4>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">{whyChoose}</p>
+                            <h4 className="text-sm font-medium text-text-main dark:text-text-primary mb-2">Waarom deze kiezen?</h4>
+                            <p className="text-sm text-text-muted dark:text-text-secondary">{whyChoose}</p>
                         </div>
 
-                        {/* Pros & Cons */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <h4 className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mb-2">Voordelen</h4>
+                                <h4 className="text-sm font-medium text-primary dark:text-primary-green mb-2">Voordelen</h4>
                                 <ul className="space-y-1">
                                     {pros.map((pro, idx) => (
-                                        <li key={idx} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                                            <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                        <li key={idx} className="text-sm text-text-muted dark:text-text-secondary flex items-start gap-2">
+                                            <Check className="w-4 h-4 text-primary dark:text-primary-green flex-shrink-0 mt-0.5" />
                                             {pro}
                                         </li>
                                     ))}
                                 </ul>
                             </div>
                             <div>
-                                <h4 className="text-sm font-medium text-red-600 dark:text-red-400 mb-2">Nadelen</h4>
+                                <h4 className="text-sm font-medium text-status-red dark:text-accent-red mb-2">Nadelen</h4>
                                 <ul className="space-y-1">
                                     {cons.map((con, idx) => (
-                                        <li key={idx} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                                            <X className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                                        <li key={idx} className="text-sm text-text-muted dark:text-text-secondary flex items-start gap-2">
+                                            <X className="w-4 h-4 text-status-red dark:text-accent-red flex-shrink-0 mt-0.5" />
                                             {con}
                                         </li>
                                     ))}
@@ -203,24 +193,23 @@ const NewStrategyCard = ({
                             </div>
                         </div>
 
-                        {/* Payment order preview */}
                         {result?.schedule && result.schedule.length > 0 && (
                             <div>
-                                <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Aflosvolgorde</h4>
+                                <h4 className="text-sm font-medium text-text-main dark:text-text-primary mb-2">Aflosvolgorde</h4>
                                 <ol className="space-y-1">
                                     {result.schedule.slice(0, 4).map((item, idx) => (
-                                        <li key={item.debt_id} className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                                            <span className="w-5 h-5 rounded-full bg-gray-200 dark:bg-[#2a2a2a] flex items-center justify-center text-xs font-medium">
+                                        <li key={item.debt_id} className="text-sm text-text-muted dark:text-text-secondary flex items-center gap-2">
+                                            <span className="w-5 h-5 rounded-full bg-gray-200 dark:bg-dark-card-elevated flex items-center justify-center text-xs font-medium text-text-main dark:text-text-primary">
                                                 {idx + 1}
                                             </span>
                                             <span className="truncate">{item.debt_name}</span>
-                                            <span className="text-gray-400 dark:text-gray-500 ml-auto">
+                                            <span className="text-text-muted dark:text-text-tertiary ml-auto">
                                                 {formatCurrency(item.amount)}
                                             </span>
                                         </li>
                                     ))}
                                     {result.schedule.length > 4 && (
-                                        <li className="text-sm text-gray-400 dark:text-gray-500 pl-7">
+                                        <li className="text-sm text-text-muted dark:text-text-tertiary pl-7">
                                             + {result.schedule.length - 4} meer schulden
                                         </li>
                                     )}
@@ -242,7 +231,6 @@ export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, on
     const [isActivating, setIsActivating] = useState(false);
     const [selectedStrategy, setSelectedStrategy] = useState(null);
 
-    // Reset state when modal closes
     useEffect(() => {
         if (!isOpen) {
             setStrategies(null);
@@ -252,7 +240,6 @@ export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, on
         }
     }, [isOpen]);
 
-    // Fetch strategies when modal opens
     const fetchStrategies = useCallback(async () => {
         if (!monthlyBudget || monthlyBudget <= 0) return;
 
@@ -278,12 +265,10 @@ export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, on
         }
     }, [isOpen, monthlyBudget, fetchStrategies]);
 
-    // Handle strategy selection
     const handleSelectStrategy = (strategyType) => {
         setSelectedStrategy(strategyType);
     };
 
-    // Handle confirm/activate strategy
     const handleConfirmStrategy = async () => {
         if (!selectedStrategy) {
             toast({
@@ -309,7 +294,6 @@ export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, on
 
                 onClose();
 
-                // Give database time to commit, then refresh
                 setTimeout(() => {
                     if (onStrategyChosen) {
                         onStrategyChosen();
@@ -333,15 +317,15 @@ export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, on
         }
     };
 
-    // Strategy configurations
     const strategyConfigs = [
         {
             type: 'snowball',
             title: 'Sneeuwbal',
             subtitle: 'Begin klein, bouw momentum op',
             icon: <span className="text-2xl">❄️</span>,
-            iconBg: 'bg-blue-100 dark:bg-blue-900/30',
-            borderColor: 'border-blue-500',
+            iconBg: 'bg-blue-100 dark:bg-accent-blue/15',
+            borderColor: 'border-status-blue',
+            borderColorDark: 'dark:border-accent-blue',
             howItWorks: 'Je begint met het afbetalen van je kleinste schuld terwijl je minimale betalingen doet op de rest. Zodra de kleinste schuld is afgelost, gebruik je dat vrijgekomen geld voor de volgende kleinste schuld.',
             example: 'Stel je hebt 3 schulden: €500, €2.000 en €5.000. Je richt je eerst volledig op de €500, dan de €2.000, en als laatste de €5.000.',
             whyChoose: 'Perfect voor mensen die motivatie nodig hebben. Het snel afbetalen van kleinere schulden geeft je een gevoel van vooruitgang en houdt je gemotiveerd.',
@@ -352,9 +336,10 @@ export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, on
             type: 'avalanche',
             title: 'Lawine',
             subtitle: 'Minimaliseer je totale kosten',
-            icon: <Zap className="w-6 h-6 text-purple-600 dark:text-purple-400" />,
-            iconBg: 'bg-purple-100 dark:bg-purple-900/30',
-            borderColor: 'border-purple-500',
+            icon: <Zap className="w-6 h-6 text-status-purple dark:text-accent-purple" />,
+            iconBg: 'bg-purple-100 dark:bg-accent-purple/15',
+            borderColor: 'border-status-purple',
+            borderColorDark: 'dark:border-accent-purple',
             howItWorks: 'Je richt je eerst op de schuld met het hoogste rentepercentage, ongeacht het bedrag. Dit bespaart je het meeste geld op de lange termijn.',
             example: 'Als je een creditcard met 18% rente en een lening met 5% rente hebt, betaal je eerst de creditcard af, ook al is de lening misschien kleiner.',
             whyChoose: 'De mathematisch optimale strategie. Als je gedisciplineerd bent en wilt besparen op rentekosten, is dit de beste keuze.',
@@ -365,9 +350,10 @@ export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, on
             type: 'proportional',
             title: 'Gelijkmatige Verdeling',
             subtitle: 'Eerlijk verdelen over alle schulden',
-            icon: <Scale className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />,
-            iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
-            borderColor: 'border-emerald-500',
+            icon: <Scale className="w-6 h-6 text-primary dark:text-primary-green" />,
+            iconBg: 'bg-emerald-100 dark:bg-primary-green/15',
+            borderColor: 'border-primary',
+            borderColorDark: 'dark:border-primary-green',
             howItWorks: 'Je verdeelt je beschikbare budget proportioneel over alle schulden op basis van hun omvang. Grotere schulden krijgen meer, kleinere krijgen minder.',
             example: 'Met €300 budget en schulden van €1.000 en €2.000 gaat €100 naar de kleinere en €200 naar de grotere schuld.',
             whyChoose: 'Ideaal als je goede relaties wilt behouden met alle schuldeisers en niemand wilt laten wachten.',
@@ -383,88 +369,113 @@ export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, on
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden bg-white dark:bg-[#0a0a0a] border-gray-200 dark:border-[#2a2a2a]">
-                {/* Header */}
-                <DialogHeader className="p-6 pb-4 border-b border-gray-100 dark:border-[#2a2a2a]">
-                    <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+            <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden bg-white dark:bg-dark-bg border-gray-200 dark:border-dark-border">
+                <DialogHeader className="p-6 pb-4 border-b border-gray-100 dark:border-dark-border">
+                    <DialogTitle className="text-2xl font-bold text-text-main dark:text-text-primary">
                         Kies je Aflosstrategie
                     </DialogTitle>
-                    <DialogDescription className="text-gray-500 dark:text-gray-400">
-                        Selecteer de strategie die het beste bij jouw situatie past. Je maandelijks budget is {formatCurrency(monthlyBudget)}.
+                    <DialogDescription className="text-text-muted dark:text-text-secondary">
+                        Selecteer de strategie die het beste bij jouw situatie past.
+                        {monthlyBudget > 0 && (
+                            <span className="block mt-1 text-primary dark:text-primary-green font-semibold">
+                                Je beschikbaar budget (VTLB) is {formatCurrency(monthlyBudget)} per maand.
+                            </span>
+                        )}
+                        {(!monthlyBudget || monthlyBudget <= 0) && (
+                            <span className="block mt-1 text-status-orange dark:text-accent-orange font-semibold">
+                                Vul eerst je VTLB-berekening in om je afloscapaciteit te bepalen.
+                            </span>
+                        )}
                     </DialogDescription>
                 </DialogHeader>
 
-                {/* Content */}
                 <div className="overflow-y-auto max-h-[calc(90vh-180px)] p-6 space-y-6">
-                    {/* Strategy Cards */}
-                    <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-1">
-                        {strategyConfigs.map((config) => (
-                            <NewStrategyCard
-                                key={config.type}
-                                {...config}
-                                result={strategies?.[config.type]}
-                                isSelected={selectedStrategy === config.type}
-                                onSelect={handleSelectStrategy}
-                                isLoading={isLoading}
-                            />
-                        ))}
-                    </div>
+                    {(!monthlyBudget || monthlyBudget <= 0) ? (
+                        <div className="text-center py-12">
+                            <span className="material-symbols-outlined text-5xl text-text-muted dark:text-text-tertiary mb-4 block">calculate</span>
+                            <h3 className="text-lg font-semibold text-text-main dark:text-text-primary mb-2">Geen budget beschikbaar</h3>
+                            <p className="text-sm text-text-muted dark:text-text-secondary mb-4">
+                                Ga naar de VTLB-calculator om je afloscapaciteit te berekenen.
+                            </p>
+                            <Button
+                                onClick={() => window.location.href = '/vtlb-calculator'}
+                                className="bg-primary dark:bg-primary-green text-white dark:text-dark-bg hover:bg-primary-dark dark:hover:bg-light-green font-semibold"
+                            >
+                                VTLB Berekenen
+                            </Button>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="grid gap-4">
+                                {strategyConfigs.map((config) => (
+                                    <NewStrategyCard
+                                        key={config.type}
+                                        {...config}
+                                        result={strategies?.[config.type]}
+                                        isSelected={selectedStrategy === config.type}
+                                        onSelect={handleSelectStrategy}
+                                        isLoading={isLoading}
+                                    />
+                                ))}
+                            </div>
 
-                    {/* Comparison Chart */}
-                    {strategies && !isLoading && (
-                        <StrategyComparisonChart strategies={strategies} />
+                            {strategies && !isLoading && (
+                                <StrategyComparisonChart strategies={strategies} />
+                            )}
+                        </>
                     )}
                 </div>
 
-                {/* Sticky Footer */}
-                <div className="border-t border-gray-100 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#1a1a1a] p-4">
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            {selectedStrategy ? (
-                                <>
-                                    <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                                        <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                            {getSelectedStrategyName()} geselecteerd
-                                        </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            Klik op bevestigen om te starten
-                                        </p>
-                                    </div>
-                                </>
-                            ) : (
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Selecteer een strategie om verder te gaan
-                                </p>
-                            )}
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Button
-                                variant="outline"
-                                onClick={onClose}
-                                className="border-gray-200 dark:border-[#3a3a3a] text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2a2a2a]"
-                            >
-                                Annuleren
-                            </Button>
-                            <Button
-                                onClick={handleConfirmStrategy}
-                                disabled={!selectedStrategy || isActivating}
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isActivating ? (
+                {monthlyBudget > 0 && (
+                    <div className="border-t border-gray-100 dark:border-dark-border bg-gray-50 dark:bg-dark-card p-4">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                {selectedStrategy ? (
                                     <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Bezig...
+                                        <div className="w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary-green/15 flex items-center justify-center">
+                                            <Check className="w-5 h-5 text-primary dark:text-primary-green" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-text-main dark:text-text-primary">
+                                                {getSelectedStrategyName()} geselecteerd
+                                            </p>
+                                            <p className="text-xs text-text-muted dark:text-text-tertiary">
+                                                Klik op bevestigen om te starten
+                                            </p>
+                                        </div>
                                     </>
                                 ) : (
-                                    'Bevestigen'
+                                    <p className="text-sm text-text-muted dark:text-text-secondary">
+                                        Selecteer een strategie om verder te gaan
+                                    </p>
                                 )}
-                            </Button>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Button
+                                    variant="outline"
+                                    onClick={onClose}
+                                    className="border-gray-200 dark:border-dark-border text-text-main dark:text-text-primary hover:bg-gray-100 dark:hover:bg-dark-card-elevated"
+                                >
+                                    Annuleren
+                                </Button>
+                                <Button
+                                    onClick={handleConfirmStrategy}
+                                    disabled={!selectedStrategy || isActivating}
+                                    className="bg-primary dark:bg-primary-green text-white dark:text-dark-bg hover:bg-primary-dark dark:hover:bg-light-green font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isActivating ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Bezig...
+                                        </>
+                                    ) : (
+                                        'Bevestigen'
+                                    )}
+                                </Button>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
             </DialogContent>
         </Dialog>
     );
