@@ -227,7 +227,8 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
     if (!newNoteText.trim()) return;
     setAddingNote(true);
     try {
-      await DebtNote.create({ debt_id: debt.id, content: newNoteText.trim() });
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      await DebtNote.create({ user_id: authUser.id, debt_id: debt.id, content: newNoteText.trim() });
       setNewNoteText('');
       setShowAddNote(false);
       await loadNotes();
@@ -852,6 +853,12 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                             {currentDebt.is_personal_loan ? 'Persoonlijke lening' : (currentDebt.creditor_type || '-')}
                           </span>
                         </div>
+                        {currentDebt.original_creditor && (
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-xs text-text-light dark:text-text-tertiary">Opdrachtgever:</span>
+                            <span className="text-sm font-medium text-text-main dark:text-text-primary">{currentDebt.original_creditor}</span>
+                          </div>
+                        )}
                         <div className="flex flex-col gap-0.5">
                           <span className="text-xs text-text-light dark:text-text-tertiary">Relatie:</span>
                           <span className="text-sm font-medium text-text-main dark:text-text-primary">{currentDebt.loan_relationship || '-'}</span>

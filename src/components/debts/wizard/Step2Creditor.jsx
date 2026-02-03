@@ -81,6 +81,25 @@ export default function Step2Creditor({ formData, updateFormData }) {
           </Select>
         </div>
       )}
+
+      {/* Opdrachtgever field - shown when creditor type is incassobureau or deurwaarder */}
+      {!formData.is_personal_loan && (formData.creditor_type === 'incassobureau' || formData.creditor_type === 'deurwaarder') && (
+        <div>
+          <Label htmlFor="originalCreditor" className="text-base font-semibold text-gray-900 dark:text-white">
+            Opdrachtgever (oorspronkelijke schuldeiser)
+          </Label>
+          <p className="text-sm text-gray-500 dark:text-[#6b7280] mb-2">
+            Voor wie int {formData.creditor_type === 'incassobureau' ? 'het incassobureau' : 'de deurwaarder'} deze schuld?
+          </p>
+          <Input
+            id="originalCreditor"
+            placeholder="Bijv. Zilveren Kruis, Ziggo, Belastingdienst..."
+            value={formData.original_creditor || ''}
+            onChange={(e) => updateFormData({ original_creditor: e.target.value })}
+            className="mt-1 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-[#6b7280] focus:border-[#10b981] dark:focus:border-[#10b981]"
+          />
+        </div>
+      )}
     </div>
   );
 }
