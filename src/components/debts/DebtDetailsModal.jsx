@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Debt } from '@/api/entities';
 import { DebtPayment } from '@/api/entities';
 import { DebtCorrespondence } from '@/api/entities';
+import { DebtNote } from '@/api/entities';
 import { PaymentDocument } from '@/api/entities';
-import { UploadPrivateFile, CreateFileSignedUrl } from '@/api/integrations';
+import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/use-toast';
 import { formatCurrency } from '@/components/utils/formatters';
 import PaymentRegistrationModal from './PaymentRegistrationModal';
 import AddCorrespondenceModal from './AddCorrespondenceModal';
+import AddDocumentModal from './AddDocumentModal';
 import ArrangementStappenplanModal from './ArrangementStappenplanModal';
 
 const formatDateShort = (date) => {
@@ -55,10 +57,10 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [loadingCorrespondence, setLoadingCorrespondence] = useState(false);
   const [loadingDocuments, setLoadingDocuments] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showCorrespondenceModal, setShowCorrespondenceModal] = useState(false);
   const [showArrangementModal, setShowArrangementModal] = useState(false);
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
   const [showStappenplan, setShowStappenplan] = useState(false);
   const [selectedUrgency, setSelectedUrgency] = useState(debt?.urgency_level || 'normaal');
   const [showStatusChangeDialog, setShowStatusChangeDialog] = useState(false);
@@ -85,6 +87,18 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
     principal_amount: '',
     collection_costs: '',
     interest_amount: ''
+  });
+  const [notes, setNotes] = useState([]);
+  const [loadingNotes, setLoadingNotes] = useState(false);
+  const [newNoteText, setNewNoteText] = useState('');
+  const [addingNote, setAddingNote] = useState(false);
+  const [showAddNote, setShowAddNote] = useState(false);
+  const [detailEditData, setDetailEditData] = useState({
+    creditor_type: '',
+    is_personal_loan: false,
+    loan_relationship: '',
+    origin_date: '',
+    case_number: ''
   });
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -130,9 +144,17 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
         collection_costs: debt.collection_costs?.toString() || '',
         interest_amount: debt.interest_amount?.toString() || ''
       });
+      setDetailEditData({
+        creditor_type: debt.creditor_type || '',
+        is_personal_loan: debt.is_personal_loan || false,
+        loan_relationship: debt.loan_relationship || '',
+        origin_date: debt.origin_date || '',
+        case_number: debt.case_number || ''
+      });
       loadPayments();
       loadCorrespondence();
       loadDocuments();
+      loadNotes();
     }
   }, [debt, isOpen]);
 
@@ -188,6 +210,48 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
     }
   };
 
+  const loadNotes = async () => {
+    if (!debt) return;
+    setLoadingNotes(true);
+    try {
+      const allNotes = await DebtNote.filter({ debt_id: debt.id }, '-created_at');
+      setNotes(allNotes);
+    } catch (error) {
+      console.error('Error loading notes:', error);
+    } finally {
+      setLoadingNotes(false);
+    }
+  };
+
+  const handleAddNote = async () => {
+    if (!newNoteText.trim()) return;
+    setAddingNote(true);
+    try {
+      await DebtNote.create({ debt_id: debt.id, content: newNoteText.trim() });
+      setNewNoteText('');
+      setShowAddNote(false);
+      await loadNotes();
+      toast({ title: 'Notitie toegevoegd' });
+    } catch (error) {
+      console.error('Error adding note:', error);
+      toast({ title: 'Fout bij opslaan', variant: 'destructive' });
+    } finally {
+      setAddingNote(false);
+    }
+  };
+
+  const handleDeleteNote = async (noteId) => {
+    if (!confirm('Notitie verwijderen?')) return;
+    try {
+      await DebtNote.delete(noteId);
+      await loadNotes();
+      toast({ title: 'Notitie verwijderd' });
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      toast({ title: 'Fout', variant: 'destructive' });
+    }
+  };
+
   const handleUrgencyChange = async (newUrgency) => {
     setSelectedUrgency(newUrgency);
     try {
@@ -203,7 +267,14 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
   const handleStatusUpdate = async () => {
     if (!currentDebt || !newStatus) return;
     try {
-      const updateData = { status: newStatus };
+      const updateData = {
+        status: newStatus,
+        creditor_type: detailEditData.creditor_type || null,
+        is_personal_loan: detailEditData.is_personal_loan,
+        loan_relationship: detailEditData.loan_relationship || null,
+        origin_date: detailEditData.origin_date || null,
+        case_number: detailEditData.case_number || null,
+      };
       if (newStatus === 'betalingsregeling') {
         if (paymentPlanData.monthly_payment) {
           updateData.monthly_payment = parseFloat(paymentPlanData.monthly_payment);
@@ -213,7 +284,7 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
         }
       }
       await Debt.update(currentDebt.id, updateData);
-      toast({ title: '✅ Status bijgewerkt' });
+      toast({ title: 'Gegevens bijgewerkt' });
       setShowStatusChangeDialog(false);
       await refreshDebt();
       if (onUpdate) onUpdate();
@@ -310,42 +381,23 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
     }
   };
 
-  const handleFileUpload = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const { file_uri } = await UploadPrivateFile({ file });
-      await PaymentDocument.create({
-        debt_id: debt.id,
-        document_type: 'overig',
-        file_name: file.name,
-        file_uri: file_uri,
-        file_size: file.size
-      });
-      toast({ title: 'Document geüpload!' });
-      loadDocuments();
-    } catch (error) {
-      console.error('Error uploading document:', error);
-      toast({ title: 'Fout', variant: 'destructive' });
-    } finally {
-      setUploading(false);
-    }
+  const handleSaveDocument = async (docData) => {
+    await PaymentDocument.create({
+      debt_id: debt.id,
+      ...docData
+    });
+    toast({ title: 'Document geüpload!' });
+    setShowDocumentModal(false);
+    loadDocuments();
   };
 
   const handleOpenDocument = async (doc) => {
     try {
-      const { signed_url } = await CreateFileSignedUrl({ file_uri: doc.file_uri });
-      const isPDF = doc.file_name.toLowerCase().endsWith('.pdf');
-      if (isPDF) {
-        window.open(signed_url, '_blank');
+      if (doc.file_uri?.startsWith('http')) {
+        window.open(doc.file_uri, '_blank');
       } else {
-        const link = document.createElement('a');
-        link.href = signed_url;
-        link.download = doc.file_name;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const { data } = supabase.storage.from('attachments').getPublicUrl(doc.file_uri);
+        window.open(data?.publicUrl || doc.file_uri, '_blank');
       }
     } catch (error) {
       console.error('Error opening document:', error);
@@ -696,25 +748,12 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                       <h2 className="text-lg font-semibold text-text-main dark:text-text-primary">Documenten</h2>
                     </div>
                     <div className="flex items-center gap-3">
-                      <label htmlFor="doc-upload">
-                        <button 
-                          disabled={uploading}
-                          className="text-primary dark:text-primary-green hover:bg-primary/10 dark:hover:bg-primary-green/10 rounded-full p-1 transition-colors cursor-pointer disabled:opacity-50"
-                        >
-                          {uploading ? (
-                            <span className="material-symbols-outlined animate-spin">refresh</span>
-                          ) : (
-                            <span className="material-symbols-outlined">add</span>
-                          )}
-                        </button>
-                        <input
-                          id="doc-upload"
-                          type="file"
-                          accept=".pdf,.eml,.msg,.png,.jpg,.jpeg"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
-                      </label>
+                      <button
+                        onClick={() => setShowDocumentModal(true)}
+                        className="text-primary dark:text-primary-green hover:bg-primary/10 dark:hover:bg-primary-green/10 rounded-full p-1 transition-colors cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined">add</span>
+                      </button>
                       <button className="text-text-muted dark:text-text-secondary hover:text-text-main dark:hover:text-text-primary">
                         <span className="material-symbols-outlined">expand_more</span>
                       </button>
@@ -792,14 +831,10 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                       {/* Urgentie */}
                       <div>
                         <p className="text-xs font-medium text-text-muted dark:text-text-secondary mb-1 uppercase tracking-wide">Urgentie Niveau</p>
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-status-red/10 dark:bg-accent-red/10 text-status-red dark:text-accent-red text-sm font-medium border border-status-red/20 dark:border-accent-red/20">
-                          <span className="w-1.5 h-1.5 rounded-full bg-status-red dark:bg-accent-red"></span>
-                          Urgentie Niveau
-                        </div>
-                        <select 
-                          value={selectedUrgency} 
+                        <select
+                          value={selectedUrgency}
                           onChange={(e) => handleUrgencyChange(e.target.value)}
-                          className="w-full mt-2 bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-4 py-2 text-text-muted dark:text-text-secondary text-sm font-medium hover:bg-gray-100 dark:hover:bg-dark-border-accent transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green"
+                          className="w-full bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-4 py-2 text-text-main dark:text-text-primary text-sm font-medium hover:bg-gray-100 dark:hover:bg-dark-border-accent transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green"
                         >
                           {Object.entries(urgencyLevels).map(([key, info]) => (
                             <option key={key} value={key}>{info.label}</option>
@@ -1046,24 +1081,58 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                         <span className="material-symbols-outlined text-accent-orange dark:text-accent-orange">notes</span>
                         <h2 className="text-base font-semibold text-text-main dark:text-text-primary">Notities</h2>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {onEdit && (
-                          <button 
-                            onClick={() => onEdit(currentDebt)}
-                            className="text-xs font-semibold text-primary dark:text-primary-green hover:underline"
-                          >
-                            Bewerken
-                          </button>
-                        )}
-                        <button className="text-text-muted dark:text-text-secondary hover:text-text-main dark:hover:text-text-primary">
-                          <span className="material-symbols-outlined">expand_more</span>
+                      <button
+                        onClick={() => setShowAddNote(!showAddNote)}
+                        className="text-primary dark:text-primary-green hover:bg-primary/10 dark:hover:bg-primary-green/10 rounded-full p-1 transition-colors"
+                      >
+                        <span className="material-symbols-outlined">{showAddNote ? 'close' : 'add'}</span>
+                      </button>
+                    </div>
+
+                    {/* Add note input */}
+                    {showAddNote && (
+                      <div className="mb-3 space-y-2">
+                        <textarea
+                          value={newNoteText}
+                          onChange={(e) => setNewNoteText(e.target.value)}
+                          placeholder="Schrijf een notitie..."
+                          rows={3}
+                          className="w-full bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-3 py-2 text-sm text-text-main dark:text-text-primary placeholder:text-text-muted dark:placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green resize-none"
+                        />
+                        <button
+                          onClick={handleAddNote}
+                          disabled={addingNote || !newNoteText.trim()}
+                          className="w-full px-3 py-2 bg-primary dark:bg-primary-green text-white dark:text-dark-bg text-sm font-semibold rounded-lg hover:bg-primary-dark dark:hover:bg-light-green transition-colors disabled:opacity-50"
+                        >
+                          {addingNote ? 'Opslaan...' : 'Notitie toevoegen'}
                         </button>
                       </div>
-                    </div>
-                    {currentDebt.notes ? (
-                      <p className="text-xs text-text-main dark:text-text-primary bg-gray-50 dark:bg-dark-card-elevated p-3 rounded">{currentDebt.notes}</p>
-                    ) : (
+                    )}
+
+                    {/* Notes list */}
+                    {loadingNotes ? (
+                      <div className="text-center py-4 text-text-light dark:text-text-tertiary text-xs">Laden...</div>
+                    ) : notes.length === 0 ? (
                       <p className="text-xs text-text-light dark:text-text-tertiary text-center py-2">Geen notities</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {notes.map((note) => (
+                          <div key={note.id} className="bg-gray-50 dark:bg-dark-card-elevated p-3 rounded-lg">
+                            <div className="flex justify-between items-start gap-2">
+                              <p className="text-xs text-text-main dark:text-text-primary flex-1">{note.content}</p>
+                              <button
+                                onClick={() => handleDeleteNote(note.id)}
+                                className="text-text-muted dark:text-text-tertiary hover:text-status-red dark:hover:text-accent-red p-0.5 rounded transition-colors flex-shrink-0"
+                              >
+                                <span className="material-symbols-outlined !text-[14px]">delete</span>
+                              </button>
+                            </div>
+                            <p className="text-[10px] text-text-light dark:text-text-tertiary mt-1">
+                              {formatDateShort(note.created_at)}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1079,8 +1148,8 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
           <div className="bg-white dark:bg-dark-card rounded-3xl w-full max-w-md shadow-2xl dark:shadow-modal-dark">
             <div className="p-6 border-b border-gray-100 dark:border-dark-border flex items-center justify-between">
               <h3 className="text-lg font-bold text-text-main dark:text-text-primary font-display flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary dark:text-primary-green">check_circle</span>
-                Status Wijzigen
+                <span className="material-symbols-outlined text-primary dark:text-primary-green">edit</span>
+                Schuld Bewerken
               </h3>
               <button onClick={() => {
                 setShowStatusChangeDialog(false);
@@ -1089,14 +1158,16 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              <p className="text-sm text-gray-600 dark:text-text-secondary">
+                Bewerk de gegevens van <strong className="text-text-main dark:text-text-primary">{currentDebt?.creditor_name}</strong>
+              </p>
+
+              {/* Status */}
               <div>
-                <p className="text-sm text-gray-600 dark:text-text-secondary mb-4">
-                  Wijzig de status van <strong>{currentDebt?.creditor_name}</strong>
-                </p>
-                <label className="text-sm font-semibold text-text-main dark:text-text-primary mb-2 block">Nieuwe Status</label>
-                <select 
-                  value={newStatus} 
+                <label className="text-sm font-semibold text-text-main dark:text-text-primary mb-2 block">Status</label>
+                <select
+                  value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
                   className="w-full bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-4 py-2 text-sm text-text-main dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green"
                 >
@@ -1104,6 +1175,76 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                     <option key={key} value={key}>{label}</option>
                   ))}
                 </select>
+              </div>
+
+              {/* Type Schuldeiser */}
+              <div>
+                <label className="text-sm font-semibold text-text-main dark:text-text-primary mb-2 block">Type Schuldeiser</label>
+                <select
+                  value={detailEditData.is_personal_loan ? 'persoonlijk' : (detailEditData.creditor_type || '')}
+                  onChange={(e) => {
+                    if (e.target.value === 'persoonlijk') {
+                      setDetailEditData({...detailEditData, is_personal_loan: true, creditor_type: 'Persoonlijke lening'});
+                    } else {
+                      setDetailEditData({...detailEditData, is_personal_loan: false, creditor_type: e.target.value});
+                    }
+                  }}
+                  className="w-full bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-4 py-2 text-sm text-text-main dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green"
+                >
+                  <option value="">Selecteer type</option>
+                  <option value="bank">Bank</option>
+                  <option value="overheid">Overheid</option>
+                  <option value="zorgverzekeraar">Zorgverzekeraar</option>
+                  <option value="telecom">Telecom</option>
+                  <option value="energieleverancier">Energieleverancier</option>
+                  <option value="webwinkel">Webwinkel</option>
+                  <option value="incassobureau">Incassobureau</option>
+                  <option value="deurwaarder">Deurwaarder</option>
+                  <option value="persoonlijk">Persoonlijke lening</option>
+                  <option value="overig">Overig</option>
+                </select>
+              </div>
+
+              {/* Relatie (alleen bij persoonlijke lening) */}
+              {detailEditData.is_personal_loan && (
+                <div>
+                  <label className="text-sm font-semibold text-text-main dark:text-text-primary mb-2 block">Relatie</label>
+                  <select
+                    value={detailEditData.loan_relationship || ''}
+                    onChange={(e) => setDetailEditData({...detailEditData, loan_relationship: e.target.value})}
+                    className="w-full bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-4 py-2 text-sm text-text-main dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green"
+                  >
+                    <option value="">Selecteer relatie</option>
+                    <option value="familie">Familie</option>
+                    <option value="vriend">Vriend/vriendin</option>
+                    <option value="kennis">Kennis</option>
+                    <option value="werkgever">Werkgever</option>
+                    <option value="overig">Overig</option>
+                  </select>
+                </div>
+              )}
+
+              {/* Datum Ontstaan */}
+              <div>
+                <label className="text-sm font-semibold text-text-main dark:text-text-primary mb-2 block">Datum Ontstaan</label>
+                <input
+                  type="date"
+                  value={detailEditData.origin_date || ''}
+                  onChange={(e) => setDetailEditData({...detailEditData, origin_date: e.target.value})}
+                  className="w-full bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-4 py-2 text-sm text-text-main dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green"
+                />
+              </div>
+
+              {/* Dossiernummer */}
+              <div>
+                <label className="text-sm font-semibold text-text-main dark:text-text-primary mb-2 block">Dossiernummer</label>
+                <input
+                  type="text"
+                  value={detailEditData.case_number || ''}
+                  onChange={(e) => setDetailEditData({...detailEditData, case_number: e.target.value})}
+                  placeholder="Optioneel"
+                  className="w-full bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-4 py-2 text-sm text-text-main dark:text-text-primary placeholder:text-text-muted dark:placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green"
+                />
               </div>
 
               {newStatus === 'betalingsregeling' && (
@@ -1197,6 +1338,12 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
           setShowArrangementModal(false);
           if (onUpdate) onUpdate();
         }}
+      />
+
+      <AddDocumentModal
+        isOpen={showDocumentModal}
+        onClose={() => setShowDocumentModal(false)}
+        onSave={handleSaveDocument}
       />
     </>
   );

@@ -2,44 +2,37 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, FileText, X, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
-const correspondenceTypes = {
-  brief_verstuurd: 'Brief verstuurd',
-  email_verstuurd: 'Email verstuurd',
-  telefoongesprek: 'Telefoongesprek',
-  aanmaning_ontvangen: 'Aanmaning ontvangen',
-  email_ontvangen: 'Email ontvangen',
-  reactie_schuldeiser: 'Reactie schuldeiser',
-  voorstel_gedaan: 'Voorstel gedaan'
+const documentTypes = {
+  aanmaning: 'Aanmaning',
+  factuur: 'Factuur',
+  overeenkomst: 'Overeenkomst',
+  vonnis: 'Vonnis',
+  dagvaarding: 'Dagvaarding',
+  betalingsbewijs: 'Betalingsbewijs',
+  brief_schuldeiser: 'Brief van schuldeiser',
+  brief_deurwaarder: 'Brief van deurwaarder',
+  bankafschrift: 'Bankafschrift',
+  overig: 'Overig'
 };
 
-export default function AddCorrespondenceModal({ isOpen, onClose, onSave }) {
-  const [formData, setFormData] = useState({
-    type: 'brief_verstuurd',
-    date: new Date().toISOString().split('T')[0],
-    description: '',
-    status: 'informatief'
-  });
+export default function AddDocumentModal({ isOpen, onClose, onSave }) {
+  const [documentType, setDocumentType] = useState('overig');
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploading, setUploading] = useState(false);
-
-  const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const validExtensions = ['.pdf', '.eml', '.msg', '.jpg', '.jpeg', '.png'];
+      const validExtensions = ['.pdf', '.eml', '.msg', '.jpg', '.jpeg', '.png', '.doc', '.docx'];
       const hasValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
 
       if (!hasValidExtension) {
-        alert('Alleen PDF, EML, MSG en afbeeldingen zijn toegestaan');
+        alert('Alleen PDF, EML, MSG, Word-documenten en afbeeldingen zijn toegestaan');
         return;
       }
 
@@ -57,49 +50,34 @@ export default function AddCorrespondenceModal({ isOpen, onClose, onSave }) {
   };
 
   const handleSubmit = async () => {
-    if (!formData.description.trim()) {
-      alert('Vul een beschrijving in');
+    if (!selectedFile) {
+      alert('Selecteer een bestand om te uploaden');
       return;
     }
 
     setUploading(true);
     try {
-      let uploadedFileData = null;
+      const fileName = `documents/${Date.now()}-${selectedFile.name}`;
+      const { data, error } = await supabase.storage
+        .from('attachments')
+        .upload(fileName, selectedFile);
 
-      if (selectedFile) {
-        try {
-          const fileName = `correspondence/${Date.now()}-${selectedFile.name}`;
-          const { data, error } = await supabase.storage
-            .from('attachments')
-            .upload(fileName, selectedFile);
-          if (!error && data) {
-            const { data: urlData } = supabase.storage.from('attachments').getPublicUrl(data.path);
-            uploadedFileData = {
-              file_url: urlData?.publicUrl || null,
-              file_name: selectedFile.name,
-              file_size: selectedFile.size
-            };
-          }
-        } catch (err) {
-          console.error('Error uploading file:', err);
-        }
-      }
+      if (error) throw error;
+
+      const { data: urlData } = supabase.storage.from('attachments').getPublicUrl(data.path);
 
       await onSave({
-        ...formData,
-        ...(uploadedFileData || {})
+        document_type: documentType,
+        file_name: selectedFile.name,
+        file_uri: urlData?.publicUrl || data.path,
+        file_size: selectedFile.size
       });
 
-      setFormData({
-        type: 'brief_verstuurd',
-        date: new Date().toISOString().split('T')[0],
-        description: '',
-        status: 'informatief'
-      });
+      setDocumentType('overig');
       setSelectedFile(null);
     } catch (error) {
-      console.error('Error saving correspondence:', error);
-      alert('Er ging iets fout bij het opslaan');
+      console.error('Error uploading document:', error);
+      alert('Er ging iets fout bij het uploaden');
     } finally {
       setUploading(false);
     }
@@ -109,76 +87,42 @@ export default function AddCorrespondenceModal({ isOpen, onClose, onSave }) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border">
         <DialogHeader>
-          <DialogTitle className="text-text-main dark:text-text-primary">Correspondentie Toevoegen</DialogTitle>
+          <DialogTitle className="text-text-main dark:text-text-primary">Document Toevoegen</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div>
-            <Label className="text-text-main dark:text-text-primary">Type</Label>
-            <Select value={formData.type} onValueChange={v => handleChange('type', v)}>
+            <Label className="text-text-main dark:text-text-primary">Type document</Label>
+            <Select value={documentType} onValueChange={setDocumentType}>
               <SelectTrigger className="bg-gray-50 dark:bg-dark-card-elevated border-gray-200 dark:border-dark-border-accent text-text-main dark:text-text-primary">
                 <SelectValue placeholder="Kies een type" />
               </SelectTrigger>
               <SelectContent className="bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border">
-                {Object.entries(correspondenceTypes).map(([key, value]) => (
+                {Object.entries(documentTypes).map(([key, value]) => (
                   <SelectItem key={key} value={key}>{value}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div>
-            <Label className="text-text-main dark:text-text-primary">Datum</Label>
-            <Input
-              type="date"
-              value={formData.date}
-              onChange={e => handleChange('date', e.target.value)}
-              className="bg-gray-50 dark:bg-dark-card-elevated border-gray-200 dark:border-dark-border-accent text-text-main dark:text-text-primary"
-            />
-          </div>
-          <div>
-            <Label className="text-text-main dark:text-text-primary">Korte omschrijving</Label>
-            <Textarea
-              value={formData.description}
-              onChange={e => handleChange('description', e.target.value)}
-              placeholder="Bijv. 'Aanmaning ontvangen voor bedrag X'"
-              rows={3}
-              className="bg-gray-50 dark:bg-dark-card-elevated border-gray-200 dark:border-dark-border-accent text-text-main dark:text-text-primary placeholder:text-text-muted dark:placeholder:text-text-tertiary"
-            />
-          </div>
-          <div>
-            <Label className="text-text-main dark:text-text-primary">Status</Label>
-            <Select value={formData.status} onValueChange={v => handleChange('status', v)}>
-              <SelectTrigger className="bg-gray-50 dark:bg-dark-card-elevated border-gray-200 dark:border-dark-border-accent text-text-main dark:text-text-primary">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border">
-                <SelectItem value="informatief">Informatief</SelectItem>
-                <SelectItem value="wacht_reactie">Wacht op reactie</SelectItem>
-                <SelectItem value="akkoord">Akkoord ontvangen</SelectItem>
-                <SelectItem value="afgewezen">Afgewezen</SelectItem>
-                <SelectItem value="geen_reactie">Geen reactie ontvangen</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
           <div className="space-y-2">
-            <Label className="text-text-main dark:text-text-primary">Document (optioneel)</Label>
+            <Label className="text-text-main dark:text-text-primary">Bestand</Label>
             <p className="text-xs text-text-muted dark:text-text-tertiary">
-              Upload een e-mail, PDF, of afbeelding
+              Upload een PDF, Word-document, e-mail of afbeelding
             </p>
 
             {!selectedFile ? (
-              <label htmlFor="file-upload-correspondence" className="cursor-pointer block">
+              <label htmlFor="file-upload-document" className="cursor-pointer block">
                 <div className="border-2 border-dashed border-gray-300 dark:border-dark-border-accent rounded-xl p-5 hover:border-primary dark:hover:border-primary-green transition-colors text-center group">
                   <Upload className="w-8 h-8 text-text-muted dark:text-text-tertiary mx-auto mb-2 group-hover:text-primary dark:group-hover:text-primary-green transition-colors" />
                   <p className="text-sm text-text-main dark:text-text-primary font-medium">Klik om bestand te uploaden</p>
-                  <p className="text-xs text-text-muted dark:text-text-tertiary mt-1">PDF, EML, MSG, of afbeelding (max 10MB)</p>
+                  <p className="text-xs text-text-muted dark:text-text-tertiary mt-1">PDF, EML, MSG, DOC, DOCX of afbeelding (max 10MB)</p>
                 </div>
                 <input
                   type="file"
-                  accept=".pdf,.eml,.msg,.png,.jpg,.jpeg"
+                  accept=".pdf,.eml,.msg,.png,.jpg,.jpeg,.doc,.docx"
                   onChange={handleFileChange}
                   className="hidden"
-                  id="file-upload-correspondence"
+                  id="file-upload-document"
                 />
               </label>
             ) : (
@@ -214,16 +158,16 @@ export default function AddCorrespondenceModal({ isOpen, onClose, onSave }) {
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={uploading}
+            disabled={uploading || !selectedFile}
             className="bg-primary dark:bg-primary-green text-white dark:text-dark-bg hover:bg-primary-dark dark:hover:bg-light-green font-semibold"
           >
             {uploading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Opslaan...
+                Uploaden...
               </>
             ) : (
-              'Opslaan'
+              'Uploaden'
             )}
           </Button>
         </DialogFooter>
