@@ -11,10 +11,18 @@ const statusTypes = [
   { value: 'afbetaald', label: 'Afbetaald' },
 ];
 
-export default function Step4DateStatus({ formData, updateFormData, vtblBudget }) {
+export default function Step4DateStatus({ formData, updateFormData, vtblData }) {
   const monthlyPayment = parseFloat(formData.monthly_payment) || 0;
   const totalDebt = (parseFloat(formData.principal_amount) || 0) + (parseFloat(formData.collection_costs) || 0) + (parseFloat(formData.interest_amount) || 0);
   const monthsToPayOff = monthlyPayment > 0 ? Math.ceil(totalDebt / monthlyPayment) : 0;
+
+  // Recalculate VTLB with this new payment included
+  const hasVtbl = vtblData && vtblData.vastInkomen > 0;
+  const currentRegelingen = hasVtbl ? (vtblData.huidigeRegelingen || 0) : 0;
+  const newTotalRegelingen = currentRegelingen + monthlyPayment;
+  const newBeschikbaar = hasVtbl ? Math.max(0, vtblData.vastInkomen - vtblData.vasteLasten - newTotalRegelingen) : 0;
+  const newAflosCapaciteit = newBeschikbaar * 0.15;
+  const isSustainable = hasVtbl && monthlyPayment > 0 && (vtblData.vastInkomen - vtblData.vasteLasten - newTotalRegelingen) >= 0;
 
   return (
     <div className="space-y-6">
@@ -73,23 +81,54 @@ export default function Step4DateStatus({ formData, updateFormData, vtblBudget }
             </div>
           )}
 
-          {/* VTLB sustainability check */}
-          {vtblBudget !== undefined && vtblBudget !== null && monthlyPayment > 0 && (
-            <div className={`text-sm flex items-center gap-2 rounded-lg p-2 ${
-              monthlyPayment <= vtblBudget
-                ? 'bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400'
-                : 'bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400'
+          {/* Full VTLB recalculation */}
+          {hasVtbl && monthlyPayment > 0 && (
+            <div className={`rounded-xl p-4 space-y-3 ${
+              isSustainable
+                ? 'bg-white dark:bg-[#1a1a1a] border border-green-200 dark:border-green-500/20'
+                : 'bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20'
             }`}>
-              <span className="material-symbols-outlined !text-[16px]">
-                {monthlyPayment <= vtblBudget ? 'check_circle' : 'warning'}
-              </span>
-              {monthlyPayment <= vtblBudget ? (
-                <span>Past binnen je VTLB budget van {formatCurrency(vtblBudget)}/mnd</span>
-              ) : (
-                <span>
-                  <strong>Let op:</strong> Dit bedrag is hoger dan je beschikbare VTLB budget van {formatCurrency(vtblBudget)}/mnd.
-                  Je komt {formatCurrency(monthlyPayment - vtblBudget)} tekort.
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`material-symbols-outlined !text-[18px] ${isSustainable ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {isSustainable ? 'check_circle' : 'warning'}
                 </span>
+                <span className={`text-sm font-semibold ${isSustainable ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                  {isSustainable ? 'Haalbaar' : 'Niet haalbaar'} — VTLB herberekening
+                </span>
+              </div>
+
+              <div className="space-y-1.5 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-[#a1a1a1]">Vast inkomen</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(vtblData.vastInkomen)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-[#a1a1a1]">Vaste lasten</span>
+                  <span className="font-medium text-red-600 dark:text-red-400">- {formatCurrency(vtblData.vasteLasten)}</span>
+                </div>
+                {currentRegelingen > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-[#a1a1a1]">Bestaande regelingen</span>
+                    <span className="font-medium text-purple-600 dark:text-purple-400">- {formatCurrency(currentRegelingen)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-blue-700 dark:text-blue-400 font-medium">+ Deze regeling (nieuw)</span>
+                  <span className="font-medium text-blue-600 dark:text-blue-400">- {formatCurrency(monthlyPayment)}</span>
+                </div>
+                <div className="border-t border-gray-200 dark:border-[#3a3a3a] pt-1.5 flex justify-between">
+                  <span className="font-semibold text-gray-900 dark:text-white">= Nieuw beschikbaar</span>
+                  <span className={`font-bold ${newBeschikbaar > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {formatCurrency(newBeschikbaar)}
+                  </span>
+                </div>
+              </div>
+
+              {!isSustainable && (
+                <p className="text-xs text-red-600 dark:text-red-400 mt-2">
+                  Met deze regeling kom je {formatCurrency(Math.abs(vtblData.vastInkomen - vtblData.vasteLasten - newTotalRegelingen))} tekort per maand.
+                  Overweeg een lager maandbedrag af te spreken.
+                </p>
               )}
             </div>
           )}

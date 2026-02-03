@@ -44,14 +44,14 @@ export default function DebtWizard({ isOpen, onClose, onSave }) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState(initialFormData);
   const [isSaving, setIsSaving] = useState(false);
-  const [vtblBudget, setVtblBudget] = useState(null);
+  const [vtblData, setVtblData] = useState(null);
   const { toast } = useToast();
 
-  // Fetch VTLB budget for sustainability check
+  // Fetch full VTLB data for sustainability check + recalculation
   useEffect(() => {
     if (isOpen) {
       vtblService.calculateVtbl().then(result => {
-        if (result) setVtblBudget(result.aflosCapaciteit || 0);
+        if (result) setVtblData(result);
       }).catch(() => {});
     }
   }, [isOpen]);
@@ -175,7 +175,7 @@ export default function DebtWizard({ isOpen, onClose, onSave }) {
       case 3:
         return <Step3Amount formData={formData} updateFormData={updateFormData} />;
       case 4:
-        return <Step4DateStatus formData={formData} updateFormData={updateFormData} vtblBudget={vtblBudget} />;
+        return <Step4DateStatus formData={formData} updateFormData={updateFormData} vtblData={vtblData} />;
       case 5:
         return <Step5Optional formData={formData} updateFormData={updateFormData} />;
       case 6:
