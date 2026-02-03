@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { User, MonthlyCost, Pot, Debt, DebtPayment } from "@/api/entities";
 import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
@@ -45,10 +46,18 @@ const ALGEMENE_TIPS = [
 ];
 
 export default function CentVoorCent() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(() => {
+    // Check URL params from archive navigation
+    const yearParam = searchParams.get('year');
+    const monthParam = searchParams.get('month');
+    if (yearParam && monthParam !== null) {
+      return new Date(parseInt(yearParam), parseInt(monthParam), 1);
+    }
     // Default to previous month (the month we're summarizing)
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -467,11 +476,8 @@ export default function CentVoorCent() {
 
           {/* Previous summaries link */}
           <button
-            onClick={() => {
-              // Allow viewing previous summaries
-              setSummaryStatus(prev => ({ ...prev, isFirstWeekOfMonth: true }));
-            }}
-            className="mt-6 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 text-sm flex items-center gap-2 transition-colors"
+            onClick={() => navigate('/CentVoorCentArchief')}
+            className="mt-6 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary-green text-sm flex items-center gap-2 transition-colors"
           >
             <span className="material-symbols-outlined text-lg">history</span>
             Bekijk eerdere samenvattingen
