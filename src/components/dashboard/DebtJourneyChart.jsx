@@ -55,7 +55,13 @@ export default function DebtJourneyChart({ monthlyData = [], weeklyData = [], to
       <div className="flex flex-wrap justify-between items-center gap-4">
         <div>
           <h3 className="font-header text-[24px] font-bold text-[#3D6456] dark:text-white">Schuldenreis</h3>
-          <p className="font-body text-[14px] text-gray-500 dark:text-text-secondary">Je bent goed op weg naar €0!</p>
+          <p className="font-body text-[14px] text-gray-500 dark:text-text-secondary">
+            {totalPaid > 0 && progressPercentage >= 50
+              ? 'Je bent goed op weg naar €0!'
+              : totalPaid > 0
+              ? `Je hebt al ${formatCurrency(totalPaid)} afgelost. Ga zo door!`
+              : 'Registreer je eerste betaling om je voortgang te zien.'}
+          </p>
         </div>
         <div className="flex items-center gap-1 bg-gray-100 dark:bg-card-elevated p-1 rounded-full border border-transparent dark:border-border-main">
           <button
