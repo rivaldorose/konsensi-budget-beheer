@@ -546,14 +546,23 @@ export default function CentVoorCent() {
             <h2 className="text-primary-dark dark:text-white text-[32px] font-extrabold leading-tight">Cent voor Cent</h2>
             <p className="text-text-tertiary dark:text-text-secondary text-base">Jouw maandelijkse financiële reflectie</p>
           </div>
-          <button
-            className="flex items-center gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-[24px] px-4 py-2.5 text-text-main dark:text-white font-semibold shadow-sm hover:border-primary dark:hover:border-konsensi-green transition-colors cursor-pointer group"
-            onClick={() => {/* Open month picker */}}
-          >
-            <span className="material-symbols-outlined text-text-tertiary dark:text-text-secondary group-hover:text-primary dark:group-hover:text-konsensi-green transition-colors">calendar_month</span>
-            <span>{formatMonthYear(selectedMonth)}</span>
-            <span className="material-symbols-outlined text-text-tertiary dark:text-text-secondary">arrow_drop_down</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/CentVoorCentArchief')}
+              className="flex items-center gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-[24px] px-4 py-2.5 text-text-muted dark:text-text-secondary font-semibold shadow-sm hover:border-primary dark:hover:border-konsensi-green hover:text-primary dark:hover:text-konsensi-green transition-colors cursor-pointer group"
+            >
+              <span className="material-symbols-outlined text-lg">history</span>
+              <span>Archief</span>
+            </button>
+            <button
+              className="flex items-center gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] rounded-[24px] px-4 py-2.5 text-text-main dark:text-white font-semibold shadow-sm hover:border-primary dark:hover:border-konsensi-green transition-colors cursor-pointer group"
+              onClick={() => {/* Open month picker */}}
+            >
+              <span className="material-symbols-outlined text-text-tertiary dark:text-text-secondary group-hover:text-primary dark:group-hover:text-konsensi-green transition-colors">calendar_month</span>
+              <span>{formatMonthYear(selectedMonth)}</span>
+              <span className="material-symbols-outlined text-text-tertiary dark:text-text-secondary">arrow_drop_down</span>
+            </button>
+          </div>
         </header>
 
         {/* 1. MAAND SAMENVATTING (Hero Section) */}
