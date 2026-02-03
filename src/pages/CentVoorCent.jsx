@@ -5,45 +5,32 @@ import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
 import { gamificationService } from "@/services/gamificationService";
 
-// ALGEMENE TIPS - Deze ziet iedereen in de app
-const ALGEMENE_TIPS = [
-  {
-    icon: 'lightbulb',
-    title: 'De 50/30/20 Regel',
-    text: 'Besteed 50% aan vaste lasten, 30% aan leuke dingen, en spaar 20% van je inkomen.',
-    type: 'general'
-  },
-  {
-    icon: 'shopping_cart',
-    title: 'Boodschappen',
-    text: 'Maak een boodschappenlijstje en ga nooit met honger naar de supermarkt.',
-    type: 'general'
-  },
-  {
-    icon: 'receipt_long',
-    title: 'Abonnementen',
-    text: 'Check maandelijks je abonnementen. Vaak betaal je voor dingen die je niet gebruikt.',
-    type: 'general'
-  },
-  {
-    icon: 'savings',
-    title: 'Noodfonds',
-    text: 'Probeer minimaal 3 maanden aan vaste lasten als buffer op te bouwen.',
-    type: 'general'
-  },
-  {
-    icon: 'compare_arrows',
-    title: 'Vergelijken loont',
-    text: 'Vergelijk jaarlijks je energie, verzekeringen en internet. Bespaar honderden euros!',
-    type: 'general'
-  },
-  {
-    icon: 'event',
-    title: 'Automatisch sparen',
-    text: 'Zet een automatische overschrijving naar je spaarrekening op de dag dat je salaris binnenkomt.',
-    type: 'general'
-  }
+// ALLE SLIMME TIPS - Er worden er 3 per maand getoond (roteert automatisch)
+const ALLE_TIPS = [
+  { icon: 'lightbulb', title: 'De 50/30/20 Regel', text: 'Besteed 50% aan vaste lasten, 30% aan leuke dingen, en spaar 20% van je inkomen.' },
+  { icon: 'shopping_cart', title: 'Boodschappen', text: 'Maak een boodschappenlijstje en ga nooit met honger naar de supermarkt.' },
+  { icon: 'receipt_long', title: 'Abonnementen', text: 'Check maandelijks je abonnementen. Vaak betaal je voor dingen die je niet gebruikt.' },
+  { icon: 'savings', title: 'Noodfonds', text: 'Probeer minimaal 3 maanden aan vaste lasten als buffer op te bouwen.' },
+  { icon: 'compare_arrows', title: 'Vergelijken loont', text: 'Vergelijk jaarlijks je energie, verzekeringen en internet. Bespaar honderden euros!' },
+  { icon: 'event', title: 'Automatisch sparen', text: 'Zet een automatische overschrijving naar je spaarrekening op de dag dat je salaris binnenkomt.' },
+  { icon: 'local_offer', title: 'Cashback', text: 'Gebruik cashback-apps en acties bij je dagelijkse boodschappen. Het telt allemaal op!' },
+  { icon: 'restaurant', title: 'Minder uit eten', text: 'Kook vaker thuis. Gemiddeld bespaar je zo €200-300 per maand.' },
+  { icon: 'water_drop', title: 'Energie besparen', text: 'Korter douchen en verwarming een graad lager kan tientallen euros per maand schelen.' },
+  { icon: 'directions_bus', title: 'Vervoerskosten', text: 'Overweeg de fiets of OV in plaats van de auto voor korte ritten.' },
+  { icon: 'loyalty', title: 'Aanbiedingen', text: 'Plan je boodschappen rond aanbiedingen. Gebruik apps zoals Too Good To Go.' },
+  { icon: 'sell', title: 'Verkoop ongebruikte spullen', text: 'Heb je spullen die je niet meer gebruikt? Verkoop ze op Marktplaats of Vinted.' },
 ];
+
+// Get 3 tips that rotate based on month
+const getMonthlyTips = (month, year) => {
+  const seed = month + year * 12;
+  const shuffled = [...ALLE_TIPS].sort((a, b) => {
+    const hashA = ((seed * 31 + ALLE_TIPS.indexOf(a)) * 17) % 100;
+    const hashB = ((seed * 31 + ALLE_TIPS.indexOf(b)) * 17) % 100;
+    return hashA - hashB;
+  });
+  return shuffled.slice(0, 3);
+};
 
 export default function CentVoorCent() {
   const [searchParams] = useSearchParams();
@@ -224,8 +211,16 @@ export default function CentVoorCent() {
       const remaining = totalIncome - totalExpenses;
       const savingsPercentage = totalIncome > 0 ? Math.round((remaining / totalIncome) * 100) : 0;
 
-      // Previous month expenses (simplified - could load actual previous month data)
-      const previousMonthExpenses = totalExpenses * 0.9; // Placeholder for now
+      // Load ACTUAL previous month expenses from debt payments
+      const prevMonthPayments = payments.filter(payment => {
+        const paymentDate = new Date(payment.payment_date);
+        return paymentDate >= prevMonthStart && paymentDate <= prevMonthEnd;
+      });
+      const prevDebtPaidMonth = prevMonthPayments.reduce((sum, p) => sum + parseFloat(p.amount || 0), 0);
+      const previousMonthExpenses = totalFixedCosts + totalPotsBudget + prevDebtPaidMonth;
+
+      // Format previous month name
+      const prevMonthName = new Intl.DateTimeFormat('nl-NL', { month: 'long' }).format(prevMonthStart);
 
       setMonthlyData({
         totalIncome,
@@ -242,95 +237,136 @@ export default function CentVoorCent() {
         debtPaidTotal,
         debtRemaining,
         previousMonthExpenses,
+        previousMonthName: prevMonthName,
+        prevDebtPaidMonth,
         debtsWithArrangements,
         costs
       });
 
-      // Generate dynamic reflection based on data
+      // Generate dynamic reflection based on ACTUAL data
       const goodThings = [];
       const attentionPoints = [];
 
-      // Positive reflections
-      if (remaining > 0) {
-        goodThings.push({ emoji: '💚', text: `Je hebt ${formatCurrency(remaining)} overgehouden deze maand!` });
+      // Only show positive reflections when they are truly positive
+      if (remaining > 0 && savingsPercentage >= 20) {
+        goodThings.push({ emoji: '🎉', text: `Je hebt ${savingsPercentage}% van je inkomen gespaard. Dat is uitstekend!` });
+      } else if (remaining > 0 && savingsPercentage >= 10) {
+        goodThings.push({ emoji: '💚', text: `Je hebt ${formatCurrency(remaining)} overgehouden (${savingsPercentage}% van je inkomen).` });
+      } else if (remaining > 0 && savingsPercentage > 0) {
+        goodThings.push({ emoji: '📊', text: `Je hebt ${formatCurrency(remaining)} overgehouden (${savingsPercentage}%). Probeer richting 10% te werken.` });
       }
-      if (savingsPercentage >= 20) {
-        goodThings.push({ emoji: '🎉', text: `Geweldig! Je hebt ${savingsPercentage}% van je inkomen bespaard.` });
-      }
+
       if (debtPaidThisMonth > 0) {
-        goodThings.push({ emoji: '💪', text: `Je hebt ${formatCurrency(debtPaidThisMonth)} afgelost op je schulden.` });
+        goodThings.push({ emoji: '💪', text: `Je hebt ${formatCurrency(debtPaidThisMonth)} afgelost op je schulden deze maand.` });
       }
       if (debtsWithArrangements.length > 0) {
-        goodThings.push({ emoji: '✅', text: `Je hebt ${debtsWithArrangements.length} actieve betalingsregeling(en) lopen.` });
+        goodThings.push({ emoji: '✅', text: `${debtsWithArrangements.length} actieve betalingsregeling(en) lopen netjes door.` });
+      }
+      if (totalFixedCosts > 0 && totalFixedCosts <= totalIncome * 0.5) {
+        goodThings.push({ emoji: '🏠', text: `Je vaste lasten zijn ${Math.round((totalFixedCosts / totalIncome) * 100)}% van je inkomen. Dat is gezond.` });
       }
 
-      // Attention points
+      // Attention points - honest and specific
       if (remaining < 0) {
-        attentionPoints.push({ emoji: '⚠️', text: `Let op: je uitgaven zijn ${formatCurrency(Math.abs(remaining))} hoger dan je inkomen.` });
-      }
-      if (debtRemaining > 0) {
-        const monthsToPayoff = monthlyArrangements > 0 ? Math.ceil(debtRemaining / monthlyArrangements) : 0;
-        attentionPoints.push({ emoji: '📊', text: `Nog ${formatCurrency(debtRemaining)} schuld te gaan${monthsToPayoff > 0 ? ` (±${monthsToPayoff} maanden)` : ''}.` });
-      }
-      if (savingsPercentage < 10 && remaining > 0) {
-        attentionPoints.push({ emoji: '💡', text: 'Probeer minimaal 10% van je inkomen te sparen.' });
+        attentionPoints.push({ emoji: '🚨', text: `Je uitgaven zijn ${formatCurrency(Math.abs(remaining))} hoger dan je inkomen. Dit is niet houdbaar.` });
+      } else if (remaining === 0) {
+        attentionPoints.push({ emoji: '⚠️', text: 'Je geeft precies zoveel uit als je verdient. Er is geen ruimte voor onverwachte kosten.' });
+      } else if (savingsPercentage < 5 && remaining > 0) {
+        attentionPoints.push({ emoji: '💡', text: `Je houdt maar ${savingsPercentage}% over. Probeer minimaal 10% te besparen voor een buffer.` });
       }
 
-      // Default messages if no data
-      if (goodThings.length === 0) {
-        goodThings.push({ emoji: '📝', text: 'Voeg je inkomen en uitgaven toe om inzichten te krijgen.' });
+      if (debtRemaining > 0 && monthlyArrangements > 0) {
+        const monthsToPayoff = Math.ceil(debtRemaining / monthlyArrangements);
+        attentionPoints.push({ emoji: '📅', text: `Nog ${formatCurrency(debtRemaining)} schuld open. Bij ${formatCurrency(monthlyArrangements)}/maand duurt het nog ±${monthsToPayoff} maanden.` });
+      } else if (debtRemaining > 0 && monthlyArrangements === 0) {
+        attentionPoints.push({ emoji: '🚨', text: `Je hebt ${formatCurrency(debtRemaining)} aan openstaande schulden zonder actieve betalingsregeling.` });
       }
-      if (attentionPoints.length === 0 && debtTotal === 0) {
-        attentionPoints.push({ emoji: '🎯', text: 'Geen schulden! Blijf zo doorgaan.' });
+
+      if (totalFixedCosts > totalIncome * 0.5) {
+        attentionPoints.push({ emoji: '📊', text: `Je vaste lasten zijn ${Math.round((totalFixedCosts / totalIncome) * 100)}% van je inkomen. Dat is aan de hoge kant.` });
+      }
+
+      // Only show defaults when truly no data
+      if (goodThings.length === 0 && totalIncome === 0) {
+        goodThings.push({ emoji: '📝', text: 'Voeg je inkomen en uitgaven toe om inzichten te krijgen.' });
+      } else if (goodThings.length === 0) {
+        goodThings.push({ emoji: '📊', text: 'Deze maand zijn er geen duidelijke positieve punten. Bekijk je aandachtspunten hiernaast.' });
+      }
+      if (attentionPoints.length === 0 && debtTotal === 0 && remaining > 0) {
+        attentionPoints.push({ emoji: '🎯', text: 'Geen schulden en positief saldo. Blijf zo doorgaan!' });
+      } else if (attentionPoints.length === 0) {
+        attentionPoints.push({ emoji: '✨', text: 'Geen specifieke aandachtspunten deze maand.' });
       }
 
       setReflection({ goodThings, attentionPoints });
 
-      // Generate PERSONAL advice based on user data
+      // Generate PERSONAL advice based on actual financial situation
       const personalAdviceList = [];
-      if (debtRemaining > 0 && monthlyArrangements > 0) {
-        const monthsLeft = Math.ceil(debtRemaining / monthlyArrangements);
+
+      // Advice based on spending vs income
+      if (remaining < 0) {
         personalAdviceList.push({
-          icon: 'savings',
-          title: 'Aflossen',
-          text: `Met je huidige aflossing van ${formatCurrency(monthlyArrangements)}/maand ben je over ${monthsLeft} maanden schuldenvrij.`,
+          icon: 'warning',
+          title: 'Tekort aanpakken',
+          text: `Je geeft ${formatCurrency(Math.abs(remaining))} meer uit dan je verdient. Bekijk je vaste lasten (${formatCurrency(totalFixedCosts)}) en kijk waar je kunt besparen.`,
           type: 'personal'
         });
-      }
-      if (remaining > 100) {
+      } else if (remaining > 0 && debtRemaining > 0 && remaining > 50) {
         personalAdviceList.push({
           icon: 'trending_up',
-          title: 'Extra aflossen',
-          text: `Je hebt ${formatCurrency(remaining)} over. Overweeg extra af te lossen om sneller schuldenvrij te zijn.`,
-          type: 'personal'
-        });
-      }
-      if (totalFixedCosts > totalIncome * 0.5) {
-        personalAdviceList.push({
-          icon: 'content_cut',
-          title: 'Vaste lasten',
-          text: 'Je vaste lasten zijn meer dan 50% van je inkomen. Kijk of je ergens kunt besparen.',
-          type: 'personal'
-        });
-      }
-      if (savingsPercentage < 10 && remaining > 0) {
-        personalAdviceList.push({
-          icon: 'account_balance',
-          title: 'Sparen',
-          text: `Je spaart nu ${savingsPercentage}%. Probeer richting 10-20% te werken voor een gezonde buffer.`,
-          type: 'personal'
-        });
-      }
-      if (debtTotal > 0 && monthlyArrangements === 0) {
-        personalAdviceList.push({
-          icon: 'handshake',
-          title: 'Betalingsregeling',
-          text: 'Je hebt schulden maar nog geen betalingsregeling. Neem contact op met je schuldeisers.',
+          title: 'Extra aflossen?',
+          text: `Je hebt ${formatCurrency(remaining)} over deze maand. Door ${formatCurrency(Math.min(remaining * 0.5, debtRemaining))} extra af te lossen, ben je sneller schuldenvrij.`,
           type: 'personal'
         });
       }
 
-      setAdvice(personalAdviceList);
+      // Advice based on debt situation
+      if (debtRemaining > 0 && monthlyArrangements > 0) {
+        const monthsLeft = Math.ceil(debtRemaining / monthlyArrangements);
+        personalAdviceList.push({
+          icon: 'calendar_month',
+          title: `Nog ${monthsLeft} maanden`,
+          text: `Met ${formatCurrency(monthlyArrangements)}/maand aflossing ben je rond ${new Intl.DateTimeFormat('nl-NL', { month: 'long', year: 'numeric' }).format(new Date(new Date().setMonth(new Date().getMonth() + monthsLeft)))} schuldenvrij.`,
+          type: 'personal'
+        });
+      } else if (debtTotal > 0 && monthlyArrangements === 0) {
+        personalAdviceList.push({
+          icon: 'handshake',
+          title: 'Start een betalingsregeling',
+          text: `Je hebt ${formatCurrency(debtRemaining)} aan schulden zonder actieve regeling. Ga naar Schulden > Stappenplan om contact op te nemen met je schuldeisers.`,
+          type: 'personal'
+        });
+      }
+
+      // Advice based on fixed costs ratio
+      if (totalFixedCosts > totalIncome * 0.6) {
+        personalAdviceList.push({
+          icon: 'content_cut',
+          title: 'Vaste lasten te hoog',
+          text: `Je vaste lasten zijn ${Math.round((totalFixedCosts / totalIncome) * 100)}% van je inkomen (max aanbevolen: 50%). Vergelijk je energie- en internetprovider of bekijk je abonnementen.`,
+          type: 'personal'
+        });
+      } else if (totalFixedCosts > totalIncome * 0.5) {
+        personalAdviceList.push({
+          icon: 'tune',
+          title: 'Vaste lasten optimaliseren',
+          text: `Je vaste lasten zijn ${Math.round((totalFixedCosts / totalIncome) * 100)}% van je inkomen. Kleine besparingen op energie of verzekeringen kunnen al helpen.`,
+          type: 'personal'
+        });
+      }
+
+      // Savings advice
+      if (savingsPercentage >= 0 && savingsPercentage < 10 && remaining > 0 && debtTotal === 0) {
+        personalAdviceList.push({
+          icon: 'account_balance',
+          title: 'Buffer opbouwen',
+          text: `Je spaart nu ${savingsPercentage}%. Een noodfonds van 3 maanden vaste lasten (${formatCurrency(totalFixedCosts * 3)}) beschermt je tegen onverwachte kosten.`,
+          type: 'personal'
+        });
+      }
+
+      // Only show top 3 most relevant pieces of advice
+      setAdvice(personalAdviceList.slice(0, 3));
 
       // Only award XP if this is a NEW monthly summary (first week of month, not yet viewed)
       if (summaryAvailability.isNewSummaryAvailable) {
@@ -572,12 +608,27 @@ export default function CentVoorCent() {
                 </span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="bg-accent-green dark:bg-konsensi-green/15 text-white dark:text-konsensi-green text-xs font-bold px-2.5 py-1 rounded-full border dark:border-konsensi-green/20">
-                  Goede maand! 💚
-                </span>
-                <span className="text-primary-dark dark:text-konsensi-green text-sm font-bold">
-                  {monthlyData.savingsPercentage}% gespaard
-                </span>
+                {monthlyData.remaining > 0 && monthlyData.savingsPercentage >= 20 ? (
+                  <span className="bg-accent-green dark:bg-konsensi-green/15 text-white dark:text-konsensi-green text-xs font-bold px-2.5 py-1 rounded-full border dark:border-konsensi-green/20">
+                    Sterke maand! {monthlyData.savingsPercentage}% gespaard
+                  </span>
+                ) : monthlyData.remaining > 0 && monthlyData.savingsPercentage >= 10 ? (
+                  <span className="bg-accent-green/80 dark:bg-konsensi-green/15 text-white dark:text-konsensi-green text-xs font-bold px-2.5 py-1 rounded-full border dark:border-konsensi-green/20">
+                    {monthlyData.savingsPercentage}% gespaard
+                  </span>
+                ) : monthlyData.remaining > 0 ? (
+                  <span className="bg-amber-400 dark:bg-amber-500/15 text-white dark:text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full border dark:border-amber-500/20">
+                    Maar {monthlyData.savingsPercentage}% over
+                  </span>
+                ) : monthlyData.remaining === 0 ? (
+                  <span className="bg-gray-400 dark:bg-gray-500/15 text-white dark:text-gray-400 text-xs font-bold px-2.5 py-1 rounded-full border dark:border-gray-500/20">
+                    Niks overgehouden
+                  </span>
+                ) : (
+                  <span className="bg-red-500 dark:bg-red-500/15 text-white dark:text-red-400 text-xs font-bold px-2.5 py-1 rounded-full border dark:border-red-500/20">
+                    Tekort van {formatCurrency(Math.abs(monthlyData.remaining))}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -623,12 +674,42 @@ export default function CentVoorCent() {
               </div>
             </div>
             <div className="mt-6 dark:mt-8 pt-6 dark:pt-6 border-t dark:border-t-dark-border">
-              <div className="bg-primary/20 dark:bg-konsensi-green/15 rounded-[24px] p-4 flex items-center gap-3 border dark:border-konsensi-green/20">
-                <span className="material-symbols-outlined text-primary-dark dark:text-konsensi-green">celebration</span>
-                <p className="text-primary-dark dark:text-konsensi-green text-sm font-semibold">
-                  Je gaf slechts {expensePercentage}% van je inkomen uit deze maand! 🎉
-                </p>
-              </div>
+              {expensePercentage > 100 ? (
+                <div className="bg-red-500/10 dark:bg-red-500/15 rounded-[24px] p-4 flex items-center gap-3 border dark:border-red-500/20">
+                  <span className="material-symbols-outlined text-red-600 dark:text-red-400">warning</span>
+                  <p className="text-red-700 dark:text-red-400 text-sm font-semibold">
+                    Je gaf {expensePercentage}% van je inkomen uit. Je leeft boven je budget.
+                  </p>
+                </div>
+              ) : expensePercentage > 90 ? (
+                <div className="bg-amber-500/10 dark:bg-amber-500/15 rounded-[24px] p-4 flex items-center gap-3 border dark:border-amber-500/20">
+                  <span className="material-symbols-outlined text-amber-600 dark:text-amber-400">info</span>
+                  <p className="text-amber-700 dark:text-amber-400 text-sm font-semibold">
+                    Je gaf {expensePercentage}% van je inkomen uit. Er is weinig ruimte over.
+                  </p>
+                </div>
+              ) : expensePercentage > 70 ? (
+                <div className="bg-blue-500/10 dark:bg-blue-500/15 rounded-[24px] p-4 flex items-center gap-3 border dark:border-blue-500/20">
+                  <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
+                  <p className="text-blue-700 dark:text-blue-400 text-sm font-semibold">
+                    Je gaf {expensePercentage}% van je inkomen uit. {100 - expensePercentage}% bleef over.
+                  </p>
+                </div>
+              ) : expensePercentage > 0 ? (
+                <div className="bg-primary/20 dark:bg-konsensi-green/15 rounded-[24px] p-4 flex items-center gap-3 border dark:border-konsensi-green/20">
+                  <span className="material-symbols-outlined text-primary-dark dark:text-konsensi-green">check_circle</span>
+                  <p className="text-primary-dark dark:text-konsensi-green text-sm font-semibold">
+                    Je gaf {expensePercentage}% van je inkomen uit. Je houdt {100 - expensePercentage}% over!
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-gray-100 dark:bg-gray-500/10 rounded-[24px] p-4 flex items-center gap-3 border dark:border-gray-500/20">
+                  <span className="material-symbols-outlined text-gray-500 dark:text-gray-400">info</span>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm font-semibold">
+                    Geen inkomsten- of uitgavendata voor deze maand.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -812,18 +893,18 @@ export default function CentVoorCent() {
             </section>
           )}
 
-          {/* Slimme Geldzaken Tips */}
+          {/* Slimme Geldzaken Tips - 3 tips die per maand roteren */}
           <section className="bg-white dark:bg-[#1a1a1a] rounded-3xl p-6 md:p-8 shadow-card dark:shadow-dark-card hover:shadow-card-hover dark:hover:shadow-dark-hover hover:-translate-y-0.5 transition-all duration-300 border-l-4 border-amber-500 dark:border-l-amber-400 border dark:border-[#2a2a2a]">
             <div className="flex items-center gap-3 mb-6 dark:mb-8 flex-wrap">
               <h3 className="text-primary-dark dark:text-white text-xl font-bold flex items-center gap-2 dark:gap-3">
                 <span className="material-symbols-outlined text-amber-500 dark:text-amber-400">tips_and_updates</span> Slimme tips
               </h3>
               <span className="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full">
-                Algemeen
+                {formatMonthYear(selectedMonth)}
               </span>
             </div>
             <div className="flex flex-col gap-4">
-              {ALGEMENE_TIPS.slice(0, 3).map((tip, index) => (
+              {getMonthlyTips(selectedMonth.getMonth(), selectedMonth.getFullYear()).map((tip, index) => (
                 <div
                   key={index}
                   className="bg-amber-50 dark:bg-amber-500/10 rounded-2xl p-4 flex gap-4 items-start group cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-500/15 transition-colors border border-transparent hover:border-amber-400 dark:hover:border-amber-500/30"
@@ -838,47 +919,68 @@ export default function CentVoorCent() {
                 </div>
               ))}
             </div>
-            {/* Show more tips toggle */}
-            <details className="mt-4">
-              <summary className="cursor-pointer text-amber-600 dark:text-amber-400 font-semibold hover:text-amber-700 dark:hover:text-amber-300 flex items-center gap-2 text-sm">
-                <span className="material-symbols-outlined text-lg">expand_more</span>
-                Meer tips bekijken
-              </summary>
-              <div className="flex flex-col gap-4 mt-4">
-                {ALGEMENE_TIPS.slice(3).map((tip, index) => (
-                  <div
-                    key={index}
-                    className="bg-amber-50 dark:bg-amber-500/10 rounded-2xl p-4 flex gap-4 items-start group cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-500/15 transition-colors border border-transparent hover:border-amber-400 dark:hover:border-amber-500/30"
-                  >
-                    <div className="text-amber-600 dark:text-amber-400 transform group-hover:scale-110 transition-transform shrink-0">
-                      <span className="material-symbols-outlined text-3xl">{tip.icon}</span>
-                    </div>
-                    <div>
-                      <h4 className="text-amber-800 dark:text-white text-base font-bold dark:font-semibold mb-1">{tip.title}</h4>
-                      <p className="text-text-secondary dark:text-text-secondary text-sm leading-relaxed">{tip.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </details>
           </section>
         </div>
 
-        {/* 7. VERGELIJKING */}
-        <section className="max-w-[600px] mb-12">
-          <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-sm dark:border dark:border-[#2a2a2a] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h5 className="text-primary-dark dark:text-white font-bold dark:font-semibold text-lg mb-1 dark:mb-2 flex items-center gap-2">
-                <span className="material-symbols-outlined text-base dark:text-text-secondary">trending_up</span> Vergelijking
-              </h5>
-              <div className="text-sm text-text-secondary dark:text-text-secondary font-body space-y-1">
-                <span className="block">Vorige maand: {formatCurrency(monthlyData.previousMonthExpenses)} uitgegeven</span>
-                <span className="block font-semibold dark:text-text-primary">Deze maand: {formatCurrency(monthlyData.totalExpenses)} uitgegeven</span>
+        {/* 7. VERGELIJKING MET VORIGE MAAND */}
+        <section className="max-w-[700px] mb-12">
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-sm dark:border dark:border-[#2a2a2a]">
+            <h5 className="text-primary-dark dark:text-white font-bold dark:font-semibold text-lg mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-base dark:text-text-secondary">compare_arrows</span> Vergelijking met {monthlyData.previousMonthName || 'vorige maand'}
+            </h5>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-4 border dark:border-[#2a2a2a]">
+                <p className="text-xs text-text-tertiary dark:text-text-secondary font-medium uppercase mb-1 capitalize">{monthlyData.previousMonthName || 'Vorige maand'}</p>
+                <p className="text-xl font-bold text-text-main dark:text-text-primary">{formatCurrency(monthlyData.previousMonthExpenses)}</p>
+                {monthlyData.prevDebtPaidMonth > 0 && (
+                  <p className="text-xs text-text-muted dark:text-text-tertiary mt-1">w.v. {formatCurrency(monthlyData.prevDebtPaidMonth)} schulden</p>
+                )}
+              </div>
+              <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-4 border dark:border-[#2a2a2a]">
+                <p className="text-xs text-text-tertiary dark:text-text-secondary font-medium uppercase mb-1 capitalize">{formatMonthYear(selectedMonth).split(' ')[0]}</p>
+                <p className="text-xl font-bold text-text-main dark:text-text-primary">{formatCurrency(monthlyData.totalExpenses)}</p>
+                {monthlyData.debtPaid > 0 && (
+                  <p className="text-xs text-text-muted dark:text-text-tertiary mt-1">w.v. {formatCurrency(monthlyData.debtPaid)} schulden</p>
+                )}
               </div>
             </div>
-            <div className={`bg-accent-orange/10 dark:bg-konsensi-orange/15 text-accent-orange dark:text-konsensi-orange font-bold px-4 py-2 rounded-[24px] dark:rounded-[24px] text-sm whitespace-nowrap border dark:border-konsensi-orange/20 flex items-center gap-2`}>
-              <span>{expenseDiff >= 0 ? '+' : ''}{formatCurrency(expenseDiff)} meer uitgegeven</span>
-              <span className="material-symbols-outlined text-sm">warning</span>
+            <div className={`${
+              expenseDiff > 0
+                ? 'bg-accent-orange/10 dark:bg-konsensi-orange/15 border-accent-orange/20 dark:border-konsensi-orange/20'
+                : expenseDiff < 0
+                ? 'bg-accent-green/10 dark:bg-konsensi-green/15 border-accent-green/20 dark:border-konsensi-green/20'
+                : 'bg-gray-100 dark:bg-gray-500/10 border-gray-200 dark:border-gray-500/20'
+            } rounded-xl p-3 border flex items-center justify-between`}>
+              <div className="flex items-center gap-2">
+                <span className={`material-symbols-outlined text-lg ${
+                  expenseDiff > 0 ? 'text-accent-orange dark:text-konsensi-orange' :
+                  expenseDiff < 0 ? 'text-accent-green dark:text-konsensi-green' :
+                  'text-gray-500 dark:text-gray-400'
+                }`}>
+                  {expenseDiff > 0 ? 'trending_up' : expenseDiff < 0 ? 'trending_down' : 'trending_flat'}
+                </span>
+                <span className={`text-sm font-semibold ${
+                  expenseDiff > 0 ? 'text-accent-orange dark:text-konsensi-orange' :
+                  expenseDiff < 0 ? 'text-accent-green dark:text-konsensi-green' :
+                  'text-gray-600 dark:text-gray-400'
+                }`}>
+                  {expenseDiff > 0
+                    ? `${formatCurrency(expenseDiff)} meer uitgegeven dan ${monthlyData.previousMonthName || 'vorige maand'}`
+                    : expenseDiff < 0
+                    ? `${formatCurrency(Math.abs(expenseDiff))} minder uitgegeven dan ${monthlyData.previousMonthName || 'vorige maand'}`
+                    : `Zelfde uitgaven als ${monthlyData.previousMonthName || 'vorige maand'}`
+                  }
+                </span>
+              </div>
+              {monthlyData.previousMonthExpenses > 0 && (
+                <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                  expenseDiff > 0 ? 'bg-accent-orange/20 text-accent-orange dark:bg-konsensi-orange/20 dark:text-konsensi-orange' :
+                  expenseDiff < 0 ? 'bg-accent-green/20 text-accent-green dark:bg-konsensi-green/20 dark:text-konsensi-green' :
+                  'bg-gray-200 text-gray-600 dark:bg-gray-600/20 dark:text-gray-400'
+                }`}>
+                  {expenseDiff > 0 ? '+' : ''}{Math.round((expenseDiff / monthlyData.previousMonthExpenses) * 100)}%
+                </span>
+              )}
             </div>
           </div>
         </section>
