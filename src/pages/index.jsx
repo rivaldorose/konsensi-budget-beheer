@@ -134,7 +134,7 @@ function _getCurrentPage(url) {
     }
 
     // Check for lazy loaded pages
-    const lazyPages = ['debts', 'centvvorcent', 'centvoorcentarchief', 'vtlbcalculator', 'potjes', 'budgetplan', 'budgethelp', 'income', 'maandelijkselasten', 'vastelastencheck', 'workschedule', 'adempauze', 'adempauzecalculator', 'wishlist'];
+    const lazyPages = ['debts', 'centvoorcent', 'centvoorcentarchief', 'vtlbcalculator', 'potjes', 'budgetplan', 'budgethelp', 'income', 'maandelijkselasten', 'vastelastencheck', 'workschedule', 'adempauze', 'adempauzecalculator', 'wishlist', 'coachchat', 'videocall'];
     if (lazyPages.includes(urlLastPart.toLowerCase())) {
         return urlLastPart.charAt(0).toUpperCase() + urlLastPart.slice(1);
     }
