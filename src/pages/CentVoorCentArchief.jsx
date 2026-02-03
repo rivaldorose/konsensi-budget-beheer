@@ -169,7 +169,7 @@ export default function CentVoorCentArchief() {
   const handleMonthClick = (monthIndex) => {
     if (isMonthAvailable(monthIndex)) {
       // Navigate to CentVoorCent with month parameter
-      navigate(`/CentVoorCent?year=${selectedYear}&month=${monthIndex}`);
+      navigate(`/CentVoorCent/samenvatting?year=${selectedYear}&month=${monthIndex}`);
     } else if (!isCurrentMonth(monthIndex)) {
       // Easter egg for locked months
       const randomEgg = EASTER_EGGS[Math.floor(Math.random() * EASTER_EGGS.length)];
@@ -209,18 +209,10 @@ export default function CentVoorCentArchief() {
         {/* Page Heading */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
           <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate('/CentVoorCent')}
-                className="p-2 rounded-xl bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-text-muted dark:text-text-secondary hover:text-text-main dark:hover:text-text-primary transition-colors"
-              >
-                <span className="material-symbols-outlined">arrow_back</span>
-              </button>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-[#3D6456] dark:text-white tracking-tight">
-                Cent voor Cent Archief
-              </h1>
-            </div>
-            <p className="text-text-muted dark:text-text-secondary text-lg ml-14">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-[#3D6456] dark:text-white tracking-tight">
+              Cent voor Cent
+            </h1>
+            <p className="text-text-muted dark:text-text-secondary text-lg">
               Bekijk je maandelijkse financiële overzichten per maand.
             </p>
           </div>
