@@ -196,6 +196,49 @@ export default function Step3Amount({ formData, updateFormData }) {
       </div>
 
       {amountPaidInput}
+
+      <div className="space-y-3">
+        <Label className="text-gray-900 dark:text-white">Heb je al een betalingsregeling?</Label>
+        <RadioGroup
+          value={formData.has_repayment_plan}
+          onValueChange={(value) => updateFormData({ has_repayment_plan: value })}
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="no" id="repay-no" className="border-gray-300 dark:border-[#3a3a3a] text-[#10b981]" />
+            <Label htmlFor="repay-no" className="text-gray-900 dark:text-white">Nee, nog geen regeling</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="yes" id="repay-yes" className="border-gray-300 dark:border-[#3a3a3a] text-[#10b981]" />
+            <Label htmlFor="repay-yes" className="text-gray-900 dark:text-white">Ja, ik heb een betalingsregeling</Label>
+          </div>
+        </RadioGroup>
+        {formData.has_repayment_plan === 'yes' && (
+          <div className="flex items-center gap-2 pl-6 pt-2">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280]">€</span>
+              <Input
+                type="text"
+                inputMode="decimal"
+                placeholder="50,00"
+                value={formData.repayment_amount}
+                onChange={(e) => handleAmountChange('repayment_amount', e.target.value)}
+                className="pl-7 w-32 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] text-gray-900 dark:text-white"
+              />
+            </div>
+            <p className="text-gray-900 dark:text-white">per</p>
+            <Select value={formData.repayment_frequency} onValueChange={(v) => updateFormData({ repayment_frequency: v })}>
+              <SelectTrigger className="w-[120px] bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] text-gray-900 dark:text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a]">
+                <SelectItem value="maand" className="text-gray-900 dark:text-white">maand</SelectItem>
+                <SelectItem value="week" className="text-gray-900 dark:text-white">week</SelectItem>
+                <SelectItem value="tweewekelijks" className="text-gray-900 dark:text-white">2 weken</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

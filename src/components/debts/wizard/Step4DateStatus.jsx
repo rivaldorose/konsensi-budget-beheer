@@ -12,6 +12,18 @@ const statusTypes = [
 ];
 
 export default function Step4DateStatus({ formData, updateFormData, vtblData }) {
+  // Auto-set status to betalingsregeling if user said yes in Step3
+  React.useEffect(() => {
+    if (formData.has_repayment_plan === 'yes' && formData.status !== 'betalingsregeling') {
+      const updates = { status: 'betalingsregeling' };
+      // Copy repayment_amount as monthly_payment if not already set
+      if (!formData.monthly_payment && formData.repayment_amount) {
+        updates.monthly_payment = formData.repayment_amount;
+      }
+      updateFormData(updates);
+    }
+  }, []); // Only on mount
+
   const monthlyPayment = parseFloat(formData.monthly_payment) || 0;
   const totalDebt = (parseFloat(formData.principal_amount) || 0) + (parseFloat(formData.collection_costs) || 0) + (parseFloat(formData.interest_amount) || 0);
   const monthsToPayOff = monthlyPayment > 0 ? Math.ceil(totalDebt / monthlyPayment) : 0;
