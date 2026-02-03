@@ -32,6 +32,10 @@ CREATE POLICY "Users can delete their own debt notes"
     ON debt_notes FOR DELETE
     USING (auth.uid() = user_id);
 
+-- Grant permissions to authenticated and anon roles
+GRANT SELECT, INSERT, UPDATE, DELETE ON debt_notes TO authenticated;
+GRANT SELECT ON debt_notes TO anon;
+
 -- Add original_creditor column to debts table (opdrachtgever)
 -- Used when creditor_type is incassobureau or deurwaarder
 DO $$

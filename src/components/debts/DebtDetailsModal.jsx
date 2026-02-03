@@ -828,7 +828,42 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                           {statusLabels[status] || status}
                         </span>
                       </div>
-                      
+
+                      {/* Betalingsregeling info */}
+                      {status === 'betalingsregeling' && (currentDebt.monthly_payment || currentDebt.payment_plan_date) && (
+                        <div className="bg-blue-50 dark:bg-accent-blue/10 rounded-xl p-4 border border-blue-200 dark:border-accent-blue/20">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="material-symbols-outlined text-accent-blue dark:text-accent-blue !text-[20px]">handshake</span>
+                            <span className="font-semibold text-blue-800 dark:text-accent-blue text-sm">Betalingsregeling</span>
+                          </div>
+                          <div className="space-y-2">
+                            {currentDebt.monthly_payment > 0 && (
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="text-text-muted dark:text-text-secondary">Maandbedrag:</span>
+                                <span className="font-bold text-blue-700 dark:text-accent-blue">{formatCurrency(currentDebt.monthly_payment)}/mnd</span>
+                              </div>
+                            )}
+                            {currentDebt.payment_plan_date && (
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="text-text-muted dark:text-text-secondary">Betaaldatum:</span>
+                                <span className="font-medium text-text-main dark:text-text-primary">Elke {new Date(currentDebt.payment_plan_date).getDate()}e v/d maand</span>
+                              </div>
+                            )}
+                            {currentDebt.monthly_payment > 0 && remainingAmount > 0 && (
+                              <div className="flex justify-between items-center text-sm pt-1 border-t border-blue-200 dark:border-accent-blue/20">
+                                <span className="text-text-muted dark:text-text-secondary">Geschatte looptijd:</span>
+                                <span className="font-bold text-blue-700 dark:text-accent-blue">
+                                  {Math.ceil(remainingAmount / currentDebt.monthly_payment)} maanden
+                                  {Math.ceil(remainingAmount / currentDebt.monthly_payment) > 12 && (
+                                    <span className="font-normal text-xs ml-1">({(Math.ceil(remainingAmount / currentDebt.monthly_payment) / 12).toFixed(1)} jr)</span>
+                                  )}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Urgentie */}
                       <div>
                         <p className="text-xs font-medium text-text-muted dark:text-text-secondary mb-1 uppercase tracking-wide">Urgentie Niveau</p>
