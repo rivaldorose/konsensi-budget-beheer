@@ -278,34 +278,34 @@ export default function IncomePage() {
                 {/* Page Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center gap-3">
-                        <h1 className="text-[#1F2937] dark:text-white text-3xl font-extrabold tracking-tight">Inkomen</h1>
-                        <button 
+                        <h1 className="text-[#1F2937] dark:text-white text-2xl sm:text-3xl font-extrabold tracking-tight">Inkomen</h1>
+                        <button
                             onClick={() => setShowInfoModal(true)}
                             className="text-[#6B7280] dark:text-[#9CA3AF] hover:text-[#1F2937] dark:hover:text-white transition-colors"
                         >
                             <span className="material-symbols-outlined">help</span>
                         </button>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <Link to={createPageUrl('WorkSchedule')}>
-                            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-gray-600 dark:text-konsensi-primary hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]">
-                                <span className="material-symbols-outlined text-[18px]">calendar_month</span>
-                                <span>Werkschema</span>
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
+                        <Link to={createPageUrl('WorkSchedule')} className="flex-1 sm:flex-none">
+                            <button className="w-full flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-gray-600 dark:text-konsensi-primary hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-xs sm:text-sm font-medium bg-white dark:bg-[#1a2c26]">
+                                <span className="material-symbols-outlined text-[16px] sm:text-[18px]">calendar_month</span>
+                                <span className="hidden xs:inline sm:inline">Werkschema</span>
                             </button>
                         </Link>
                         <button
                             onClick={() => setShowBankStatementModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-gray-600 dark:text-konsensi-primary hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]"
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-gray-600 dark:text-konsensi-primary hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-xs sm:text-sm font-medium bg-white dark:bg-[#1a2c26]"
                         >
-                            <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
-                            <span>Scan Afschrift</span>
+                            <span className="material-symbols-outlined text-[16px] sm:text-[18px]">qr_code_scanner</span>
+                            <span className="hidden xs:inline sm:inline">Scan</span>
                         </button>
                         <button
                             onClick={() => setShowWorkStatusModal(true)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-gray-600 dark:text-konsensi-primary hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-sm font-medium bg-white dark:bg-[#1a2c26]"
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-full border border-gray-200 dark:border-[#2A3F36] text-gray-600 dark:text-konsensi-primary hover:bg-gray-50 dark:hover:bg-[#1a2c26] hover:border-gray-300 dark:hover:border-[#2A3F36] transition-all text-xs sm:text-sm font-medium bg-white dark:bg-[#1a2c26]"
                         >
-                            <span className="material-symbols-outlined text-[18px]">work</span>
-                            <span>Status</span>
+                            <span className="material-symbols-outlined text-[16px] sm:text-[18px]">work</span>
+                            <span className="hidden xs:inline sm:inline">Status</span>
                         </button>
                     </div>
                 </div>
@@ -315,36 +315,36 @@ export default function IncomePage() {
                     {/* Left Column (65% on Desktop) */}
                     <div className="lg:col-span-8 flex flex-col gap-6">
                         {/* 1. SUMMARY CARD */}
-                        <div className="rounded-xl p-6 md:p-8 shadow-soft relative overflow-hidden bg-gradient-to-br from-[#b4ff7a] to-[#ecf4e6] dark:from-[#10b981] dark:to-[#059669]">
+                        <div className="rounded-xl p-4 sm:p-6 md:p-8 shadow-soft relative overflow-hidden bg-gradient-to-br from-[#b4ff7a] to-[#ecf4e6] dark:from-[#10b981] dark:to-[#059669]">
                             <div className="absolute -right-10 -top-10 w-64 h-64 bg-white/20 dark:bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 gap-6">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center relative z-10 gap-4 sm:gap-6">
                                 {/* Left Section */}
-                                <div className="flex flex-col gap-4 flex-1">
+                                <div className="flex flex-col gap-3 sm:gap-4 flex-1">
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
                                             <div className="p-1 rounded-full bg-[#3D6456]/10 dark:bg-white/15 dark:backdrop-blur-md dark:border dark:border-white/10">
-                                                <span className="material-symbols-outlined text-[#3D6456] dark:text-white text-[16px]">bolt</span>
+                                                <span className="material-symbols-outlined text-[#3D6456] dark:text-white text-[14px] sm:text-[16px]">bolt</span>
                                             </div>
-                                            <span className="text-sm font-medium text-[#3D6456]/80 dark:text-white/90">Vast inkomen (per maand)</span>
+                                            <span className="text-xs sm:text-sm font-medium text-[#3D6456]/80 dark:text-white/90">Vast inkomen (per maand)</span>
                                         </div>
-                                        <span className="text-3xl font-extrabold text-[#3D6456] dark:text-white">{formatCurrency(totalFixed)}</span>
+                                        <span className="text-2xl sm:text-3xl font-extrabold text-[#3D6456] dark:text-white">{formatCurrency(totalFixed)}</span>
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2 mb-1">
                                             <div className="p-1 rounded-full bg-[#3D6456]/10 dark:bg-white/15 dark:backdrop-blur-md dark:border dark:border-white/10">
-                                                <span className="material-symbols-outlined text-[#3D6456] dark:text-white text-[16px]">redeem</span>
+                                                <span className="material-symbols-outlined text-[#3D6456] dark:text-white text-[14px] sm:text-[16px]">redeem</span>
                                             </div>
-                                            <span className="text-sm font-medium text-[#3D6456]/80 dark:text-white/90">Extra inkomen deze maand</span>
+                                            <span className="text-xs sm:text-sm font-medium text-[#3D6456]/80 dark:text-white/90">Extra inkomen deze maand</span>
                                         </div>
-                                        <span className="text-xl font-bold text-[#3D6456]/70 dark:text-white/80">{formatCurrency(totalExtra)}</span>
+                                        <span className="text-lg sm:text-xl font-bold text-[#3D6456]/70 dark:text-white/80">{formatCurrency(totalExtra)}</span>
                                     </div>
                                 </div>
                                 {/* Right Section (Total) */}
-                                <div className="flex flex-col items-end">
-                                    <span className="text-xs font-bold tracking-wider text-[#3D6456] dark:text-white uppercase mb-1 opacity-70">
+                                <div className="flex flex-col items-start md:items-end w-full md:w-auto">
+                                    <span className="text-[10px] sm:text-xs font-bold tracking-wider text-[#3D6456] dark:text-white uppercase mb-1 opacity-70">
                                         Totaal {currentMonthLabel}
                                     </span>
-                                    <span className="text-5xl font-extrabold text-[#3D6456] dark:text-white tracking-tight">{formatCurrency(totalMonth)}</span>
+                                    <span className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#3D6456] dark:text-white tracking-tight">{formatCurrency(totalMonth)}</span>
                                 </div>
                             </div>
                             {/* Info Banner */}
@@ -379,26 +379,26 @@ export default function IncomePage() {
                             {showYearOverview && (
                                 <>
                                     {/* Stats Row */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/30">
-                                            <span className="text-xs font-medium text-blue-600 dark:text-blue-400 block mb-1">Gem. Vast</span>
-                                            <span className="text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.avgFixed)}</span>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6">
+                                        <div className="p-2 sm:p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/30">
+                                            <span className="text-[10px] sm:text-xs font-medium text-blue-600 dark:text-blue-400 block mb-1">Gem. Vast</span>
+                                            <span className="text-sm sm:text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.avgFixed)}</span>
                                         </div>
-                                        <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800/30">
-                                            <span className="text-xs font-medium text-green-600 dark:text-green-400 block mb-1">Gem. Extra</span>
-                                            <span className="text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.avgExtra)}</span>
+                                        <div className="p-2 sm:p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800/30">
+                                            <span className="text-[10px] sm:text-xs font-medium text-green-600 dark:text-green-400 block mb-1">Gem. Extra</span>
+                                            <span className="text-sm sm:text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.avgExtra)}</span>
                                         </div>
-                                        <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800/30">
-                                            <span className="text-xs font-medium text-purple-600 dark:text-purple-400 block mb-1">Gem. Totaal</span>
-                                            <span className="text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.avgTotal)}</span>
+                                        <div className="p-2 sm:p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800/30">
+                                            <span className="text-[10px] sm:text-xs font-medium text-purple-600 dark:text-purple-400 block mb-1">Gem. Totaal</span>
+                                            <span className="text-sm sm:text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.avgTotal)}</span>
                                         </div>
-                                        <div className="p-3 bg-gray-50 dark:bg-card-elevated rounded-xl border border-gray-100 dark:border-border-main">
-                                            <span className="text-xs font-medium text-gray-500 dark:text-text-secondary block mb-1">Totaal Jaar</span>
-                                            <span className="text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.totalYear)}</span>
+                                        <div className="p-2 sm:p-3 bg-gray-50 dark:bg-card-elevated rounded-xl border border-gray-100 dark:border-border-main">
+                                            <span className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-text-secondary block mb-1">Totaal Jaar</span>
+                                            <span className="text-sm sm:text-lg font-bold text-[#3D6456] dark:text-white">{formatCurrency(yearStats.totalYear)}</span>
                                         </div>
                                     </div>
                                     {/* Chart Area */}
-                                    <div className="relative h-64 w-full">
+                                    <div className="relative h-48 sm:h-64 w-full">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <AreaChart data={yearStats.monthlyData}>
                                                 <defs>
@@ -454,20 +454,20 @@ export default function IncomePage() {
                         </div>
 
                         {/* 3. VAST INKOMEN LIST CARD */}
-                        <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
-                            <div className="flex justify-between items-center mb-6">
+                        <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-4 sm:p-6 shadow-card dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]" style={{ boxShadow: '0 2px 10px rgba(61, 100, 86, 0.05)' }}>
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
                                 <div>
-                                    <h3 className="text-lg font-bold text-[#3D6456] dark:text-white flex items-center gap-2">
+                                    <h3 className="text-base sm:text-lg font-bold text-[#3D6456] dark:text-white flex items-center gap-2">
                                         <span className="material-symbols-outlined text-[#b4ff7a] dark:text-konsensi-primary">bolt</span>
                                         Vast Inkomen
                                     </h3>
-                                    <p className="text-sm text-gray-400 dark:text-text-secondary font-medium mt-1">Terugkerend inkomen zoals salaris of uitkering</p>
+                                    <p className="text-xs sm:text-sm text-gray-400 dark:text-text-secondary font-medium mt-1">Terugkerend inkomen zoals salaris of uitkering</p>
                                 </div>
                                 <button
                                     onClick={() => handleAddIncome('vast')}
-                                    className="bg-[#ecf4e6] dark:bg-konsensi-bg-green hover:bg-[#b4ff7a] dark:hover:bg-konsensi-primary text-[#3D6456] dark:text-white text-sm font-bold px-4 py-2 rounded-full transition-colors flex items-center gap-1"
+                                    className="w-full sm:w-auto bg-[#ecf4e6] dark:bg-konsensi-bg-green hover:bg-[#b4ff7a] dark:hover:bg-konsensi-primary text-[#3D6456] dark:text-white text-xs sm:text-sm font-bold px-3 sm:px-4 py-2 rounded-full transition-colors flex items-center justify-center gap-1"
                                 >
-                                    <span className="material-symbols-outlined text-[18px]">add</span>
+                                    <span className="material-symbols-outlined text-[16px] sm:text-[18px]">add</span>
                                     Nieuw Inkomen
                                 </button>
                             </div>
@@ -476,53 +476,53 @@ export default function IncomePage() {
                                     <p className="text-gray-500 dark:text-text-secondary text-center py-6">Nog geen vast inkomen toegevoegd</p>
                                 ) : (
                                     fixedIncomeThisMonth.map((income) => {
-                                        const displayAmount = income.is_variable 
-                                            ? (variableEntries.find(v => v.income_id === income.id && v.month === selectedMonth)?.amount 
-                                                || income.monthly_equivalent 
+                                        const displayAmount = income.is_variable
+                                            ? (variableEntries.find(v => v.income_id === income.id && v.month === selectedMonth)?.amount
+                                                || income.monthly_equivalent
                                                 || income.amount)
                                             : (income.monthly_equivalent || income.amount);
-                                        
+
                                         return (
                                             <div
                                                 key={income.id}
-                                                className="flex items-center justify-between p-4 rounded-[24px] border border-gray-100 dark:border-border-main hover:border-[#b4ff7a] dark:hover:border-konsensi-primary hover:bg-[#fafcf8] dark:hover:bg-card-elevated transition-all group"
+                                                className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-[16px] sm:rounded-[24px] border border-gray-100 dark:border-border-main hover:border-[#b4ff7a] dark:hover:border-konsensi-primary hover:bg-[#fafcf8] dark:hover:bg-card-elevated transition-all group gap-3"
                                             >
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 rounded-full bg-[#ecf4e6] dark:bg-konsensi-bg-green flex items-center justify-center text-[#3D6456] dark:text-konsensi-primary">
-                                                        <span className="material-symbols-outlined">
+                                                <div className="flex items-center gap-3 sm:gap-4">
+                                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#ecf4e6] dark:bg-konsensi-bg-green flex items-center justify-center text-[#3D6456] dark:text-konsensi-primary flex-shrink-0">
+                                                        <span className="material-symbols-outlined text-[20px] sm:text-[24px]">
                                                             {income.is_from_work_schedule ? 'work' : 'trending_up'}
                                                         </span>
                                                     </div>
-                                                    <div>
-                                                        <h4 className="font-bold text-[#3D6456] dark:text-white">{income.description || 'Werk / Salaris'}</h4>
-                                                        <p className="text-xs text-gray-500 dark:text-text-secondary">
+                                                    <div className="min-w-0">
+                                                        <h4 className="font-bold text-[#3D6456] dark:text-white text-sm sm:text-base truncate">{income.description || 'Werk / Salaris'}</h4>
+                                                        <p className="text-[10px] sm:text-xs text-gray-500 dark:text-text-secondary">
                                                             {income.day_of_month ? `Maandelijks op de ${income.day_of_month}e` : 'Maandelijks'}
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center gap-6">
-                                                    <span className="text-lg font-bold text-[#3D6456] dark:text-white">
+                                                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 pl-13 sm:pl-0">
+                                                    <span className="text-base sm:text-lg font-bold text-[#3D6456] dark:text-white">
                                                         {income.is_from_work_schedule && '~'}
                                                         {formatCurrency(displayAmount)}
                                                     </span>
-                                                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button 
+                                                    <div className="flex gap-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                        <button
                                                             onClick={() => {
                                                                 setEditingIncome(income);
                                                                 setShowFormModal(true);
                                                             }}
-                                                            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-blue-100 hover:text-blue-600 transition-colors"
+                                                            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-blue-100 hover:text-blue-600 transition-colors"
                                                         >
                                                             <span className="material-symbols-outlined text-[16px]">edit</span>
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             onClick={async () => {
                                                                 if (window.confirm('Weet je zeker dat je dit inkomen wilt verwijderen?')) {
                                                                     await Income.delete(income.id);
                                                                     loadData();
                                                                 }
                                                             }}
-                                                            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-600 transition-colors"
+                                                            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-red-100 hover:text-red-600 transition-colors"
                                                         >
                                                             <span className="material-symbols-outlined text-[16px]">delete</span>
                                                         </button>
