@@ -179,6 +179,18 @@ export default function Debts() {
     loadDebts();
   }, [loadDebts]);
 
+  // Reset showPaidDebts when there are debts that are no longer fully paid
+  // This ensures the user sees the updated debt list after deleting payments
+  useEffect(() => {
+    if (showPaidDebts && debts.length > 0) {
+      const allStillPaidOff = debts.every(d => d.status === 'afbetaald');
+      if (!allStillPaidOff) {
+        console.log('[Debts] Some debts are no longer fully paid, resetting showPaidDebts');
+        setShowPaidDebts(false);
+      }
+    }
+  }, [debts, showPaidDebts]);
+
   const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -1000,6 +1012,7 @@ export default function Debts() {
         }}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onUpdate={loadDebts}
       />
 
       <StrategyChoiceModal

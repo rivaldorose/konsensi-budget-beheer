@@ -639,7 +639,7 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-md bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border">
         <AnimatePresence mode="wait">
           {celebrating ? (
             <motion.div
