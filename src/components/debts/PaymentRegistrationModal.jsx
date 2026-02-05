@@ -19,94 +19,219 @@ import { supabase } from "@/lib/supabase";
 
 // Parse PDF text to extract payment data
 async function parsePdfText(file) {
-  const pdfjsLib = await import('pdfjs-dist');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+  try {
+    const pdfjsLib = await import('pdfjs-dist');
 
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    // Try multiple worker sources for better compatibility
+    const workerSources = [
+      `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`,
+      `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`,
+      `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`,
+    ];
 
-  let fullText = '';
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const pageText = content.items.map(item => item.str).join(' ');
-    fullText += pageText + '\n';
+    // Set worker source
+    pdfjsLib.GlobalWorkerOptions.workerSrc = workerSources[0];
+
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+    let fullText = '';
+    let structuredItems = [];
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+
+      // Collect items with position info for better parsing
+      content.items.forEach(item => {
+        if (item.str && item.str.trim()) {
+          structuredItems.push({
+            text: item.str,
+            x: item.transform ? item.transform[4] : 0,
+            y: item.transform ? item.transform[5] : 0,
+          });
+          fullText += item.str + ' ';
+        }
+      });
+      fullText += '\n';
+    }
+
+    console.log('[PDF Parser] Extracted text length:', fullText.length);
+    console.log('[PDF Parser] First 500 chars:', fullText.substring(0, 500));
+
+    return extractPaymentData(fullText, structuredItems);
+  } catch (error) {
+    console.error('[PDF Parser] Error:', error);
+    throw error;
+  }
+}
+
+// Parse Dutch number format: "1.234,56" or "1234,56" or "€ 50,00" -> 1234.56
+function parseDutchNumber(str) {
+  if (!str) return null;
+
+  // Remove currency symbols and whitespace
+  let cleaned = str.replace(/[€\s]/g, '').trim();
+
+  // Handle negative amounts (often shown with - or minus)
+  const isNegative = cleaned.startsWith('-') || cleaned.includes('−');
+  cleaned = cleaned.replace(/[-−]/g, '');
+
+  // Check if it's Dutch format (comma as decimal separator)
+  if (cleaned.includes(',')) {
+    // Remove thousand separators (dots) and replace comma with dot
+    cleaned = cleaned.replace(/\./g, '').replace(',', '.');
   }
 
-  return extractPaymentData(fullText);
+  const num = parseFloat(cleaned);
+  if (isNaN(num) || num <= 0 || num > 1000000) return null;
+
+  return isNegative ? -num : num;
 }
 
 // Extract payment info from text using common Dutch bank statement patterns
-function extractPaymentData(text) {
+function extractPaymentData(text, structuredItems = []) {
   const result = { amount: null, date: null, description: null, method: null };
 
-  // Amount patterns: €123,45 or EUR 123,45 or 123.45 or 1.234,56
+  // Normalize text for better matching
+  const normalizedText = text.replace(/\s+/g, ' ').trim();
+
+  console.log('[PDF Parser] Parsing text for payment data...');
+
+  // ===== AMOUNT EXTRACTION =====
+  // More comprehensive patterns for Dutch bank statements
   const amountPatterns = [
-    /€\s*([\d.,]+)/,
-    /EUR\s*([\d.,]+)/i,
-    /bedrag[:\s]*([\d.,]+)/i,
-    /totaal[:\s]*€?\s*([\d.,]+)/i,
-    /af[:\s]*€?\s*([\d.,]+)/i,
+    // Specific labeled amounts (highest priority)
+    /(?:bedrag|amount|totaal|total|te\s*betalen|openstaand|saldo)[:\s]*[€]?\s*([\d.,]+)/gi,
+    /(?:af|bij|credit|debet)[:\s]*[€]?\s*([\d.,]+)/gi,
+
+    // Currency symbol patterns
+    /€\s*([\d]+[.,][\d]{2})/g,
+    /EUR\s*([\d]+[.,][\d]{2})/gi,
+
+    // Amounts at end of lines (common in statements)
+    /([\d]{1,3}(?:[.,]\d{3})*[.,]\d{2})\s*(?:€|EUR)?$/gm,
+
+    // Generic number patterns that look like currency
+    /\b([\d]{1,3}(?:\.\d{3})*,\d{2})\b/g,  // Dutch: 1.234,56
+    /\b([\d]+,\d{2})\b/g,  // Simple: 123,45
   ];
 
+  // Collect all potential amounts
+  const foundAmounts = [];
   for (const pattern of amountPatterns) {
-    const match = text.match(pattern);
-    if (match) {
-      // Handle Dutch number format: 1.234,56 -> 1234.56
-      let numStr = match[1].replace(/\./g, '').replace(',', '.');
-      const parsed = parseFloat(numStr);
-      if (parsed > 0 && parsed < 1000000) {
-        result.amount = parsed;
-        break;
+    const matches = normalizedText.matchAll(pattern);
+    for (const match of matches) {
+      const amount = parseDutchNumber(match[1]);
+      if (amount && amount > 0.01 && amount < 100000) {
+        foundAmounts.push({ amount, context: match[0] });
       }
     }
   }
 
-  // Date patterns: DD-MM-YYYY, DD/MM/YYYY, DD.MM.YYYY, YYYY-MM-DD
+  // Sort by likelihood (prefer amounts that look like payment amounts)
+  if (foundAmounts.length > 0) {
+    // Prefer amounts with currency context
+    const withCurrency = foundAmounts.find(a => /€|EUR/i.test(a.context));
+    const withLabel = foundAmounts.find(a => /bedrag|totaal|betalen/i.test(a.context));
+
+    result.amount = (withLabel || withCurrency || foundAmounts[0]).amount;
+    console.log('[PDF Parser] Found amount:', result.amount, 'from', foundAmounts.length, 'candidates');
+  }
+
+  // ===== DATE EXTRACTION =====
   const datePatterns = [
-    /(\d{2})[-/.](\d{2})[-/.](\d{4})/,
-    /(\d{4})[-/.](\d{2})[-/.](\d{2})/,
+    // DD-MM-YYYY or DD/MM/YYYY or DD.MM.YYYY
+    /\b(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})\b/g,
+    // YYYY-MM-DD
+    /\b(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})\b/g,
+    // Dutch written dates: "5 januari 2024"
+    /\b(\d{1,2})\s+(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\s+(\d{4})\b/gi,
   ];
+
+  const monthNames = {
+    'januari': '01', 'februari': '02', 'maart': '03', 'april': '04',
+    'mei': '05', 'juni': '06', 'juli': '07', 'augustus': '08',
+    'september': '09', 'oktober': '10', 'november': '11', 'december': '12'
+  };
 
   for (const pattern of datePatterns) {
-    const match = text.match(pattern);
-    if (match) {
+    const matches = normalizedText.matchAll(pattern);
+    for (const match of matches) {
       let year, month, day;
-      if (match[1].length === 4) {
-        [, year, month, day] = match;
+
+      if (match[2] && monthNames[match[2].toLowerCase()]) {
+        // Dutch written date
+        day = match[1].padStart(2, '0');
+        month = monthNames[match[2].toLowerCase()];
+        year = match[3];
+      } else if (match[1].length === 4) {
+        // YYYY-MM-DD format
+        year = match[1];
+        month = match[2].padStart(2, '0');
+        day = match[3].padStart(2, '0');
       } else {
-        [, day, month, year] = match;
+        // DD-MM-YYYY format
+        day = match[1].padStart(2, '0');
+        month = match[2].padStart(2, '0');
+        year = match[3];
       }
-      const dateStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+
+      const dateStr = `${year}-${month}-${day}`;
       const date = new Date(dateStr);
-      if (!isNaN(date.getTime()) && date.getFullYear() >= 2020) {
+
+      // Validate date is reasonable (between 2020 and next year)
+      if (!isNaN(date.getTime()) && date.getFullYear() >= 2020 && date.getFullYear() <= new Date().getFullYear() + 1) {
         result.date = dateStr;
+        console.log('[PDF Parser] Found date:', result.date);
         break;
       }
     }
+    if (result.date) break;
   }
 
-  // Description: look for omschrijving/kenmerk/referentie
+  // ===== DESCRIPTION/REFERENCE EXTRACTION =====
   const descPatterns = [
-    /omschrijving[:\s]*(.{5,80})/i,
-    /kenmerk[:\s]*(.{5,50})/i,
-    /referentie[:\s]*(.{5,50})/i,
-    /betreft[:\s]*(.{5,80})/i,
+    /(?:omschrijving|description)[:\s]*([^\n]{5,100})/gi,
+    /(?:kenmerk|reference|referentie)[:\s]*([^\n]{3,50})/gi,
+    /(?:betreft|subject)[:\s]*([^\n]{5,80})/gi,
+    /(?:mededeling|remark)[:\s]*([^\n]{5,100})/gi,
+    /(?:naam|name)[:\s]*([^\n]{3,50})/gi,
+    // IBAN can serve as reference
+    /\b([A-Z]{2}\d{2}[A-Z0-9]{4}\d{7}(?:[A-Z0-9])?)\b/g,
   ];
 
   for (const pattern of descPatterns) {
-    const match = text.match(pattern);
-    if (match) {
-      result.description = match[1].trim();
+    const match = normalizedText.match(pattern);
+    if (match && match[1]) {
+      const desc = match[1].trim();
+      // Clean up description
+      if (desc.length > 3 && !/^\d+$/.test(desc)) {
+        result.description = desc.substring(0, 100);
+        console.log('[PDF Parser] Found description:', result.description);
+        break;
+      }
+    }
+  }
+
+  // ===== PAYMENT METHOD DETECTION =====
+  const methodKeywords = {
+    'incasso': ['incasso', 'automatische incasso', 'sepa incasso', 'machtiging'],
+    'bank_transfer': ['overboeking', 'overschrijving', 'sepa overboeking', 'betaling', 'storting'],
+    'ideal': ['ideal', 'i.deal', 'online betaling'],
+    'contant': ['contant', 'cash', 'kas'],
+  };
+
+  const lowerText = normalizedText.toLowerCase();
+  for (const [method, keywords] of Object.entries(methodKeywords)) {
+    if (keywords.some(kw => lowerText.includes(kw))) {
+      result.method = method === 'ideal' ? 'bank_transfer' : method;
+      console.log('[PDF Parser] Detected payment method:', result.method);
       break;
     }
   }
 
-  // Payment method
-  if (/incasso/i.test(text)) result.method = 'incasso';
-  else if (/overboek|overboeking|overschrijving/i.test(text)) result.method = 'bank_transfer';
-  else if (/ideal|i\.?deal/i.test(text)) result.method = 'bank_transfer';
-
+  console.log('[PDF Parser] Final result:', result);
   return result;
 }
 
@@ -155,33 +280,53 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
 
   const extractFromPdf = async (file) => {
     setExtracting(true);
+    console.log('[PaymentModal] Starting PDF extraction for:', file.name, 'size:', file.size);
+
     try {
       const data = await parsePdfText(file);
+      console.log('[PaymentModal] PDF extraction result:', data);
       setExtractionResult(data);
 
       let filled = 0;
-      if (data.amount) { setAmount(data.amount.toFixed(2)); filled++; }
-      if (data.date) { setPaymentDate(data.date); filled++; }
-      if (data.description) { setNotes(data.description); filled++; }
-      if (data.method) { setPaymentMethod(data.method); filled++; }
+      const filledFields = [];
+
+      if (data.amount) {
+        setAmount(data.amount.toFixed(2));
+        filled++;
+        filledFields.push(`bedrag (€${data.amount.toFixed(2)})`);
+      }
+      if (data.date) {
+        setPaymentDate(data.date);
+        filled++;
+        filledFields.push('datum');
+      }
+      if (data.description) {
+        setNotes(data.description);
+        filled++;
+        filledFields.push('omschrijving');
+      }
+      if (data.method) {
+        setPaymentMethod(data.method);
+        filled++;
+        filledFields.push('betaalmethode');
+      }
 
       if (filled > 0) {
         toast({
-          title: `${filled} veld${filled > 1 ? 'en' : ''} automatisch ingevuld`,
-          description: "Controleer de gegevens en bevestig.",
-          variant: "success"
+          title: `✅ ${filled} veld${filled > 1 ? 'en' : ''} automatisch ingevuld`,
+          description: `Gevonden: ${filledFields.join(', ')}. Controleer en bevestig.`,
         });
       } else {
         toast({
-          title: "Geen gegevens gevonden",
-          description: "Vul de gegevens handmatig in.",
+          title: "📄 PDF gelezen, geen betalingsgegevens gevonden",
+          description: "Dit kan een ander type document zijn. Vul de gegevens handmatig in.",
           variant: "destructive"
         });
       }
     } catch (error) {
-      console.error("Error parsing PDF:", error);
+      console.error("[PaymentModal] Error parsing PDF:", error);
       toast({
-        title: "Kon PDF niet lezen",
+        title: "❌ Kon PDF niet lezen",
         description: "Vul de gegevens handmatig in.",
         variant: "destructive"
       });
