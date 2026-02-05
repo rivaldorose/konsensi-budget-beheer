@@ -229,8 +229,17 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
         }
       }
 
-      // 2. Register payment
+      // 2. Get current user for user_id
+      const currentUser = await User.me();
+      if (!currentUser?.id) {
+        toast({ title: "Fout", description: "Je moet ingelogd zijn om een betaling te registreren.", variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+
+      // 3. Register payment with user_id (required by RLS policy)
       const newPayment = await DebtPayment.create({
+        user_id: currentUser.id,
         debt_id: debt.id,
         amount: paymentAmount,
         payment_date: paymentDate,
@@ -240,9 +249,10 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
         status: "betaald"
       });
 
-      // 3. Save document reference if uploaded
+      // 3. Save document reference if uploaded (with user_id for RLS)
       if (fileUrl && newPayment) {
         await PaymentDocument.create({
+          user_id: currentUser.id,
           debt_id: debt.id,
           payment_id: newPayment.id,
           document_type: 'betalingsbewijs',
@@ -253,8 +263,9 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
         }).catch(err => console.error("Error saving document:", err));
       }
 
-      // 4. Create automatic transaction
+      // 4. Create automatic transaction (with user_id for RLS)
       await Transaction.create({
+        user_id: currentUser.id,
         type: 'expense',
         amount: paymentAmount,
         description: `Aflossing ${debt.creditor_name}`,
@@ -269,24 +280,21 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
 
       const updateData = { amount_paid: correctAmountPaid };
 
-      // 6. Award XP
+      // 6. Award XP (currentUser already fetched above)
       let xpAwarded = 0;
       try {
-        const currentUser = await User.me();
-        if (currentUser?.id) {
-          await gamificationService.addXP(currentUser.id, XP_REWARDS.PAYMENT_MADE, "payment_made");
-          xpAwarded = XP_REWARDS.PAYMENT_MADE;
+        await gamificationService.addXP(currentUser.id, XP_REWARDS.PAYMENT_MADE, "payment_made");
+        xpAwarded = XP_REWARDS.PAYMENT_MADE;
 
-          const monthlyPayment = debt.monthly_payment || debt.repayment_amount || 0;
-          if (monthlyPayment > 0 && paymentAmount > monthlyPayment) {
-            await gamificationService.addXP(currentUser.id, XP_REWARDS.EXTRA_PAYMENT_MADE, "extra_payment_made");
-            xpAwarded += XP_REWARDS.EXTRA_PAYMENT_MADE;
-          }
+        const monthlyPayment = debt.monthly_payment || debt.repayment_amount || 0;
+        if (monthlyPayment > 0 && paymentAmount > monthlyPayment) {
+          await gamificationService.addXP(currentUser.id, XP_REWARDS.EXTRA_PAYMENT_MADE, "extra_payment_made");
+          xpAwarded += XP_REWARDS.EXTRA_PAYMENT_MADE;
+        }
 
-          if (debtIsNowFullyPaid && debt.status !== 'afbetaald') {
-            await gamificationService.addXP(currentUser.id, XP_REWARDS.DEBT_FULLY_PAID, "debt_fully_paid");
-            xpAwarded += XP_REWARDS.DEBT_FULLY_PAID;
-          }
+        if (debtIsNowFullyPaid && debt.status !== 'afbetaald') {
+          await gamificationService.addXP(currentUser.id, XP_REWARDS.DEBT_FULLY_PAID, "debt_fully_paid");
+          xpAwarded += XP_REWARDS.DEBT_FULLY_PAID;
         }
       } catch (xpError) {
         console.error("Error awarding XP:", xpError);
