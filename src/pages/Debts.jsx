@@ -82,6 +82,7 @@ export default function Debts() {
   const [showAddChoiceModal, setShowAddChoiceModal] = useState(false);
   const [showStappenplan, setShowStappenplan] = useState(false);
   const [stappenplanDebt, setStappenplanDebt] = useState(null);
+  const [showPaidDebts, setShowPaidDebts] = useState(false);
     const [filters, setFilters] = useState({
         status: 'all',
         creditorType: 'all',
@@ -415,7 +416,8 @@ export default function Debts() {
   }
 
   const allPaidOff = debts.every(d => d.status === 'afbetaald');
-  if (allPaidOff) {
+  if (allPaidOff && !showPaidDebts) {
+    const totalPaidOffAmount = debts.reduce((sum, d) => sum + (d.amount || 0), 0);
     return (
       <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] text-[#1F2937] dark:text-white font-body">
         <div className="fixed top-6 right-6 lg:top-8 lg:right-8 z-20">
@@ -428,14 +430,90 @@ export default function Debts() {
             </div>
           </label>
         </div>
-        <div className="p-6 flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="text-6xl mb-4">🎊</div>
-            <h2 className="text-2xl font-bold text-[#131d0c] dark:text-white mb-2">Alle schulden afbetaald!</h2>
-            <p className="text-gray-600 dark:text-[#9CA3AF] mb-6">Wat een prestatie! Je hebt het gedaan.</p>
-                    </div>
-                  </div>
-              </div>
+        <div className="p-6 flex flex-col items-center justify-center min-h-[80vh]">
+          <div className="text-center max-w-lg mx-auto">
+            {/* Celebration animation */}
+            <div className="text-8xl mb-6 animate-bounce">🎊</div>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#131d0c] dark:text-white mb-3 font-display">
+              Alle schulden afbetaald!
+            </h2>
+            <p className="text-gray-600 dark:text-[#9CA3AF] mb-2 text-lg">
+              Wat een ongelooflijke prestatie! Je hebt het gedaan! 🏆
+            </p>
+            <div className="bg-green-100 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-2xl p-4 mb-8">
+              <p className="text-green-800 dark:text-green-400 font-bold text-xl">
+                {formatCurrency(totalPaidOffAmount)} afgelost
+              </p>
+              <p className="text-green-600 dark:text-green-500 text-sm">
+                {debts.length} schuld{debts.length > 1 ? 'en' : ''} volledig afbetaald
+              </p>
+            </div>
+
+            {/* Action buttons */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-[#131d0c] dark:text-white mb-4">Wat wil je nu doen?</h3>
+
+              {/* Option 1: Register new debts */}
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="w-full flex items-center gap-4 p-5 bg-white dark:bg-[#1a1a1a] border-2 border-gray-200 dark:border-[#2a2a2a] hover:border-primary dark:hover:border-primary-green rounded-2xl transition-all group"
+              >
+                <div className="w-14 h-14 bg-blue-100 dark:bg-blue-500/10 rounded-xl flex items-center justify-center">
+                  <span className="material-symbols-outlined text-blue-600 dark:text-blue-400 !text-[28px]">add_circle</span>
+                </div>
+                <div className="flex-1 text-left">
+                  <h4 className="font-bold text-[#131d0c] dark:text-white text-lg group-hover:text-primary dark:group-hover:text-primary-green transition-colors">
+                    Nieuwe schuld registreren
+                  </h4>
+                  <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">
+                    Heb je nog een openstaande schuld? Voeg deze toe.
+                  </p>
+                </div>
+                <span className="material-symbols-outlined text-gray-400 dark:text-[#6b7280] group-hover:text-primary dark:group-hover:text-primary-green !text-[24px]">arrow_forward</span>
+              </button>
+
+              {/* Option 2: Start savings plan */}
+              <button
+                onClick={() => window.location.href = createPageUrl('Goals')}
+                className="w-full flex items-center gap-4 p-5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-500/10 dark:to-emerald-500/10 border-2 border-green-200 dark:border-green-500/20 hover:border-green-400 dark:hover:border-green-400 rounded-2xl transition-all group"
+              >
+                <div className="w-14 h-14 bg-green-100 dark:bg-green-500/20 rounded-xl flex items-center justify-center">
+                  <span className="material-symbols-outlined text-green-600 dark:text-green-400 !text-[28px]">savings</span>
+                </div>
+                <div className="flex-1 text-left">
+                  <h4 className="font-bold text-green-800 dark:text-green-400 text-lg">
+                    Start een spaarplan 💰
+                  </h4>
+                  <p className="text-sm text-green-700 dark:text-green-500">
+                    Zet het geld dat je overhad nu opzij voor je toekomst!
+                  </p>
+                </div>
+                <span className="material-symbols-outlined text-green-400 group-hover:text-green-600 dark:group-hover:text-green-300 !text-[24px]">arrow_forward</span>
+              </button>
+
+              {/* Option 3: View old/paid debts */}
+              <button
+                onClick={() => setShowPaidDebts(true)}
+                className="w-full flex items-center gap-4 p-5 bg-gray-50 dark:bg-[#1a1a1a] border-2 border-gray-200 dark:border-[#2a2a2a] hover:border-gray-400 dark:hover:border-[#3a3a3a] rounded-2xl transition-all group"
+              >
+                <div className="w-14 h-14 bg-gray-100 dark:bg-[#2a2a2a] rounded-xl flex items-center justify-center">
+                  <span className="material-symbols-outlined text-gray-500 dark:text-[#a1a1a1] !text-[28px]">history</span>
+                </div>
+                <div className="flex-1 text-left">
+                  <h4 className="font-bold text-[#131d0c] dark:text-white text-lg group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
+                    Bekijk afbetaalde schulden
+                  </h4>
+                  <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">
+                    Zie je geschiedenis en wat je hebt bereikt
+                  </p>
+                </div>
+                <span className="material-symbols-outlined text-gray-400 dark:text-[#6b7280] group-hover:text-gray-600 dark:group-hover:text-gray-400 !text-[24px]">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <DebtWizard isOpen={showAddForm} onClose={() => setShowAddForm(false)} onSave={loadDebts} />
+      </div>
     );
   }
 
@@ -456,11 +534,33 @@ export default function Debts() {
       {/* Main Content */}
       <main className="flex-1 w-full flex justify-center py-8 px-4 sm:px-8">
         <div className="w-full max-w-[1400px] flex flex-col gap-8">
+          {/* Banner for viewing paid debts when all are paid */}
+          {allPaidOff && showPaidDebts && (
+            <div className="bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-500/10 dark:to-emerald-500/10 border border-green-200 dark:border-green-500/20 rounded-2xl p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🎊</span>
+                <div>
+                  <p className="font-bold text-green-800 dark:text-green-400">Je bekijkt je afbetaalde schulden</p>
+                  <p className="text-sm text-green-700 dark:text-green-500">Alle {debts.length} schulden zijn volledig afbetaald!</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPaidDebts(false)}
+                className="px-4 py-2 bg-white dark:bg-[#1a1a1a] border border-green-300 dark:border-green-500/30 rounded-xl text-green-800 dark:text-green-400 font-semibold text-sm hover:bg-green-50 dark:hover:bg-green-500/10 transition-colors flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined !text-[18px]">arrow_back</span>
+                Terug
+              </button>
+            </div>
+          )}
+
           {/* Page Header */}
           <header className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-[#131d0c] dark:text-white font-display">Betaalachterstanden</h1>
-          {paidOffDebts > 0 && (
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-[#131d0c] dark:text-white font-display">
+                {allPaidOff && showPaidDebts ? 'Afbetaalde Schulden' : 'Betaalachterstanden'}
+              </h1>
+          {paidOffDebts > 0 && !allPaidOff && (
                 <p className="text-green-600 dark:text-green-400 font-medium flex items-center gap-2 mt-1">
                   <span>🎉</span> {paidOffDebts} schuld{paidOffDebts > 1 ? 'en' : ''} afbetaald!
                 </p>
