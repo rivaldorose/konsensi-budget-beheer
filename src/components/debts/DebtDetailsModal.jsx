@@ -384,7 +384,7 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
       }
       await refreshDebt();
       loadPayments();
-      if (onUpdate) onUpdate();
+      if (onUpdate) await onUpdate();
     } catch (error) {
       console.error('Error deleting payment:', error);
       toast({
