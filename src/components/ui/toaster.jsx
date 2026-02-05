@@ -1,8 +1,15 @@
 import { useToast } from "@/components/ui/use-toast";
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
+import { useEffect, useState } from 'react';
 
 export function Toaster() {
   const { toasts, dismiss } = useToast();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const colorMap = {
     success: 'bg-green-500 text-white border border-green-600',
@@ -22,8 +29,11 @@ export function Toaster() {
     default: () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
   };
 
-  return (
-    <div className="fixed top-4 right-4 z-[9999] space-y-2 pointer-events-auto">
+  const toasterContent = (
+    <div
+      className="fixed top-4 right-4 space-y-2 pointer-events-auto"
+      style={{ zIndex: 99999 }}
+    >
       <AnimatePresence>
         {toasts.filter(t => t.open !== false).map(({ id, title, description, variant, ...props }) => {
           const type = variant || 'default';
@@ -38,7 +48,8 @@ export function Toaster() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.5 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className={`rounded-xl shadow-lg p-4 min-w-80 max-w-md ${colorClass}`}
+              className={`rounded-xl shadow-2xl p-4 min-w-80 max-w-md ${colorClass}`}
+              style={{ zIndex: 99999 }}
             >
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0">
@@ -58,4 +69,8 @@ export function Toaster() {
       </AnimatePresence>
     </div>
   );
+
+  // Use portal to render toast at document.body level, outside any stacking context
+  if (!mounted) return null;
+  return createPortal(toasterContent, document.body);
 } 

@@ -118,6 +118,17 @@ function parseDutchNumber(str) {
   return isNegative ? -num : num;
 }
 
+// Check if a string looks like a date pattern (to avoid parsing dates as amounts)
+function looksLikeDate(str) {
+  // Common date patterns that should NOT be treated as amounts
+  const datePatterns = [
+    /^\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}$/,  // DD-MM-YYYY or similar
+    /^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}$/,    // YYYY-MM-DD
+    /^\d{1,2}\s+(jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)/i,  // Dutch month names
+  ];
+  return datePatterns.some(p => p.test(str.trim()));
+}
+
 // Extract payment info from text using common Dutch bank statement patterns
 function extractPaymentData(text, structuredItems = []) {
   const result = { amount: null, date: null, description: null, method: null };
@@ -131,41 +142,64 @@ function extractPaymentData(text, structuredItems = []) {
   // More comprehensive patterns for Dutch bank statements
   const amountPatterns = [
     // Specific labeled amounts (highest priority)
-    /(?:bedrag|amount|totaal|total|te\s*betalen|openstaand|saldo)[:\s]*[€]?\s*([\d.,]+)/gi,
+    /(?:bedrag|amount|totaal|total|te\s*betalen|openstaand|saldo|factuurbedrag|netto|bruto)[:\s]*[€]?\s*([\d.,]+)/gi,
     /(?:af|bij|credit|debet)[:\s]*[€]?\s*([\d.,]+)/gi,
 
-    // Currency symbol patterns
+    // Currency symbol patterns (most reliable)
     /€\s*([\d]+[.,][\d]{2})/g,
     /EUR\s*([\d]+[.,][\d]{2})/gi,
 
     // Amounts at end of lines (common in statements)
     /([\d]{1,3}(?:[.,]\d{3})*[.,]\d{2})\s*(?:€|EUR)?$/gm,
 
-    // Generic number patterns that look like currency
-    /\b([\d]{1,3}(?:\.\d{3})*,\d{2})\b/g,  // Dutch: 1.234,56
-    /\b([\d]+,\d{2})\b/g,  // Simple: 123,45
+    // Dutch format with thousand separator: 1.234,56 (NOT dates like 05-02-2026)
+    /\b([\d]{1,3}(?:\.\d{3})+,\d{2})\b/g,  // Must have thousand separator
+
+    // Simple amounts with comma decimal (but avoid date-like patterns)
+    /(?:^|[^\d-/.])([\d]{2,},\d{2})(?:[^\d-/.]|$)/g,  // 123,45 but not 05-02,20
   ];
 
-  // Collect all potential amounts
+  // Collect all potential amounts, filtering out date-like patterns
   const foundAmounts = [];
   for (const pattern of amountPatterns) {
     const matches = normalizedText.matchAll(pattern);
     for (const match of matches) {
-      const amount = parseDutchNumber(match[1]);
-      if (amount && amount > 0.01 && amount < 100000) {
-        foundAmounts.push({ amount, context: match[0] });
+      const matchStr = match[1];
+      const fullContext = match[0];
+
+      // Skip if this looks like a date
+      if (looksLikeDate(fullContext) || looksLikeDate(matchStr)) {
+        console.log('[PDF Parser] Skipping date-like pattern:', fullContext);
+        continue;
+      }
+
+      // Skip patterns that look like date fragments (e.g., "02-2026" or "05-02")
+      if (/^\d{1,2}[-/.]\d{2,4}$/.test(matchStr) || /^\d{2,4}[-/.]\d{1,2}$/.test(matchStr)) {
+        console.log('[PDF Parser] Skipping date fragment:', matchStr);
+        continue;
+      }
+
+      const amount = parseDutchNumber(matchStr);
+      if (amount && amount > 0.99 && amount < 100000) {  // Min €1 to avoid date parts
+        foundAmounts.push({ amount, context: fullContext, priority: 0 });
       }
     }
   }
 
-  // Sort by likelihood (prefer amounts that look like payment amounts)
-  if (foundAmounts.length > 0) {
-    // Prefer amounts with currency context
-    const withCurrency = foundAmounts.find(a => /€|EUR/i.test(a.context));
-    const withLabel = foundAmounts.find(a => /bedrag|totaal|betalen/i.test(a.context));
+  // Prioritize amounts
+  foundAmounts.forEach(a => {
+    if (/€|EUR/i.test(a.context)) a.priority += 10;  // Currency symbol = high priority
+    if (/bedrag|totaal|betalen|factuurbedrag/i.test(a.context)) a.priority += 20;  // Labeled = highest
+    if (a.amount >= 10 && a.amount <= 10000) a.priority += 5;  // Reasonable payment amount
+  });
 
-    result.amount = (withLabel || withCurrency || foundAmounts[0]).amount;
+  // Sort by priority (highest first)
+  foundAmounts.sort((a, b) => b.priority - a.priority);
+
+  if (foundAmounts.length > 0) {
+    result.amount = foundAmounts[0].amount;
     console.log('[PDF Parser] Found amount:', result.amount, 'from', foundAmounts.length, 'candidates');
+    console.log('[PDF Parser] Top candidates:', foundAmounts.slice(0, 3).map(a => `${a.amount} (priority: ${a.priority})`));
   }
 
   // ===== DATE EXTRACTION =====
