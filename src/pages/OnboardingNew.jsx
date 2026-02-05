@@ -234,7 +234,7 @@ export default function OnboardingNew() {
             <span className={`material-symbols-outlined text-[20px] z-10 transition-colors duration-300 ${darkMode ? 'text-gray-400' : 'text-amber-500'}`}>
               light_mode
             </span>
-            <span className={`material-symbols-outlined text-[20px] z-10 transition-colors duration-300 ${darkMode ? 'text-brand-dark' : 'text-gray-400'}`}>
+            <span className={`material-symbols-outlined text-[20px] z-10 transition-colors duration-300 ${darkMode ? 'text-indigo-400' : 'text-gray-400'}`}>
               dark_mode
             </span>
             <div className={`toggle-circle absolute left-1 top-1 bg-white dark:bg-gray-700 w-7 h-7 rounded-full shadow-md transition-transform duration-300 border border-gray-100 dark:border-gray-600 ${darkMode ? 'translate-x-7' : ''}`}></div>
@@ -380,23 +380,27 @@ function WelcomeStep({ formData, setFormData, darkMode }) {
 function IncomeStep({ formData, setFormData, darkMode }) {
   const [incomes, setIncomes] = useState(formData.incomes.length > 0 ? formData.incomes : [{ description: '', amount: '', frequency: 'monthly', payment_date: '25' }]);
 
-  const updateIncomes = (newIncomes) => {
-    setIncomes(newIncomes);
-    setFormData({ ...formData, incomes: newIncomes, incomeCount: newIncomes.filter(i => i.description && i.amount).length });
-  };
+  // Sync incomes to formData whenever incomes change
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      incomes: incomes,
+      incomeCount: incomes.filter(i => i.description && i.amount).length
+    }));
+  }, [incomes]);
 
   const addIncome = () => {
-    updateIncomes([...incomes, { description: '', amount: '', frequency: 'monthly', payment_date: '25' }]);
+    setIncomes([...incomes, { description: '', amount: '', frequency: 'monthly', payment_date: '25' }]);
   };
 
   const removeIncome = (index) => {
-    updateIncomes(incomes.filter((_, i) => i !== index));
+    setIncomes(incomes.filter((_, i) => i !== index));
   };
 
   const updateIncome = (index, field, value) => {
     const newIncomes = [...incomes];
     newIncomes[index][field] = value;
-    updateIncomes(newIncomes);
+    setIncomes(newIncomes);
   };
 
   return (
@@ -499,23 +503,27 @@ function IncomeStep({ formData, setFormData, darkMode }) {
 function MonthlyCostsStep({ formData, setFormData, darkMode }) {
   const [costs, setCosts] = useState(formData.monthlyCosts.length > 0 ? formData.monthlyCosts : [{ name: '', amount: '', category: 'wonen', payment_date: '25' }]);
 
-  const updateCosts = (newCosts) => {
-    setCosts(newCosts);
-    setFormData({ ...formData, monthlyCosts: newCosts, costCount: newCosts.filter(c => c.name && c.amount).length });
-  };
+  // Sync costs to formData whenever costs change
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      monthlyCosts: costs,
+      costCount: costs.filter(c => c.name && c.amount).length
+    }));
+  }, [costs]);
 
   const addCost = () => {
-    updateCosts([...costs, { name: '', amount: '', category: 'wonen', payment_date: '25' }]);
+    setCosts([...costs, { name: '', amount: '', category: 'wonen', payment_date: '25' }]);
   };
 
   const removeCost = (index) => {
-    updateCosts(costs.filter((_, i) => i !== index));
+    setCosts(costs.filter((_, i) => i !== index));
   };
 
   const updateCost = (index, field, value) => {
     const newCosts = [...costs];
     newCosts[index][field] = value;
-    updateCosts(newCosts);
+    setCosts(newCosts);
   };
 
   const categories = [
