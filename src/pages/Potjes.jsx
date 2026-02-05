@@ -533,49 +533,54 @@ export default function Potjes() {
         </header>
 
         {/* Envelope Overview Card */}
-        <section className="bg-gradient-to-br from-[#E0F2FE] dark:from-[#3b82f630] to-[#F0F9FF] dark:to-[#3b82f610] rounded-card p-6 md:p-8 shadow-soft dark:shadow-soft border border-blue-100 dark:border-brand-border">
+        <section className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 md:p-8 shadow-sm border border-gray-200 dark:border-[#2a2a2a]">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-2">
             <div>
-              <h3 className="text-gray-900 dark:text-text-primary text-xl font-display font-bold">🧾 Enveloppe Overzicht</h3>
-              <p className="text-gray-500 dark:text-text-secondary text-sm">Je totale inkomen verdeeld over je uitgaven</p>
+              <h3 className="text-[#131d0c] dark:text-white text-xl font-bold flex items-center gap-2">
+                <span className="material-symbols-outlined text-blue-500 dark:text-blue-400">account_balance_wallet</span>
+                Budget Overzicht
+              </h3>
+              <p className="text-gray-500 dark:text-[#a1a1a1] text-sm mt-1">Je totale inkomen verdeeld over je uitgaven</p>
             </div>
-            <button className="text-brand-blue dark:text-brand-blue hover:text-blue-600 dark:hover:text-blue-400 text-sm font-semibold flex items-center gap-1 transition-colors">
-              Details bekijken <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-            </button>
-        </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-12 divide-y md:divide-y-0 md:divide-x divide-blue-200/50 dark:divide-white/10">
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             {/* Income */}
-            <div className="flex flex-col gap-2 pt-4 md:pt-0">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-text-secondary mb-1">
-                <span className="material-symbols-outlined text-status-green dark:text-primary-green">savings</span>
-                <span className="text-sm font-bold uppercase tracking-wide">Totaal Inkomen</span>
-      </div>
-              <div className="text-3xl font-display font-extrabold text-gray-900 dark:text-text-primary">{formatCurrency(totalIncome)}</div>
+            <div className="bg-green-50 dark:bg-green-500/10 rounded-xl p-4 border border-green-100 dark:border-green-500/20">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined text-green-600 dark:text-green-400 !text-[20px]">trending_up</span>
+                <span className="text-sm font-semibold text-green-700 dark:text-green-400 uppercase tracking-wide">Inkomen</span>
+              </div>
+              <div className="text-2xl md:text-3xl font-bold text-green-700 dark:text-green-400">{formatCurrency(totalIncome)}</div>
               {vtblData && (
-                <div className="text-xs text-gray-500 dark:text-text-tertiary font-medium">
+                <div className="text-xs text-green-600 dark:text-green-500 mt-1">
                   Vast: {formatCurrency(vtblData.vastInkomen || 0)} + Extra: {formatCurrency(totalIncome - (vtblData.vastInkomen || 0))}
                 </div>
               )}
             </div>
+
             {/* Fixed Expenses */}
-            <div className="flex flex-col gap-2 pt-4 md:pt-0 md:pl-8 lg:pl-12">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-text-secondary mb-1">
-                <span className="material-symbols-outlined text-status-red dark:text-accent-red">payments</span>
-                <span className="text-sm font-bold uppercase tracking-wide">Vaste Lasten + Regelingen</span>
+            <div className="bg-red-50 dark:bg-red-500/10 rounded-xl p-4 border border-red-100 dark:border-red-500/20">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined text-red-600 dark:text-red-400 !text-[20px]">payments</span>
+                <span className="text-sm font-semibold text-red-700 dark:text-red-400 uppercase tracking-wide">Vaste Lasten</span>
               </div>
-              <div className="text-3xl font-display font-extrabold text-status-red dark:text-accent-red">-{formatCurrency(fixedCostsAndArrangements)}</div>
-              <div className="text-xs text-gray-500 dark:text-text-tertiary font-medium">Automatisch afgeschreven</div>
+              <div className="text-2xl md:text-3xl font-bold text-red-600 dark:text-red-400">-{formatCurrency(fixedCostsAndArrangements)}</div>
+              <div className="text-xs text-red-500 dark:text-red-500/80 mt-1">Automatisch afgeschreven</div>
             </div>
+
             {/* Available */}
-            <div className="flex flex-col gap-2 pt-4 md:pt-0 md:pl-8 lg:pl-12">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-text-secondary mb-1">
-                <span className="material-symbols-outlined text-status-orange dark:text-accent-orange">pie_chart</span>
-                <span className="text-sm font-bold uppercase tracking-wide">Beschikbaar voor Potjes</span>
+            <div className={`rounded-xl p-4 border ${availableForPots > 0 ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-500/20' : 'bg-orange-50 dark:bg-orange-500/10 border-orange-100 dark:border-orange-500/20'}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`material-symbols-outlined !text-[20px] ${availableForPots > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>savings</span>
+                <span className={`text-sm font-semibold uppercase tracking-wide ${availableForPots > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-orange-700 dark:text-orange-400'}`}>Beschikbaar</span>
               </div>
-              <div className="text-3xl font-display font-extrabold text-status-orange dark:text-accent-orange">{formatCurrency(Math.max(0, availableForPots))}</div>
+              <div className={`text-2xl md:text-3xl font-bold ${availableForPots > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
+                {formatCurrency(Math.max(0, availableForPots))}
+              </div>
               {showLowBudgetWarning && (
-                <div className="text-xs text-status-orange dark:text-accent-orange/80 font-medium flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">warning</span> Tekort deze maand
+                <div className="text-xs text-orange-600 dark:text-orange-400 mt-1 flex items-center gap-1">
+                  <span className="material-symbols-outlined !text-[14px]">warning</span> Tekort deze maand
                 </div>
               )}
             </div>
@@ -583,25 +588,27 @@ export default function Potjes() {
         </section>
 
         {/* Warning Banner */}
-          {showLowBudgetWarning && (
-          <div className="bg-[#FFFBEB] dark:bg-[#f59e0b20] border border-[#FCD34D] dark:border-brand-orange rounded-[24px] p-4 flex items-start gap-4 shadow-sm">
-            <div className="bg-[#FCD34D] dark:bg-brand-orange/20 text-[#92400E] dark:text-brand-orange p-2 rounded-[24px] shrink-0 border border-[#FCD34D] dark:border-brand-orange/30">
-              <span className="material-symbols-outlined">warning</span>
-            </div>
-                <div>
-              <h4 className="text-[#92400E] dark:text-brand-orange font-bold text-lg mb-1">Geen ruimte voor potjes</h4>
-              <p className="text-[#B45309] dark:text-text-secondary text-sm leading-relaxed mb-2">
-                Je vaste lasten en betalingsregelingen ({formatCurrency(fixedCostsAndArrangements)}) zijn momenteel hoger dan of gelijk aan je inkomen ({formatCurrency(totalIncome)}).
-              </p>
-              <div className="flex items-start gap-2 bg-[#FEF3C7] dark:bg-brand-orange/10 p-3 rounded-[24px] border border-[#FCD34D] dark:border-brand-orange/20">
-                <span className="material-symbols-outlined text-[#D97706] dark:text-brand-orange text-[18px] mt-0.5">lightbulb</span>
-                <p className="text-[#92400E] dark:text-text-secondary text-xs font-medium">
-                  Bekijk je vaste lasten en betalingsregelingen om te zien waar je kunt besparen, of verhoog je inkomen door extra werk of toeslagen aan te vragen.
+        {showLowBudgetWarning && (
+          <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-2xl p-5">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-amber-100 dark:bg-amber-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 !text-[24px]">warning</span>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-amber-800 dark:text-amber-400 font-bold text-lg mb-1">Geen ruimte voor potjes</h4>
+                <p className="text-amber-700 dark:text-amber-300/80 text-sm leading-relaxed mb-3">
+                  Je vaste lasten en betalingsregelingen ({formatCurrency(fixedCostsAndArrangements)}) zijn momenteel hoger dan of gelijk aan je inkomen ({formatCurrency(totalIncome)}).
                 </p>
+                <div className="flex items-start gap-2 bg-amber-100 dark:bg-amber-500/15 p-3 rounded-xl border border-amber-200 dark:border-amber-500/20">
+                  <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 !text-[18px] mt-0.5 flex-shrink-0">lightbulb</span>
+                  <p className="text-amber-800 dark:text-amber-300 text-sm">
+                    Bekijk je vaste lasten en betalingsregelingen om te zien waar je kunt besparen, of verhoog je inkomen door extra werk of toeslagen aan te vragen.
+                  </p>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
         {/* NIBUD Comparison Chart */}
         {potjesChartData.length > 0 && (
@@ -635,17 +642,18 @@ export default function Potjes() {
 
         {/* Savings Jars Grid */}
       {sortedPotjes.length === 0 ? (
-          <div className="bg-white dark:bg-[#1a2c26] rounded-[24px] border-2 border-dashed border-[#E5E7EB] dark:border-[#2A3F36] bg-gray-50/50 dark:bg-transparent hover:bg-[#B2FF78]/10 dark:hover:bg-primary-green/10 hover:border-[#B2FF78] dark:hover:border-primary-green transition-all duration-300 flex flex-col items-center justify-center p-6 min-h-[300px] group cursor-pointer gap-4">
-            <div className="w-16 h-16 rounded-full bg-white dark:bg-[#1a2c26] shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#E5E7EB] dark:border-[#2A3F36]">
-              <span className="material-symbols-outlined text-brand-dark dark:text-primary-green text-3xl">add</span>
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl border-2 border-dashed border-gray-300 dark:border-[#3a3a3a] hover:border-green-400 dark:hover:border-green-500 transition-all duration-300 flex flex-col items-center justify-center p-8 min-h-[300px] group cursor-pointer gap-4"
+               onClick={() => setShowModal(true)}>
+            <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <span className="material-symbols-outlined text-green-600 dark:text-green-400 !text-[32px]">add</span>
             </div>
             <div className="text-center">
-              <h3 className="text-lg font-display font-bold text-brand-dark dark:text-text-primary">Potje Toevoegen</h3>
-              <p className="text-sm text-gray-500 dark:text-text-secondary mt-1">Maak een nieuw spaardoel of budget</p>
+              <h3 className="text-lg font-bold text-[#131d0c] dark:text-white">Potje Toevoegen</h3>
+              <p className="text-sm text-gray-500 dark:text-[#a1a1a1] mt-1">Maak een nieuw spaardoel of budget</p>
             </div>
-            <button 
-              onClick={() => setShowModal(true)}
-              className="bg-[#B2FF78] dark:bg-primary-green text-[#0d1b17] dark:text-[#0a0a0a] font-bold px-6 py-3 rounded-[24px] shadow-sm transition-all hover:bg-[#a3eb6d] dark:hover:bg-light-green"
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowModal(true); }}
+              className="bg-green-500 dark:bg-green-500 hover:bg-green-600 dark:hover:bg-green-400 text-white dark:text-[#0a0a0a] font-semibold px-6 py-3 rounded-xl shadow-sm transition-all"
             >
               Eerste potje maken
             </button>
@@ -670,34 +678,35 @@ export default function Potjes() {
             const nibudLabel = potje.category ? NIBUD_LABELS[potje.category] : null;
 
             return (
-                <article 
-                key={potje.id} 
-                  className="bg-white dark:bg-[#1a2c26] rounded-[24px] p-6 shadow-soft dark:shadow-soft hover:shadow-lift dark:hover:shadow-lift transition-shadow duration-300 relative border border-transparent hover:border-[#E5E7EB] dark:hover:border-[#3A4F46] group"
+                <article
+                key={potje.id}
+                  className="bg-white dark:bg-[#1a1a1a] rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 relative border border-gray-200 dark:border-[#2a2a2a] hover:border-gray-300 dark:hover:border-[#3a3a3a] group"
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <div className={`w-12 h-12 rounded-[24px] ${potje.pot_type === 'btw_reserve' ? 'bg-amber-50 dark:bg-amber-500/10' : isSavingsType ? 'bg-gray-50 dark:bg-[#2A3F36]' : potje.name === 'Bad Habits' ? 'bg-orange-50 dark:bg-accent-orange/10' : 'bg-blue-50 dark:bg-accent-blue/10'} flex items-center justify-center text-2xl border ${potje.pot_type === 'btw_reserve' ? 'border-amber-200 dark:border-amber-500/30' : isSavingsType ? 'border-[#E5E7EB] dark:border-[#2A3F36]' : potje.name === 'Bad Habits' ? 'border-orange-100 dark:border-accent-orange/20' : 'border-blue-100 dark:border-accent-blue/20'}`}>
+                    <div className={`w-12 h-12 rounded-xl ${potje.pot_type === 'btw_reserve' ? 'bg-amber-100 dark:bg-amber-500/20' : isSavingsType ? 'bg-green-100 dark:bg-green-500/20' : potje.name === 'Bad Habits' ? 'bg-orange-100 dark:bg-orange-500/20' : 'bg-blue-100 dark:bg-blue-500/20'} flex items-center justify-center text-2xl`}>
                       {potje.pot_type === 'btw_reserve' ? <span className="material-symbols-outlined text-amber-600 dark:text-amber-400">account_balance</span> : (potje.icon || '💰')}
                     </div>
-                    <span className={`${potje.pot_type === 'btw_reserve' ? 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/30' : isSavingsType ? 'bg-[#B2FF78]/30 dark:bg-primary-green/15 text-green-800 dark:text-primary-green border border-[#B2FF78] dark:border-primary-green/30' : 'bg-gray-100 dark:bg-[#2A3F36] text-[#6B7280] dark:text-[#9CA3AF] border border-[#E5E7EB] dark:border-[#3A4F46]'} text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full`}>
+                    <span className={`${potje.pot_type === 'btw_reserve' ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400' : isSavingsType ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-[#2a2a2a] text-gray-600 dark:text-[#a1a1a1]'} text-xs font-semibold px-3 py-1 rounded-full`}>
                       {potje.pot_type === 'btw_reserve' ? 'BTW Reserve' : isSavingsType ? 'Sparen' : 'Uitgaven'}
-                          </span>
+                    </span>
                   </div>
                   
                   <div className="mb-5">
-                    <h3 className="text-xl font-display font-bold text-gray-900 dark:text-text-primary mb-1">{potje.name}</h3>
+                    <h3 className="text-xl font-bold text-[#131d0c] dark:text-white mb-1">{potje.name}</h3>
                     {potje.description ? (
-                      <p className="text-gray-500 dark:text-text-secondary text-sm italic">"{potje.description}"</p>
+                      <p className="text-gray-500 dark:text-[#a1a1a1] text-sm italic">"{potje.description}"</p>
                     ) : (
-                      <p className="text-gray-500 dark:text-text-secondary text-sm"> </p>
-                        )}
-                      </div>
+                      <p className="text-gray-500 dark:text-[#a1a1a1] text-sm">&nbsp;</p>
+                    )}
+                  </div>
                   
                   <div className="space-y-4">
-                    <div className="flex justify-between text-xs text-gray-400 dark:text-text-secondary">
-                      <span>{potje.pot_type === 'btw_reserve' ? 'Te reserveren:' : isSavingsType ? 'Maandelijks:' : 'Budget:'} {formatCurrency(potje.pot_type === 'btw_reserve' ? (potje.target_amount || 0) : (potje.monthly_budget || 0))}</span>
+                    <div className="flex justify-between text-sm text-gray-600 dark:text-[#a1a1a1]">
+                      <span className="font-medium">{potje.pot_type === 'btw_reserve' ? 'Te reserveren:' : isSavingsType ? 'Doel:' : 'Budget:'}</span>
+                      <span className="font-bold text-[#131d0c] dark:text-white">{formatCurrency(potje.pot_type === 'btw_reserve' ? (potje.target_amount || 0) : isSavingsType ? (potje.target_amount || 0) : (potje.monthly_budget || 0))}</span>
                     </div>
-                    
-                    <div className="bg-gray-100 dark:bg-[#2A3F36] rounded-full h-3 w-full overflow-hidden">
+
+                    <div className="bg-gray-200 dark:bg-[#2a2a2a] rounded-full h-3 w-full overflow-hidden">
                       {potje.pot_type === 'btw_reserve' ? (
                         <div
                           className="bg-amber-500 dark:bg-amber-400 h-full rounded-full transition-all duration-500"
@@ -705,59 +714,59 @@ export default function Potjes() {
                         ></div>
                       ) : isSavingsType ? (
                         <div
-                          className="bg-[#B2FF78] dark:bg-primary-green h-full rounded-full transition-all duration-500"
+                          className="bg-green-500 dark:bg-green-400 h-full rounded-full transition-all duration-500"
                           style={{ width: `${savingsProgress}%` }}
                         ></div>
                       ) : (
-                        <div 
-                          className={`h-full rounded-full transition-all duration-500 ${potjeProgress >= 100 ? 'bg-status-red dark:bg-accent-red' : potjeProgress >= 75 ? 'bg-status-orange dark:bg-accent-orange' : 'bg-status-blue dark:bg-brand-blue'}`}
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${potjeProgress >= 100 ? 'bg-red-500 dark:bg-red-400' : potjeProgress >= 75 ? 'bg-orange-500 dark:bg-orange-400' : 'bg-blue-500 dark:bg-blue-400'}`}
                           style={{ width: `${Math.min(potjeProgress, 100)}%` }}
                         ></div>
                       )}
                     </div>
-                    
+
                     <div className="flex justify-between items-end">
                       <div>
-                        <span className="text-xs text-gray-500 dark:text-text-secondary block mb-1">
+                        <span className="text-xs text-gray-500 dark:text-[#6b7280] block mb-1">
                           {potje.pot_type === 'btw_reserve' ? 'Gereserveerd' : isSavingsType ? 'Gespaard' : 'Uitgegeven'}
                         </span>
-                        <span className={`text-2xl font-bold ${potje.pot_type === 'btw_reserve' ? 'text-amber-600 dark:text-amber-400' : isSavingsType ? 'text-status-green dark:text-primary-green' : 'text-gray-900 dark:text-text-primary'}`}>
+                        <span className={`text-2xl font-bold ${potje.pot_type === 'btw_reserve' ? 'text-amber-600 dark:text-amber-400' : isSavingsType ? 'text-green-600 dark:text-green-400' : 'text-[#131d0c] dark:text-white'}`}>
                           {isSavingsType ? formatCurrency(potje.current_amount || 0) : formatCurrency(spent)}
                         </span>
                       </div>
                       <div className="text-right">
                         {potje.pot_type === 'btw_reserve' ? (
                           <>
-                            <span className="text-xs text-amber-600 dark:text-amber-400 font-medium block">
+                            <span className="text-sm text-amber-600 dark:text-amber-400 font-semibold block">
                               Voor BTW aangifte
                             </span>
-                            <span className="text-[10px] text-gray-400 dark:text-text-tertiary mt-1 block flex items-center justify-end gap-1">
-                              <span className="material-symbols-outlined text-[12px]">event</span> Elk kwartaal
+                            <span className="text-xs text-gray-500 dark:text-[#6b7280] mt-1 block flex items-center justify-end gap-1">
+                              <span className="material-symbols-outlined !text-[14px]">event</span> Elk kwartaal
                             </span>
                           </>
                         ) : isSavingsType ? (
                           <>
-                            <span className="text-xs text-gray-400 dark:text-text-secondary font-medium block">
+                            <span className="text-sm text-gray-600 dark:text-[#a1a1a1] font-medium block">
                               Nog {formatCurrency(savingsRemaining)} te gaan
                             </span>
                             {potje.target_date && (
-                              <span className="text-[10px] text-gray-400 dark:text-text-tertiary mt-1 block flex items-center justify-end gap-1">
-                                <span className="material-symbols-outlined text-[12px]">flag</span> {new Date(potje.target_date).toLocaleDateString('nl-NL')}
+                              <span className="text-xs text-gray-500 dark:text-[#6b7280] mt-1 block flex items-center justify-end gap-1">
+                                <span className="material-symbols-outlined !text-[14px]">flag</span> {new Date(potje.target_date).toLocaleDateString('nl-NL')}
                               </span>
                             )}
                             {!potje.target_date && (
-                              <span className="text-[10px] text-gray-400 dark:text-text-tertiary mt-1 block flex items-center justify-end gap-1">
-                                <span className="material-symbols-outlined text-[12px]">flag</span> Geen datum
+                              <span className="text-xs text-gray-500 dark:text-[#6b7280] mt-1 block flex items-center justify-end gap-1">
+                                <span className="material-symbols-outlined !text-[14px]">flag</span> Geen datum
                               </span>
                             )}
                           </>
                         ) : (
                           <>
-                            <span className={`text-xs font-medium block ${remaining < 0 ? 'text-status-red dark:text-accent-red' : 'text-status-green dark:text-primary-green'}`}>
+                            <span className={`text-sm font-semibold block ${remaining < 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                               {remaining < 0 ? `${formatCurrency(Math.abs(remaining))} te veel` : `${formatCurrency(remaining)} over`}
                             </span>
-                            <span className="text-[10px] text-gray-400 dark:text-text-tertiary mt-1 block flex items-center justify-end gap-1">
-                              <span className="material-symbols-outlined text-[12px]">calendar_today</span> 
+                            <span className="text-xs text-gray-500 dark:text-[#6b7280] mt-1 block flex items-center justify-end gap-1">
+                              <span className="material-symbols-outlined !text-[14px]">calendar_today</span>
                               {potje.spending_frequency && potje.spending_frequency !== 'flexible' ? (
                                 <>Maandelijks - dag {potje.payment_day || 1}</>
                               ) : (
@@ -768,43 +777,43 @@ export default function Potjes() {
                         )}
                       </div>
                     </div>
-                    
+
                     {nibudAmount !== null && nibudLabel && (
-                      <div className="text-[10px] text-brand-blue dark:text-brand-blue font-bold mt-1">
+                      <div className="text-xs text-blue-600 dark:text-blue-400 font-semibold mt-1">
                         NIBUD: {nibudPercentage}%
                       </div>
                     )}
                   </div>
                   
-                  <div className="flex gap-3 mt-6 pt-5 border-t border-[#E5E7EB] dark:border-[#2A3F36]">
-                  {potje.pot_type === 'btw_reserve' ? (
+                  <div className="flex gap-3 mt-6 pt-5 border-t border-gray-100 dark:border-[#2a2a2a]">
+                    {potje.pot_type === 'btw_reserve' ? (
                       <button
                         onClick={() => handleViewActivity(potje)}
-                        className="flex-1 bg-amber-100 dark:bg-amber-500/20 border border-amber-200 dark:border-amber-500/30 hover:bg-amber-200 dark:hover:bg-amber-500/30 text-amber-700 dark:text-amber-400 py-2.5 rounded-[24px] font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 bg-amber-100 dark:bg-amber-500/20 hover:bg-amber-200 dark:hover:bg-amber-500/30 text-amber-700 dark:text-amber-400 py-2.5 rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2"
                       >
-                        <span className="material-symbols-outlined text-[18px]">receipt_long</span> Bekijk facturen
+                        <span className="material-symbols-outlined !text-[18px]">receipt_long</span> Bekijk facturen
                       </button>
-                  ) : isSavingsType ? (
+                    ) : isSavingsType ? (
                       <>
                         <button
                           onClick={() => handleOpenDeposit(potje)}
-                          className="flex-1 bg-[#B2FF78] dark:bg-primary-green hover:bg-[#a3eb6d] dark:hover:bg-light-green text-brand-dark dark:text-dark-bg py-2.5 rounded-[24px] font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                          className="flex-1 bg-green-500 dark:bg-green-500 hover:bg-green-600 dark:hover:bg-green-400 text-white dark:text-[#0a0a0a] py-2.5 rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2"
                         >
-                          <span className="material-symbols-outlined text-[18px]">sync_alt</span> Storten
+                          <span className="material-symbols-outlined !text-[18px]">add</span> Storten
                         </button>
                         <button
                           onClick={() => handleSelectPot(potje)}
-                          className="px-3 py-2 rounded-[24px] border border-[#E5E7EB] dark:border-[#2A3F36] hover:bg-gray-50 dark:hover:bg-[#2A3F36] text-[#6B7280] dark:text-white transition-colors"
+                          className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#3a3a3a] hover:bg-gray-100 dark:hover:bg-[#2a2a2a] text-gray-600 dark:text-[#a1a1a1] transition-colors"
                         >
-                          <span className="material-symbols-outlined text-[20px]">edit</span>
+                          <span className="material-symbols-outlined !text-[20px]">edit</span>
                         </button>
-                    </>
-                  ) : (
+                      </>
+                    ) : (
                       <button
                         onClick={() => handleViewActivity(potje)}
-                        className="flex-1 bg-white dark:bg-transparent border border-[#E5E7EB] dark:border-[#2A3F36] hover:bg-gray-50 dark:hover:bg-[#2A3F36] text-[#0d1b17] dark:text-white py-2.5 rounded-[24px] font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                        className="flex-1 bg-gray-100 dark:bg-[#2a2a2a] hover:bg-gray-200 dark:hover:bg-[#3a3a3a] text-[#131d0c] dark:text-white py-2.5 rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2"
                       >
-                        <span className="material-symbols-outlined text-[18px]">receipt_long</span> Bekijk activiteit
+                        <span className="material-symbols-outlined !text-[18px]">receipt_long</span> Bekijk activiteit
                       </button>
                     )}
                   </div>
@@ -813,16 +822,16 @@ export default function Potjes() {
           })}
 
             {/* Add New Jar Card */}
-            <button 
-            onClick={() => setShowModal(true)}
-              className="rounded-card border-2 border-dashed border-gray-300 dark:border-[#3a3a3a] bg-gray-50/50 dark:bg-transparent hover:bg-[#B2FF78]/10 dark:hover:bg-primary-green/10 hover:border-[#B2FF78] dark:hover:border-primary-green transition-all duration-300 flex flex-col items-center justify-center p-6 min-h-[300px] group cursor-pointer gap-4"
+            <button
+              onClick={() => setShowModal(true)}
+              className="rounded-2xl border-2 border-dashed border-gray-300 dark:border-[#3a3a3a] bg-gray-50 dark:bg-[#1a1a1a] hover:bg-green-50 dark:hover:bg-green-500/10 hover:border-green-400 dark:hover:border-green-500 transition-all duration-300 flex flex-col items-center justify-center p-6 min-h-[300px] group cursor-pointer gap-4"
             >
-              <div className="w-16 h-16 rounded-full bg-white dark:bg-[#1a2c26] shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[#E5E7EB] dark:border-[#2A3F36]">
-                <span className="material-symbols-outlined text-brand-dark dark:text-primary-green text-3xl">add</span>
+              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-[#2a2a2a] group-hover:bg-green-100 dark:group-hover:bg-green-500/20 flex items-center justify-center group-hover:scale-110 transition-all duration-300">
+                <span className="material-symbols-outlined text-gray-400 dark:text-[#6b7280] group-hover:text-green-600 dark:group-hover:text-green-400 !text-[32px] transition-colors">add</span>
               </div>
               <div className="text-center">
-                <h3 className="text-lg font-display font-bold text-brand-dark dark:text-text-primary">Potje Toevoegen</h3>
-                <p className="text-sm text-gray-500 dark:text-text-secondary mt-1">Maak een nieuw spaardoel of budget</p>
+                <h3 className="text-lg font-bold text-[#131d0c] dark:text-white">Potje Toevoegen</h3>
+                <p className="text-sm text-gray-500 dark:text-[#a1a1a1] mt-1">Maak een nieuw spaardoel of budget</p>
               </div>
             </button>
         </div>
