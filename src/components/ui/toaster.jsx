@@ -23,7 +23,7 @@ export function Toaster() {
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div className="fixed top-4 right-4 z-[9999] space-y-2 pointer-events-auto">
       <AnimatePresence>
         {toasts.filter(t => t.open !== false).map(({ id, title, description, variant, ...props }) => {
           const type = variant || 'default';
