@@ -313,6 +313,25 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
   const fileInputRef = useRef(null);
   const { toast } = useToast();
 
+  // Reset all form state when modal opens or closes
+  React.useEffect(() => {
+    if (isOpen) {
+      // Reset form when modal opens
+      setAmount("");
+      setPaymentDate(new Date().toISOString().split('T')[0]);
+      setPaymentMethod("bank_transfer");
+      setNotes("");
+      setSaving(false);
+      setCelebrating(false);
+      setIsFullyPaid(false);
+      setSelectedFile(null);
+      setUploading(false);
+      setExtracting(false);
+      setExtractionResult(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }, [isOpen]);
+
   if (!debt) return null;
 
   const remainingAmount = (debt.amount || 0) - (debt.amount_paid || 0);
@@ -562,7 +581,7 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border">
+      <DialogContent className="max-w-md bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border max-h-[90vh] overflow-y-auto">
         <AnimatePresence mode="wait">
           {celebrating ? (
             <motion.div
