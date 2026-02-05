@@ -26,34 +26,51 @@ async function parsePdfText(file) {
     const pdfjsLib = await import('pdfjs-dist');
     console.log('[PDF Parser] pdf.js version:', pdfjsLib.version);
 
-    // Configure worker - use CDN with correct version
-    // The worker is required for pdf.js to function properly
-    const version = pdfjsLib.version;
-    const workerUrl = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.mjs`;
-
-    console.log('[PDF Parser] Setting worker URL:', workerUrl);
-    pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
-
-    // Read file as ArrayBuffer
+    // Read file as ArrayBuffer first
     const arrayBuffer = await file.arrayBuffer();
     console.log('[PDF Parser] File loaded, size:', arrayBuffer.byteLength);
 
-    // Load PDF document with error handling
-    let pdf;
-    try {
-      pdf = await pdfjsLib.getDocument({
-        data: arrayBuffer,
-        // Disable worker if it fails (fallback)
-        disableWorker: false,
-      }).promise;
-    } catch (workerError) {
-      console.warn('[PDF Parser] Worker failed, trying without worker:', workerError.message);
-      // Retry without worker
-      pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-      pdf = await pdfjsLib.getDocument({
-        data: arrayBuffer,
-        disableWorker: true,
-      }).promise;
+    // Try multiple worker configurations
+    let pdf = null;
+    let lastError = null;
+
+    // List of worker configurations to try
+    const workerConfigs = [
+      // Option 1: Use unpkg CDN (more reliable)
+      { workerSrc: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`, disableWorker: false },
+      // Option 2: Use cdnjs with .js extension
+      { workerSrc: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`, disableWorker: false },
+      // Option 3: Use jsdelivr CDN
+      { workerSrc: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`, disableWorker: false },
+      // Option 4: Disable worker entirely (slowest but most compatible)
+      { workerSrc: '', disableWorker: true },
+    ];
+
+    for (const config of workerConfigs) {
+      try {
+        console.log('[PDF Parser] Trying worker config:', config.disableWorker ? 'no worker' : config.workerSrc);
+
+        if (config.workerSrc) {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = config.workerSrc;
+        }
+
+        pdf = await pdfjsLib.getDocument({
+          data: arrayBuffer,
+          disableWorker: config.disableWorker,
+        }).promise;
+
+        console.log('[PDF Parser] Success with config:', config.disableWorker ? 'no worker' : config.workerSrc);
+        break; // Success!
+      } catch (err) {
+        console.warn('[PDF Parser] Config failed:', err.message);
+        lastError = err;
+        // Reset for next attempt
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+      }
+    }
+
+    if (!pdf) {
+      throw lastError || new Error('Kon PDF niet laden');
     }
 
     console.log('[PDF Parser] PDF loaded, pages:', pdf.numPages);
