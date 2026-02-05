@@ -744,105 +744,105 @@ function DebtsCheckStep({ formData, setFormData, darkMode }) {
 function DebtsAddStep({ formData, setFormData, darkMode }) {
   const [debts, setDebts] = useState(formData.debts.length > 0 ? formData.debts : [{ creditor: '', total_amount: '', monthly_payment: '', payment_date: '25' }]);
 
-  const updateDebts = (newDebts) => {
-    setDebts(newDebts);
-    setFormData({ ...formData, debts: newDebts, debtCount: newDebts.filter(d => d.creditor && d.total_amount).length });
-  };
+  // Sync debts to formData whenever debts change
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      debts: debts,
+      debtCount: debts.filter(d => d.creditor && d.total_amount).length
+    }));
+  }, [debts]);
 
   const addDebt = () => {
-    updateDebts([...debts, { creditor: '', total_amount: '', monthly_payment: '', payment_date: '25' }]);
+    setDebts([...debts, { creditor: '', total_amount: '', monthly_payment: '', payment_date: '25' }]);
   };
 
   const removeDebt = (index) => {
-    updateDebts(debts.filter((_, i) => i !== index));
+    setDebts(debts.filter((_, i) => i !== index));
   };
 
   const updateDebt = (index, field, value) => {
     const newDebts = [...debts];
     newDebts[index][field] = value;
-    updateDebts(newDebts);
+    setDebts(newDebts);
   };
 
   return (
     <>
       <div className="flex flex-col items-center mb-8">
-        <div className="size-20 rounded-full bg-primary/15 flex items-center justify-center mb-4">
-          <span className="material-symbols-outlined text-primary text-[40px]">credit_card</span>
+        <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center mb-4">
+          <span className="material-symbols-outlined text-primary text-[48px]">credit_card</span>
         </div>
-        <h1 className="text-white font-display font-bold text-[28px] text-center mb-2">
+        <h1 className="text-2xl md:text-[28px] font-display font-bold text-gray-900 dark:text-white text-center mb-2">
           Voeg je schulden toe
         </h1>
-        <p className="text-[#a1a1a1] font-body text-[15px] text-center max-w-sm leading-relaxed">
+        <p className="text-[15px] text-gray-500 dark:text-[#a1a1a1] text-center max-w-sm leading-relaxed">
           Voer je betalingsachterstanden in, zodat we je kunnen helpen
         </p>
       </div>
 
       <div className="flex flex-col gap-4">
         {debts.map((debt, index) => (
-          <div key={index} className="relative bg-[#2a2a2a] border border-[#3a3a3a] rounded-2xl p-5">
+          <div key={index} className="relative bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#3a3a3a] rounded-2xl p-5">
             {debts.length > 1 && (
               <button
                 onClick={() => removeDebt(index)}
-                className="absolute top-3 right-3 p-2 rounded-[24px] text-[#6b7280] hover:text-[#ef4444] hover:bg-[#ef4444]/10 transition-all"
+                className="absolute top-4 right-4 p-2 rounded-[24px] text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-all"
               >
                 <span className="material-symbols-outlined text-[20px]">delete</span>
               </button>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-              <div className="col-span-1 sm:col-span-2">
-                <label className="block text-xs font-medium text-[#a1a1a1] uppercase tracking-wider pl-1 mb-1.5">Schuldeiser</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6b7280] material-symbols-outlined text-[18px]">domain</span>
-                  <input
-                    type="text"
-                    value={debt.creditor}
-                    onChange={(e) => updateDebt(index, 'creditor', e.target.value)}
-                    placeholder="bijv. DUO, CJIB, Energieleverancier"
-                    className="block w-full pl-10 pr-3 py-2.5 bg-[#1a1a1a] border border-[#3a3a3a] rounded-[24px] text-white placeholder-[#525252] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
-                  />
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-[#a1a1a1] mb-2">Schuldeiser</label>
+                <input
+                  type="text"
+                  value={debt.creditor}
+                  onChange={(e) => updateDebt(index, 'creditor', e.target.value)}
+                  placeholder="bijv. DUO, CJIB, Energieleverancier"
+                  className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] px-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#a1a1a1] uppercase tracking-wider pl-1 mb-1.5">Totale schuld</label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-[#a1a1a1] mb-2">Totale schuld</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#ef4444] material-symbols-outlined text-[18px]">euro_symbol</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 material-symbols-outlined text-[16px]">euro</span>
                   <input
                     type="number"
                     value={debt.total_amount}
                     onChange={(e) => updateDebt(index, 'total_amount', e.target.value)}
                     placeholder="0.00"
-                    className="block w-full pl-10 pr-3 py-2.5 bg-[#1a1a1a] border border-[#3a3a3a] rounded-[24px] text-white placeholder-[#525252] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
+                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#a1a1a1] uppercase tracking-wider pl-1 mb-1.5">Maandelijkse aflossing</label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-[#a1a1a1] mb-2">Maandelijkse aflossing</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary material-symbols-outlined text-[18px]">trending_down</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 material-symbols-outlined text-[16px]">euro</span>
                   <input
                     type="number"
                     value={debt.monthly_payment}
                     onChange={(e) => updateDebt(index, 'monthly_payment', e.target.value)}
                     placeholder="0.00"
-                    className="block w-full pl-10 pr-3 py-2.5 bg-[#1a1a1a] border border-[#3a3a3a] rounded-[24px] text-white placeholder-[#525252] focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm"
+                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] pl-10 pr-4 py-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                   />
                 </div>
               </div>
-              <div className="col-span-1 sm:col-span-2">
-                <label className="block text-xs font-medium text-[#a1a1a1] uppercase tracking-wider pl-1 mb-1.5">Betaaldag</label>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 dark:text-[#a1a1a1] mb-2">Betaaldag</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary material-symbols-outlined text-[18px]">calendar_month</span>
                   <select
                     value={debt.payment_date}
                     onChange={(e) => updateDebt(index, 'payment_date', e.target.value)}
-                    className="block w-full pl-10 pr-10 py-2.5 bg-[#1a1a1a] border border-[#3a3a3a] rounded-[24px] text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none text-sm cursor-pointer"
+                    className="w-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] rounded-[24px] px-4 py-3 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none cursor-pointer"
                   >
                     {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
                       <option key={day} value={day}>{day}e van de maand</option>
                     ))}
                     <option value="last">Laatste dag</option>
                   </select>
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7280] pointer-events-none material-symbols-outlined text-[20px]">expand_more</span>
+                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-primary material-symbols-outlined text-[20px]">expand_more</span>
                 </div>
               </div>
             </div>
@@ -851,10 +851,10 @@ function DebtsAddStep({ formData, setFormData, darkMode }) {
 
         <button
           onClick={addDebt}
-          className="w-full group flex items-center justify-center gap-2 py-4 px-4 bg-transparent border-2 border-dashed border-[#3a3a3a] rounded-[24px] text-[#a1a1a1] hover:text-primary hover:border-primary hover:bg-primary/5 transition-all"
+          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-dashed border-gray-300 dark:border-[#3a3a3a] text-gray-500 dark:text-[#a1a1a1] hover:text-primary dark:hover:text-primary hover:border-primary hover:bg-primary/5 transition-all"
         >
-          <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">add</span>
-          <span className="font-medium">Nog één toevoegen</span>
+          <span className="material-symbols-outlined text-[20px]">add</span>
+          <span className="font-medium text-sm">Nog één toevoegen</span>
         </button>
       </div>
     </>
