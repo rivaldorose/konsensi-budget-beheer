@@ -298,7 +298,18 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
   const handleDeletePayment = async (paymentId) => {
     if (!confirm('Weet je zeker dat je deze betaling wilt verwijderen?')) return;
     try {
-      // Use direct Supabase delete to bypass potential RLS issues and get better error handling
+      // First, delete any linked payment documents (foreign key constraint)
+      const { error: docDeleteError } = await supabase
+        .from('payment_documents')
+        .delete()
+        .eq('payment_id', paymentId);
+
+      if (docDeleteError) {
+        console.error('Error deleting linked documents:', docDeleteError);
+        // Continue anyway - documents might not exist
+      }
+
+      // Now delete the payment itself
       const { error: deleteError } = await supabase
         .from('debt_payments')
         .delete()
