@@ -5,6 +5,7 @@ import { createPageUrl } from "@/utils";
 
 // Recofa normen 2025 (bijstandsnormen als basis voor beslagvrije voet)
 // Bron: https://www.rijksoverheid.nl/onderwerpen/bijstand/vraag-en-antwoord/hoe-hoog-is-de-bijstand
+// Bron maximumbedragen: https://www.salarisvanmorgen.nl/2025/01/08/beslagvrije-voet-in-2025-nieuwe-maximumbedragen/
 const RECOFA_NORMEN = {
   // Basisbedragen per maand (netto bijstandsnorm per 1 januari 2025, excl. vakantietoeslag)
   alleenstaand: 1278.18,           // 70% van gehuwdennorm
@@ -19,6 +20,14 @@ const RECOFA_NORMEN = {
 
   // Zorgverzekering (verplichte basispremie minus zorgtoeslag)
   zorgverzekeringsComponent: 140,  // Gemiddelde na zorgtoeslag 2025
+
+  // Maximum beslagvrije voet per 1 januari 2025 (ter referentie)
+  maxBeslagvrijeVoet: {
+    alleenstaand: 2071.24,
+    alleenstaandeOuder: 2242.24,
+    gehuwdSamenwonendZonderKinderen: 2739.03,
+    gehuwdSamenwonendMetKinderen: 2855.96,
+  }
 };
 
 export default function VTLBCalculator() {
@@ -42,6 +51,8 @@ export default function VTLBCalculator() {
     afloscapaciteit: 0,
     fixedCosts: 0,
     currentArrangements: 0,
+    maxBeslagvrijeVoet: 0,
+    isMaxCapped: false,
     breakdown: {
       basisnorm: 0,
       woonkosten: 0,
@@ -110,6 +121,21 @@ export default function VTLBCalculator() {
     }
   };
 
+  const getMaxBeslagvrijeVoet = (householdType, numberOfChildren) => {
+    const hasChildren = numberOfChildren > 0;
+    switch (householdType) {
+      case 'Gehuwd / Samenwonend':
+        return hasChildren
+          ? RECOFA_NORMEN.maxBeslagvrijeVoet.gehuwdSamenwonendMetKinderen
+          : RECOFA_NORMEN.maxBeslagvrijeVoet.gehuwdSamenwonendZonderKinderen;
+      case 'Alleenstaande ouder':
+        return RECOFA_NORMEN.maxBeslagvrijeVoet.alleenstaandeOuder;
+      case 'Alleenstaand':
+      default:
+        return RECOFA_NORMEN.maxBeslagvrijeVoet.alleenstaand;
+    }
+  };
+
   const calculateVTLB = () => {
     const totalIncome = baseData.monthlyIncome + (formData.projectedIncome || 0);
 
@@ -127,9 +153,15 @@ export default function VTLBCalculator() {
 
     // 5. Bereken totale beslagvrije voet
     // Formule: Basisnorm + Woonkosten + Zorgverzekering + Kinderbijslag
-    const beslagvrijeVoet = basisnorm + woonkosten + zorgverzekering + kinderbijslag;
+    const berekendeBeslagvrijeVoet = basisnorm + woonkosten + zorgverzekering + kinderbijslag;
 
-    // 6. Afloscapaciteit = Netto inkomen - Beslagvrije voet - Lopende betalingsregelingen
+    // 6. Haal het wettelijk maximum op basis van huishoudtype
+    const maxBeslagvrijeVoet = getMaxBeslagvrijeVoet(formData.householdType, formData.numberOfChildren);
+
+    // 7. De beslagvrije voet is het minimum van de berekende waarde en het wettelijk maximum
+    const beslagvrijeVoet = Math.min(berekendeBeslagvrijeVoet, maxBeslagvrijeVoet);
+
+    // 8. Afloscapaciteit = Netto inkomen - Beslagvrije voet - Lopende betalingsregelingen
     // Let op: vaste lasten zijn vaak al onderdeel van de beslagvrije voet, dus we tellen ze niet dubbel
     const afloscapaciteit = Math.max(0, totalIncome - beslagvrijeVoet - baseData.currentArrangements);
 
@@ -139,6 +171,8 @@ export default function VTLBCalculator() {
       afloscapaciteit: afloscapaciteit,
       fixedCosts: baseData.fixedCosts,
       currentArrangements: baseData.currentArrangements,
+      maxBeslagvrijeVoet: maxBeslagvrijeVoet,
+      isMaxCapped: berekendeBeslagvrijeVoet > maxBeslagvrijeVoet,
       breakdown: {
         basisnorm: basisnorm,
         woonkosten: woonkosten,
@@ -198,7 +232,7 @@ export default function VTLBCalculator() {
             </div>
             <h1 className="text-gray-900 dark:text-white text-3xl md:text-4xl font-extrabold leading-tight tracking-tight mb-2">VTLB Berekening</h1>
             <p className="text-gray-500 dark:text-[#a1a1a1] text-base md:text-lg font-normal max-w-2xl">
-              Bereken je Vrij Te Laten Bedrag (VTLB) op basis van de officiële Recofa-normen 2024.
+              Bereken je Vrij Te Laten Bedrag (VTLB) op basis van de officiële Recofa-normen 2025.
             </p>
           </div>
 
@@ -415,6 +449,18 @@ export default function VTLBCalculator() {
                     <span className="text-gray-900 dark:text-white font-bold">Beslagvrije voet</span>
                     <span className="text-amber-500 font-bold text-lg">{formatCurrency(calculation.beslagvrijeVoet)}</span>
                   </div>
+                  {calculation.isMaxCapped && (
+                    <div className="flex items-center gap-2 mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                      <span className="material-symbols-outlined text-amber-500 text-sm">info</span>
+                      <span className="text-xs text-amber-700 dark:text-amber-400">
+                        Gemaximeerd op wettelijk maximum van {formatCurrency(calculation.maxBeslagvrijeVoet)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center text-xs mt-2">
+                    <span className="text-gray-400 dark:text-gray-500">Wettelijk maximum ({formData.householdType})</span>
+                    <span className="text-gray-400 dark:text-gray-500">{formatCurrency(calculation.maxBeslagvrijeVoet)}</span>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-[#6b7280] mt-3">
                   De beslagvrije voet is het minimumbedrag dat je nodig hebt om van te leven. Dit bedrag is beschermd tegen beslag.
@@ -487,7 +533,7 @@ export default function VTLBCalculator() {
                 <div className="text-left">
                   <p className="text-sm font-medium text-blue-800 dark:text-blue-300">Over deze berekening</p>
                   <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
-                    Deze berekening is gebaseerd op de Recofa-normen 2024. De werkelijke beslagvrije voet kan afwijken
+                    Deze berekening is gebaseerd op de Recofa-normen 2025. De werkelijke beslagvrije voet kan afwijken
                     op basis van je persoonlijke situatie. Raadpleeg een schuldhulpverlener voor een officiële berekening.
                   </p>
                 </div>
