@@ -340,12 +340,26 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
       const updateData = { amount_paid: newAmountPaid };
 
       // If debt was fully paid but now has remaining balance, update status
-      if (currentDebt.status === 'afbetaald' && newAmountPaid < currentDebt.amount) {
+      const wasFullyPaid = currentDebt.status === 'afbetaald';
+      const nowHasBalance = newAmountPaid < (currentDebt.amount || 0);
+
+      if (wasFullyPaid && nowHasBalance) {
         updateData.status = 'betalingsregeling';
+        console.log('[DebtDetailsModal] Debt was fully paid but now has remaining balance. Updating status to betalingsregeling.');
       }
 
       await Debt.update(debt.id, updateData);
-      toast({ title: 'Betaling verwijderd', variant: 'success' });
+
+      // Show appropriate toast message
+      if (wasFullyPaid && nowHasBalance) {
+        toast({
+          title: 'Betaling verwijderd',
+          description: 'De schuld status is bijgewerkt naar "Betalingsregeling" omdat er nog een openstaand bedrag is.',
+          variant: 'default'
+        });
+      } else {
+        toast({ title: 'Betaling verwijderd', variant: 'success' });
+      }
       await refreshDebt();
       loadPayments();
       if (onUpdate) onUpdate();

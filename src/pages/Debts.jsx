@@ -1000,6 +1000,7 @@ export default function Debts() {
         }}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onUpdate={loadDebts}
       />
 
       <StrategyChoiceModal
