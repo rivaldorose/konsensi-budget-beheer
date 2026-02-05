@@ -298,15 +298,31 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
   const handleDeletePayment = async (paymentId) => {
     if (!confirm('Weet je zeker dat je deze betaling wilt verwijderen?')) return;
     try {
-      // First, delete any linked payment documents (foreign key constraint)
-      const { error: docDeleteError } = await supabase
+      console.log('[DebtDetailsModal] Starting delete for payment:', paymentId);
+
+      // First, find and delete any linked payment documents (foreign key constraint)
+      // We need to get the documents first to ensure we're deleting the right ones
+      const { data: linkedDocs, error: fetchError } = await supabase
         .from('payment_documents')
-        .delete()
+        .select('id')
         .eq('payment_id', paymentId);
 
-      if (docDeleteError) {
-        console.error('Error deleting linked documents:', docDeleteError);
-        // Continue anyway - documents might not exist
+      if (fetchError) {
+        console.error('Error fetching linked documents:', fetchError);
+      } else if (linkedDocs && linkedDocs.length > 0) {
+        console.log('[DebtDetailsModal] Found', linkedDocs.length, 'linked documents to delete');
+
+        // Delete each document individually to handle RLS properly
+        for (const doc of linkedDocs) {
+          const { error: docDeleteError } = await supabase
+            .from('payment_documents')
+            .delete()
+            .eq('id', doc.id);
+
+          if (docDeleteError) {
+            console.error('Error deleting document', doc.id, ':', docDeleteError);
+          }
+        }
       }
 
       // Now delete the payment itself
@@ -317,8 +333,14 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
 
       if (deleteError) {
         console.error('Error deleting payment:', deleteError);
-        // Check if it's an RLS policy error
-        if (deleteError.code === '42501' || deleteError.message?.includes('policy')) {
+        // Check if it's a foreign key constraint error
+        if (deleteError.message?.includes('foreign key constraint')) {
+          toast({
+            title: 'Fout bij verwijderen',
+            description: 'Er zijn nog documenten gekoppeld aan deze betaling. Probeer het opnieuw.',
+            variant: 'destructive'
+          });
+        } else if (deleteError.code === '42501' || deleteError.message?.includes('policy')) {
           toast({
             title: 'Geen toestemming',
             description: 'Je hebt geen rechten om deze betaling te verwijderen.',
