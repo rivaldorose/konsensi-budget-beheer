@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, X, Check, TrendingDown, Clock, Zap, Scale, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/components/utils/LanguageContext';
-import { calculateStrategies, activateStrategy } from '@/api/functions';
+import { calculateStrategies, activateStrategy } from '@/services/strategyService';
 import { formatCurrency } from '@/components/utils/formatters';
 
 // Strategy comparison chart component
@@ -245,13 +245,14 @@ export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, vt
 
         setIsLoading(true);
         try {
-            const { data } = await calculateStrategies({ monthly_budget: monthlyBudget });
+            // Use local strategy calculation service
+            const data = await calculateStrategies(monthlyBudget);
             setStrategies(data);
         } catch (error) {
             console.error('Error calculating strategies:', error);
             toast({
                 title: 'Fout',
-                description: 'Kon strategieën niet berekenen',
+                description: 'Kon strategieën niet berekenen: ' + (error.message || 'Onbekende fout'),
                 variant: 'destructive'
             });
         } finally {
@@ -281,15 +282,13 @@ export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, vt
 
         setIsActivating(true);
         try {
-            const response = await activateStrategy({
-                strategy_type: selectedStrategy,
-                monthly_budget: monthlyBudget,
-            });
+            // Use local strategy activation service
+            const response = await activateStrategy(selectedStrategy, monthlyBudget);
 
-            if (response?.data?.success) {
+            if (response?.success) {
                 toast({
                     title: 'Strategie geactiveerd!',
-                    description: response.data.message || 'Je aflosstrategie is opgeslagen',
+                    description: response.message || 'Je aflosstrategie is opgeslagen',
                 });
 
                 onClose();
@@ -303,7 +302,7 @@ export default function StrategyChoiceModal({ isOpen, onClose, monthlyBudget, vt
                     }, 500);
                 }, 1500);
             } else {
-                throw new Error(response?.data?.error || 'Kon strategie niet activeren');
+                throw new Error('Kon strategie niet activeren');
             }
         } catch (error) {
             console.error('Error activating strategy:', error);
