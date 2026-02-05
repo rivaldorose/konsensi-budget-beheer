@@ -22,62 +22,37 @@ async function parsePdfText(file) {
   try {
     console.log('[PDF Parser] Starting PDF parsing for:', file.name);
 
-    // Dynamically import pdf.js
+    // Dynamically import pdf.js (version 4.4.168)
     const pdfjsLib = await import('pdfjs-dist');
     console.log('[PDF Parser] pdf.js version:', pdfjsLib.version);
 
-    // Read file as ArrayBuffer first
+    // Set worker source - use matching CDN version (4.4.168)
+    const workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+    console.log('[PDF Parser] Setting worker URL:', workerSrc);
+    pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+
+    // Read file as ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
     console.log('[PDF Parser] File loaded, size:', arrayBuffer.byteLength);
 
-    // Use a known working version for CDN URLs (the installed version may not be available on CDN)
-    const cdnVersion = '4.4.168'; // Stable version known to work on CDNs
-
-    // Try multiple worker configurations
-    let pdf = null;
-    let lastError = null;
-
-    // List of worker configurations to try - using stable CDN version
-    const workerConfigs = [
-      // Option 1: Use unpkg CDN with stable version
-      { workerSrc: `https://unpkg.com/pdfjs-dist@${cdnVersion}/build/pdf.worker.min.mjs`, disableWorker: false },
-      // Option 2: Use cdnjs with stable version (.js extension)
-      { workerSrc: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${cdnVersion}/pdf.worker.min.js`, disableWorker: false },
-      // Option 3: Use jsdelivr CDN with stable version
-      { workerSrc: `https://cdn.jsdelivr.net/npm/pdfjs-dist@${cdnVersion}/build/pdf.worker.min.mjs`, disableWorker: false },
-      // Option 4: Try with installed version on unpkg (legacy path)
-      { workerSrc: `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/legacy/build/pdf.worker.min.mjs`, disableWorker: false },
-      // Option 5: Disable worker entirely (slowest but most compatible)
-      { workerSrc: '', disableWorker: true },
-    ];
-
-    for (const config of workerConfigs) {
-      try {
-        console.log('[PDF Parser] Trying worker config:', config.disableWorker ? 'no worker' : config.workerSrc);
-
-        if (config.workerSrc) {
-          pdfjsLib.GlobalWorkerOptions.workerSrc = config.workerSrc;
-        } else {
-          pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-        }
-
-        pdf = await pdfjsLib.getDocument({
-          data: arrayBuffer,
-          disableWorker: config.disableWorker,
-        }).promise;
-
-        console.log('[PDF Parser] Success with config:', config.disableWorker ? 'no worker' : config.workerSrc);
-        break; // Success!
-      } catch (err) {
-        console.warn('[PDF Parser] Config failed:', err.message);
-        lastError = err;
-        // Reset for next attempt
-        pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-      }
+    // Load PDF document
+    let pdf;
+    try {
+      pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      console.log('[PDF Parser] PDF loaded successfully with worker');
+    } catch (workerError) {
+      console.warn('[PDF Parser] Worker failed, trying without worker:', workerError.message);
+      // Fallback: try without worker
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+      pdf = await pdfjsLib.getDocument({
+        data: arrayBuffer,
+        disableWorker: true
+      }).promise;
+      console.log('[PDF Parser] PDF loaded successfully without worker');
     }
 
     if (!pdf) {
-      throw lastError || new Error('Kon PDF niet laden');
+      throw new Error('Kon PDF niet laden');
     }
 
     console.log('[PDF Parser] PDF loaded, pages:', pdf.numPages);
