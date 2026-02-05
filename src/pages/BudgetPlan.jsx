@@ -438,38 +438,38 @@ export default function BudgetPlan() {
             {/* Main Content Area */}
             <main className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8 flex flex-col gap-8">
                 {/* Page Header */}
-                <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <section className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
                     <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-primary text-4xl">pie_chart</span>
-                            <h1 className="text-[#1F2937] dark:text-white text-3xl md:text-4xl font-extrabold tracking-tight">Budgetplan</h1>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <span className="material-symbols-outlined text-primary text-2xl sm:text-4xl">pie_chart</span>
+                            <h1 className="text-[#1F2937] dark:text-white text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">Budgetplan</h1>
                             <button className="text-gray-400 dark:text-[#a1a1a1] hover:text-primary transition-colors">
-                                <span className="material-symbols-outlined text-[22px]">help</span>
+                                <span className="material-symbols-outlined text-[18px] sm:text-[22px]">help</span>
                             </button>
                         </div>
-                        <p className="text-gray-500 dark:text-[#a1a1a1] text-base md:text-lg font-medium pl-1">Stel je maandelijkse budget samen en houd overzicht</p>
+                        <p className="text-gray-500 dark:text-[#a1a1a1] text-sm sm:text-base md:text-lg font-medium pl-1">Stel je maandelijkse budget samen en houd overzicht</p>
                     </div>
-                    <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
+                    <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto flex-wrap">
                         <button
                             onClick={() => setShowBankStatementModal(true)}
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] text-gray-500 dark:text-[#a1a1a1] px-5 py-3 rounded-[24px] font-bold text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-gray-700 dark:hover:text-white transition-all shadow-sm"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-1 sm:gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] text-gray-500 dark:text-[#a1a1a1] px-3 sm:px-5 py-2 sm:py-3 rounded-[24px] font-bold text-xs sm:text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-gray-700 dark:hover:text-white transition-all shadow-sm"
                         >
-                            <span className="material-symbols-outlined text-[20px]">qr_code_scanner</span>
-                            <span>Scan Afschrift</span>
+                            <span className="material-symbols-outlined text-[16px] sm:text-[20px]">qr_code_scanner</span>
+                            <span className="hidden xs:inline">Scan</span>
                         </button>
                         <Link
                             to="/BudgetHelp"
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] text-gray-500 dark:text-[#a1a1a1] px-5 py-3 rounded-[24px] font-bold text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-gray-700 dark:hover:text-white transition-all shadow-sm"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-1 sm:gap-2 bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] text-gray-500 dark:text-[#a1a1a1] px-3 sm:px-5 py-2 sm:py-3 rounded-[24px] font-bold text-xs sm:text-sm hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-gray-700 dark:hover:text-white transition-all shadow-sm"
                         >
-                            <span className="material-symbols-outlined text-[20px]">help</span>
-                            <span>Hulp bij budget</span>
+                            <span className="material-symbols-outlined text-[16px] sm:text-[20px]">help</span>
+                            <span className="hidden xs:inline">Hulp</span>
                         </Link>
                         <button
-                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-[24px] font-bold text-sm hover:bg-[#059669] hover:scale-[1.02] transition-all shadow-lg shadow-primary/30"
+                            className="flex-1 md:flex-none flex items-center justify-center gap-1 sm:gap-2 bg-primary text-white px-3 sm:px-6 py-2 sm:py-3 rounded-[24px] font-bold text-xs sm:text-sm hover:bg-[#059669] hover:scale-[1.02] transition-all shadow-lg shadow-primary/30"
                             onClick={() => setShowCategoryModal(true)}
                         >
-                            <span className="material-symbols-outlined text-[20px]">add</span>
-                            <span>Nieuw Budget</span>
+                            <span className="material-symbols-outlined text-[16px] sm:text-[20px]">add</span>
+                            <span className="hidden xs:inline">Nieuw</span>
                         </button>
                     </div>
                 </section>
@@ -527,36 +527,36 @@ export default function BudgetPlan() {
                 </section>
 
                 {/* Hero Budget Card */}
-                <section className="relative w-full overflow-hidden rounded-[24px] bg-gradient-to-br from-primary to-[#059669] p-8 md:p-10 shadow-[0_8px_24px_rgba(16,185,129,0.3)] text-white">
+                <section className="relative w-full overflow-hidden rounded-[16px] sm:rounded-[24px] bg-gradient-to-br from-primary to-[#059669] p-4 sm:p-8 md:p-10 shadow-[0_8px_24px_rgba(16,185,129,0.3)] text-white">
                     {/* Decorative circle */}
                     <div className="absolute -right-20 -top-20 w-80 h-80 bg-white opacity-5 rounded-full blur-3xl pointer-events-none"></div>
-                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 relative z-10">
+                    <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 sm:gap-8 relative z-10">
                         <div className="flex flex-col gap-2 flex-1">
                             <div className="flex items-center gap-2 text-white/90">
-                                <span className="material-symbols-outlined text-[20px]">account_balance_wallet</span>
-                                <span className="text-sm font-bold tracking-wider uppercase">Totaal Beschikbaar</span>
-                                </div>
-                            <div className="text-5xl md:text-6xl font-extrabold tracking-tight">{formatCurrency(totalIncome)}</div>
-                            <div className="mt-4 flex flex-wrap gap-4 items-center">
-                                <div className="inline-flex items-center backdrop-blur-md bg-white/15 rounded-xl px-4 py-2 text-sm font-semibold border border-white/10">
-                                    TOTAAL UITGEGEVEN: {formatCurrency(totalExpenses)}
+                                <span className="material-symbols-outlined text-[16px] sm:text-[20px]">account_balance_wallet</span>
+                                <span className="text-xs sm:text-sm font-bold tracking-wider uppercase">Totaal Beschikbaar</span>
                             </div>
+                            <div className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight">{formatCurrency(totalIncome)}</div>
+                            <div className="mt-2 sm:mt-4 flex flex-wrap gap-2 sm:gap-4 items-center">
+                                <div className="inline-flex items-center backdrop-blur-md bg-white/15 rounded-xl px-2 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-semibold border border-white/10">
+                                    UITGEGEVEN: {formatCurrency(totalExpenses)}
                                 </div>
+                            </div>
                             {/* Alert Box */}
                             {budgetPercentage > 70 && (
-                                <div className="mt-6 flex gap-3 p-4 rounded-xl backdrop-blur-md bg-red-500/15 border-l-4 border-red-500 max-w-xl">
-                                    <span className="material-symbols-outlined text-red-100 shrink-0">error</span>
-                                    <p className="text-sm text-red-50 font-medium leading-relaxed">
-                                        Je budget is bijna op! Je hebt nog maar {remainingPercentage}% van je budget over deze {period.toLowerCase()}.
+                                <div className="mt-4 sm:mt-6 flex gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl backdrop-blur-md bg-red-500/15 border-l-4 border-red-500 max-w-xl">
+                                    <span className="material-symbols-outlined text-red-100 shrink-0 text-[18px] sm:text-[24px]">error</span>
+                                    <p className="text-xs sm:text-sm text-red-50 font-medium leading-relaxed">
+                                        Je budget is bijna op! Nog {remainingPercentage}% over deze {period.toLowerCase()}.
                                     </p>
-                                            </div>
-                                        )}
-                                    </div>
-                        <div className="flex flex-col items-start lg:items-end gap-2 min-w-[200px]">
-                            <span className="text-white/80 text-sm font-bold tracking-wider uppercase">Nog Over</span>
-                            <div className="text-4xl md:text-5xl font-extrabold text-white">{formatCurrency(availableBudget)}</div>
                                 </div>
-                                </div>
+                            )}
+                        </div>
+                        <div className="flex flex-col items-start lg:items-end gap-1 sm:gap-2 min-w-0 sm:min-w-[200px]">
+                            <span className="text-white/80 text-xs sm:text-sm font-bold tracking-wider uppercase">Nog Over</span>
+                            <div className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-white">{formatCurrency(availableBudget)}</div>
+                        </div>
+                    </div>
                 </section>
 
                 {/* Main Content Grid */}
@@ -708,32 +708,32 @@ export default function BudgetPlan() {
                     </div>
 
                 {/* Transactions Section */}
-                <section className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 md:p-8 shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] mb-20">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                        <h3 className="text-2xl font-bold text-[#1F2937] dark:text-white">Transacties</h3>
-                        <div className="flex flex-wrap gap-3 w-full md:w-auto">
+                <section className="bg-white dark:bg-[#1a1a1a] rounded-[16px] sm:rounded-[24px] p-4 sm:p-6 md:p-8 shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] mb-20">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                        <h3 className="text-xl sm:text-2xl font-bold text-[#1F2937] dark:text-white">Transacties</h3>
+                        <div className="flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
                             <div className="relative flex-1 md:flex-none">
-                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#a1a1a1] text-[20px]">search</span>
-                                <input 
-                                    className="bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#2a2a2a] text-sm rounded-[24px] pl-10 pr-4 py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary w-full outline-none transition-all placeholder:text-gray-400 dark:placeholder-[#a1a1a1] font-medium text-[#1F2937] dark:text-white" 
-                                    placeholder="Zoek transacties..." 
+                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#a1a1a1] text-[18px] sm:text-[20px]">search</span>
+                                <input
+                                    className="bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#2a2a2a] text-xs sm:text-sm rounded-[24px] pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 focus:ring-2 focus:ring-primary/20 focus:border-primary w-full outline-none transition-all placeholder:text-gray-400 dark:placeholder-[#a1a1a1] font-medium text-[#1F2937] dark:text-white"
+                                    placeholder="Zoek..."
                                     type="text"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
-                            <button className="flex items-center gap-2 bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#2a2a2a] px-4 py-2.5 rounded-[24px] text-sm font-bold text-gray-600 dark:text-[#a1a1a1] hover:bg-gray-100 dark:hover:bg-[#333] transition-colors">
-                                <span className="material-symbols-outlined text-[18px]">swap_vert</span>
-                                <span>Sorteer</span>
+                            <button className="flex items-center gap-1 sm:gap-2 bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#2a2a2a] px-3 sm:px-4 py-2 sm:py-2.5 rounded-[24px] text-xs sm:text-sm font-bold text-gray-600 dark:text-[#a1a1a1] hover:bg-gray-100 dark:hover:bg-[#333] transition-colors">
+                                <span className="material-symbols-outlined text-[16px] sm:text-[18px]">swap_vert</span>
+                                <span className="hidden sm:inline">Sorteer</span>
                             </button>
-                            <button className="flex items-center gap-2 bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#2a2a2a] px-4 py-2.5 rounded-[24px] text-sm font-bold text-gray-600 dark:text-[#a1a1a1] hover:bg-gray-100 dark:hover:bg-[#333] transition-colors">
-                                <span className="material-symbols-outlined text-[18px]">filter_list</span>
-                                <span>Filter</span>
+                            <button className="flex items-center gap-1 sm:gap-2 bg-gray-50 dark:bg-[#2a2a2a] border border-gray-200 dark:border-[#2a2a2a] px-3 sm:px-4 py-2 sm:py-2.5 rounded-[24px] text-xs sm:text-sm font-bold text-gray-600 dark:text-[#a1a1a1] hover:bg-gray-100 dark:hover:bg-[#333] transition-colors">
+                                <span className="material-symbols-outlined text-[16px] sm:text-[18px]">filter_list</span>
+                                <span className="hidden sm:inline">Filter</span>
                             </button>
-                                    </div>
+                        </div>
                     </div>
                     {/* Filter Tabs */}
-                    <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-6 border-b border-gray-100 dark:border-[#2a2a2a] pb-2">
+                    <div className="flex gap-1 sm:gap-2 overflow-x-auto scrollbar-hide mb-4 sm:mb-6 border-b border-gray-100 dark:border-[#2a2a2a] pb-2">
                         {['Alles bekijken', 'Inkomen', 'Uitgaven', 'Betalingsregelingen'].map((tab) => (
                             <button
                                 key={tab}
@@ -743,7 +743,7 @@ export default function BudgetPlan() {
                                     else if (tab === 'Uitgaven') setTransactionFilter('Uitgaven');
                                     else setTransactionFilter('Betalingsregelingen');
                                 }}
-                                className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-bold border border-transparent transition-colors ${
+                                className={`whitespace-nowrap px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-bold border border-transparent transition-colors ${
                                     (tab === 'Alles bekijken' && transactionFilter === 'Alles') ||
                                     (tab === 'Inkomen' && transactionFilter === 'Inkomen') ||
                                     (tab === 'Uitgaven' && transactionFilter === 'Uitgaven') ||
@@ -752,27 +752,27 @@ export default function BudgetPlan() {
                                         : 'text-gray-500 dark:text-[#a1a1a1] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-gray-700 dark:hover:text-white'
                                 }`}
                             >
-                                {tab}
+                                {tab === 'Alles bekijken' ? 'Alles' : tab === 'Betalingsregelingen' ? 'Regelingen' : tab}
                             </button>
                         ))}
                             </div>
                     {/* Transaction List */}
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-2 sm:gap-3">
                         {filteredTransactions.length === 0 ? (
-                            <div className="text-center py-8 text-gray-500 dark:text-[#a1a1a1]">
-                                <p>Geen transacties gevonden</p>
-                        </div>
-                    ) : (
+                            <div className="text-center py-6 sm:py-8 text-gray-500 dark:text-[#a1a1a1]">
+                                <p className="text-sm">Geen transacties gevonden</p>
+                            </div>
+                        ) : (
                             filteredTransactions.map((tx) => {
                                 if (!tx) return null;
                                 const isIncome = tx.type === 'income';
                                 const categoryColor = getCategoryColor(tx.category, tx.type);
                                 const icon = getCategoryIcon(tx.category);
-                                
+
                                 return (
-                                    <div 
+                                    <div
                                         key={tx.id}
-                                        className="group bg-gray-50 dark:bg-[#222] border border-gray-200 dark:border-[#333] rounded-[24px] p-4 hover:bg-white dark:hover:bg-[#282828] hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col sm:flex-row justify-between items-center gap-4"
+                                        className="group bg-gray-50 dark:bg-[#222] border border-gray-200 dark:border-[#333] rounded-[16px] sm:rounded-[24px] p-3 sm:p-4 hover:bg-white dark:hover:bg-[#282828] hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4"
                                     >
                                         <div className="flex items-center gap-4 w-full sm:w-auto">
                                             <div 

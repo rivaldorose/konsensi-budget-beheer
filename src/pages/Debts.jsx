@@ -457,19 +457,19 @@ export default function Debts() {
       <main className="flex-1 w-full flex justify-center py-8 px-4 sm:px-8">
         <div className="w-full max-w-[1400px] flex flex-col gap-8">
           {/* Page Header */}
-          <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <header className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-[#131d0c] dark:text-white font-display">Betaalachterstanden</h1>
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-[#131d0c] dark:text-white font-display">Betaalachterstanden</h1>
           {paidOffDebts > 0 && (
                 <p className="text-green-600 dark:text-green-400 font-medium flex items-center gap-2 mt-1">
                   <span>🎉</span> {paidOffDebts} schuld{paidOffDebts > 1 ? 'en' : ''} afbetaald!
                 </p>
               )}
               {/* Search below header */}
-              <div className="mt-4 relative max-w-md w-full">
-                <span className="material-symbols-outlined absolute left-4 top-3 text-gray-400 dark:text-[#6b7280]">search</span>
+              <div className="mt-2 sm:mt-4 relative w-full sm:max-w-md">
+                <span className="material-symbols-outlined absolute left-3 sm:left-4 top-2.5 sm:top-3 text-gray-400 dark:text-[#6b7280] !text-[20px]">search</span>
                 <input
-                  className="w-full h-12 pl-12 pr-4 rounded-xl border-none bg-white dark:bg-[#2a2a2a] shadow-soft text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-[#a1a1a1] focus:ring-2 focus:ring-[#b4ff7a] dark:focus:ring-[#10b981] outline-none transition-all"
+                  className="w-full h-10 sm:h-12 pl-10 sm:pl-12 pr-4 rounded-xl border-none bg-white dark:bg-[#2a2a2a] shadow-soft text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-[#a1a1a1] focus:ring-2 focus:ring-[#b4ff7a] dark:focus:ring-[#10b981] outline-none transition-all text-sm sm:text-base"
                   placeholder="Zoek op naam of status..."
                   type="text"
                   value={searchTerm}
@@ -477,20 +477,20 @@ export default function Debts() {
                 />
         </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 sm:overflow-visible">
               <button
             onClick={() => setShowFilters(true)}
-                className="h-11 px-5 rounded-xl border-2 border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card text-text-main dark:text-text-primary font-semibold text-sm hover:border-primary/30 dark:hover:border-primary-green/30 hover:bg-primary/5 dark:hover:bg-primary-green/5 flex items-center gap-2 transition-all"
+                className="h-9 sm:h-11 px-3 sm:px-5 rounded-xl border-2 border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card text-text-main dark:text-text-primary font-semibold text-xs sm:text-sm hover:border-primary/30 dark:hover:border-primary-green/30 hover:bg-primary/5 dark:hover:bg-primary-green/5 flex items-center gap-1 sm:gap-2 transition-all flex-shrink-0"
               >
-                <span className="material-symbols-outlined !text-[18px] text-primary dark:text-primary-green">filter_list</span>
-                Filters
+                <span className="material-symbols-outlined !text-[16px] sm:!text-[18px] text-primary dark:text-primary-green">filter_list</span>
+                <span className="hidden sm:inline">Filters</span>
               </button>
               <button
             onClick={() => setShowScanModal(true)}
-                className="h-11 px-5 rounded-xl border-2 border-gray-300 dark:border-[#2a2a2a] bg-white dark:bg-transparent text-gray-700 dark:text-white font-semibold text-sm hover:border-gray-400 dark:hover:border-[#3a3a3a] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] flex items-center gap-2 transition-all"
+                className="h-9 sm:h-11 px-3 sm:px-5 rounded-xl border-2 border-gray-300 dark:border-[#2a2a2a] bg-white dark:bg-transparent text-gray-700 dark:text-white font-semibold text-xs sm:text-sm hover:border-gray-400 dark:hover:border-[#3a3a3a] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] flex items-center gap-1 sm:gap-2 transition-all flex-shrink-0"
               >
-                <span className="material-symbols-outlined !text-[18px] text-gray-500 dark:text-[#a1a1a1]">document_scanner</span>
-                Scan Brief
+                <span className="material-symbols-outlined !text-[16px] sm:!text-[18px] text-gray-500 dark:text-[#a1a1a1]">document_scanner</span>
+                <span className="hidden xs:inline">Scan</span>
               </button>
               <button
             onClick={() => {
@@ -500,29 +500,29 @@ export default function Debts() {
                 setShowAddForm(true);
               }
             }}
-                className="h-11 px-5 rounded-xl bg-[#b4ff7a] dark:bg-[#10b981] text-[#131d0c] dark:text-black font-bold text-sm hover:bg-[#a2f565] dark:hover:bg-[#34d399] active:bg-[#059669] flex items-center gap-2 shadow-sm transition-all transform hover:-translate-y-0.5"
+                className="h-9 sm:h-11 px-3 sm:px-5 rounded-xl bg-[#b4ff7a] dark:bg-[#10b981] text-[#131d0c] dark:text-black font-bold text-xs sm:text-sm hover:bg-[#a2f565] dark:hover:bg-[#34d399] active:bg-[#059669] flex items-center gap-1 sm:gap-2 shadow-sm transition-all transform hover:-translate-y-0.5 flex-shrink-0 ml-auto"
               >
-                <span className="material-symbols-outlined !text-[20px] font-bold">add</span>
-                Nieuwe Schuld
+                <span className="material-symbols-outlined !text-[18px] sm:!text-[20px] font-bold">add</span>
+                <span className="hidden sm:inline">Nieuwe Schuld</span>
               </button>
         </div>
           </header>
 
           {/* Summary Cards Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
             {/* Afloscapaciteit */}
-            <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl p-6 shadow-soft flex flex-col gap-4 relative group hover:border-gray-200 dark:hover:border-[#3a3a3a] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-all duration-300">
+            <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-soft flex flex-col gap-3 sm:gap-4 relative group hover:border-gray-200 dark:hover:border-[#3a3a3a] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-all duration-300">
               <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-full bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
-                    <span className="material-symbols-outlined">track_changes</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="size-8 sm:size-10 rounded-full bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
+                    <span className="material-symbols-outlined !text-[18px] sm:!text-[24px]">track_changes</span>
         </div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-[#a1a1a1] uppercase tracking-wide">Afloscapaciteit</span>
+                  <span className="text-xs sm:text-sm font-medium text-gray-500 dark:text-[#a1a1a1] uppercase tracking-wide">Afloscapaciteit</span>
       </div>
-                <button onClick={() => setShowVtlbInfo(true)} className="material-symbols-outlined text-gray-300 dark:text-[#6b7280] cursor-help text-sm hover:text-gray-500 dark:hover:text-white transition-colors">help</button>
+                <button onClick={() => setShowVtlbInfo(true)} className="material-symbols-outlined text-gray-300 dark:text-[#6b7280] cursor-help !text-[16px] sm:!text-[20px] hover:text-gray-500 dark:hover:text-white transition-colors">help</button>
               </div>
               <div>
-                <p className="text-3xl font-extrabold text-[#131d0c] dark:text-white font-display">
+                <p className="text-2xl sm:text-3xl font-extrabold text-[#131d0c] dark:text-white font-display">
               {vtblData ? formatCurrency(vtblData.aflosCapaciteit) : formatCurrency(availableBudget)}
             </p>
                 <a
@@ -535,43 +535,43 @@ export default function Debts() {
             </div>
 
             {/* Openstaand */}
-            <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl p-6 shadow-soft flex flex-col gap-4 relative group hover:border-gray-200 dark:hover:border-[#3a3a3a] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-all duration-300">
+            <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-soft flex flex-col gap-3 sm:gap-4 relative group hover:border-gray-200 dark:hover:border-[#3a3a3a] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-all duration-300">
               <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-full bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20">
-                    <span className="material-symbols-outlined">warning</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="size-8 sm:size-10 rounded-full bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20">
+                    <span className="material-symbols-outlined !text-[18px] sm:!text-[24px]">warning</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-[#a1a1a1] uppercase tracking-wide">Openstaand</span>
+                  <span className="text-xs sm:text-sm font-medium text-gray-500 dark:text-[#a1a1a1] uppercase tracking-wide">Openstaand</span>
               </div>
               <button
                 onClick={() => setShowTotalAmount(!showTotalAmount)}
-                  className="material-symbols-outlined text-gray-300 dark:text-[#6b7280] cursor-pointer hover:text-gray-500 dark:hover:text-white text-sm transition-colors"
+                  className="material-symbols-outlined text-gray-300 dark:text-[#6b7280] cursor-pointer hover:text-gray-500 dark:hover:text-white !text-[16px] sm:!text-[20px] transition-colors"
                 >
                   {showTotalAmount ? 'visibility_off' : 'visibility'}
               </button>
             </div>
               <div>
-                <p className="text-3xl font-extrabold text-orange-600 dark:text-orange-400 font-display">
+                <p className="text-2xl sm:text-3xl font-extrabold text-orange-600 dark:text-orange-400 font-display">
                   {showTotalAmount ? formatCurrency(totalDebtAmount) : '€ ••••'}
                 </p>
-                <p className="text-gray-500 dark:text-[#a1a1a1] text-sm font-medium mt-1">{debts.filter(d => d.status !== 'afbetaald').length} schulden</p>
+                <p className="text-gray-500 dark:text-[#a1a1a1] text-xs sm:text-sm font-medium mt-1">{debts.filter(d => d.status !== 'afbetaald').length} schulden</p>
               </div>
             </div>
 
             {/* Strategie */}
-            <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl p-6 shadow-soft flex flex-col gap-4 relative group hover:border-gray-200 dark:hover:border-[#3a3a3a] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-all duration-300">
+            <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-soft flex flex-col gap-3 sm:gap-4 relative group hover:border-gray-200 dark:hover:border-[#3a3a3a] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-all duration-300 sm:col-span-2 md:col-span-1">
               <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-full bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20">
-                    <span className="material-symbols-outlined">bolt</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="size-8 sm:size-10 rounded-full bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20">
+                    <span className="material-symbols-outlined !text-[18px] sm:!text-[24px]">bolt</span>
             </div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-[#a1a1a1] uppercase tracking-wide">Strategie</span>
+                  <span className="text-xs sm:text-sm font-medium text-gray-500 dark:text-[#a1a1a1] uppercase tracking-wide">Strategie</span>
                 </div>
               </div>
               <div>
             {activeStrategy ? (
               <>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1 mb-1 font-display capitalize">
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mt-1 mb-1 font-display capitalize">
                   {activeStrategy.strategy_type === 'snowball' ? '❄️ Sneeuwbal' :
                    activeStrategy.strategy_type === 'avalanche' ? '⚡ Lawine' :
                    '⚖️ Gelijk'}
@@ -640,9 +640,58 @@ export default function Debts() {
             />
           )}
 
-          {/* Debt List Table */}
+          {/* Debt List - Mobile Cards / Desktop Table */}
           <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl shadow-soft overflow-hidden w-full">
-          <div className="overflow-x-auto">
+
+          {/* Mobile Card View */}
+          <div className="block md:hidden divide-y divide-gray-100 dark:divide-[#2a2a2a]">
+            {paginatedDebts.map((debt) => {
+              const creditorIcon = getCreditorIcon(debt.creditor_type, debt.creditor_name);
+              const status = debt.status || 'niet_actief';
+              return (
+                <div
+                  key={debt.id}
+                  className="p-4 active:bg-gray-50 dark:active:bg-[#2a2a2a] transition-colors"
+                  onClick={() => handleViewDetails(debt)}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`size-12 rounded-xl ${creditorIcon.bgColor} flex items-center justify-center ${creditorIcon.iconColor} flex-shrink-0`}>
+                      <span className="material-symbols-outlined !text-[22px]">{creditorIcon.icon}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-bold text-[#131d0c] dark:text-white text-sm truncate">{debt.creditor_name}</p>
+                          <p className="text-xs text-gray-400 dark:text-[#a1a1a1]">{creditorTypeLabels[debt.creditor_type] || 'Schuldeiser'}</p>
+                        </div>
+                        <p className="font-bold text-[#131d0c] dark:text-white text-sm flex-shrink-0">
+                          {showTotalAmount ? formatCurrency(debt.amount || 0) : '€ ••••'}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[status] || statusColors.niet_actief}`}>
+                          {statusLabels[status] || status}
+                        </span>
+                        {debt.origin_date && (
+                          <span className="text-xs text-gray-400 dark:text-[#a1a1a1]">
+                            {new Date(debt.origin_date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
+                          </span>
+                        )}
+                      </div>
+                      {status === 'betalingsregeling' && debt.monthly_payment && (
+                        <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                          {formatCurrency(debt.monthly_payment)}/mnd • {Math.ceil(((debt.amount || 0) - (debt.amount_paid || 0)) / debt.monthly_payment)} mnd
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
               <table className="w-full min-w-[800px] border-collapse">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-[#2a2a2a]">
@@ -766,17 +815,18 @@ export default function Debts() {
 
             {/* Pagination */}
           {totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 dark:border-[#2a2a2a]">
-                <p className="text-sm text-gray-600 dark:text-[#a1a1a1]">
-                Tonen {((currentPage - 1) * ITEMS_PER_PAGE) + 1} - {Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSortedDebts.length)} van {filteredAndSortedDebts.length}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t border-gray-100 dark:border-[#2a2a2a]">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-[#a1a1a1] order-2 sm:order-1">
+                {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSortedDebts.length)} van {filteredAndSortedDebts.length}
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 order-1 sm:order-2">
                   <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-xl border border-gray-300 dark:border-[#2a2a2a] bg-white dark:bg-transparent text-gray-700 dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-[#2a2a2a] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="px-2 sm:px-4 py-2 rounded-xl border border-gray-300 dark:border-[#2a2a2a] bg-white dark:bg-transparent text-gray-700 dark:text-white text-xs sm:text-sm font-medium hover:bg-gray-50 dark:hover:bg-[#2a2a2a] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
-                  Vorige
+                  <span className="hidden sm:inline">Vorige</span>
+                  <span className="material-symbols-outlined sm:hidden !text-[16px]">chevron_left</span>
                   </button>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -794,7 +844,7 @@ export default function Debts() {
                         <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                          className={`w-8 h-8 rounded-xl text-sm font-medium transition-all ${
+                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all ${
                             currentPage === pageNum
                               ? 'bg-[#b4ff7a] dark:bg-[#10b981] text-[#131d0c] dark:text-black'
                               : 'border border-gray-300 dark:border-[#2a2a2a] bg-white dark:bg-transparent text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-[#2a2a2a]'
@@ -808,9 +858,10 @@ export default function Debts() {
                   <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                    className="px-4 py-2 rounded-xl border border-gray-300 dark:border-[#2a2a2a] bg-white dark:bg-transparent text-gray-700 dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-[#2a2a2a] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    className="px-2 sm:px-4 py-2 rounded-xl border border-gray-300 dark:border-[#2a2a2a] bg-white dark:bg-transparent text-gray-700 dark:text-white text-xs sm:text-sm font-medium hover:bg-gray-50 dark:hover:bg-[#2a2a2a] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
-                  Volgende
+                  <span className="hidden sm:inline">Volgende</span>
+                  <span className="material-symbols-outlined sm:hidden !text-[16px]">chevron_right</span>
                   </button>
               </div>
             </div>

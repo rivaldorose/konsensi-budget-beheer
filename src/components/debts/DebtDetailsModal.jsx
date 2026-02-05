@@ -445,10 +445,10 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
   return (
     <>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="relative w-full max-w-[1200px] bg-white dark:bg-dark-card rounded-3xl shadow-2xl dark:shadow-modal-dark overflow-hidden flex flex-col max-h-[90vh] my-8">
-            {/* Theme Toggle */}
-            <div className="absolute top-6 right-16 z-20">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 dark:bg-black/80 backdrop-blur-sm sm:p-4 overflow-y-auto">
+          <div className="relative w-full sm:max-w-[1200px] bg-white dark:bg-dark-card rounded-t-3xl sm:rounded-3xl shadow-2xl dark:shadow-modal-dark overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh] sm:my-8">
+            {/* Theme Toggle - Hidden on mobile */}
+            <div className="hidden sm:block absolute top-6 right-16 z-20">
               <label aria-label="Switch theme" className="relative inline-flex items-center cursor-pointer select-none">
                 <input className="sr-only" id="theme-toggle" type="checkbox" checked={darkMode} onChange={toggleTheme} />
                 <div className="w-16 h-9 bg-gray-100 dark:bg-gray-800 rounded-full shadow-inner flex items-center justify-between px-1.5 transition-colors duration-300 border border-gray-200 dark:border-gray-700">
@@ -460,7 +460,7 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
             </div>
 
             {/* Header */}
-            <header className="flex items-center gap-4 p-6 border-b border-gray-100 dark:border-dark-border">
+            <header className="flex items-center gap-2 sm:gap-4 p-4 sm:p-6 border-b border-gray-100 dark:border-dark-border">
               <button 
                 onClick={onClose}
                 className="flex items-center justify-center p-2 rounded-full hover:bg-gray-200 dark:hover:bg-dark-card-elevated transition-colors text-text-muted dark:text-text-secondary cursor-pointer"
@@ -492,7 +492,7 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                   </button>
                 </div>
               ) : (
-                <h1 className="text-2xl sm:text-[28px] font-bold text-text-main dark:text-text-primary flex-grow">
+                <h1 className="text-lg sm:text-2xl md:text-[28px] font-bold text-text-main dark:text-text-primary flex-grow truncate">
                   {currentDebt.creditor_name}
                 </h1>
               )}
@@ -522,11 +522,11 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
             </header>
 
             {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 overflow-y-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 p-4 sm:p-6 overflow-y-auto">
               {/* LEFT COLUMN (65% -> col-span-8) */}
-              <div className="lg:col-span-8 flex flex-col gap-6">
+              <div className="lg:col-span-8 flex flex-col gap-4 sm:gap-6">
                 {/* 1. Financieel Overzicht Card */}
-                <div className="bg-white dark:bg-dark-card rounded-xl shadow-card dark:shadow-soft p-6 hover:shadow-hover dark:hover:shadow-card transition-shadow duration-300">
+                <div className="bg-white dark:bg-dark-card rounded-xl shadow-card dark:shadow-soft p-4 sm:p-6 hover:shadow-hover dark:hover:shadow-card transition-shadow duration-300">
                   <div className="flex items-center justify-between mb-5">
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-primary dark:text-primary-green">account_balance_wallet</span>
