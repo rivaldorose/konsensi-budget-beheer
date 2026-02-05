@@ -161,15 +161,20 @@ export default function VTLBCalculator() {
     // 7. De beslagvrije voet is het minimum van de berekende waarde en het wettelijk maximum
     const beslagvrijeVoet = Math.min(berekendeBeslagvrijeVoet, maxBeslagvrijeVoet);
 
-    // 8. Afloscapaciteit = Netto inkomen - Beslagvrije voet - Lopende betalingsregelingen
-    // Let op: vaste lasten zijn vaak al onderdeel van de beslagvrije voet, dus we tellen ze niet dubbel
-    const afloscapaciteit = Math.max(0, totalIncome - beslagvrijeVoet - baseData.currentArrangements);
+    // 8. Bereken overige vaste lasten (lasten die niet in de beslagvrije voet zitten)
+    // De huur/hypotheek en zorgverzekering zitten al in de beslagvrije voet, dus die trekken we af
+    const lastenInBeslagvrijeVoet = woonkosten + zorgverzekering;
+    const overigeVasteLasten = Math.max(0, baseData.fixedCosts - lastenInBeslagvrijeVoet);
+
+    // 9. Afloscapaciteit = Netto inkomen - Beslagvrije voet - Overige vaste lasten - Lopende betalingsregelingen
+    const afloscapaciteit = Math.max(0, totalIncome - beslagvrijeVoet - overigeVasteLasten - baseData.currentArrangements);
 
     setCalculation({
       totalIncome: totalIncome,
       beslagvrijeVoet: beslagvrijeVoet,
       afloscapaciteit: afloscapaciteit,
       fixedCosts: baseData.fixedCosts,
+      overigeVasteLasten: overigeVasteLasten,
       currentArrangements: baseData.currentArrangements,
       maxBeslagvrijeVoet: maxBeslagvrijeVoet,
       isMaxCapped: berekendeBeslagvrijeVoet > maxBeslagvrijeVoet,
@@ -393,7 +398,31 @@ export default function VTLBCalculator() {
 
               <hr className="border-gray-100 dark:border-[#2a2a2a]" />
 
-              {/* Section 4: Lopende betalingsregelingen */}
+              {/* Section 4: Overige vaste lasten */}
+              {calculation.overigeVasteLasten > 0 && (
+                <>
+                  <section>
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-red-500/10 rounded-full text-red-500">
+                        <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+                      </div>
+                      <h3 className="text-gray-900 dark:text-white text-xl font-bold">Overige vaste lasten</h3>
+                    </div>
+                    <div className="w-full h-[56px] px-4 rounded-xl bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#2a2a2a] flex items-center justify-between">
+                      <span className="text-gray-900 dark:text-white font-medium">Abonnementen, energie, etc.</span>
+                      <span className="text-red-500 font-bold font-mono text-lg">
+                        - {formatCurrency(calculation.overigeVasteLasten)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-[#6b7280] mt-2">
+                      Vaste lasten die niet in de beslagvrije voet zitten (totaal: {formatCurrency(baseData.fixedCosts)}, waarvan {formatCurrency(baseData.fixedCosts - calculation.overigeVasteLasten)} al in huur/zorg)
+                    </p>
+                  </section>
+                  <hr className="border-gray-100 dark:border-[#2a2a2a]" />
+                </>
+              )}
+
+              {/* Section 4b: Lopende betalingsregelingen */}
               {baseData.currentArrangements > 0 && (
                 <>
                   <section>
@@ -470,7 +499,7 @@ export default function VTLBCalculator() {
 
             {/* Calculation Result Section */}
             <div className="bg-[#10b981]/10 border-t-2 border-[#10b981] p-8 md:p-10">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div className="text-center md:text-left">
                   <p className="text-gray-500 dark:text-[#a1a1a1] text-sm font-medium mb-1">Netto inkomen</p>
                   <p className="text-gray-900 dark:text-white font-bold text-xl">{formatCurrency(calculation.totalIncome)}</p>
@@ -479,6 +508,12 @@ export default function VTLBCalculator() {
                   <p className="text-gray-500 dark:text-[#a1a1a1] text-sm font-medium mb-1">Beslagvrije voet</p>
                   <p className="text-amber-500 font-bold text-xl">- {formatCurrency(calculation.beslagvrijeVoet)}</p>
                 </div>
+                {calculation.overigeVasteLasten > 0 && (
+                  <div className="text-center">
+                    <p className="text-gray-500 dark:text-[#a1a1a1] text-sm font-medium mb-1">Overige vaste lasten</p>
+                    <p className="text-red-500 font-bold text-xl">- {formatCurrency(calculation.overigeVasteLasten)}</p>
+                  </div>
+                )}
                 {baseData.currentArrangements > 0 && (
                   <div className="text-center md:text-right">
                     <p className="text-gray-500 dark:text-[#a1a1a1] text-sm font-medium mb-1">Lopende regelingen</p>
