@@ -20,24 +20,48 @@ import { supabase } from "@/lib/supabase";
 // Parse PDF text to extract payment data
 async function parsePdfText(file) {
   try {
+    console.log('[PDF Parser] Starting PDF parsing for:', file.name);
+
+    // Dynamically import pdf.js
     const pdfjsLib = await import('pdfjs-dist');
+    console.log('[PDF Parser] pdf.js version:', pdfjsLib.version);
 
-    // Try multiple worker sources for better compatibility
-    const workerSources = [
-      `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`,
-      `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`,
-      `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`,
-    ];
+    // Configure worker - use CDN with correct version
+    // The worker is required for pdf.js to function properly
+    const version = pdfjsLib.version;
+    const workerUrl = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${version}/pdf.worker.min.mjs`;
 
-    // Set worker source
-    pdfjsLib.GlobalWorkerOptions.workerSrc = workerSources[0];
+    console.log('[PDF Parser] Setting worker URL:', workerUrl);
+    pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
+    // Read file as ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    console.log('[PDF Parser] File loaded, size:', arrayBuffer.byteLength);
+
+    // Load PDF document with error handling
+    let pdf;
+    try {
+      pdf = await pdfjsLib.getDocument({
+        data: arrayBuffer,
+        // Disable worker if it fails (fallback)
+        disableWorker: false,
+      }).promise;
+    } catch (workerError) {
+      console.warn('[PDF Parser] Worker failed, trying without worker:', workerError.message);
+      // Retry without worker
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+      pdf = await pdfjsLib.getDocument({
+        data: arrayBuffer,
+        disableWorker: true,
+      }).promise;
+    }
+
+    console.log('[PDF Parser] PDF loaded, pages:', pdf.numPages);
 
     let fullText = '';
     let structuredItems = [];
 
+    // Extract text from each page
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
@@ -57,7 +81,13 @@ async function parsePdfText(file) {
     }
 
     console.log('[PDF Parser] Extracted text length:', fullText.length);
-    console.log('[PDF Parser] First 500 chars:', fullText.substring(0, 500));
+    console.log('[PDF Parser] First 1000 chars:', fullText.substring(0, 1000));
+    console.log('[PDF Parser] Structured items count:', structuredItems.length);
+
+    if (fullText.length < 10) {
+      console.warn('[PDF Parser] Very little text extracted, PDF might be image-based');
+      throw new Error('PDF bevat geen leesbare tekst (mogelijk een gescande afbeelding)');
+    }
 
     return extractPaymentData(fullText, structuredItems);
   } catch (error) {
@@ -325,9 +355,20 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
       }
     } catch (error) {
       console.error("[PaymentModal] Error parsing PDF:", error);
+
+      // Provide more specific error messages
+      let errorMessage = "Vul de gegevens handmatig in.";
+      if (error.message?.includes('gescande afbeelding')) {
+        errorMessage = "Deze PDF is een gescande afbeelding. Vul de gegevens handmatig in.";
+      } else if (error.message?.includes('worker')) {
+        errorMessage = "PDF library kon niet laden. Vul de gegevens handmatig in.";
+      } else if (error.message?.includes('Invalid PDF')) {
+        errorMessage = "Ongeldig PDF bestand. Controleer of het bestand correct is.";
+      }
+
       toast({
-        title: "❌ Kon PDF niet lezen",
-        description: "Vul de gegevens handmatig in.",
+        title: "📄 PDF kon niet worden gelezen",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
