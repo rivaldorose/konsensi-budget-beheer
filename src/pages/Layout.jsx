@@ -1525,50 +1525,7 @@ function LayoutWithProvider({ children, currentPageName }) {
 
         {/* Mobile Bottom Navigation */}
         <nav className="mobile-bottom-nav md:hidden">
-          {mobileNavItems.slice(0, 2).map((item) => {
-            const active = isActive(item.path);
-            return (
-              <Link
-                key={item.titleKey}
-                to={createPageUrl(item.path)}
-                className={`nav-item-mobile ${active ? 'active' : ''}`}
-              >
-                <item.icon />
-                <span className="nav-label-mobile">{getNavTranslation(item.titleKey, language)}</span>
-              </Link>
-            );
-          })}
-
-          {!pagesWithCustomFab.includes(currentPageName) && (
-            <div
-              ref={fabRef}
-              className={`fab-button ${fabPosition.x !== null ? 'fixed-pos' : 'default-pos'} ${isDragging.current ? 'dragging' : ''}`}
-              style={fabPosition.x !== null ? { left: `${fabPosition.x}px`, top: `${fabPosition.y}px`} : {}}
-              onMouseDown={handleFabDragStart}
-              onTouchStart={handleFabDragStart}
-              onClick={(e) => {
-                if (didDrag.current) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  return;
-                }
-                if (fabPosition.x !== null) {
-                    setFabPosition({ x: null, y: null });
-                }
-                setShowAddModal(true);
-              }}
-            >
-              <button
-                className={`fab ${isDragging.current ? 'dragging' : ''}`}
-                aria-label={t('addmodal.add')}
-                onClick={(e) => e.preventDefault()}
-              >
-                <Plus />
-              </button>
-            </div>
-          )}
-
-          {mobileNavItems.slice(2).map((item) => {
+          {mobileNavItems.map((item) => {
             const active = isActive(item.path);
             return (
               <Link
