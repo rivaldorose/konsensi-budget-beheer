@@ -298,21 +298,53 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
   const handleDeletePayment = async (paymentId) => {
     if (!confirm('Weet je zeker dat je deze betaling wilt verwijderen?')) return;
     try {
-      await DebtPayment.delete(paymentId);
+      // Use direct Supabase delete to bypass potential RLS issues and get better error handling
+      const { error: deleteError } = await supabase
+        .from('debt_payments')
+        .delete()
+        .eq('id', paymentId);
+
+      if (deleteError) {
+        console.error('Error deleting payment:', deleteError);
+        // Check if it's an RLS policy error
+        if (deleteError.code === '42501' || deleteError.message?.includes('policy')) {
+          toast({
+            title: 'Geen toestemming',
+            description: 'Je hebt geen rechten om deze betaling te verwijderen.',
+            variant: 'destructive'
+          });
+        } else {
+          toast({
+            title: 'Fout bij verwijderen',
+            description: deleteError.message || 'Kon betaling niet verwijderen.',
+            variant: 'destructive'
+          });
+        }
+        return;
+      }
+
+      // Recalculate amount_paid after successful delete
       const remainingPayments = await DebtPayment.filter({ debt_id: debt.id });
       const newAmountPaid = remainingPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
       const updateData = { amount_paid: newAmountPaid };
+
+      // If debt was fully paid but now has remaining balance, update status
       if (currentDebt.status === 'afbetaald' && newAmountPaid < currentDebt.amount) {
         updateData.status = 'betalingsregeling';
       }
+
       await Debt.update(debt.id, updateData);
-      toast({ title: 'Betaling verwijderd' });
+      toast({ title: 'Betaling verwijderd', variant: 'success' });
       await refreshDebt();
       loadPayments();
       if (onUpdate) onUpdate();
     } catch (error) {
       console.error('Error deleting payment:', error);
-      toast({ title: 'Fout', variant: 'destructive' });
+      toast({
+        title: 'Fout bij verwijderen',
+        description: error.message || 'Er ging iets mis.',
+        variant: 'destructive'
+      });
     }
   };
 
