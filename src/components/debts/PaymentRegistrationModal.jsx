@@ -120,13 +120,41 @@ function parseDutchNumber(str) {
 
 // Check if a string looks like a date pattern (to avoid parsing dates as amounts)
 function looksLikeDate(str) {
+  if (!str) return false;
+  const cleaned = str.trim();
+
   // Common date patterns that should NOT be treated as amounts
   const datePatterns = [
     /^\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}$/,  // DD-MM-YYYY or similar
-    /^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}$/,    // YYYY-MM-DD
+    /^\d{4}[-/.]\d{1,2}[-/.]\d{2,4}$/,    // YYYY-MM-DD
     /^\d{1,2}\s+(jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)/i,  // Dutch month names
+    /\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}/,    // Date anywhere in string
+    /\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/,      // ISO date anywhere in string
   ];
-  return datePatterns.some(p => p.test(str.trim()));
+
+  if (datePatterns.some(p => p.test(cleaned))) {
+    return true;
+  }
+
+  // Check if the number could be a date component (day, month, year)
+  // Dates like "05-02-2026" get parsed as "5.02" = 5.02 which is wrong
+  // If we see patterns like XX-XX or XX-XXXX, it's likely a date
+  if (/\d{1,2}[-/.]\d{2,4}/.test(cleaned) || /\d{2,4}[-/.]\d{1,2}/.test(cleaned)) {
+    return true;
+  }
+
+  return false;
+}
+
+// Check if a number is suspiciously small (likely a date fragment like 5.02 from 05-02-2026)
+function isSuspiciouslySmallAmount(amount, context) {
+  // If amount is very small (< 20) and context contains date-like patterns, skip it
+  if (amount < 20) {
+    // Check for nearby date indicators in context
+    if (/\d{4}/.test(context)) return true; // Year nearby
+    if (/[-/.]/.test(context) && /\d{1,2}[-/.]\d/.test(context)) return true; // Date separator with numbers
+  }
+  return false;
 }
 
 // Extract payment info from text using common Dutch bank statement patterns
@@ -179,18 +207,48 @@ function extractPaymentData(text, structuredItems = []) {
         continue;
       }
 
+      // Get surrounding context (50 chars before and after) to check for date patterns
+      const matchIndex = normalizedText.indexOf(fullContext);
+      const surroundingContext = normalizedText.substring(
+        Math.max(0, matchIndex - 50),
+        Math.min(normalizedText.length, matchIndex + fullContext.length + 50)
+      );
+
       const amount = parseDutchNumber(matchStr);
+
+      // Skip suspiciously small amounts that might be date fragments
+      if (amount && isSuspiciouslySmallAmount(amount, surroundingContext)) {
+        console.log('[PDF Parser] Skipping suspiciously small amount (likely date fragment):', amount, 'context:', surroundingContext.substring(0, 60));
+        continue;
+      }
+
       if (amount && amount > 0.99 && amount < 100000) {  // Min €1 to avoid date parts
-        foundAmounts.push({ amount, context: fullContext, priority: 0 });
+        foundAmounts.push({ amount, context: fullContext, surroundingContext, priority: 0 });
       }
     }
   }
 
   // Prioritize amounts
   foundAmounts.forEach(a => {
-    if (/€|EUR/i.test(a.context)) a.priority += 10;  // Currency symbol = high priority
-    if (/bedrag|totaal|betalen|factuurbedrag/i.test(a.context)) a.priority += 20;  // Labeled = highest
-    if (a.amount >= 10 && a.amount <= 10000) a.priority += 5;  // Reasonable payment amount
+    // Currency symbol = very high priority (most reliable indicator)
+    if (/€|EUR/i.test(a.context)) a.priority += 30;
+
+    // Labeled amounts = highest priority
+    if (/bedrag|totaal|betalen|factuurbedrag|te\s*voldoen/i.test(a.context)) a.priority += 25;
+
+    // Reasonable payment amount range
+    if (a.amount >= 50 && a.amount <= 10000) a.priority += 10;
+    else if (a.amount >= 10 && a.amount < 50) a.priority += 3;  // Lower priority for small amounts without € symbol
+    else if (a.amount < 10) a.priority -= 10;  // Very low priority for tiny amounts (likely date fragments)
+
+    // Penalize amounts that look like they could be date components
+    if (a.amount < 32 && a.amount > 0 && !/€|EUR/i.test(a.context)) {
+      // Could be a day of month - check if there's a year nearby
+      if (/20\d{2}/.test(a.surroundingContext || '')) {
+        a.priority -= 15;  // Likely a date
+        console.log('[PDF Parser] Penalizing potential date component:', a.amount);
+      }
+    }
   });
 
   // Sort by priority (highest first)
