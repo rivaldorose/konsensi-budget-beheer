@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Camera, Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Check } from "lucide-react";
-import { UploadFile, ExtractDataFromUploadedFile } from "@/api/integrations";
+import { UploadFile } from "@/api/integrations";
 import { User } from "@/api/entities";
+import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
@@ -54,74 +55,24 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
     setStep('processing');
 
     try {
-      // Extract data met AI
-      const schema = {
-        type: "object",
-        properties: {
-          creditor_name: {
-            type: "string",
-            description: "Naam van het incassobureau of schuldeiser"
-          },
-          creditor_type: {
-            type: "string",
-            enum: ["energie", "telecom", "zorgverzekeraar", "bank", "retail", "overheid", "incasso", "deurwaarder", "anders"],
-            description: "Type schuldeiser, probeer te herkennen uit de brief"
-          },
-          case_number: {
-            type: "string",
-            description: "Dossiernummer of referentienummer"
-          },
-          original_amount: {
-            type: "number",
-            description: "Oorspronkelijk schuldbedrag (hoofdsom)"
-          },
-          reminder_costs: {
-            type: "number",
-            description: "Aanmaningskosten (apart van incassokosten)"
-          },
-          collection_costs: {
-            type: "number",
-            description: "Incassokosten (apart van aanmaningskosten)"
-          },
-          interest_costs: {
-            type: "number",
-            description: "Rente en extra kosten"
-          },
-          total_amount: {
-            type: "number",
-            description: "Totaal te betalen bedrag"
-          },
-          debt_date: {
-            type: "string",
-            description: "Datum waarop schuld is ontstaan (format: YYYY-MM-DD)"
-          },
-          payment_deadline: {
-            type: "string",
-            description: "Uiterlijke betaaldatum zoals vermeld op de brief (format: YYYY-MM-DD)"
-          },
-          contact_person: {
-            type: "string",
-            description: "Naam contactpersoon indien vermeld"
-          },
-          contact_details: {
-            type: "string",
-            description: "Telefoonnummer of email van schuldeiser"
-          }
+      // Use Claude Haiku via our new Edge Function for better parsing
+      const { data, error: fnError } = await supabase.functions.invoke('parse-debt-document', {
+        body: {
+          fileUrls: uploadedPages
         }
-      };
-
-      // Process alle pagina's
-      const result = await ExtractDataFromUploadedFile({
-        file_url: uploadedPages[0],
-        file_urls: uploadedPages,
-        json_schema: schema
       });
 
-      if (result.status === 'success' && result.output) {
-        setExtractedData(result.output);
+      if (fnError) {
+        console.error("Edge function error:", fnError);
+        throw new Error(fnError.message || 'Fout bij verwerken');
+      }
+
+      if (data?.status === 'success' && data?.output) {
+        console.log('✅ Claude Haiku parsed debt document:', data.output);
+        setExtractedData(data.output);
         setStep('review');
       } else {
-        setError(result.details || 'Kon geen gegevens uit de brief halen. Probeer een duidelijkere foto.');
+        setError(data?.details || 'Kon geen gegevens uit de brief halen. Probeer een duidelijkere foto.');
         setStep('scanned');
       }
     } catch (err) {
@@ -163,7 +114,9 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
         status: 'niet_actief',
         contact_person_name: extractedData.contact_person || '',
         contact_person_details: extractedData.contact_details || '',
-        notes: `Gescand uit brief op ${new Date().toLocaleDateString('nl-NL')}`
+        iban: extractedData.iban || '',
+        payment_reference: extractedData.payment_reference || '',
+        notes: `Gescand met AI op ${new Date().toLocaleDateString('nl-NL')}${extractedData.confidence ? ` (${Math.round(extractedData.confidence * 100)}% betrouwbaarheid)` : ''}`
       };
 
       console.log('💾 Schuld opslaan:', debtData);
@@ -526,12 +479,46 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
                       </p>
                     </div>
                   )}
+
+                  {/* Payment details section */}
+                  {(extractedData.iban || extractedData.payment_reference) && (
+                    <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl p-4 space-y-3">
+                      <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">💳 BETALINGSGEGEVENS</p>
+                      {extractedData.iban && (
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">IBAN</p>
+                          <p className="text-base font-mono font-medium text-gray-900 dark:text-white">
+                            {extractedData.iban}
+                          </p>
+                        </div>
+                      )}
+                      {extractedData.payment_reference && (
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">Betalingskenmerk</p>
+                          <p className="text-base font-mono font-medium text-gray-900 dark:text-white">
+                            {extractedData.payment_reference}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                <div className="bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-xl p-4">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-400">
-                    💡 <strong>Controleer altijd:</strong> AI is slim, maar kan fouten maken. Check of de bedragen kloppen met je brief!
-                  </p>
+                <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-4 flex items-start gap-3">
+                  <span className="text-xl">🤖</span>
+                  <div>
+                    <p className="text-sm text-emerald-800 dark:text-emerald-400 font-medium">
+                      Gescand met Claude Haiku AI
+                      {extractedData.confidence && (
+                        <span className="ml-2 text-xs bg-emerald-100 dark:bg-emerald-500/20 px-2 py-0.5 rounded-full">
+                          {Math.round(extractedData.confidence * 100)}% zeker
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-xs text-emerald-700 dark:text-emerald-500 mt-1">
+                      Controleer altijd of de bedragen kloppen met je brief!
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex gap-3 pt-2">
