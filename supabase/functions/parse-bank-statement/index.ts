@@ -65,11 +65,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { file_data, file_type, file_name } = await req.json();
-
-    if (!file_data) {
-      throw new Error('No file data provided');
-    }
+    const { file_data, file_type, file_name, files } = await req.json();
 
     // Get Anthropic API key from environment
     const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
@@ -77,47 +73,85 @@ Deno.serve(async (req: Request) => {
       throw new Error('Anthropic API key not configured');
     }
 
-    // For CSV files, decode and parse directly with Claude
-    let contentType: 'image' | 'document' | 'text' = 'image';
-    let mediaType = file_type;
+    // Build message content - support both single file and multiple files
+    let messageContent: any[] = [];
 
-    if (file_type === 'application/pdf') {
-      contentType = 'document';
-      mediaType = 'application/pdf';
-    } else if (file_type === 'text/csv' || file_name?.endsWith('.csv')) {
-      contentType = 'text';
+    // Handle multiple files (new format)
+    if (files && Array.isArray(files) && files.length > 0) {
+      for (const file of files) {
+        const fType = file.file_type || file.type || 'image/jpeg';
+        const fData = file.file_data || file.data;
+        const fName = file.file_name || file.name || '';
+
+        if (!fData) continue;
+
+        if (fType === 'text/csv' || fName?.endsWith('.csv')) {
+          // For CSV, decode and send as text
+          const decoded = atob(fData);
+          messageContent.push({
+            type: 'text',
+            text: `Bank statement CSV (${fName}):\n\n${decoded}`
+          });
+        } else if (fType === 'application/pdf') {
+          messageContent.push({
+            type: 'document',
+            source: {
+              type: 'base64',
+              media_type: 'application/pdf',
+              data: fData,
+            },
+          });
+        } else {
+          // Images
+          messageContent.push({
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: fType,
+              data: fData,
+            },
+          });
+        }
+      }
     }
-
-    let messageContent: any[];
-
-    if (contentType === 'text') {
-      // For CSV, decode and send as text
-      const decoded = atob(file_data);
-      messageContent = [
-        {
+    // Handle single file (legacy format)
+    else if (file_data) {
+      if (file_type === 'text/csv' || file_name?.endsWith('.csv')) {
+        const decoded = atob(file_data);
+        messageContent.push({
           type: 'text',
           text: `Parse this bank statement CSV and extract all transactions:\n\n${decoded}`
-        }
-      ];
-    } else {
-      // For images and PDFs, send as base64
-      messageContent = [
-        {
-          type: contentType,
+        });
+      } else if (file_type === 'application/pdf') {
+        messageContent.push({
+          type: 'document',
           source: {
             type: 'base64',
-            media_type: mediaType,
+            media_type: 'application/pdf',
             data: file_data,
           },
-        },
-        {
-          type: 'text',
-          text: 'Parse this Dutch bank statement and extract all transactions. Return ONLY a valid JSON object.'
-        }
-      ];
+        });
+      } else {
+        messageContent.push({
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: file_type || 'image/jpeg',
+            data: file_data,
+          },
+        });
+      }
+    } else {
+      throw new Error('No file data provided');
     }
 
-    // Use Claude to parse the bank statement
+    // Add instruction text
+    messageContent.push({
+      type: 'text',
+      text: `Analyseer ${messageContent.length > 1 ? 'deze bankafschriften' : 'dit bankafschrift'} en extraheer ALLE transacties. Return ALLEEN een valide JSON object.`
+    });
+
+    // Use Claude Haiku for fast, cheap parsing
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -126,7 +160,7 @@ Deno.serve(async (req: Request) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-3-5-haiku-20241022',
         max_tokens: 4000,
         messages: [
           {

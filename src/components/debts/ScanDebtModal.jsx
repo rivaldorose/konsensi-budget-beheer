@@ -15,19 +15,20 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-    // Check file type
+    // Check file types and sizes
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-    if (!validTypes.includes(file.type)) {
+    const invalidFiles = files.filter(f => !validTypes.includes(f.type));
+    if (invalidFiles.length > 0) {
       setError('Alleen foto\'s (JPG, PNG) en PDF\'s zijn toegestaan');
       return;
     }
 
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Bestand is te groot (max 10MB)');
+    const oversizedFiles = files.filter(f => f.size > 10 * 1024 * 1024);
+    if (oversizedFiles.length > 0) {
+      setError('Eén of meer bestanden zijn te groot (max 10MB per bestand)');
       return;
     }
 
@@ -35,12 +36,16 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
     setError(null);
 
     try {
-      // Upload de file
-      const { file_url } = await UploadFile({ file });
-      setUploadedPages([...uploadedPages, file_url]);
+      // Upload all files
+      const uploadedUrls = [];
+      for (const file of files) {
+        const { file_url } = await UploadFile({ file });
+        uploadedUrls.push(file_url);
+      }
+      setUploadedPages([...uploadedPages, ...uploadedUrls]);
       setStep('scanned');
     } catch (err) {
-      console.error("Error uploading file:", err);
+      console.error("Error uploading files:", err);
       setError('Er ging iets mis bij het uploaden. Probeer het opnieuw.');
     } finally {
       setIsProcessing(false);
@@ -116,7 +121,7 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
         contact_person_details: extractedData.contact_details || '',
         iban: extractedData.iban || '',
         payment_reference: extractedData.payment_reference || '',
-        notes: `Gescand met AI op ${new Date().toLocaleDateString('nl-NL')}${extractedData.confidence ? ` (${Math.round(extractedData.confidence * 100)}% betrouwbaarheid)` : ''}`
+        notes: `Gescand uit brief op ${new Date().toLocaleDateString('nl-NL')}`
       };
 
       console.log('💾 Schuld opslaan:', debtData);
@@ -215,6 +220,7 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
                     <input
                       type="file"
                       accept="image/*,.pdf"
+                      multiple
                       onChange={handleFileUpload}
                       className="hidden"
                       disabled={isProcessing}
@@ -224,8 +230,8 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
                         <div className="absolute inset-0 bg-emerald-500 blur-xl opacity-20 rounded-full group-hover:opacity-30 transition-opacity"></div>
                         <Upload className="w-12 h-12 text-emerald-500 relative z-10" />
                       </div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-1">Bestand Uploaden</h3>
-                      <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">Selecteer een PDF of afbeelding van je computer.</p>
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-1">Bestanden Uploaden</h3>
+                      <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">Selecteer meerdere PDF's of afbeeldingen (voor- en achterkant).</p>
                     </div>
                   </label>
                 </div>
@@ -504,21 +510,10 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
                   )}
                 </div>
 
-                <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-4 flex items-start gap-3">
-                  <span className="text-xl">🤖</span>
-                  <div>
-                    <p className="text-sm text-emerald-800 dark:text-emerald-400 font-medium">
-                      Gescand met Claude Haiku AI
-                      {extractedData.confidence && (
-                        <span className="ml-2 text-xs bg-emerald-100 dark:bg-emerald-500/20 px-2 py-0.5 rounded-full">
-                          {Math.round(extractedData.confidence * 100)}% zeker
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-xs text-emerald-700 dark:text-emerald-500 mt-1">
-                      Controleer altijd of de bedragen kloppen met je brief!
-                    </p>
-                  </div>
+                <div className="bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-xl p-4">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-400">
+                    💡 <strong>Controleer altijd:</strong> Check of de bedragen kloppen met je brief voordat je deze toevoegt.
+                  </p>
                 </div>
 
                 <div className="flex gap-3 pt-2">
