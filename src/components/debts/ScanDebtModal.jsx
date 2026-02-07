@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Check } from "lucide-react";
+import { Camera, Upload, FileText, Loader2, CheckCircle2, AlertCircle, Check } from "lucide-react";
 import { UploadFile } from "@/api/integrations";
 import { User } from "@/api/entities";
 import { supabase } from "@/lib/supabase";
@@ -163,16 +163,9 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl mx-4 max-h-[90vh] flex flex-col p-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] overflow-hidden">
+      <DialogContent className="max-w-2xl mx-4 max-h-[90vh] flex flex-col p-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] overflow-hidden [&>button]:top-6 [&>button]:right-6 [&>button]:text-gray-400 [&>button]:dark:text-gray-500 [&>button]:hover:text-gray-600 [&>button]:dark:hover:text-white [&>button]:transition-colors">
         {/* Custom Header */}
         <div className="relative p-6 md:p-10 pb-0">
-          <button
-            onClick={handleClose}
-            className="absolute top-6 right-6 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-
           <div className="text-center mb-8">
             <h2 className="font-bold text-[28px] text-gray-900 dark:text-white mb-3">
               Scan je Brief
