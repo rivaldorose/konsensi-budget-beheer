@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function GamificationStats({ daysOnTrack = 0, savingsPotAmount = 0 }) {
+export default function GamificationStats({ daysOnTrack = 0, savingsPotAmount = 0, savingsPotsCount = 0 }) {
   return (
     <div className="grid grid-cols-2 gap-4">
       {/* Days On Track */}
@@ -18,7 +18,7 @@ export default function GamificationStats({ daysOnTrack = 0, savingsPotAmount = 
           💧
         </div>
         <p className="font-header font-bold text-2xl text-blue-600 dark:text-accent-blue">+€{savingsPotAmount.toFixed(2)}</p>
-        <p className="text-xs font-bold text-blue-400 dark:text-accent-blue/70 uppercase tracking-wide">Savings Pot</p>
+        <p className="text-xs font-bold text-blue-400 dark:text-accent-blue/70 uppercase tracking-wide">Spaarpot ({savingsPotsCount})</p>
       </div>
     </div>
   );
