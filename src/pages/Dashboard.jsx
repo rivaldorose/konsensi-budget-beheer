@@ -813,12 +813,14 @@ export default function Dashboard() {
 
         {/* Gamification Stats - Always show */}
         {(() => {
-          // Calculate savings pot amount from pots
-          const savingsPotAmount = (pots || []).reduce((sum, pot) => {
+          // Filter only savings pots (pot_type === 'savings') and calculate total
+          const savingsPots = (pots || []).filter(pot => pot?.pot_type === 'savings');
+          const savingsPotAmount = savingsPots.reduce((sum, pot) => {
             return sum + (Number(pot?.current_amount) || 0);
-          }, 0); // Show €0 if no pots
+          }, 0);
+          const savingsPotsCount = savingsPots.length;
 
-          return <GamificationStats daysOnTrack={loginStreak} savingsPotAmount={savingsPotAmount} />;
+          return <GamificationStats daysOnTrack={loginStreak} savingsPotAmount={savingsPotAmount} savingsPotsCount={savingsPotsCount} />;
         })()}
 
         {/* Upcoming Payments - Always show */}
