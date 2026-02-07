@@ -14,6 +14,7 @@ import PotjesInfoModal from "../components/potjes/PotjesInfoModal";
 import PotDepositModal from "../components/potjes/PotDepositModal";
 import PotActivityModal from "../components/potjes/PotActivityModal";
 import PotDetailModal from "../components/potjes/PotDetailModal";
+import CreatePotModal from "../components/potjes/CreatePotModal";
 
 const getStartOfMonth = (date) => {
   const d = new Date(date);
@@ -59,6 +60,7 @@ export default function Potjes() {
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [detailPot, setDetailPot] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -626,7 +628,7 @@ export default function Potjes() {
             {/* Add New Pot Card */}
             <div
               className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#b2ff78] hover:bg-white dark:hover:bg-dark-card transition-all group min-h-[180px]"
-              onClick={() => setShowModal(true)}
+              onClick={() => setShowCreateModal(true)}
             >
               <div className="size-10 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center text-gray-300 dark:text-gray-600 mb-2 group-hover:bg-[#b2ff78]/20 group-hover:text-[#3D6456]">
                 <span className="material-symbols-outlined text-xl">add</span>
@@ -640,7 +642,7 @@ export default function Potjes() {
       {/* Floating Action Button */}
       <div className="fixed bottom-8 right-8 z-[60]">
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => setShowCreateModal(true)}
           className="bg-[#3D6456] text-white p-4 rounded-full shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center group"
         >
           <span className="material-symbols-outlined text-2xl">add</span>
@@ -694,6 +696,15 @@ export default function Potjes() {
           fetchData();
           setShowDetailModal(false);
           setDetailPot(null);
+        }}
+      />
+
+      <CreatePotModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreated={() => {
+          setShowCreateModal(false);
+          fetchData();
         }}
       />
     </div>
