@@ -347,8 +347,18 @@ export default function Potjes() {
     fetchData();
   }, [fetchData]);
 
-  // Get icon for pot
+  // Get icon for pot - first check if pot has explicit icon set
   const getPotIcon = (pot) => {
+    // If pot has an explicit icon set (Material Symbol name), use it
+    if (pot.icon && typeof pot.icon === 'string' && !pot.icon.includes(' ')) {
+      // Check if it's a Material Symbol (no spaces, not an emoji)
+      const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+      if (!emojiRegex.test(pot.icon)) {
+        return pot.icon;
+      }
+    }
+
+    // Fallback logic
     if (pot.pot_type === 'btw_reserve') return 'lock';
     if (pot.pot_type === 'savings') {
       const iconMatch = POT_ICONS.find(i => pot.name?.toLowerCase().includes(i.label.toLowerCase()));
