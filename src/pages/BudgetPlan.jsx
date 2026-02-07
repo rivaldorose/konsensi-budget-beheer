@@ -161,31 +161,54 @@ export default function BudgetPlan() {
                 sum + (parseFloat(cost.amount) || 0), 0
             );
 
-            // Load debts
+            // Load debts with active payment plans
             const debtsData = await Debt.filter({
                 status: 'betalingsregeling',
                 user_id: userData.id
             });
 
-            // Filter debts: only show if the payment_plan_date has started (not future)
-            // AND if the recurring payment day falls within this period
+            // Filter debts: only show if payment is due in this period
+            // Rule: payment_plan_date must have STARTED (not future) AND payment falls in period
             const filteredDebts = debtsData.filter(debt => {
                 if (!debt.payment_plan_date) return false;
 
                 const planStartDate = new Date(debt.payment_plan_date);
                 planStartDate.setHours(0, 0, 0, 0);
 
-                // Don't show if the plan hasn't started yet
-                if (planStartDate > endDate) return false;
+                // CRITICAL: Don't show if the plan starts AFTER this period ends
+                // Example: Plan starts 12 maart, viewing februari → don't show
+                if (planStartDate > endDate) {
+                    console.log(`[BudgetPlan] Skipping ${debt.creditor_name}: plan starts ${planStartDate.toISOString()} after period end ${endDate.toISOString()}`);
+                    return false;
+                }
 
-                // Get the payment day of month from the plan start date
+                // For monthly view: check if we're in a month where payment should occur
+                // The first payment is on payment_plan_date, then monthly on that day
                 const paymentDay = planStartDate.getDate();
+                const planStartMonth = planStartDate.getMonth();
+                const planStartYear = planStartDate.getFullYear();
 
-                // Create the payment date for the CURRENT selected month
-                const paymentDateThisMonth = new Date(today.getFullYear(), today.getMonth(), paymentDay);
+                // Calculate payment date for the selected period's month
+                const selectedYear = startDate.getFullYear();
+                const selectedMonth = startDate.getMonth();
 
-                // Check if payment date falls within the selected period
-                return paymentDateThisMonth >= startDate && paymentDateThisMonth <= endDate;
+                // If selected month is before plan start month (same year) or before plan start year
+                if (selectedYear < planStartYear ||
+                    (selectedYear === planStartYear && selectedMonth < planStartMonth)) {
+                    console.log(`[BudgetPlan] Skipping ${debt.creditor_name}: selected month ${selectedMonth}/${selectedYear} is before plan start ${planStartMonth}/${planStartYear}`);
+                    return false;
+                }
+
+                // Payment falls on paymentDay of each month starting from plan start
+                const paymentDateThisMonth = new Date(selectedYear, selectedMonth, paymentDay);
+                paymentDateThisMonth.setHours(12, 0, 0, 0); // Noon to avoid timezone issues
+
+                // Check if this payment date falls within the selected period
+                const inPeriod = paymentDateThisMonth >= startDate && paymentDateThisMonth <= endDate;
+
+                console.log(`[BudgetPlan] ${debt.creditor_name}: payment ${paymentDateThisMonth.toISOString()} in period ${startDate.toISOString()} - ${endDate.toISOString()}: ${inPeriod}`);
+
+                return inPeriod;
             });
 
             const debtPaymentsTotal = filteredDebts.reduce((sum, debt) =>
@@ -249,7 +272,7 @@ export default function BudgetPlan() {
                     date: debt.payment_plan_date,
                     category: 'Betalingsregeling'
                 })),
-                ...filteredTransactions.filter(tx => tx && tx.type === 'expense').map(tx => ({
+                ...filteredTransactions.filter(tx => tx && tx.type === 'expense' && tx.category !== 'debt_payments').map(tx => ({
                     id: `tx-${tx.id}`,
                     type: 'expense',
                     description: tx.description || 'Uitgave',
@@ -327,18 +350,26 @@ export default function BudgetPlan() {
 
             switch (type) {
                 case 'income':
+                    // Delete income record
                     await Income.delete(id);
                     break;
+
                 case 'cost':
-                    await MonthlyCost.delete(id);
+                    // Deactivate monthly cost (keep for history, don't delete)
+                    await MonthlyCost.update(id, { status: 'inactief' });
                     break;
+
                 case 'debt':
-                    // Don't delete the debt itself, just skip for now
-                    // Debts should be managed on the debts page
+                    // Cancel payment plan by changing status back to 'open'
+                    // This removes it from the budget but keeps the debt record
+                    await Debt.update(id, { status: 'open', payment_plan_date: null, monthly_payment: null });
                     break;
+
                 case 'tx':
+                    // Delete regular expense transaction
                     await Transaction.delete(id);
                     break;
+
                 default:
                     console.error('Unknown transaction type:', type);
             }
@@ -822,18 +853,18 @@ export default function BudgetPlan() {
                                                     ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400'
                                                     : 'bg-gray-200 dark:bg-[#333] text-gray-600 dark:text-gray-300'
                                             }`}>Voltooid</span>
-                                            {!tx.id.startsWith('debt-') && (
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setDeleteConfirm({ show: true, transaction: tx });
-                                                    }}
-                                                    className="opacity-0 group-hover:opacity-100 size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 transition-all"
-                                                    title="Verwijderen"
-                                                >
-                                                    <span className="material-symbols-outlined text-[20px]">delete</span>
-                                                </button>
-                                            )}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setDeleteConfirm({ show: true, transaction: tx });
+                                                }}
+                                                className="opacity-0 group-hover:opacity-100 size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 transition-all"
+                                                title={tx.id.startsWith('debt-') ? 'Regeling stoppen' : 'Verwijderen'}
+                                            >
+                                                <span className="material-symbols-outlined text-[20px]">
+                                                    {tx.id.startsWith('debt-') ? 'cancel' : 'delete'}
+                                                </span>
+                                            </button>
                                 </div>
                                 </div>
                                 );
@@ -898,12 +929,23 @@ export default function BudgetPlan() {
                                 <span className="material-symbols-outlined text-red-600 dark:text-red-400 text-2xl">delete</span>
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-[#1F2937] dark:text-white">Transactie verwijderen</h3>
-                                <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">Deze actie kan niet ongedaan worden gemaakt</p>
+                                <h3 className="text-lg font-bold text-[#1F2937] dark:text-white">
+                                    {deleteConfirm.transaction?.id?.startsWith('debt-') ? 'Betalingsregeling stoppen' : 'Transactie verwijderen'}
+                                </h3>
+                                <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">
+                                    {deleteConfirm.transaction?.id?.startsWith('debt-')
+                                        ? 'De schuld blijft bestaan, alleen de regeling wordt gestopt'
+                                        : deleteConfirm.transaction?.id?.startsWith('cost-')
+                                        ? 'De vaste last wordt gedeactiveerd'
+                                        : 'Deze actie kan niet ongedaan worden gemaakt'}
+                                </p>
                             </div>
                         </div>
                         <p className="text-gray-600 dark:text-gray-300 mb-6">
-                            Weet je zeker dat je <span className="font-bold">{deleteConfirm.transaction?.description}</span> van {formatCurrency(deleteConfirm.transaction?.amount || 0)} wilt verwijderen?
+                            {deleteConfirm.transaction?.id?.startsWith('debt-')
+                                ? <>Weet je zeker dat je de betalingsregeling voor <span className="font-bold">{deleteConfirm.transaction?.description}</span> van {formatCurrency(deleteConfirm.transaction?.amount || 0)}/maand wilt stoppen?</>
+                                : <>Weet je zeker dat je <span className="font-bold">{deleteConfirm.transaction?.description}</span> van {formatCurrency(deleteConfirm.transaction?.amount || 0)} wilt verwijderen?</>
+                            }
                         </p>
                         <div className="flex gap-3">
                             <button
