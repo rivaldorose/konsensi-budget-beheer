@@ -259,7 +259,7 @@ Geef tips in het Nederlands, max 1 zin per tip. Focus op actiegerichte adviezen.
   };
 
   const getPayoffDate = (months) => {
-    if (months === Infinity || months > 360) return 'Niet berekend';
+    if (!months || isNaN(months) || months === Infinity || months > 360) return 'Niet berekend';
     const date = new Date();
     date.setMonth(date.getMonth() + months);
     return date.toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' });
