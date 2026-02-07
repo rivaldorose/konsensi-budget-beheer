@@ -14,11 +14,25 @@ import AddDocumentModal from './AddDocumentModal';
 import ArrangementStappenplanModal from './ArrangementStappenplanModal';
 
 const formatDateShort = (date) => {
-  return new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(date));
+  if (!date) return '-';
+  try {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '-';
+    return new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+  } catch {
+    return '-';
+  }
 };
 
 const formatDateNumeric = (date) => {
-  return new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'numeric', year: 'numeric' }).format(new Date(date));
+  if (!date) return '-';
+  try {
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '-';
+    return new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'numeric', year: 'numeric' }).format(d);
+  } catch {
+    return '-';
+  }
 };
 
 const urgencyLevels = {
@@ -1027,7 +1041,7 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                                 <span className="font-bold text-blue-700 dark:text-accent-blue">{formatCurrency(currentDebt.monthly_payment)}/mnd</span>
                               </div>
                             )}
-                            {currentDebt.payment_plan_date && (
+                            {currentDebt.payment_plan_date && !isNaN(new Date(currentDebt.payment_plan_date).getTime()) && (
                               <div className="flex justify-between items-center text-sm">
                                 <span className="text-text-muted dark:text-text-secondary">Betaaldatum:</span>
                                 <span className="font-medium text-text-main dark:text-text-primary">Elke {new Date(currentDebt.payment_plan_date).getDate()}e v/d maand</span>
