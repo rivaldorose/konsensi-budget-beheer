@@ -329,6 +329,9 @@ export default function Login() {
         provider: provider,
         options: {
           redirectTo: `${window.location.origin}/Dashboard`,
+          queryParams: {
+            prompt: 'select_account', // Force Google to show account picker
+          },
         },
       });
 
