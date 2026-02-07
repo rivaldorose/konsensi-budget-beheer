@@ -13,6 +13,7 @@ import PotjeModal from "../components/potjes/PotjeModal";
 import PotjesInfoModal from "../components/potjes/PotjesInfoModal";
 import PotDepositModal from "../components/potjes/PotDepositModal";
 import PotActivityModal from "../components/potjes/PotActivityModal";
+import PotDetailModal from "../components/potjes/PotDetailModal";
 
 const getStartOfMonth = (date) => {
   const d = new Date(date);
@@ -56,6 +57,8 @@ export default function Potjes() {
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [activityPot, setActivityPot] = useState(null);
   const [showActivityModal, setShowActivityModal] = useState(false);
+  const [detailPot, setDetailPot] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const { toast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -303,8 +306,14 @@ export default function Potjes() {
   }, [potjes]);
 
   const handleSelectPot = useCallback((pot) => {
-    setSelectedPot(pot);
-    setShowModal(true);
+    // Open detail modal for savings pots, edit modal for expense pots
+    if (pot.pot_type === 'savings' || pot.pot_type === 'btw_reserve') {
+      setDetailPot(pot);
+      setShowDetailModal(true);
+    } else {
+      setSelectedPot(pot);
+      setShowModal(true);
+    }
   }, []);
 
   const handleCloseModal = useCallback(() => {
@@ -672,6 +681,20 @@ export default function Potjes() {
         }}
         spent={activityPot ? (potjeSpendings[activityPot.id] || 0) : 0}
         onTransactionDeleted={handleTransactionDeleted}
+      />
+
+      <PotDetailModal
+        pot={detailPot}
+        isOpen={showDetailModal}
+        onClose={() => {
+          setShowDetailModal(false);
+          setDetailPot(null);
+        }}
+        onUpdate={() => {
+          fetchData();
+          setShowDetailModal(false);
+          setDetailPot(null);
+        }}
       />
     </div>
   );

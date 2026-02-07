@@ -48,15 +48,15 @@ export default function PotjesInfoModal({ isOpen, onClose, notifications }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] bg-white dark:bg-dark-card border-gray-200 dark:border-dark-border flex flex-col overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-xl text-[#131d0c] dark:text-text-primary">
             <span className="material-symbols-outlined text-accent-blue dark:text-accent-blue !text-[24px]">menu_book</span>
             Over Potjes & de NIBUD-methode
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[70vh] pr-4">
+        <ScrollArea className="flex-1 min-h-0 pr-4 overflow-y-auto">
           <div className="py-4">
             <Section icon="savings" title="Wat is de NIBUD-methode?">
               <p className="text-sm text-gray-700 dark:text-text-secondary leading-relaxed">
@@ -145,7 +145,7 @@ export default function PotjesInfoModal({ isOpen, onClose, notifications }) {
           </div>
         </ScrollArea>
 
-        <DialogFooter className="pt-4 border-t border-gray-100 dark:border-dark-border">
+        <DialogFooter className="flex-shrink-0 pt-4 border-t border-gray-100 dark:border-dark-border">
           <Button
             onClick={onClose}
             className="bg-primary dark:bg-primary-green text-white dark:text-dark-bg hover:bg-primary-dark dark:hover:bg-light-green font-semibold px-6 py-2 rounded-xl"
