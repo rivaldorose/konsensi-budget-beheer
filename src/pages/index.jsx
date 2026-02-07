@@ -3,7 +3,7 @@ import Layout from "./Layout.jsx";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
-// Loading fallback component - syncs with theme immediately to prevent flash
+// Loading fallback component - minimal branded loader to prevent flash
 const LoadingFallback = () => {
     // Apply dark mode class immediately based on localStorage/system preference
     React.useEffect(() => {
@@ -15,10 +15,20 @@ const LoadingFallback = () => {
     }, []);
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a] flex items-center justify-center">
+        <div className="min-h-screen bg-[#f8f9fa] dark:bg-[#0f0f0f] flex items-center justify-center">
             <div className="text-center">
-                <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400 dark:border-gray-500"></div>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mt-4">Laden...</p>
+                {/* Konsensi logo/brand mark */}
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg">
+                    <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                {/* Simple pulse animation instead of spinner */}
+                <div className="flex justify-center gap-1">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                </div>
             </div>
         </div>
     );
