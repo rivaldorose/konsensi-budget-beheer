@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,343 +17,49 @@ import { formatCurrency } from "@/components/utils/formatters";
 import { gamificationService, XP_REWARDS } from "@/services/gamificationService";
 import { supabase } from "@/lib/supabase";
 
-// Parse PDF text to extract payment data
-async function parsePdfText(file) {
+// Parse payment document using Claude AI via Edge Function
+async function parsePaymentWithClaude(file) {
+  console.log('[Claude Parser] Starting Claude AI parsing for:', file.name);
+
   try {
-    console.log('[PDF Parser] Starting PDF parsing for:', file.name);
-
-    // Dynamically import pdf.js (version 4.4.168)
-    const pdfjsLib = await import('pdfjs-dist');
-    console.log('[PDF Parser] pdf.js version:', pdfjsLib.version);
-
-    // Set worker source - use matching CDN version (4.4.168)
-    const workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
-    console.log('[PDF Parser] Setting worker URL:', workerSrc);
-    pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
-
-    // Read file as ArrayBuffer
+    // Convert file to base64
     const arrayBuffer = await file.arrayBuffer();
-    console.log('[PDF Parser] File loaded, size:', arrayBuffer.byteLength);
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
 
-    // Load PDF document
-    let pdf;
-    try {
-      pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      console.log('[PDF Parser] PDF loaded successfully with worker');
-    } catch (workerError) {
-      console.warn('[PDF Parser] Worker failed, trying without worker:', workerError.message);
-      // Fallback: try without worker
-      pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-      pdf = await pdfjsLib.getDocument({
-        data: arrayBuffer,
-        disableWorker: true
-      }).promise;
-      console.log('[PDF Parser] PDF loaded successfully without worker');
+    console.log('[Claude Parser] File converted to base64, size:', base64.length);
+
+    // Call the Edge Function
+    const { data, error } = await supabase.functions.invoke('parse-payment-document', {
+      body: {
+        fileBase64: base64,
+        mimeType: file.type,
+        fileName: file.name
+      }
+    });
+
+    if (error) {
+      console.error('[Claude Parser] Edge Function error:', error);
+      throw new Error(error.message || 'Fout bij het verwerken van document');
     }
 
-    if (!pdf) {
-      throw new Error('Kon PDF niet laden');
+    if (data?.status === 'error') {
+      console.error('[Claude Parser] API returned error:', data.details);
+      throw new Error(data.details || 'Fout bij het analyseren van document');
     }
 
-    console.log('[PDF Parser] PDF loaded, pages:', pdf.numPages);
+    console.log('[Claude Parser] Claude response:', data);
 
-    let fullText = '';
-    let structuredItems = [];
-
-    // Extract text from each page
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-
-      // Collect items with position info for better parsing
-      content.items.forEach(item => {
-        if (item.str && item.str.trim()) {
-          structuredItems.push({
-            text: item.str,
-            x: item.transform ? item.transform[4] : 0,
-            y: item.transform ? item.transform[5] : 0,
-          });
-          fullText += item.str + ' ';
-        }
-      });
-      fullText += '\n';
-    }
-
-    console.log('[PDF Parser] Extracted text length:', fullText.length);
-    console.log('[PDF Parser] First 1000 chars:', fullText.substring(0, 1000));
-    console.log('[PDF Parser] Structured items count:', structuredItems.length);
-
-    if (fullText.length < 10) {
-      console.warn('[PDF Parser] Very little text extracted, PDF might be image-based');
-      throw new Error('PDF bevat geen leesbare tekst (mogelijk een gescande afbeelding)');
-    }
-
-    return extractPaymentData(fullText, structuredItems);
+    // Return the extracted data
+    return {
+      amount: data?.output?.amount || null,
+      date: data?.output?.date || null,
+      description: data?.output?.description || null,
+      method: data?.output?.payment_method || null
+    };
   } catch (error) {
-    console.error('[PDF Parser] Error:', error);
+    console.error('[Claude Parser] Error:', error);
     throw error;
   }
-}
-
-// Parse Dutch number format: "1.234,56" or "1234,56" or "€ 50,00" -> 1234.56
-function parseDutchNumber(str) {
-  if (!str) return null;
-
-  // Remove currency symbols and whitespace
-  let cleaned = str.replace(/[€\s]/g, '').trim();
-
-  // Handle negative amounts (often shown with - or minus)
-  const isNegative = cleaned.startsWith('-') || cleaned.includes('−');
-  cleaned = cleaned.replace(/[-−]/g, '');
-
-  // Check if it's Dutch format (comma as decimal separator)
-  if (cleaned.includes(',')) {
-    // Remove thousand separators (dots) and replace comma with dot
-    cleaned = cleaned.replace(/\./g, '').replace(',', '.');
-  }
-
-  const num = parseFloat(cleaned);
-  if (isNaN(num) || num <= 0 || num > 1000000) return null;
-
-  return isNegative ? -num : num;
-}
-
-// Check if a string looks like a date pattern (to avoid parsing dates as amounts)
-function looksLikeDate(str) {
-  if (!str) return false;
-  const cleaned = str.trim();
-
-  // Common date patterns that should NOT be treated as amounts
-  const datePatterns = [
-    /^\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}$/,  // DD-MM-YYYY or similar
-    /^\d{4}[-/.]\d{1,2}[-/.]\d{2,4}$/,    // YYYY-MM-DD
-    /^\d{1,2}\s+(jan|feb|mrt|apr|mei|jun|jul|aug|sep|okt|nov|dec)/i,  // Dutch month names
-    /\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4}/,    // Date anywhere in string
-    /\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/,      // ISO date anywhere in string
-  ];
-
-  if (datePatterns.some(p => p.test(cleaned))) {
-    return true;
-  }
-
-  // Check if the number could be a date component (day, month, year)
-  // Dates like "05-02-2026" get parsed as "5.02" = 5.02 which is wrong
-  // If we see patterns like XX-XX or XX-XXXX, it's likely a date
-  if (/\d{1,2}[-/.]\d{2,4}/.test(cleaned) || /\d{2,4}[-/.]\d{1,2}/.test(cleaned)) {
-    return true;
-  }
-
-  return false;
-}
-
-// Check if a number is suspiciously small (likely a date fragment like 5.02 from 05-02-2026)
-function isSuspiciouslySmallAmount(amount, context) {
-  // If amount is very small (< 20) and context contains date-like patterns, skip it
-  if (amount < 20) {
-    // Check for nearby date indicators in context
-    if (/\d{4}/.test(context)) return true; // Year nearby
-    if (/[-/.]/.test(context) && /\d{1,2}[-/.]\d/.test(context)) return true; // Date separator with numbers
-  }
-  return false;
-}
-
-// Extract payment info from text using common Dutch bank statement patterns
-function extractPaymentData(text, structuredItems = []) {
-  const result = { amount: null, date: null, description: null, method: null };
-
-  // Normalize text for better matching
-  const normalizedText = text.replace(/\s+/g, ' ').trim();
-
-  console.log('[PDF Parser] Parsing text for payment data...');
-
-  // ===== AMOUNT EXTRACTION =====
-  // More comprehensive patterns for Dutch bank statements
-  const amountPatterns = [
-    // Specific labeled amounts (highest priority)
-    /(?:bedrag|amount|totaal|total|te\s*betalen|openstaand|saldo|factuurbedrag|netto|bruto)[:\s]*[€]?\s*([\d.,]+)/gi,
-    /(?:af|bij|credit|debet)[:\s]*[€]?\s*([\d.,]+)/gi,
-
-    // Currency symbol patterns (most reliable)
-    /€\s*([\d]+[.,][\d]{2})/g,
-    /EUR\s*([\d]+[.,][\d]{2})/gi,
-
-    // Amounts at end of lines (common in statements)
-    /([\d]{1,3}(?:[.,]\d{3})*[.,]\d{2})\s*(?:€|EUR)?$/gm,
-
-    // Dutch format with thousand separator: 1.234,56 (NOT dates like 05-02-2026)
-    /\b([\d]{1,3}(?:\.\d{3})+,\d{2})\b/g,  // Must have thousand separator
-
-    // Simple amounts with comma decimal (but avoid date-like patterns)
-    /(?:^|[^\d-/.])([\d]{2,},\d{2})(?:[^\d-/.]|$)/g,  // 123,45 but not 05-02,20
-  ];
-
-  // Collect all potential amounts, filtering out date-like patterns
-  const foundAmounts = [];
-  for (const pattern of amountPatterns) {
-    const matches = normalizedText.matchAll(pattern);
-    for (const match of matches) {
-      const matchStr = match[1];
-      const fullContext = match[0];
-
-      // Skip if this looks like a date
-      if (looksLikeDate(fullContext) || looksLikeDate(matchStr)) {
-        console.log('[PDF Parser] Skipping date-like pattern:', fullContext);
-        continue;
-      }
-
-      // Skip patterns that look like date fragments (e.g., "02-2026" or "05-02")
-      if (/^\d{1,2}[-/.]\d{2,4}$/.test(matchStr) || /^\d{2,4}[-/.]\d{1,2}$/.test(matchStr)) {
-        console.log('[PDF Parser] Skipping date fragment:', matchStr);
-        continue;
-      }
-
-      // Get surrounding context (50 chars before and after) to check for date patterns
-      const matchIndex = normalizedText.indexOf(fullContext);
-      const surroundingContext = normalizedText.substring(
-        Math.max(0, matchIndex - 50),
-        Math.min(normalizedText.length, matchIndex + fullContext.length + 50)
-      );
-
-      const amount = parseDutchNumber(matchStr);
-
-      // Skip suspiciously small amounts that might be date fragments
-      if (amount && isSuspiciouslySmallAmount(amount, surroundingContext)) {
-        console.log('[PDF Parser] Skipping suspiciously small amount (likely date fragment):', amount, 'context:', surroundingContext.substring(0, 60));
-        continue;
-      }
-
-      if (amount && amount > 0.99 && amount < 100000) {  // Min €1 to avoid date parts
-        foundAmounts.push({ amount, context: fullContext, surroundingContext, priority: 0 });
-      }
-    }
-  }
-
-  // Prioritize amounts
-  foundAmounts.forEach(a => {
-    // Currency symbol = very high priority (most reliable indicator)
-    if (/€|EUR/i.test(a.context)) a.priority += 30;
-
-    // Labeled amounts = highest priority
-    if (/bedrag|totaal|betalen|factuurbedrag|te\s*voldoen/i.test(a.context)) a.priority += 25;
-
-    // Reasonable payment amount range
-    if (a.amount >= 50 && a.amount <= 10000) a.priority += 10;
-    else if (a.amount >= 10 && a.amount < 50) a.priority += 3;  // Lower priority for small amounts without € symbol
-    else if (a.amount < 10) a.priority -= 10;  // Very low priority for tiny amounts (likely date fragments)
-
-    // Penalize amounts that look like they could be date components
-    if (a.amount < 32 && a.amount > 0 && !/€|EUR/i.test(a.context)) {
-      // Could be a day of month - check if there's a year nearby
-      if (/20\d{2}/.test(a.surroundingContext || '')) {
-        a.priority -= 15;  // Likely a date
-        console.log('[PDF Parser] Penalizing potential date component:', a.amount);
-      }
-    }
-  });
-
-  // Sort by priority (highest first)
-  foundAmounts.sort((a, b) => b.priority - a.priority);
-
-  if (foundAmounts.length > 0) {
-    result.amount = foundAmounts[0].amount;
-    console.log('[PDF Parser] Found amount:', result.amount, 'from', foundAmounts.length, 'candidates');
-    console.log('[PDF Parser] Top candidates:', foundAmounts.slice(0, 3).map(a => `${a.amount} (priority: ${a.priority})`));
-  }
-
-  // ===== DATE EXTRACTION =====
-  const datePatterns = [
-    // DD-MM-YYYY or DD/MM/YYYY or DD.MM.YYYY
-    /\b(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})\b/g,
-    // YYYY-MM-DD
-    /\b(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})\b/g,
-    // Dutch written dates: "5 januari 2024"
-    /\b(\d{1,2})\s+(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\s+(\d{4})\b/gi,
-  ];
-
-  const monthNames = {
-    'januari': '01', 'februari': '02', 'maart': '03', 'april': '04',
-    'mei': '05', 'juni': '06', 'juli': '07', 'augustus': '08',
-    'september': '09', 'oktober': '10', 'november': '11', 'december': '12'
-  };
-
-  for (const pattern of datePatterns) {
-    const matches = normalizedText.matchAll(pattern);
-    for (const match of matches) {
-      let year, month, day;
-
-      if (match[2] && monthNames[match[2].toLowerCase()]) {
-        // Dutch written date
-        day = match[1].padStart(2, '0');
-        month = monthNames[match[2].toLowerCase()];
-        year = match[3];
-      } else if (match[1].length === 4) {
-        // YYYY-MM-DD format
-        year = match[1];
-        month = match[2].padStart(2, '0');
-        day = match[3].padStart(2, '0');
-      } else {
-        // DD-MM-YYYY format
-        day = match[1].padStart(2, '0');
-        month = match[2].padStart(2, '0');
-        year = match[3];
-      }
-
-      const dateStr = `${year}-${month}-${day}`;
-      const date = new Date(dateStr);
-
-      // Validate date is reasonable (between 2020 and next year)
-      if (!isNaN(date.getTime()) && date.getFullYear() >= 2020 && date.getFullYear() <= new Date().getFullYear() + 1) {
-        result.date = dateStr;
-        console.log('[PDF Parser] Found date:', result.date);
-        break;
-      }
-    }
-    if (result.date) break;
-  }
-
-  // ===== DESCRIPTION/REFERENCE EXTRACTION =====
-  const descPatterns = [
-    /(?:omschrijving|description)[:\s]*([^\n]{5,100})/gi,
-    /(?:kenmerk|reference|referentie)[:\s]*([^\n]{3,50})/gi,
-    /(?:betreft|subject)[:\s]*([^\n]{5,80})/gi,
-    /(?:mededeling|remark)[:\s]*([^\n]{5,100})/gi,
-    /(?:naam|name)[:\s]*([^\n]{3,50})/gi,
-    // IBAN can serve as reference
-    /\b([A-Z]{2}\d{2}[A-Z0-9]{4}\d{7}(?:[A-Z0-9])?)\b/g,
-  ];
-
-  for (const pattern of descPatterns) {
-    const match = normalizedText.match(pattern);
-    if (match && match[1]) {
-      const desc = match[1].trim();
-      // Clean up description
-      if (desc.length > 3 && !/^\d+$/.test(desc)) {
-        result.description = desc.substring(0, 100);
-        console.log('[PDF Parser] Found description:', result.description);
-        break;
-      }
-    }
-  }
-
-  // ===== PAYMENT METHOD DETECTION =====
-  const methodKeywords = {
-    'incasso': ['incasso', 'automatische incasso', 'sepa incasso', 'machtiging'],
-    'bank_transfer': ['overboeking', 'overschrijving', 'sepa overboeking', 'betaling', 'storting'],
-    'ideal': ['ideal', 'i.deal', 'online betaling'],
-    'contant': ['contant', 'cash', 'kas'],
-  };
-
-  const lowerText = normalizedText.toLowerCase();
-  for (const [method, keywords] of Object.entries(methodKeywords)) {
-    if (keywords.some(kw => lowerText.includes(kw))) {
-      result.method = method === 'ideal' ? 'bank_transfer' : method;
-      console.log('[PDF Parser] Detected payment method:', result.method);
-      break;
-    }
-  }
-
-  console.log('[PDF Parser] Final result:', result);
-  return result;
 }
 
 export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaymentAdded }) {
@@ -413,27 +119,30 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
     setSelectedFile(file);
     setExtractionResult(null);
 
-    if (file.type === 'application/pdf') {
-      await extractFromPdf(file);
-    }
+    // Use Claude AI for ALL file types (PDF and images)
+    await extractWithClaude(file);
   };
 
-  const extractFromPdf = async (file) => {
+  // Extract payment data using Claude AI via Edge Function
+  const extractWithClaude = async (file) => {
     setExtracting(true);
-    console.log('[PaymentModal] Starting PDF extraction for:', file.name, 'size:', file.size);
+    console.log('[PaymentModal] Starting Claude AI extraction for:', file.name, 'type:', file.type, 'size:', file.size);
 
     try {
-      const data = await parsePdfText(file);
-      console.log('[PaymentModal] PDF extraction result:', data);
+      const data = await parsePaymentWithClaude(file);
+      console.log('[PaymentModal] Claude extraction result:', data);
       setExtractionResult(data);
 
       let filled = 0;
       const filledFields = [];
 
       if (data.amount) {
-        setAmount(data.amount.toFixed(2));
-        filled++;
-        filledFields.push(`bedrag (€${data.amount.toFixed(2)})`);
+        const amountValue = typeof data.amount === 'number' ? data.amount : parseFloat(data.amount);
+        if (!isNaN(amountValue)) {
+          setAmount(amountValue.toFixed(2));
+          filled++;
+          filledFields.push(`bedrag (€${amountValue.toFixed(2)})`);
+        }
       }
       if (data.date) {
         setPaymentDate(data.date);
@@ -453,32 +162,22 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
 
       if (filled > 0) {
         toast({
-          title: `✅ ${filled} veld${filled > 1 ? 'en' : ''} automatisch ingevuld`,
+          title: `✨ ${filled} veld${filled > 1 ? 'en' : ''} automatisch ingevuld (AI)`,
           description: `Gevonden: ${filledFields.join(', ')}. Controleer en bevestig.`,
         });
       } else {
         toast({
-          title: "📄 PDF gelezen, geen betalingsgegevens gevonden",
+          title: "📄 Document gelezen, geen betalingsgegevens gevonden",
           description: "Dit kan een ander type document zijn. Vul de gegevens handmatig in.",
           variant: "destructive"
         });
       }
     } catch (error) {
-      console.error("[PaymentModal] Error parsing PDF:", error);
-
-      // Provide more specific error messages
-      let errorMessage = "Vul de gegevens handmatig in.";
-      if (error.message?.includes('gescande afbeelding')) {
-        errorMessage = "Deze PDF is een gescande afbeelding. Vul de gegevens handmatig in.";
-      } else if (error.message?.includes('worker')) {
-        errorMessage = "PDF library kon niet laden. Vul de gegevens handmatig in.";
-      } else if (error.message?.includes('Invalid PDF')) {
-        errorMessage = "Ongeldig PDF bestand. Controleer of het bestand correct is.";
-      }
+      console.error("[PaymentModal] Error with Claude parsing:", error);
 
       toast({
-        title: "📄 PDF kon niet worden gelezen",
-        description: errorMessage,
+        title: "📄 Document kon niet worden gelezen",
+        description: error.message || "Vul de gegevens handmatig in.",
         variant: "destructive"
       });
     } finally {
