@@ -168,6 +168,9 @@ export default function SignUp() {
         provider: provider,
         options: {
           redirectTo: `${window.location.origin}/onboarding`,
+          queryParams: {
+            prompt: 'select_account', // Force Google to show account picker
+          },
         },
       });
 
