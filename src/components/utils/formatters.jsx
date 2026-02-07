@@ -1,3 +1,15 @@
+// Safe date formatter to prevent "Invalid time value" RangeError
+export const formatDateSafe = (dateStr, options = {}) => {
+  if (!dateStr) return null;
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return null;
+    return date.toLocaleDateString('nl-NL', options);
+  } catch {
+    return null;
+  }
+};
+
 export const formatCurrency = (amount, options = {}) => {
   const {
     showCurrency = true,

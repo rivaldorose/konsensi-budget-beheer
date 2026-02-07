@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InvokeLLM } from '@/api/integrations';
-import { formatCurrency } from '@/components/utils/formatters';
+import { formatCurrency, formatDateSafe } from '@/components/utils/formatters';
 
 // Bereken maanden tot afbetaling
 const calculateMonthsToPayoff = (totalDebt, monthlyPayment, interestRate = 0) => {

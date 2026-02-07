@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
+import { formatDateSafe } from '@/components/utils/formatters';
 
 const SummaryRow = ({ label, value, onEdit, step }) => (
   <div className="flex justify-between items-start py-3 border-b border-gray-100 dark:border-[#2a2a2a] last:border-b-0">
@@ -59,9 +60,9 @@ export default function Step6Summary({ formData, goToStep }) {
             onEdit={goToStep}
             step={3}
         />
-         <SummaryRow 
-            label="Datum ontstaan" 
-            value={formData.origin_date ? new Date(formData.origin_date).toLocaleDateString('nl-NL') : ''}
+         <SummaryRow
+            label="Datum ontstaan"
+            value={formatDateSafe(formData.origin_date) || ''}
             onEdit={goToStep}
             step={4}
         />
