@@ -28,8 +28,8 @@ export function useCoachRelation(userId) {
           .eq("status", "actief")
           .single();
 
-        if (relationError && relationError.code !== "PGRST116") {
-          // PGRST116 = no rows found
+        // Ignore common errors: PGRST116 = no rows found, 403/42501 = RLS policy violation (user has no coach)
+        if (relationError && relationError.code !== "PGRST116" && relationError.code !== "42501" && relationError.message?.indexOf("403") === -1) {
           console.error("Error fetching coach relation:", relationError);
         }
 
@@ -82,7 +82,8 @@ export function useClientConversation(userId) {
         .eq("client_user_id", userId)
         .single();
 
-      if (error && error.code !== "PGRST116") {
+      // Ignore common errors: PGRST116 = no rows found, 403/42501 = RLS policy violation (user has no coach)
+      if (error && error.code !== "PGRST116" && error.code !== "42501" && error.message?.indexOf("403") === -1) {
         console.error("Error fetching conversation:", error);
       }
 
@@ -333,7 +334,8 @@ export function useUnreadMessageCount(userId) {
           .eq("client_user_id", userId)
           .single();
 
-        if (convError && convError.code !== "PGRST116") {
+        // Ignore common errors: PGRST116 = no rows found, 403/42501 = RLS policy violation (user has no coach)
+        if (convError && convError.code !== "PGRST116" && convError.code !== "42501" && convError.message?.indexOf("403") === -1) {
           console.error("Error fetching unread count:", convError);
         }
 
