@@ -409,7 +409,9 @@ Geef tips in het Nederlands, max 1 zin per tip. Focus op actiegerichte adviezen.
                                 <CheckCircle className="w-3 h-3 text-green-500" />
                                 <span className="truncate">{item.debtName}</span>
                                 <span className="text-gray-400 text-xs ml-auto">
-                                  {item.paidOffDate.toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' })}
+                                  {item.paidOffDate && !isNaN(item.paidOffDate.getTime())
+                                    ? item.paidOffDate.toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' })
+                                    : '-'}
                                 </span>
                               </div>
                             ))}
@@ -466,7 +468,9 @@ Geef tips in het Nederlands, max 1 zin per tip. Focus op actiegerichte adviezen.
                                 <CheckCircle className="w-3 h-3 text-green-500" />
                                 <span className="truncate">{item.debtName}</span>
                                 <span className="text-gray-400 text-xs ml-auto">
-                                  {item.paidOffDate.toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' })}
+                                  {item.paidOffDate && !isNaN(item.paidOffDate.getTime())
+                                    ? item.paidOffDate.toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' })
+                                    : '-'}
                                 </span>
                               </div>
                             ))}
