@@ -134,47 +134,52 @@ export function useTranslation() {
 }
 
 export function LanguageProvider({ children }) {
-  const [language, setLanguage] = useState('nl');
+  // Initialize language from localStorage immediately to prevent flash
+  const [language, setLanguage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('user_language') || 'nl';
+    }
+    return 'nl';
+  });
   const [translations, setTranslations] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const bootstrap = async () => {
-      // TEMPORARY BYPASS: Skip database calls when unavailable
-      // TODO: Remove this bypass when database is back online
-      const BYPASS_AUTH = false;
-
-      if (BYPASS_AUTH) {
-        console.log('⚠️ LANGUAGE BYPASS ACTIVE - Using defaults');
-        setTranslations({});
-        setLanguage('nl');
-        setLoading(false);
-        return;
-      }
-
       try {
-        const [translationData, user] = await Promise.all([
+        // Load translations and user in parallel, with short timeout
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout')), 3000)
+        );
+
+        const dataPromise = Promise.all([
           Translation.list(undefined, 1000).catch(() => []),
           User.me().catch(() => null)
         ]);
 
-        const formatted = translationData.reduce((acc, item) => {
-          acc[item.key] = {
-            nl: item.nl,
-            en: item.en,
-            es: item.es,
-            pl: item.pl,
-            de: item.de,
-            fr: item.fr,
-            tr: item.tr,
-            ar: item.ar,
-          };
-          return acc;
-        }, {});
-        setTranslations(formatted);
+        const [translationData, user] = await Promise.race([dataPromise, timeoutPromise])
+          .catch(() => [[], null]);
+
+        if (Array.isArray(translationData) && translationData.length > 0) {
+          const formatted = translationData.reduce((acc, item) => {
+            acc[item.key] = {
+              nl: item.nl,
+              en: item.en,
+              es: item.es,
+              pl: item.pl,
+              de: item.de,
+              fr: item.fr,
+              tr: item.tr,
+              ar: item.ar,
+            };
+            return acc;
+          }, {});
+          setTranslations(formatted);
+        }
 
         if (user && user.language_preference) {
           setLanguage(user.language_preference);
+          localStorage.setItem('user_language', user.language_preference);
 
           // Set RTL for Arabic
           if (user.language_preference === 'ar') {
@@ -185,6 +190,7 @@ export function LanguageProvider({ children }) {
         }
       } catch (error) {
         console.error("Failed to bootstrap language context:", error);
+        // Use fallback translations - app still works
       } finally {
         setLoading(false);
       }
@@ -204,38 +210,32 @@ export function LanguageProvider({ children }) {
   }, []);
 
   const t = useCallback((key, options = {}) => {
-    if (loading) return '...'; 
-
     // First check database translations, then fallback translations
     const translationSet = translations[key] || fallbackTranslations[key];
-    let translation = translationSet ? (translationSet[language] || translationSet['nl']) : key;
+    let translation = translationSet ? (translationSet[language] || translationSet['nl']) : null;
 
-    if (!translationSet) {
-      console.warn(`Translation not found for key: ${key}`);
-      return key;
+    // If no translation found, return empty string instead of key to prevent flash
+    if (!translation) {
+      // Only log in development
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`Translation not found for key: ${key}`);
+      }
+      return '';
     }
-    
-    if (translation) {
+
+    if (translation && options) {
       Object.keys(options).forEach(optionKey => {
         translation = translation.replace(`{${optionKey}}`, options[optionKey]);
       });
     }
 
-    return translation || key;
-  }, [language, translations, loading]);
+    return translation;
+  }, [language, translations]);
 
   const value = { language, changeLanguage, t, translations, loading };
 
-  if (loading) {
-    return (
-        <div className="min-h-screen bg-gray-50 dark:bg-[#1a1a1a] flex items-center justify-center">
-            <div className="text-center">
-                <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-gray-400 dark:border-gray-500 mx-auto"></div>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mt-4">Instellingen laden...</p>
-            </div>
-        </div>
-    );
-  }
+  // Don't show loading screen - render children immediately with fallback translations
+  // This prevents the "Instellingen laden..." flash
 
   return (
     <LanguageContext.Provider value={value}>
