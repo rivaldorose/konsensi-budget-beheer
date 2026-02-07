@@ -174,9 +174,12 @@ export function useClientVideoCalls(userId) {
         .in("status", ["gepland", "actief"])
         .order("scheduled_for", { ascending: true });
 
-      if (upcomingError) {
+      // Ignore 403/42501 = RLS policy violation (user has no coach relationship)
+      if (upcomingError && upcomingError.code !== "42501" && upcomingError.message?.indexOf("403") === -1) {
         console.error("Error fetching upcoming calls:", upcomingError);
-      } else {
+      }
+
+      if (!upcomingError) {
         // Separate active from upcoming
         const active = (upcoming || []).filter((c) => c.status === "actief");
         const scheduled = (upcoming || []).filter((c) => c.status === "gepland");
