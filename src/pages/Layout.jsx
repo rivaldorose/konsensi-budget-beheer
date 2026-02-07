@@ -587,12 +587,13 @@ function LayoutWithProvider({ children, currentPageName }) {
         icon: CreditCard,
         type: "link"
       },
-      {
-        titleKey: "nav.adempauze",
-        path: "Adempauze",
-        icon: Heart,
-        type: "link"
-      },
+      // TEMPORARILY HIDDEN - waiting for new feature
+      // {
+      //   titleKey: "nav.adempauze",
+      //   path: "Adempauze",
+      //   icon: Heart,
+      //   type: "link"
+      // },
       {
         titleKey: "nav.pennyForPenny",
         path: "CentVoorCent",
@@ -1046,14 +1047,14 @@ function LayoutWithProvider({ children, currentPageName }) {
                 </button>
               </div>
 
-              {/* Adem Pauze (Heart Icon) */}
-              <Link
+              {/* TEMPORARILY HIDDEN - Adem Pauze (Heart Icon) - waiting for new feature */}
+              {/* <Link
                 to={createPageUrl('Adempauze')}
                 className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
                 title="Adem pauze"
               >
                 <Heart className="w-5 h-5" />
-              </Link>
+              </Link> */}
 
               {/* Coach Chat Icon - Only show if user has assigned coach */}
               {hasCoach && (
@@ -1415,14 +1416,14 @@ function LayoutWithProvider({ children, currentPageName }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Adem Pauze (Heart Icon) */}
-            <Link
+            {/* TEMPORARILY HIDDEN - Adem Pauze (Heart Icon) - waiting for new feature */}
+            {/* <Link
               to={createPageUrl('Adempauze')}
               className="w-9 h-9 flex items-center justify-center rounded-full text-[#6b7280] dark:text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] dark:hover:bg-[#2a2a2a] transition-all"
               title="Adem pauze"
             >
               <Heart className="w-5 h-5" />
-            </Link>
+            </Link> */}
 
             {/* Coach Chat Icon (Mobile) - Only show if user has assigned coach */}
             {hasCoach && (
