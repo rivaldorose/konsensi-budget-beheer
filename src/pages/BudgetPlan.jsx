@@ -166,24 +166,40 @@ export default function BudgetPlan() {
                 status: 'betalingsregeling',
                 user_id: userData.id
             });
-            
+
+            // Filter debts: only show if the payment_plan_date has started (not future)
+            // AND if the recurring payment day falls within this period
             const filteredDebts = debtsData.filter(debt => {
                 if (!debt.payment_plan_date) return false;
-                const paymentDay = new Date(debt.payment_plan_date).getDate();
-                const paymentDate = new Date(today.getFullYear(), today.getMonth(), paymentDay);
-                return paymentDate >= startDate && paymentDate <= endDate;
+
+                const planStartDate = new Date(debt.payment_plan_date);
+                planStartDate.setHours(0, 0, 0, 0);
+
+                // Don't show if the plan hasn't started yet
+                if (planStartDate > endDate) return false;
+
+                // Get the payment day of month from the plan start date
+                const paymentDay = planStartDate.getDate();
+
+                // Create the payment date for the CURRENT selected month
+                const paymentDateThisMonth = new Date(today.getFullYear(), today.getMonth(), paymentDay);
+
+                // Check if payment date falls within the selected period
+                return paymentDateThisMonth >= startDate && paymentDateThisMonth <= endDate;
             });
-            
-            const debtPaymentsTotal = filteredDebts.reduce((sum, debt) => 
+
+            const debtPaymentsTotal = filteredDebts.reduce((sum, debt) =>
                 sum + (parseFloat(debt.monthly_payment) || 0), 0
             );
             setDebts(filteredDebts);
 
-            // Load transactions
+            // Load transactions (exclude debt_payments to avoid double counting)
             const transactionsData = await Transaction.filter({ user_id: userData.id });
             const filteredTransactions = transactionsData.filter(tx => {
                 if (!tx || !tx.date) return false;
                 const txDate = new Date(tx.date);
+                // Exclude debt_payments category - these are already counted via Debt betalingsregeling
+                if (tx.category === 'debt_payments') return false;
                 return txDate >= startDate && txDate <= endDate;
             });
 
@@ -275,6 +291,11 @@ export default function BudgetPlan() {
                     categoryMap[catName].budget = parseFloat(pot.budget || 0);
                 }
             });
+
+            // Set budget for Betalingsregeling based on total monthly debt payments
+            if (categoryMap['Betalingsregeling']) {
+                categoryMap['Betalingsregeling'].budget = debtPaymentsTotal;
+            }
 
             const breakdown = Object.entries(categoryMap).map(([name, data]) => ({
                 name,
