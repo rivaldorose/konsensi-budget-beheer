@@ -19,7 +19,7 @@ import DebtsInfoModal from "../components/debts/DebtsInfoModal";
 import ScanDebtModal from "../components/debts/ScanDebtModal";
 import ArrangementStappenplanModal from "../components/debts/ArrangementStappenplanModal";
 import { createPageUrl } from "@/utils";
-import { formatCurrency } from "@/components/utils/formatters";
+import { formatCurrency, formatDateSafe } from "@/components/utils/formatters";
 
 const statusLabels = {
   niet_actief: 'Niet Actief',
@@ -37,18 +37,6 @@ const statusColors = {
   afbetaald: 'bg-green-100 dark:bg-green-500/10 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-500/20',
   actief: 'bg-green-100 dark:bg-green-500/10 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-500/20',
   aanmaning: 'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 animate-pulse'
-};
-
-// Safe date formatter to prevent "Invalid time value" errors
-const formatDateSafe = (dateStr, options = {}) => {
-  if (!dateStr) return null;
-  try {
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return null;
-    return date.toLocaleDateString('nl-NL', options);
-  } catch {
-    return null;
-  }
 };
 
 const creditorTypeLabels = {

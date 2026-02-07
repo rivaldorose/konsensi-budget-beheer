@@ -6,6 +6,7 @@ import { UploadFile } from "@/api/integrations";
 import { User } from "@/api/entities";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatDateSafe } from "@/components/utils/formatters";
 
 export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
   const [step, setStep] = useState('upload'); // upload, scanned, processing, review, success
@@ -457,11 +458,11 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
                     </p>
                   </div>
 
-                  {extractedData.payment_deadline && (
+                  {extractedData.payment_deadline && formatDateSafe(extractedData.payment_deadline, { day: 'numeric', month: 'long', year: 'numeric' }) && (
                     <div className="bg-orange-50 dark:bg-orange-500/10 border-2 border-orange-300 dark:border-orange-500/30 rounded-xl p-4">
                       <p className="text-xs text-orange-600 dark:text-orange-400 font-medium mb-1">⏰ UITERLIJKE BETAALDATUM</p>
                       <p className="text-lg font-bold text-orange-700 dark:text-orange-400">
-                        {new Date(extractedData.payment_deadline).toLocaleDateString('nl-NL', {
+                        {formatDateSafe(extractedData.payment_deadline, {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric'
