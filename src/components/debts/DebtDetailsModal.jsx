@@ -208,7 +208,7 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
     if (!debt) return;
     setLoadingDocuments(true);
     try {
-      const allDocuments = await PaymentDocument.filter({ debt_id: debt.id }, '-created_date');
+      const allDocuments = await PaymentDocument.filter({ debt_id: debt.id }, '-created_at');
       setDocuments(allDocuments);
     } catch (error) {
       console.error('Error loading documents:', error);
