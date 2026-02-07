@@ -4,6 +4,7 @@ import { DebtPayment } from '@/api/entities';
 import { DebtCorrespondence } from '@/api/entities';
 import { DebtNote } from '@/api/entities';
 import { PaymentDocument } from '@/api/entities';
+import { User } from '@/api/entities';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/use-toast';
 import { formatCurrency } from '@/components/utils/formatters';
@@ -497,13 +498,20 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
   };
 
   const handleSaveDocument = async (docData) => {
-    await PaymentDocument.create({
-      debt_id: debt.id,
-      ...docData
-    });
-    toast({ title: 'Document geüpload!' });
-    setShowDocumentModal(false);
-    loadDocuments();
+    try {
+      const currentUser = await User.me();
+      await PaymentDocument.create({
+        user_id: currentUser.id,
+        debt_id: debt.id,
+        ...docData
+      });
+      toast({ title: 'Document geüpload!' });
+      setShowDocumentModal(false);
+      loadDocuments();
+    } catch (error) {
+      console.error('Error saving document:', error);
+      toast({ title: 'Fout bij uploaden', variant: 'destructive' });
+    }
   };
 
   const handleOpenDocument = async (doc) => {
