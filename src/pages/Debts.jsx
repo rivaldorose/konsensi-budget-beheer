@@ -39,6 +39,18 @@ const statusColors = {
   aanmaning: 'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 animate-pulse'
 };
 
+// Safe date formatter to prevent "Invalid time value" errors
+const formatDateSafe = (dateStr, options = {}) => {
+  if (!dateStr) return null;
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return null;
+    return date.toLocaleDateString('nl-NL', options);
+  } catch {
+    return null;
+  }
+};
+
 const creditorTypeLabels = {
   energie: 'Energieleverancier',
   telecom: 'Telecom',
@@ -319,9 +331,11 @@ export default function Debts() {
       let matchesDate = true;
       if (debt.origin_date) {
         const debtDate = new Date(debt.origin_date);
-        if (filters.dateFrom) matchesDate = matchesDate && debtDate >= new Date(filters.dateFrom);
-        if (filters.dateTo) matchesDate = matchesDate && debtDate <= new Date(filters.dateTo);
+        if (!isNaN(debtDate.getTime())) {
+          if (filters.dateFrom) matchesDate = matchesDate && debtDate >= new Date(filters.dateFrom);
+          if (filters.dateTo) matchesDate = matchesDate && debtDate <= new Date(filters.dateTo);
         }
+      }
       return matchesSearch && matchesStatus && matchesCreditorType && matchesAmount && matchesDate;
     });
 
@@ -332,8 +346,11 @@ export default function Debts() {
         aValue = parseFloat(aValue || 0);
         bValue = parseFloat(bValue || 0);
       } else if (sortField === 'origin_date') {
-        aValue = new Date(aValue);
-        bValue = new Date(bValue);
+        aValue = aValue ? new Date(aValue) : new Date(0);
+        bValue = bValue ? new Date(bValue) : new Date(0);
+        // Handle invalid dates by treating them as epoch (1970)
+        if (isNaN(aValue.getTime())) aValue = new Date(0);
+        if (isNaN(bValue.getTime())) bValue = new Date(0);
       }
       if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
@@ -784,9 +801,9 @@ export default function Debts() {
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[status] || statusColors.niet_actief}`}>
                           {statusLabels[status] || status}
                         </span>
-                        {debt.origin_date && (
+                        {formatDateSafe(debt.origin_date, { day: 'numeric', month: 'short' }) && (
                           <span className="text-xs text-gray-400 dark:text-[#a1a1a1]">
-                            {new Date(debt.origin_date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
+                            {formatDateSafe(debt.origin_date, { day: 'numeric', month: 'short' })}
                           </span>
                         )}
                       </div>
@@ -870,11 +887,11 @@ export default function Debts() {
                         </div>
                       </td>
                         <td className="py-4 px-6 text-sm text-gray-600 dark:text-white font-medium">
-                        {debt.origin_date && new Date(debt.origin_date).toLocaleDateString('nl-NL', {
+                        {formatDateSafe(debt.origin_date, {
                             day: 'numeric',
                           month: 'short',
                           year: 'numeric'
-                        })}
+                        }) || '-'}
                       </td>
                         <td className="py-4 px-6 text-sm text-gray-400 dark:text-[#a1a1a1]">
                         {debt.case_number || '-'}
