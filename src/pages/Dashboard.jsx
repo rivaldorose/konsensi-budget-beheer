@@ -380,9 +380,16 @@ export default function Dashboard() {
 
       if (debtsWithArrangement.length > 0) {
         const today = new Date();
+        today.setHours(0, 0, 0, 0);
         let upcomingDebtPayments = [];
 
         debtsWithArrangement.forEach(debt => {
+          // Check if debt has a start_date and if it's in the future
+          const startDate = debt.start_date ? new Date(debt.start_date) : null;
+          if (startDate) {
+            startDate.setHours(0, 0, 0, 0);
+          }
+
           // Use payment_plan_date day of month, or default to 1st
           const paymentDay = debt.payment_plan_date
             ? new Date(debt.payment_plan_date).getDate()
@@ -393,6 +400,18 @@ export default function Dashboard() {
           // If date already passed this month, move to next month
           if (nextDebtDate < today) {
             nextDebtDate.setMonth(nextDebtDate.getMonth() + 1);
+          }
+
+          // If the debt has a start_date that's in the future,
+          // the first payment should be based on that start date
+          if (startDate && startDate > today) {
+            // Calculate first payment date based on start_date
+            nextDebtDate = new Date(startDate.getFullYear(), startDate.getMonth(), paymentDay);
+
+            // If the payment day is before the start date in that month, move to next month
+            if (nextDebtDate < startDate) {
+              nextDebtDate.setMonth(nextDebtDate.getMonth() + 1);
+            }
           }
 
           upcomingDebtPayments.push({

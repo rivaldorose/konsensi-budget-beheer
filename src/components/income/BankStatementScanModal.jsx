@@ -101,19 +101,21 @@ export default function BankStatementScanModal({ isOpen, onClose, onSuccess }) {
   };
 
   const handleFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const selectedFiles = Array.from(e.target.files || []);
+    if (!selectedFiles.length) return;
 
-    // Validate file type
+    // Validate file types
     const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'text/csv'];
-    if (!validTypes.includes(file.type) && !file.name.endsWith('.csv')) {
+    const invalidFiles = selectedFiles.filter(f => !validTypes.includes(f.type) && !f.name.endsWith('.csv'));
+    if (invalidFiles.length > 0) {
       setError('Alleen PDF, afbeeldingen (JPG/PNG) of CSV bestanden zijn toegestaan');
       return;
     }
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Bestand is te groot (max 10MB)');
+    // Validate file sizes (max 10MB each)
+    const oversizedFiles = selectedFiles.filter(f => f.size > 10 * 1024 * 1024);
+    if (oversizedFiles.length > 0) {
+      setError('Eén of meer bestanden zijn te groot (max 10MB per bestand)');
       return;
     }
 
@@ -125,42 +127,52 @@ export default function BankStatementScanModal({ isOpen, onClose, onSuccess }) {
       const user = await User.me();
       if (!user) throw new Error('Niet ingelogd');
 
-      // Upload file to Supabase storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      // Upload all files to Supabase storage and convert to base64
+      const filesData = [];
+      let firstFileUrl = null;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('bank-statements')
-        .upload(fileName, file);
+      for (const file of selectedFiles) {
+        // Upload file to Supabase storage
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        // If bucket doesn't exist, try to continue without storage
-      }
-
-      // Get public URL if upload succeeded
-      let fileUrl = null;
-      if (uploadData) {
-        const { data: urlData } = supabase.storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('bank-statements')
-          .getPublicUrl(fileName);
-        fileUrl = urlData?.publicUrl;
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+        }
+
+        // Get public URL if upload succeeded (keep first one for metadata)
+        if (uploadData && !firstFileUrl) {
+          const { data: urlData } = supabase.storage
+            .from('bank-statements')
+            .getPublicUrl(fileName);
+          firstFileUrl = urlData?.publicUrl;
+        }
+
+        // Convert file to base64 for Edge Function
+        const base64 = await fileToBase64(file);
+        filesData.push({
+          file_data: base64,
+          file_type: file.type,
+          file_name: file.name
+        });
       }
 
-      // Convert file to base64 for Edge Function
-      const base64 = await fileToBase64(file);
-
-      // Call Edge Function to parse bank statement
+      // Call Edge Function to parse bank statement(s)
       const { data: parseResult, error: parseError } = await supabase.functions.invoke(
         'parse-bank-statement',
         {
-          body: {
-            file_data: base64,
-            file_type: file.type,
-            file_name: file.name
-          }
+          body: selectedFiles.length === 1
+            ? filesData[0]  // Single file - legacy format
+            : { files: filesData }  // Multiple files - new format
         }
       );
+
+      const fileUrl = firstFileUrl;
+      const file = selectedFiles[0]; // For metadata
 
       if (parseError) throw parseError;
 
@@ -353,11 +365,12 @@ export default function BankStatementScanModal({ isOpen, onClose, onSuccess }) {
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl p-0 gap-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] overflow-hidden">
-        {/* Hidden file input */}
+        {/* Hidden file input - multiple files allowed */}
         <input
           ref={fileInputRef}
           type="file"
           accept=".pdf,.csv,.jpg,.jpeg,.png,application/pdf,text/csv,image/*"
+          multiple
           onChange={handleFileChange}
           className="hidden"
         />

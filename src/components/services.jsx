@@ -86,8 +86,26 @@ class MonthlyCostService {
 
 // --- DEBT SERVICE ---
 class DebtService {
-    getActiveArrangementPayments(allDebts) {
-        const activeDebts = allDebts.filter(d => d.status === 'betalingsregeling');
+    getActiveArrangementPayments(allDebts, forMonth = new Date()) {
+        const targetMonthStart = getStartOfMonth(forMonth);
+
+        // Filter debts that are in betalingsregeling AND have started (start_date is not in the future)
+        const activeDebts = allDebts.filter(d => {
+            if (d.status !== 'betalingsregeling') return false;
+
+            // If there's a start_date, check if it's before or within the target month
+            if (d.start_date) {
+                const startDate = new Date(d.start_date);
+                const startMonthStart = getStartOfMonth(startDate);
+
+                // Only include if the start month is <= target month
+                return startMonthStart.getTime() <= targetMonthStart.getTime();
+            }
+
+            // No start_date means it's already active
+            return true;
+        });
+
         const total = activeDebts.reduce((sum, d) => sum + parseFloat(d.monthly_payment || 0), 0);
         return { total, items: activeDebts };
     }

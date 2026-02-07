@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, FileText, Loader2, CheckCircle2, AlertCircle, X, Check } from "lucide-react";
-import { UploadFile, ExtractDataFromUploadedFile } from "@/api/integrations";
+import { Camera, Upload, FileText, Loader2, CheckCircle2, AlertCircle, Check } from "lucide-react";
+import { UploadFile } from "@/api/integrations";
 import { User } from "@/api/entities";
+import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
@@ -14,19 +15,20 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
 
-    // Check file type
+    // Check file types and sizes
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-    if (!validTypes.includes(file.type)) {
+    const invalidFiles = files.filter(f => !validTypes.includes(f.type));
+    if (invalidFiles.length > 0) {
       setError('Alleen foto\'s (JPG, PNG) en PDF\'s zijn toegestaan');
       return;
     }
 
-    // Check file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      setError('Bestand is te groot (max 10MB)');
+    const oversizedFiles = files.filter(f => f.size > 10 * 1024 * 1024);
+    if (oversizedFiles.length > 0) {
+      setError('Eén of meer bestanden zijn te groot (max 10MB per bestand)');
       return;
     }
 
@@ -34,12 +36,16 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
     setError(null);
 
     try {
-      // Upload de file
-      const { file_url } = await UploadFile({ file });
-      setUploadedPages([...uploadedPages, file_url]);
+      // Upload all files
+      const uploadedUrls = [];
+      for (const file of files) {
+        const { file_url } = await UploadFile({ file });
+        uploadedUrls.push(file_url);
+      }
+      setUploadedPages([...uploadedPages, ...uploadedUrls]);
       setStep('scanned');
     } catch (err) {
-      console.error("Error uploading file:", err);
+      console.error("Error uploading files:", err);
       setError('Er ging iets mis bij het uploaden. Probeer het opnieuw.');
     } finally {
       setIsProcessing(false);
@@ -54,74 +60,24 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
     setStep('processing');
 
     try {
-      // Extract data met AI
-      const schema = {
-        type: "object",
-        properties: {
-          creditor_name: {
-            type: "string",
-            description: "Naam van het incassobureau of schuldeiser"
-          },
-          creditor_type: {
-            type: "string",
-            enum: ["energie", "telecom", "zorgverzekeraar", "bank", "retail", "overheid", "incasso", "deurwaarder", "anders"],
-            description: "Type schuldeiser, probeer te herkennen uit de brief"
-          },
-          case_number: {
-            type: "string",
-            description: "Dossiernummer of referentienummer"
-          },
-          original_amount: {
-            type: "number",
-            description: "Oorspronkelijk schuldbedrag (hoofdsom)"
-          },
-          reminder_costs: {
-            type: "number",
-            description: "Aanmaningskosten (apart van incassokosten)"
-          },
-          collection_costs: {
-            type: "number",
-            description: "Incassokosten (apart van aanmaningskosten)"
-          },
-          interest_costs: {
-            type: "number",
-            description: "Rente en extra kosten"
-          },
-          total_amount: {
-            type: "number",
-            description: "Totaal te betalen bedrag"
-          },
-          debt_date: {
-            type: "string",
-            description: "Datum waarop schuld is ontstaan (format: YYYY-MM-DD)"
-          },
-          payment_deadline: {
-            type: "string",
-            description: "Uiterlijke betaaldatum zoals vermeld op de brief (format: YYYY-MM-DD)"
-          },
-          contact_person: {
-            type: "string",
-            description: "Naam contactpersoon indien vermeld"
-          },
-          contact_details: {
-            type: "string",
-            description: "Telefoonnummer of email van schuldeiser"
-          }
+      // Use Claude Haiku via our new Edge Function for better parsing
+      const { data, error: fnError } = await supabase.functions.invoke('parse-debt-document', {
+        body: {
+          fileUrls: uploadedPages
         }
-      };
-
-      // Process alle pagina's
-      const result = await ExtractDataFromUploadedFile({
-        file_url: uploadedPages[0],
-        file_urls: uploadedPages,
-        json_schema: schema
       });
 
-      if (result.status === 'success' && result.output) {
-        setExtractedData(result.output);
+      if (fnError) {
+        console.error("Edge function error:", fnError);
+        throw new Error(fnError.message || 'Fout bij verwerken');
+      }
+
+      if (data?.status === 'success' && data?.output) {
+        console.log('✅ Claude Haiku parsed debt document:', data.output);
+        setExtractedData(data.output);
         setStep('review');
       } else {
-        setError(result.details || 'Kon geen gegevens uit de brief halen. Probeer een duidelijkere foto.');
+        setError(data?.details || 'Kon geen gegevens uit de brief halen. Probeer een duidelijkere foto.');
         setStep('scanned');
       }
     } catch (err) {
@@ -163,6 +119,8 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
         status: 'niet_actief',
         contact_person_name: extractedData.contact_person || '',
         contact_person_details: extractedData.contact_details || '',
+        iban: extractedData.iban || '',
+        payment_reference: extractedData.payment_reference || '',
         notes: `Gescand uit brief op ${new Date().toLocaleDateString('nl-NL')}`
       };
 
@@ -205,16 +163,9 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl mx-4 max-h-[90vh] flex flex-col p-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] overflow-hidden">
+      <DialogContent className="max-w-2xl mx-4 max-h-[90vh] flex flex-col p-0 bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-[#2a2a2a] overflow-hidden [&>button]:top-6 [&>button]:right-6 [&>button]:text-gray-400 [&>button]:dark:text-gray-500 [&>button]:hover:text-gray-600 [&>button]:dark:hover:text-white [&>button]:transition-colors">
         {/* Custom Header */}
         <div className="relative p-6 md:p-10 pb-0">
-          <button
-            onClick={handleClose}
-            className="absolute top-6 right-6 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
-
           <div className="text-center mb-8">
             <h2 className="font-bold text-[28px] text-gray-900 dark:text-white mb-3">
               Scan je Brief
@@ -262,6 +213,7 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
                     <input
                       type="file"
                       accept="image/*,.pdf"
+                      multiple
                       onChange={handleFileUpload}
                       className="hidden"
                       disabled={isProcessing}
@@ -271,8 +223,8 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
                         <div className="absolute inset-0 bg-emerald-500 blur-xl opacity-20 rounded-full group-hover:opacity-30 transition-opacity"></div>
                         <Upload className="w-12 h-12 text-emerald-500 relative z-10" />
                       </div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-1">Bestand Uploaden</h3>
-                      <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">Selecteer een PDF of afbeelding van je computer.</p>
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-1">Bestanden Uploaden</h3>
+                      <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">Selecteer meerdere PDF's of afbeeldingen (voor- en achterkant).</p>
                     </div>
                   </label>
                 </div>
@@ -526,11 +478,34 @@ export default function ScanDebtModal({ isOpen, onClose, onDebtScanned }) {
                       </p>
                     </div>
                   )}
+
+                  {/* Payment details section */}
+                  {(extractedData.iban || extractedData.payment_reference) && (
+                    <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl p-4 space-y-3">
+                      <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">💳 BETALINGSGEGEVENS</p>
+                      {extractedData.iban && (
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">IBAN</p>
+                          <p className="text-base font-mono font-medium text-gray-900 dark:text-white">
+                            {extractedData.iban}
+                          </p>
+                        </div>
+                      )}
+                      {extractedData.payment_reference && (
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">Betalingskenmerk</p>
+                          <p className="text-base font-mono font-medium text-gray-900 dark:text-white">
+                            {extractedData.payment_reference}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-xl p-4">
                   <p className="text-sm text-yellow-800 dark:text-yellow-400">
-                    💡 <strong>Controleer altijd:</strong> AI is slim, maar kan fouten maken. Check of de bedragen kloppen met je brief!
+                    💡 <strong>Controleer altijd:</strong> Check of de bedragen kloppen met je brief voordat je deze toevoegt.
                   </p>
                 </div>
 

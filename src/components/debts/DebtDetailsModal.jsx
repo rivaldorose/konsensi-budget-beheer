@@ -74,7 +74,9 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
   const [editingContactInfo, setEditingContactInfo] = useState(false);
   const [contactInfoData, setContactInfoData] = useState({
     contact_person_name: '',
-    contact_person_details: ''
+    contact_person_details: '',
+    contact_email: '',
+    contact_organization: ''
   });
   const [paymentPlanData, setPaymentPlanData] = useState({
     monthly_payment: '',
@@ -93,6 +95,8 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
   const [newNoteText, setNewNoteText] = useState('');
   const [addingNote, setAddingNote] = useState(false);
   const [showAddNote, setShowAddNote] = useState(false);
+  const [selectedPayments, setSelectedPayments] = useState([]);
+  const [isSelectMode, setIsSelectMode] = useState(false);
   const [detailEditData, setDetailEditData] = useState({
     creditor_type: '',
     is_personal_loan: false,
@@ -133,7 +137,9 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
       });
       setContactInfoData({
         contact_person_name: debt.contact_person_name || '',
-        contact_person_details: debt.contact_person_details || ''
+        contact_person_details: debt.contact_person_details || '',
+        contact_email: debt.contact_email || '',
+        contact_organization: debt.contact_organization || ''
       });
       setPaymentPlanData({
         monthly_payment: debt.monthly_payment?.toString() || '',
@@ -297,63 +303,75 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
 
   const handleDeletePayment = async (paymentId) => {
     if (!confirm('Weet je zeker dat je deze betaling wilt verwijderen?')) return;
+    await deletePayments([paymentId]);
+  };
+
+  const handleDeleteSelectedPayments = async () => {
+    if (selectedPayments.length === 0) return;
+    if (!confirm(`Weet je zeker dat je ${selectedPayments.length} betaling(en) wilt verwijderen?`)) return;
+    await deletePayments(selectedPayments);
+    setSelectedPayments([]);
+    setIsSelectMode(false);
+  };
+
+  const deletePayments = async (paymentIds) => {
     try {
-      console.log('[DebtDetailsModal] Starting delete for payment:', paymentId);
+      console.log('[DebtDetailsModal] Starting delete for payments:', paymentIds);
 
-      // First, find and delete any linked payment documents (foreign key constraint)
-      // We need to get the documents first to ensure we're deleting the right ones
-      const { data: linkedDocs, error: fetchError } = await supabase
-        .from('payment_documents')
-        .select('id')
-        .eq('payment_id', paymentId);
+      for (const paymentId of paymentIds) {
+        // First, find and delete any linked payment documents (foreign key constraint)
+        const { data: linkedDocs, error: fetchError } = await supabase
+          .from('payment_documents')
+          .select('id')
+          .eq('payment_id', paymentId);
 
-      if (fetchError) {
-        console.error('Error fetching linked documents:', fetchError);
-      } else if (linkedDocs && linkedDocs.length > 0) {
-        console.log('[DebtDetailsModal] Found', linkedDocs.length, 'linked documents to delete');
+        if (fetchError) {
+          console.error('Error fetching linked documents:', fetchError);
+        } else if (linkedDocs && linkedDocs.length > 0) {
+          console.log('[DebtDetailsModal] Found', linkedDocs.length, 'linked documents to delete');
 
-        // Delete each document individually to handle RLS properly
-        for (const doc of linkedDocs) {
-          const { error: docDeleteError } = await supabase
-            .from('payment_documents')
-            .delete()
-            .eq('id', doc.id);
+          // Delete each document individually to handle RLS properly
+          for (const doc of linkedDocs) {
+            const { error: docDeleteError } = await supabase
+              .from('payment_documents')
+              .delete()
+              .eq('id', doc.id);
 
-          if (docDeleteError) {
-            console.error('Error deleting document', doc.id, ':', docDeleteError);
+            if (docDeleteError) {
+              console.error('Error deleting document', doc.id, ':', docDeleteError);
+            }
           }
         }
-      }
 
-      // Now delete the payment itself
-      const { error: deleteError } = await supabase
-        .from('debt_payments')
-        .delete()
-        .eq('id', paymentId);
+        // Now delete the payment itself
+        const { error: deleteError } = await supabase
+          .from('debt_payments')
+          .delete()
+          .eq('id', paymentId);
 
-      if (deleteError) {
-        console.error('Error deleting payment:', deleteError);
-        // Check if it's a foreign key constraint error
-        if (deleteError.message?.includes('foreign key constraint')) {
-          toast({
-            title: 'Fout bij verwijderen',
-            description: 'Er zijn nog documenten gekoppeld aan deze betaling. Probeer het opnieuw.',
-            variant: 'destructive'
-          });
-        } else if (deleteError.code === '42501' || deleteError.message?.includes('policy')) {
-          toast({
-            title: 'Geen toestemming',
-            description: 'Je hebt geen rechten om deze betaling te verwijderen.',
-            variant: 'destructive'
-          });
-        } else {
-          toast({
-            title: 'Fout bij verwijderen',
-            description: deleteError.message || 'Kon betaling niet verwijderen.',
-            variant: 'destructive'
-          });
+        if (deleteError) {
+          console.error('Error deleting payment:', deleteError);
+          if (deleteError.message?.includes('foreign key constraint')) {
+            toast({
+              title: 'Fout bij verwijderen',
+              description: 'Er zijn nog documenten gekoppeld aan een betaling. Probeer het opnieuw.',
+              variant: 'destructive'
+            });
+          } else if (deleteError.code === '42501' || deleteError.message?.includes('policy')) {
+            toast({
+              title: 'Geen toestemming',
+              description: 'Je hebt geen rechten om deze betaling te verwijderen.',
+              variant: 'destructive'
+            });
+          } else {
+            toast({
+              title: 'Fout bij verwijderen',
+              description: deleteError.message || 'Kon betaling niet verwijderen.',
+              variant: 'destructive'
+            });
+          }
+          return;
         }
-        return;
       }
 
       // Recalculate amount_paid after successful delete
@@ -373,25 +391,42 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
       await Debt.update(debt.id, updateData);
 
       // Show appropriate toast message
+      const count = paymentIds.length;
       if (wasFullyPaid && nowHasBalance) {
         toast({
-          title: 'Betaling verwijderd',
+          title: `${count} betaling${count > 1 ? 'en' : ''} verwijderd`,
           description: 'De schuld status is bijgewerkt naar "Betalingsregeling" omdat er nog een openstaand bedrag is.',
           variant: 'default'
         });
       } else {
-        toast({ title: 'Betaling verwijderd', variant: 'success' });
+        toast({ title: `${count} betaling${count > 1 ? 'en' : ''} verwijderd`, variant: 'success' });
       }
       await refreshDebt();
       loadPayments();
       if (onUpdate) await onUpdate();
     } catch (error) {
-      console.error('Error deleting payment:', error);
+      console.error('Error deleting payments:', error);
       toast({
         title: 'Fout bij verwijderen',
         description: error.message || 'Er ging iets mis.',
         variant: 'destructive'
       });
+    }
+  };
+
+  const togglePaymentSelection = (paymentId) => {
+    setSelectedPayments(prev =>
+      prev.includes(paymentId)
+        ? prev.filter(id => id !== paymentId)
+        : [...prev, paymentId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedPayments.length === payments.length) {
+      setSelectedPayments([]);
+    } else {
+      setSelectedPayments(payments.map(p => p.id));
     }
   };
 
@@ -755,19 +790,62 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-accent-blue dark:text-accent-blue">description</span>
                       <h2 className="text-lg font-semibold text-text-main dark:text-text-primary">Betalingsgeschiedenis</h2>
+                      {payments.length > 0 && (
+                        <span className="text-xs bg-gray-100 dark:bg-dark-card-elevated text-text-muted dark:text-text-secondary px-2 py-0.5 rounded-full">
+                          {payments.length}
+                        </span>
+                      )}
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      {payments.length > 0 && (
+                        <button
+                          onClick={() => {
+                            setIsSelectMode(!isSelectMode);
+                            setSelectedPayments([]);
+                          }}
+                          className={`text-sm font-medium px-3 py-1 rounded-lg transition-colors ${
+                            isSelectMode
+                              ? 'bg-gray-200 dark:bg-dark-card-elevated text-text-main dark:text-text-primary'
+                              : 'text-text-muted dark:text-text-secondary hover:bg-gray-100 dark:hover:bg-dark-card-elevated'
+                          }`}
+                        >
+                          {isSelectMode ? 'Annuleren' : 'Selecteren'}
+                        </button>
+                      )}
                       <button
                         onClick={() => setShowPaymentModal(true)}
                         className="text-primary dark:text-primary-green text-sm font-semibold hover:underline"
                       >
                         + Betaling
                       </button>
-                      <button className="text-text-muted dark:text-text-secondary hover:text-text-main dark:hover:text-text-primary">
-                        <span className="material-symbols-outlined">expand_more</span>
-                      </button>
                     </div>
                   </div>
+
+                  {/* Select All & Delete Selected Bar */}
+                  {isSelectMode && payments.length > 0 && (
+                    <div className="flex justify-between items-center mb-3 p-3 bg-gray-50 dark:bg-dark-card-elevated rounded-lg">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedPayments.length === payments.length}
+                          onChange={toggleSelectAll}
+                          className="w-4 h-4 rounded border-gray-300 dark:border-dark-border text-primary dark:text-primary-green focus:ring-primary dark:focus:ring-primary-green"
+                        />
+                        <span className="text-sm text-text-muted dark:text-text-secondary">
+                          Alles selecteren ({selectedPayments.length}/{payments.length})
+                        </span>
+                      </label>
+                      {selectedPayments.length > 0 && (
+                        <button
+                          onClick={handleDeleteSelectedPayments}
+                          className="flex items-center gap-1 px-3 py-1.5 bg-status-red dark:bg-accent-red text-white text-sm font-medium rounded-lg hover:bg-red-600 dark:hover:bg-red-500 transition-colors"
+                        >
+                          <span className="material-symbols-outlined !text-[16px]">delete</span>
+                          Verwijder ({selectedPayments.length})
+                        </button>
+                      )}
+                    </div>
+                  )}
 
                   {loadingPayments ? (
                     <div className="text-center py-8 text-text-light dark:text-text-tertiary">Laden...</div>
@@ -778,17 +856,36 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                   ) : (
                     <div className="space-y-2 mt-4">
                       {payments.map((payment) => (
-                        <div key={payment.id} className="flex justify-between items-center text-sm border-b border-gray-100 dark:border-dark-border pb-2">
-                          <div>
-                            <div className="font-medium text-text-main dark:text-text-primary">{formatCurrency(payment.amount)}</div>
-                            <div className="text-xs text-gray-500 dark:text-text-tertiary">{formatDateShort(payment.payment_date)}</div>
+                        <div
+                          key={payment.id}
+                          className={`flex justify-between items-center text-sm border-b border-gray-100 dark:border-dark-border pb-2 ${
+                            isSelectMode && selectedPayments.includes(payment.id)
+                              ? 'bg-primary/5 dark:bg-primary-green/5 -mx-2 px-2 rounded-lg'
+                              : ''
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            {isSelectMode && (
+                              <input
+                                type="checkbox"
+                                checked={selectedPayments.includes(payment.id)}
+                                onChange={() => togglePaymentSelection(payment.id)}
+                                className="w-4 h-4 rounded border-gray-300 dark:border-dark-border text-primary dark:text-primary-green focus:ring-primary dark:focus:ring-primary-green cursor-pointer"
+                              />
+                            )}
+                            <div>
+                              <div className="font-medium text-text-main dark:text-text-primary">{formatCurrency(payment.amount)}</div>
+                              <div className="text-xs text-gray-500 dark:text-text-tertiary">{formatDateShort(payment.payment_date)}</div>
+                            </div>
                           </div>
-                          <button
-                            onClick={() => handleDeletePayment(payment.id)}
-                            className="text-status-red dark:text-accent-red hover:bg-status-red/10 dark:hover:bg-accent-red/10 p-1 rounded transition-colors"
-                          >
-                            <span className="material-symbols-outlined !text-[18px]">delete</span>
-                          </button>
+                          {!isSelectMode && (
+                            <button
+                              onClick={() => handleDeletePayment(payment.id)}
+                              className="text-status-red dark:text-accent-red hover:bg-status-red/10 dark:hover:bg-accent-red/10 p-1 rounded transition-colors"
+                            >
+                              <span className="material-symbols-outlined !text-[18px]">delete</span>
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -1097,6 +1194,15 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                     {editingContactInfo ? (
                       <div className="space-y-3">
                         <div>
+                          <label className="text-xs text-text-light dark:text-text-tertiary mb-1 block">Organisatie</label>
+                          <input
+                            value={contactInfoData.contact_organization}
+                            onChange={(e) => setContactInfoData({...contactInfoData, contact_organization: e.target.value})}
+                            placeholder="Naam organisatie/bedrijf"
+                            className="w-full bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-3 py-2 text-sm text-text-main dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green"
+                          />
+                        </div>
+                        <div>
                           <label className="text-xs text-text-light dark:text-text-tertiary mb-1 block">Contactpersoon</label>
                           <input
                             value={contactInfoData.contact_person_name}
@@ -1106,27 +1212,39 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-text-light dark:text-text-tertiary mb-1 block">Email / Tel</label>
+                          <label className="text-xs text-text-light dark:text-text-tertiary mb-1 block">Telefoonnummer</label>
                           <input
                             value={contactInfoData.contact_person_details}
                             onChange={(e) => setContactInfoData({...contactInfoData, contact_person_details: e.target.value})}
-                            placeholder="Telefoon of email"
+                            placeholder="Telefoonnummer"
+                            className="w-full bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-3 py-2 text-sm text-text-main dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-text-light dark:text-text-tertiary mb-1 block">E-mailadres</label>
+                          <input
+                            type="email"
+                            value={contactInfoData.contact_email}
+                            onChange={(e) => setContactInfoData({...contactInfoData, contact_email: e.target.value})}
+                            placeholder="email@voorbeeld.nl"
                             className="w-full bg-gray-50 dark:bg-dark-card-elevated border border-gray-200 dark:border-dark-border-accent rounded-lg px-3 py-2 text-sm text-text-main dark:text-text-primary focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-green"
                           />
                         </div>
                         <div className="flex gap-2 pt-2">
-                          <button 
+                          <button
                             onClick={handleSaveContactInfo}
                             className="flex-1 bg-primary dark:bg-primary-green text-secondary dark:text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-primary-dark dark:hover:bg-light-green transition-colors"
                           >
                             Opslaan
                           </button>
-                          <button 
+                          <button
                             onClick={() => {
                               setEditingContactInfo(false);
                               setContactInfoData({
                                 contact_person_name: currentDebt.contact_person_name || '',
-                                contact_person_details: currentDebt.contact_person_details || ''
+                                contact_person_details: currentDebt.contact_person_details || '',
+                                contact_email: currentDebt.contact_email || '',
+                                contact_organization: currentDebt.contact_organization || ''
                               });
                             }}
                             className="flex-1 border border-gray-300 dark:border-dark-border text-text-main dark:text-text-primary font-semibold py-2 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-card-elevated transition-colors"
@@ -1138,13 +1256,21 @@ export default function DebtDetailsModal({ debt, isOpen, onClose, onUpdate, onEd
                     ) : (
                       <div className="space-y-3">
                         <div className="flex flex-col gap-0.5">
+                          <span className="text-xs text-text-light dark:text-text-tertiary">Organisatie:</span>
+                          <span className="text-sm font-medium text-text-main dark:text-text-primary">{currentDebt.contact_organization || '-'}</span>
+                        </div>
+                        <div className="flex flex-col gap-0.5">
                           <span className="text-xs text-text-light dark:text-text-tertiary">Contactpersoon:</span>
                           <span className="text-sm font-medium text-text-main dark:text-text-primary">{currentDebt.contact_person_name || '-'}</span>
                         </div>
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-xs text-text-light dark:text-text-tertiary">Email / Tel:</span>
+                          <span className="text-xs text-text-light dark:text-text-tertiary">Telefoonnummer:</span>
+                          <span className="text-sm font-medium text-text-main dark:text-text-primary">{currentDebt.contact_person_details || '-'}</span>
+                        </div>
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-xs text-text-light dark:text-text-tertiary">E-mailadres:</span>
                           <span className="text-sm font-medium text-primary dark:text-primary-green cursor-pointer hover:underline">
-                            {currentDebt.contact_person_details || 'Toevoegen'}
+                            {currentDebt.contact_email || 'Toevoegen'}
                           </span>
                         </div>
                       </div>
