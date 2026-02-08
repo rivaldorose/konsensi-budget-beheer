@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Income } from '@/api/entities';
 import { MonthlyCost } from '@/api/entities';
@@ -11,8 +11,13 @@ import { createPageUrl } from '@/utils';
 import AddTransactionModal from '@/components/budget/AddTransactionModal';
 import AddBudgetCategoryModal from '@/components/budget/AddBudgetCategoryModal';
 import BankStatementScanModal from '@/components/income/BankStatementScanModal';
+import { useToast } from '@/components/ui/use-toast';
+
+// Polling interval voor live updates (5 seconden)
+const LIVE_POLL_INTERVAL = 5000;
 
 export default function BudgetPlan() {
+    const { toast } = useToast();
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [darkMode, setDarkMode] = useState(false);
@@ -34,13 +39,18 @@ export default function BudgetPlan() {
     const [debtPayments, setDebtPayments] = useState(0);
     const [saldo, setSaldo] = useState(0);
     const [availableBudget, setAvailableBudget] = useState(0);
-    
+
     // Transaction list & categories
     const [transactions, setTransactions] = useState([]);
     const [potBreakdown, setPotBreakdown] = useState([]);
     const [allPots, setAllPots] = useState([]);
     const [debts, setDebts] = useState([]);
     const [budgetCategories, setBudgetCategories] = useState([]);
+
+    // Live data tracking refs
+    const previousDataRef = useRef({ incomes: [], costs: [], debts: [], pots: [] });
+    const isInitialLoadRef = useRef(true);
+    const pollIntervalRef = useRef(null);
 
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme');
@@ -52,11 +62,23 @@ export default function BudgetPlan() {
             document.documentElement.classList.remove('dark');
         }
         loadData();
+
+        // Start live polling voor real-time updates
+        pollIntervalRef.current = setInterval(() => {
+            loadData(true); // Met notificaties
+        }, LIVE_POLL_INTERVAL);
+
+        // Cleanup bij unmount
+        return () => {
+            if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+            }
+        };
     }, []);
-    
+
     useEffect(() => {
         if (user) {
-            loadData();
+            loadData(false); // Zonder notificaties bij periode wijziging
         }
     }, [selectedMonth, period]);
 
@@ -104,12 +126,46 @@ export default function BudgetPlan() {
         return { startDate, endDate, today };
     };
 
-    const loadData = async () => {
+    // Detecteer wijzigingen en toon notificaties
+    const detectChanges = useCallback((newData, prevData, type) => {
+        if (isInitialLoadRef.current) return;
+
+        const newIds = new Set(newData.map(item => item.id));
+        const prevIds = new Set(prevData.map(item => item.id));
+
+        // Nieuwe items
+        const addedItems = newData.filter(item => !prevIds.has(item.id));
+        // Verwijderde items
+        const removedItems = prevData.filter(item => !newIds.has(item.id));
+
+        // Toon notificaties voor nieuwe items
+        addedItems.forEach(item => {
+            const name = item.description || item.name || item.creditor || item.creditor_name || 'Item';
+            const amount = item.amount || item.monthly_payment || item.monthly_budget || 0;
+
+            toast({
+                title: `✅ ${type} toegevoegd`,
+                description: `${name}: €${parseFloat(amount).toFixed(2)}`,
+            });
+        });
+
+        // Toon notificaties voor verwijderde items
+        removedItems.forEach(item => {
+            const name = item.description || item.name || item.creditor || item.creditor_name || 'Item';
+
+            toast({
+                title: `🗑️ ${type} verwijderd`,
+                description: name,
+            });
+        });
+    }, [toast]);
+
+    const loadData = async (showNotifications = true) => {
         try {
             if (!user) {
                 setLoading(true);
             }
-            
+
             const userData = await User.me();
             setUser(userData);
 
@@ -334,6 +390,24 @@ export default function BudgetPlan() {
             setAllPots(expensePots);
             setBudgetCategories(breakdown);
 
+            // Detecteer wijzigingen voor live updates (alleen na eerste load)
+            if (showNotifications && !isInitialLoadRef.current) {
+                detectChanges(incomeData, previousDataRef.current.incomes, 'Inkomen');
+                detectChanges(monthlyCostsData, previousDataRef.current.costs, 'Vaste last');
+                detectChanges(debtsData.filter(d => d.status === 'betalingsregeling'), previousDataRef.current.debts, 'Betalingsregeling');
+                detectChanges(potsData, previousDataRef.current.pots, 'Potje');
+            }
+
+            // Update previous data refs
+            previousDataRef.current = {
+                incomes: incomeData,
+                costs: monthlyCostsData,
+                debts: debtsData.filter(d => d.status === 'betalingsregeling'),
+                pots: potsData
+            };
+
+            isInitialLoadRef.current = false;
+
         } catch (error) {
             console.error('Error loading budget data:', error);
         } finally {
@@ -347,27 +421,37 @@ export default function BudgetPlan() {
         setDeleting(true);
         try {
             const [type, id] = transaction.id.split('-');
+            let successMessage = '';
+            let successDescription = '';
 
             switch (type) {
                 case 'income':
                     // Delete income record
                     await Income.delete(id);
+                    successMessage = '✅ Inkomen verwijderd';
+                    successDescription = `${transaction.description} is verwijderd. Dit is ook bijgewerkt op de Inkomen pagina.`;
                     break;
 
                 case 'cost':
                     // Deactivate monthly cost (keep for history, don't delete)
                     await MonthlyCost.update(id, { status: 'inactief' });
+                    successMessage = '✅ Vaste last gedeactiveerd';
+                    successDescription = `${transaction.description} is gedeactiveerd. Je kunt dit herstellen op de Vaste Lasten pagina.`;
                     break;
 
                 case 'debt':
                     // Cancel payment plan by changing status back to 'open'
                     // This removes it from the budget but keeps the debt record
                     await Debt.update(id, { status: 'open', payment_plan_date: null, monthly_payment: null });
+                    successMessage = '✅ Betalingsregeling gestopt';
+                    successDescription = `De regeling voor ${transaction.description} is gestopt. De schuld staat nu op "open" op de Schulden pagina.`;
                     break;
 
                 case 'tx':
                     // Delete regular expense transaction
                     await Transaction.delete(id);
+                    successMessage = '✅ Transactie verwijderd';
+                    successDescription = `${transaction.description} is verwijderd uit je overzicht.`;
                     break;
 
                 default:
@@ -375,9 +459,24 @@ export default function BudgetPlan() {
             }
 
             setDeleteConfirm({ show: false, transaction: null });
-            await loadData();
+
+            // Toon toast met bevestiging
+            if (successMessage) {
+                toast({
+                    title: successMessage,
+                    description: successDescription,
+                });
+            }
+
+            // Herlaad data (zonder notificaties, want we hebben net zelf iets verwijderd)
+            await loadData(false);
         } catch (error) {
             console.error('Error deleting transaction:', error);
+            toast({
+                title: '❌ Fout bij verwijderen',
+                description: 'Er is iets misgegaan. Probeer het opnieuw.',
+                variant: 'destructive',
+            });
         } finally {
             setDeleting(false);
         }
