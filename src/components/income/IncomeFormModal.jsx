@@ -153,13 +153,15 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
           const debtData = {
             user_id: currentUser.id,
             name: `Lening van ${loanData.creditor_name}`,
-            creditor: loanData.creditor_name,
+            creditor_name: loanData.creditor_name,
+            creditor_type: 'anders',
             amount: parseFloat(formData.amount) || 0,
             amount_paid: 0,
             status: 'open',
             category: 'lening_particulier',
             interest_rate: loanData.has_interest ? loanData.interest_rate : 0,
             notes: `Geleend geld ontvangen op ${formData.date || new Date().toISOString().split('T')[0]}`,
+            origin_date: formData.date || new Date().toISOString().split('T')[0],
             created_at: new Date().toISOString()
           };
 
