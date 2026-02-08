@@ -7,6 +7,7 @@ import {
   needsDayOfWeek,
   needsDayOfMonth
 } from "../utils/frequencyHelpers";
+import { Debt, User } from "@/api/entities";
 
 const daysOfWeek = [
   { value: 1, label: 'Maandag' },
@@ -40,6 +41,13 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
     notes: '',
     income_type: 'vast',
     date: new Date().toISOString().split('T')[0]
+  });
+
+  // Lening-specifieke velden
+  const [loanData, setLoanData] = useState({
+    creditor_name: '',
+    interest_rate: 0,
+    has_interest: false
   });
 
   const [monthlyEquivalent, setMonthlyEquivalent] = useState(0);
@@ -82,24 +90,56 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
       // Ensure we have a valid income type
       const type = incomeType || 'vast';
 
+      // Voor lening: behandel als extra inkomen maar maak ook schuld aan
+      const effectiveType = type === 'lening' ? 'extra' : type;
+
       const data = {
         name: formData.description || formData.name || 'Inkomen',
         description: formData.description || '',
-        income_type: type,
+        income_type: effectiveType,
         amount: parseFloat(formData.amount) || 0,
-        monthly_equivalent: type === 'vast' ? monthlyEquivalent : null,
-        day_of_week: type === 'vast' && needsDayOfWeek(formData.frequency) ? formData.day_of_week : null,
-        day_of_month: type === 'vast' && needsDayOfMonth(formData.frequency) ? formData.day_of_month : null,
+        monthly_equivalent: effectiveType === 'vast' ? monthlyEquivalent : null,
+        day_of_week: effectiveType === 'vast' && needsDayOfWeek(formData.frequency) ? formData.day_of_week : null,
+        day_of_month: effectiveType === 'vast' && needsDayOfMonth(formData.frequency) ? formData.day_of_month : null,
         end_date: formData.end_date || null,
-        date: type === 'extra' ? formData.date : null,
-        frequency: type === 'vast' ? formData.frequency : null,
-        is_variable: type === 'vast' ? formData.is_variable : false,
+        date: effectiveType === 'extra' ? formData.date : null,
+        frequency: effectiveType === 'vast' ? formData.frequency : null,
+        is_variable: effectiveType === 'vast' ? formData.is_variable : false,
         is_active: true,
-        category: formData.category || 'salaris',
+        category: type === 'lening' ? 'lening' : (formData.category || 'salaris'),
         start_date: formData.start_date || new Date().toISOString().split('T')[0]
       };
 
       console.log('[IncomeFormModal] Submitting data:', data);
+
+      // Als het een lening is, maak ook automatisch een schuld aan
+      if (type === 'lening' && loanData.creditor_name) {
+        try {
+          // Haal user op voor user_id
+          const currentUser = await User.me();
+
+          const debtData = {
+            user_id: currentUser.id,
+            name: `Lening van ${loanData.creditor_name}`,
+            creditor: loanData.creditor_name,
+            amount: parseFloat(formData.amount) || 0,
+            amount_paid: 0,
+            status: 'open',
+            category: 'lening_particulier',
+            interest_rate: loanData.has_interest ? loanData.interest_rate : 0,
+            notes: `Geleend geld ontvangen op ${formData.date || new Date().toISOString().split('T')[0]}`,
+            created_at: new Date().toISOString()
+          };
+
+          console.log('[IncomeFormModal] Creating debt for loan:', debtData);
+          await Debt.create(debtData);
+          console.log('[IncomeFormModal] Debt created successfully');
+        } catch (debtError) {
+          console.error('[IncomeFormModal] Error creating debt:', debtError);
+          // Ga door met het opslaan van het inkomen, zelfs als de schuld niet kon worden aangemaakt
+        }
+      }
+
       await onSave(data);
     } finally {
       setIsSubmitting(false);
@@ -124,6 +164,11 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
       notes: '',
       income_type: 'vast',
       date: new Date().toISOString().split('T')[0]
+    });
+    setLoanData({
+      creditor_name: '',
+      interest_rate: 0,
+      has_interest: false
     });
     onClose();
   };
@@ -200,6 +245,34 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
                     </div>
                     <p className="text-[14px] text-gray-500 dark:text-[#a1a1a1] leading-relaxed">
                       Eenmalige inkomsten zoals bonussen, cadeaus of terugbetalingen.
+                    </p>
+                  </div>
+                </label>
+
+                {/* Geleend Geld Option */}
+                <label className="cursor-pointer group relative">
+                  <input
+                    type="radio"
+                    name="income_type"
+                    className="sr-only"
+                    checked={incomeType === 'lening'}
+                    onChange={() => setIncomeType('lening')}
+                  />
+                  <div className={`flex flex-col p-6 rounded-[16px] transition-all ${
+                    incomeType === 'lening'
+                      ? 'bg-amber-50 dark:bg-amber-500/10 border-2 border-amber-500'
+                      : 'bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#3a3a3a] hover:border-amber-500 hover:bg-amber-50/30 dark:hover:bg-amber-500/5'
+                  }`}>
+                    <div className="flex items-center gap-4 mb-3">
+                      <span
+                        className={`material-symbols-outlined text-[32px] ${incomeType === 'lening' ? 'text-amber-500' : 'text-gray-400 dark:text-[#a1a1a1] group-hover:text-amber-500'}`}
+                      >
+                        account_balance
+                      </span>
+                      <h3 className="text-[18px] font-semibold text-[#1F2937] dark:text-white">Geleend Geld</h3>
+                    </div>
+                    <p className="text-[14px] text-gray-500 dark:text-[#a1a1a1] leading-relaxed">
+                      Geld dat je hebt geleend. Dit wordt automatisch ook als schuld geregistreerd.
                     </p>
                   </div>
                 </label>
@@ -299,6 +372,83 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
                       <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
                         Let op: Dit inkomen wordt alleen meegeteld in de geselecteerde maand.
                       </p>
+                    </div>
+                  </>
+                )}
+
+                {/* Geleend Geld: extra velden */}
+                {incomeType === 'lening' && (
+                  <>
+                    {/* Datum ontvangen */}
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[14px] font-bold text-gray-700 dark:text-[#a1a1a1] ml-1">Datum ontvangen *</label>
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] text-[20px]">calendar_today</span>
+                        <input
+                          type="date"
+                          value={formData.date}
+                          onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                          required
+                          className="w-full bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl py-4 pl-12 pr-4 text-gray-900 dark:text-white focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 transition-all outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Van wie geleend */}
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[14px] font-bold text-gray-700 dark:text-[#a1a1a1] ml-1">Van wie geleend? *</label>
+                      <div className="relative">
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] text-[20px]">person</span>
+                        <input
+                          type="text"
+                          value={loanData.creditor_name}
+                          onChange={(e) => setLoanData(prev => ({ ...prev, creditor_name: e.target.value }))}
+                          placeholder="bijv. Ouders, Vriend, Bank"
+                          required
+                          className="w-full bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl py-4 pl-12 pr-4 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-[#6b7280] focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Rente toggle */}
+                    <div className="flex items-center justify-between py-2 px-1">
+                      <span className="text-[15px] font-bold text-[#1F2937] dark:text-white">Is er rente?</span>
+                      <Switch
+                        checked={loanData.has_interest}
+                        onCheckedChange={(checked) => setLoanData(prev => ({ ...prev, has_interest: checked, interest_rate: checked ? prev.interest_rate : 0 }))}
+                      />
+                    </div>
+
+                    {/* Rente percentage */}
+                    {loanData.has_interest && (
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[14px] font-bold text-gray-700 dark:text-[#a1a1a1] ml-1">Rente percentage (%)</label>
+                        <div className="relative">
+                          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] text-[20px]">percent</span>
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            max="100"
+                            value={loanData.interest_rate}
+                            onChange={(e) => setLoanData(prev => ({ ...prev, interest_rate: parseFloat(e.target.value) || 0 }))}
+                            placeholder="0.0"
+                            className="w-full bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl py-4 pl-12 pr-4 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-[#6b7280] focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all outline-none"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Info banner */}
+                    <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
+                      <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-[20px]">info</span>
+                      <div className="text-sm text-amber-700 dark:text-amber-300 leading-relaxed">
+                        <p className="font-semibold mb-1">Let op:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                          <li>Dit bedrag wordt als inkomen voor deze maand geregistreerd</li>
+                          <li>Er wordt automatisch een schuld aangemaakt bij "{loanData.creditor_name || '...'}"</li>
+                        </ul>
+                      </div>
                     </div>
                   </>
                 )}
