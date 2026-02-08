@@ -125,8 +125,17 @@ export default function PaymentDateModal({ isOpen, onClose, income, onSaved }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-[440px] overflow-hidden">
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 dark:bg-black/80 backdrop-blur-sm p-4"
+      onClick={(e) => {
+        // Close when clicking backdrop
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-[440px] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="p-5 border-b border-gray-100 dark:border-[#2a2a2a] flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -206,12 +215,14 @@ export default function PaymentDateModal({ isOpen, onClose, income, onSaved }) {
         {/* Footer */}
         <div className="p-5 border-t border-gray-100 dark:border-[#2a2a2a] bg-gray-50/50 dark:bg-[#0a0a0a]/50 flex items-center justify-end gap-3">
           <button
+            type="button"
             onClick={onClose}
             className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2a2a2a] text-gray-600 dark:text-[#a1a1a1] font-medium text-sm hover:bg-gray-100 dark:hover:bg-[#2a2a2a] transition-all"
           >
             Annuleren
           </button>
           <button
+            type="button"
             onClick={handleSave}
             disabled={saving || !calculatedNextDate}
             className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
