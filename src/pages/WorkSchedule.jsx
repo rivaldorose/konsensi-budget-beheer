@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { WorkDay, Payslip } from '@/api/entities';
+import { WorkDay, Payslip, Income } from '@/api/entities';
 import { User } from '@/api/entities';
 import { useToast } from '@/components/ui/use-toast';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek, getDay } from 'date-fns';
@@ -8,6 +8,12 @@ import WorkDayModal from '@/components/workdays/WorkDayModal';
 import PayslipScanModal from '@/components/workdays/PayslipScanModal';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import {
+  calculateNextPaymentDate,
+  getFrequencyLabel,
+  formatDateNL,
+  calculateMonthlyEquivalent
+} from '@/components/utils/frequencyHelpers';
 
 export default function WorkSchedule() {
   const [user, setUser] = useState(null);
@@ -20,6 +26,7 @@ export default function WorkSchedule() {
   const [employers, setEmployers] = useState([]);
   const [showPayslipModal, setShowPayslipModal] = useState(false);
   const [showEmployersModal, setShowEmployersModal] = useState(false);
+  const [fixedIncomes, setFixedIncomes] = useState([]);
   const { toast } = useToast();
 
   // Check dark mode from localStorage (managed by Layout component)
@@ -78,6 +85,11 @@ export default function WorkSchedule() {
         return payslipMonth === monthStr;
       });
       setPayslips(monthPayslips);
+
+      // Load fixed incomes
+      const allIncomes = await Income.filter({ user_id: currentUser.id });
+      const fixedOnly = allIncomes.filter(i => i.income_type === 'vast' && i.is_active !== false);
+      setFixedIncomes(fixedOnly);
     } catch (error) {
       console.error('Error loading work schedule:', error);
       toast({
@@ -169,6 +181,47 @@ export default function WorkSchedule() {
       hasPayslip: payslips.length > 0
     };
   }, [workDays, payslips]);
+
+  // Calculate next payment dates for fixed incomes
+  const incomesWithPaymentDates = useMemo(() => {
+    return fixedIncomes.map(income => {
+      let nextPaymentDate = null;
+
+      // Calculate next payment date based on frequency
+      if (income.last_payment_date) {
+        nextPaymentDate = calculateNextPaymentDate(
+          income.last_payment_date,
+          income.frequency,
+          income.day_of_week,
+          income.day_of_month
+        );
+      } else if (income.day_of_month) {
+        // For monthly incomes without last_payment_date, calculate from day_of_month
+        const today = new Date();
+        let nextDate = new Date(today.getFullYear(), today.getMonth(), income.day_of_month);
+        if (nextDate <= today) {
+          nextDate = new Date(today.getFullYear(), today.getMonth() + 1, income.day_of_month);
+        }
+        nextPaymentDate = nextDate;
+      }
+
+      // Calculate the monthly equivalent amount
+      const monthlyAmount = income.monthly_equivalent || calculateMonthlyEquivalent(income.amount, income.frequency);
+
+      return {
+        ...income,
+        nextPaymentDate,
+        monthlyAmount,
+        frequencyLabel: getFrequencyLabel(income.frequency)
+      };
+    }).sort((a, b) => {
+      // Sort by next payment date (soonest first)
+      if (!a.nextPaymentDate && !b.nextPaymentDate) return 0;
+      if (!a.nextPaymentDate) return 1;
+      if (!b.nextPaymentDate) return -1;
+      return a.nextPaymentDate - b.nextPaymentDate;
+    });
+  }, [fixedIncomes]);
 
   // Kalender genereren
   const calendarDays = useMemo(() => {
@@ -320,6 +373,108 @@ export default function WorkSchedule() {
             </div>
           </div>
         </div>
+
+        {/* Fixed Income Payment Schedule */}
+        {incomesWithPaymentDates.length > 0 && (
+          <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl border border-gray-100 dark:border-[#2a2a2a] shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] overflow-hidden p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-[20px]">payments</span>
+                </div>
+                <div>
+                  <h3 className="font-display font-bold text-lg text-[#131d0c] dark:text-white">Vast Inkomen & Betaaldata</h3>
+                  <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">Overzicht van je vaste inkomsten en betaaldata</p>
+                </div>
+              </div>
+              <Link to={createPageUrl('Income')}>
+                <span className="material-symbols-outlined text-gray-400 dark:text-[#a1a1a1] hover:text-emerald-600 dark:hover:text-emerald-400 text-[20px] cursor-pointer transition-colors">open_in_new</span>
+              </Link>
+            </div>
+
+            <div className="space-y-3">
+              {incomesWithPaymentDates.map((income) => {
+                const isUpcoming = income.nextPaymentDate &&
+                  income.nextPaymentDate <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Within 7 days
+
+                return (
+                  <div
+                    key={income.id}
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border transition-all ${
+                      isUpcoming
+                        ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800/30'
+                        : 'bg-gray-50 dark:bg-[#2a2a2a]/50 border-gray-100 dark:border-[#2a2a2a]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4 mb-3 sm:mb-0">
+                      <div className={`size-12 rounded-full flex items-center justify-center ${
+                        isUpcoming
+                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                          : 'bg-gray-100 dark:bg-[#2a2a2a] text-gray-500 dark:text-[#a1a1a1]'
+                      }`}>
+                        <span className="material-symbols-outlined text-[24px]">
+                          {income.is_from_work_schedule ? 'work' : 'account_balance'}
+                        </span>
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-[#131d0c] dark:text-white text-base">
+                          {income.description || 'Vast inkomen'}
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <span className="text-xs text-gray-500 dark:text-[#a1a1a1]">
+                            {income.frequencyLabel}
+                          </span>
+                          {income.day_of_month && (
+                            <span className="text-xs text-gray-400 dark:text-[#6b7280]">
+                              • Dag {income.day_of_month}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:items-end gap-1 pl-16 sm:pl-0">
+                      <span className="font-display font-bold text-xl text-[#131d0c] dark:text-white">
+                        {income.is_from_work_schedule && '~'}
+                        {(income.monthlyAmount || income.amount || 0).toLocaleString('nl-NL', {
+                          style: 'currency',
+                          currency: 'EUR',
+                          minimumFractionDigits: 2
+                        })}
+                      </span>
+                      {income.nextPaymentDate ? (
+                        <div className={`flex items-center gap-1.5 ${
+                          isUpcoming ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-[#a1a1a1]'
+                        }`}>
+                          <span className="material-symbols-outlined text-[14px]">event</span>
+                          <span className="text-xs font-medium">
+                            Volgende: {formatDateNL(income.nextPaymentDate)}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-400 dark:text-[#6b7280]">
+                          Betaaldatum niet ingesteld
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Info message */}
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-800/20">
+              <div className="flex items-start gap-2">
+                <span className="material-symbols-outlined text-blue-500 dark:text-blue-400 text-[18px] mt-0.5">info</span>
+                <p className="text-xs text-blue-700 dark:text-blue-400">
+                  Je kunt de betaaldatum instellen bij het bewerken van je vast inkomen.
+                  Voor wekelijks/tweewekelijks inkomen: geef je laatste betaaldatum op.
+                  Voor maandelijks inkomen: geef de dag van de maand op.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Action Toolbar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
