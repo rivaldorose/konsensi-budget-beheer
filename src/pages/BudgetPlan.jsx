@@ -52,6 +52,7 @@ export default function BudgetPlan() {
     const [transactions, setTransactions] = useState([]);
     const [potBreakdown, setPotBreakdown] = useState([]);
     const [allPots, setAllPots] = useState([]);
+    const [monthlyHistory, setMonthlyHistory] = useState([]);
     const [debts, setDebts] = useState([]);
     const [budgetCategories, setBudgetCategories] = useState([]);
 
@@ -399,6 +400,73 @@ export default function BudgetPlan() {
             setPotBreakdown(breakdown);
             setAllPots(expensePots);
             setBudgetCategories(breakdown);
+
+            // Calculate monthly history (last 6 months) for Budget Overzicht chart
+            const now = new Date(selectedMonth);
+            const historyData = [];
+            for (let i = 5; i >= 0; i--) {
+                const mDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const mEnd = new Date(mDate.getFullYear(), mDate.getMonth() + 1, 0, 23, 59, 59, 999);
+                const monthLabel = mDate.toLocaleDateString('nl-NL', { month: 'short' });
+                const isCurrentMonth = mDate.getMonth() === now.getMonth() && mDate.getFullYear() === now.getFullYear();
+
+                // Sum expenses from transactions in this month
+                const monthTxExpenses = transactionsData
+                    .filter(tx => {
+                        if (!tx?.date || tx.type !== 'expense' || tx.category === 'debt_payments') return false;
+                        const txDate = new Date(tx.date);
+                        return txDate >= mDate && txDate <= mEnd;
+                    })
+                    .reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
+
+                // Sum monthly costs that fall in this month
+                const monthCostExpenses = monthlyCostsData
+                    .filter(cost => {
+                        if (cost.status !== 'actief') return false;
+                        const paymentDay = cost.payment_date || 1;
+                        const paymentDate = new Date(mDate.getFullYear(), mDate.getMonth(), paymentDay);
+                        return paymentDate >= mDate && paymentDate <= mEnd;
+                    })
+                    .reduce((sum, cost) => sum + (parseFloat(cost.amount) || 0), 0);
+
+                // Sum debt payments in this month
+                const monthDebtExpenses = allDebtPayments
+                    .filter(p => {
+                        if (!p?.payment_date) return false;
+                        const pDate = new Date(p.payment_date);
+                        return pDate >= mDate && pDate <= mEnd;
+                    })
+                    .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+
+                // Sum income in this month
+                const monthIncome = incomeData
+                    .filter(inc => {
+                        if (inc.income_type === 'vast') {
+                            if (inc.is_active === false) return false;
+                            if (inc.start_date && new Date(inc.start_date) > mEnd) return false;
+                            if (inc.end_date && new Date(inc.end_date) < mDate) return false;
+                            return true;
+                        } else {
+                            if (!inc.date) return false;
+                            const incDate = new Date(inc.date);
+                            return incDate >= mDate && incDate <= mEnd;
+                        }
+                    })
+                    .reduce((sum, inc) => {
+                        if (inc.income_type === 'vast') {
+                            return sum + (parseFloat(inc.monthly_equivalent) || parseFloat(inc.amount) || 0);
+                        }
+                        return sum + (parseFloat(inc.amount) || 0);
+                    }, 0);
+
+                historyData.push({
+                    label: monthLabel,
+                    expenses: monthTxExpenses + monthCostExpenses + monthDebtExpenses,
+                    income: monthIncome,
+                    isCurrent: isCurrentMonth
+                });
+            }
+            setMonthlyHistory(historyData);
 
         } catch (error) {
             console.error('Error loading budget data:', error);
@@ -776,32 +844,63 @@ export default function BudgetPlan() {
                             )}
                         </div>
 
-                        {/* Timeline Chart Placeholder */}
+                        {/* Budget Overzicht - Live Chart */}
                         <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 md:p-8 shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] flex-1">
-                            <div className="flex justify-between items-center mb-6">
+                            <div className="flex justify-between items-center mb-2">
                                 <h3 className="text-xl font-bold text-[#1F2937] dark:text-white">Budget Overzicht</h3>
-                                <div className="flex bg-gray-100 dark:bg-[#111] p-1 rounded-lg">
-                                    <button className="px-3 py-1 text-xs font-bold text-white bg-primary rounded-md shadow-sm">Maand</button>
-                                    <button className="px-3 py-1 text-xs font-bold text-gray-500 dark:text-[#a1a1a1] rounded-md hover:text-gray-900 dark:hover:text-white">Jaar</button>
-                                                    </div>
-                                                </div>
-                            {/* Chart Visual (CSS Bars) */}
-                            <div className="h-48 flex items-end justify-between gap-2 text-xs text-gray-400 dark:text-[#a1a1a1] font-medium">
-                                {['Sep', 'Okt', 'Nov', 'Dec', 'Jan', 'Feb'].map((month, idx) => (
-                                    <div key={month} className="w-full flex flex-col items-center gap-2 group cursor-pointer">
-                                        <div className={`w-full rounded-t-lg h-[${60 + idx * 10}%] group-hover:opacity-80 transition-all relative ${
-                                            month === 'Jan' ? 'bg-primary' : 'bg-gray-100 dark:bg-[#2a2a2a]'
-                                        }`} style={{ height: `${60 + idx * 10}%` }}>
-                                            {month === 'Jan' && (
-                                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 dark:bg-[#2a2a2a] text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-10 opacity-0 group-hover:opacity-100">
-                                                    {formatCurrency(totalExpenses)}
-                                            </div>
-                                            )}
+                            </div>
+                            {/* Legend */}
+                            <div className="flex gap-4 mb-6">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="size-2.5 rounded-full bg-primary"></span>
+                                    <span className="text-[11px] font-medium text-gray-500 dark:text-[#a1a1a1]">Inkomen</span>
                                 </div>
-                                        <span className={month === 'Jan' ? 'text-primary font-bold' : ''}>{month}</span>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="size-2.5 rounded-full bg-red-400"></span>
+                                    <span className="text-[11px] font-medium text-gray-500 dark:text-[#a1a1a1]">Uitgaven</span>
+                                </div>
                             </div>
-                                ))}
-                            </div>
+                            {/* Chart Visual */}
+                            {(() => {
+                                const maxVal = Math.max(...monthlyHistory.map(m => Math.max(m.expenses, m.income)), 1);
+                                return (
+                                    <div className="h-48 flex items-end justify-between gap-2 text-xs text-gray-400 dark:text-[#a1a1a1] font-medium">
+                                        {monthlyHistory.map((month) => {
+                                            const expenseHeight = maxVal > 0 ? Math.max(4, (month.expenses / maxVal) * 100) : 4;
+                                            const incomeHeight = maxVal > 0 ? Math.max(4, (month.income / maxVal) * 100) : 4;
+                                            return (
+                                                <div key={month.label} className="w-full flex flex-col items-center gap-2 group cursor-pointer">
+                                                    <div className="w-full flex gap-1 items-end justify-center" style={{ height: '160px' }}>
+                                                        {/* Income bar */}
+                                                        <div
+                                                            className={`w-[45%] rounded-t-lg transition-all relative ${
+                                                                month.isCurrent ? 'bg-primary' : 'bg-primary/30'
+                                                            } group-hover:opacity-80`}
+                                                            style={{ height: `${incomeHeight}%` }}
+                                                        >
+                                                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 dark:bg-[#333] text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-10 opacity-0 group-hover:opacity-100 pointer-events-none">
+                                                                {formatCurrency(month.income)}
+                                                            </div>
+                                                        </div>
+                                                        {/* Expense bar */}
+                                                        <div
+                                                            className={`w-[45%] rounded-t-lg transition-all relative ${
+                                                                month.isCurrent ? 'bg-red-400' : 'bg-red-400/30'
+                                                            } group-hover:opacity-80`}
+                                                            style={{ height: `${expenseHeight}%` }}
+                                                        >
+                                                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 dark:bg-[#333] text-white text-[10px] py-1 px-2 rounded whitespace-nowrap z-10 opacity-0 group-hover:opacity-100 pointer-events-none">
+                                                                {formatCurrency(month.expenses)}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <span className={month.isCurrent ? 'text-primary font-bold' : ''}>{month.label}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })()}
                         </div>
                 </div>
 
