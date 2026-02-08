@@ -1277,24 +1277,6 @@ export default function Debts() {
                       </div>
                     )}
 
-                    {/* Budget verdeling */}
-                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-[#3a3a3a]">
-                      <p className="text-xs font-semibold text-gray-500 dark:text-[#a1a1a1] mb-2 uppercase tracking-wide">Aanbevolen verdeling:</p>
-                      <div className="space-y-1 text-xs">
-                        <div className="flex justify-between text-gray-600 dark:text-[#a1a1a1]">
-                          <span>Tussenlasten (60%)</span>
-                          <span>{formatCurrency(vtblData.tussenlasten || 0)}</span>
-                        </div>
-                        <div className="flex justify-between text-gray-600 dark:text-[#a1a1a1]">
-                          <span>Buffer (25%)</span>
-                          <span>{formatCurrency(vtblData.buffer || 0)}</span>
-                        </div>
-                        <div className="flex justify-between font-medium text-blue-600 dark:text-blue-400">
-                          <span>Afloscapaciteit (15%)</span>
-                          <span>{formatCurrency(vtblData.aflosCapaciteit || 0)}</span>
-                        </div>
-                      </div>
-                    </div>
                   </>
                 ) : (
                   /* Fallback naar simpele berekening */
