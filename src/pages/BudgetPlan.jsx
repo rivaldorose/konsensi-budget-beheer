@@ -195,8 +195,11 @@ export default function BudgetPlan() {
 
                     // SMART PAYMENT SCHEDULE CHECK
                     // Voor wekelijks/tweewekelijks/vierwekelijks: check of er daadwerkelijk een betaling in de periode valt
-                    if (needsLastPaymentDate(income.frequency) && income.last_payment_date) {
-                        return hasPaymentInPeriod(income, startDate, endDate);
+                    // We gebruiken start_date als referentiedatum (last_payment_date kolom bestaat niet in DB)
+                    if (needsLastPaymentDate(income.frequency) && income.start_date) {
+                        // Gebruik start_date als last_payment_date voor de berekening
+                        const incomeWithLastPayment = { ...income, last_payment_date: income.start_date };
+                        return hasPaymentInPeriod(incomeWithLastPayment, startDate, endDate);
                     }
 
                     return true;
@@ -211,8 +214,10 @@ export default function BudgetPlan() {
             const incomeTotal = filteredIncome.reduce((sum, income) => {
                 if (income.income_type === 'vast') {
                     // Voor wekelijks/tweewekelijks/vierwekelijks: tel het aantal betalingen in de periode
-                    if (needsLastPaymentDate(income.frequency) && income.last_payment_date) {
-                        const paymentsCount = countPaymentsInPeriod(income, startDate, endDate);
+                    // We gebruiken start_date als referentiedatum (last_payment_date kolom bestaat niet in DB)
+                    if (needsLastPaymentDate(income.frequency) && income.start_date) {
+                        const incomeWithLastPayment = { ...income, last_payment_date: income.start_date };
+                        const paymentsCount = countPaymentsInPeriod(incomeWithLastPayment, startDate, endDate);
                         const perPaymentAmount = parseFloat(income.amount) || 0;
                         return sum + (perPaymentAmount * paymentsCount);
                     }

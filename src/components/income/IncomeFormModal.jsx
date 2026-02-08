@@ -111,17 +111,9 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
       // Voor lening: behandel als extra inkomen maar maak ook schuld aan
       const effectiveType = type === 'lening' ? 'extra' : type;
 
-      // Bereken next_payment_date als we een last_payment_date hebben
-      let nextPaymentDate = null;
-      if (effectiveType === 'vast' && needsLastPaymentDate(formData.frequency) && formData.last_payment_date) {
-        const nextDate = calculateNextPaymentDate(
-          formData.last_payment_date,
-          formData.frequency,
-          formData.day_of_week,
-          formData.day_of_month
-        );
-        nextPaymentDate = nextDate ? nextDate.toISOString().split('T')[0] : null;
-      }
+      // NOTE: last_payment_date en next_payment_date worden NIET opgeslagen in de database
+      // Deze kolommen bestaan nog niet. We gebruiken start_date en day_of_week voor de berekening.
+      // Voor vierwekelijks inkomen: gebruik start_date als referentiedatum.
 
       const data = {
         name: formData.description || formData.name || 'Inkomen',
@@ -137,9 +129,10 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
         is_variable: effectiveType === 'vast' ? formData.is_variable : false,
         is_active: true,
         category: type === 'lening' ? 'lening' : (formData.category || 'salaris'),
-        start_date: formData.start_date || new Date().toISOString().split('T')[0],
-        last_payment_date: effectiveType === 'vast' && needsLastPaymentDate(formData.frequency) ? formData.last_payment_date : null,
-        next_payment_date: nextPaymentDate
+        // Voor vierwekelijks: gebruik last_payment_date als start_date voor berekeningen
+        start_date: (effectiveType === 'vast' && needsLastPaymentDate(formData.frequency) && formData.last_payment_date)
+          ? formData.last_payment_date
+          : (formData.start_date || new Date().toISOString().split('T')[0])
       };
 
       console.log('[IncomeFormModal] Submitting data:', data);
