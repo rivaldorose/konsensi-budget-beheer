@@ -248,7 +248,19 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
 
                 } else {
                     // Losse uitgave
-                    const expenseCategory = category || 'overig';
+                    // Resolve category: check if a pot exists with matching name (use pot name for consistency)
+                    let expenseCategory = category || 'Overig';
+                    const matchingPot = pots.find(p => p.name.toLowerCase() === expenseCategory.toLowerCase());
+                    if (matchingPot) {
+                        expenseCategory = matchingPot.name; // Use exact pot name
+                    } else {
+                        // Map costCategory values to readable names
+                        const catInfo = costCategories.find(c => c.value === expenseCategory);
+                        if (catInfo) {
+                            expenseCategory = catInfo.label.split(' ').slice(1).join(' ');
+                        }
+                    }
+
                     await Transaction.create({
                         user_id: currentUserId,
                         type: 'expense',
@@ -259,23 +271,20 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                     });
 
                     // Auto-pot aanmaken als er geen pot bestaat voor deze categorie
-                    if (expenseCategory !== 'other' && expenseCategory !== 'overig') {
+                    if (expenseCategory !== 'Overig' && expenseCategory !== 'other') {
                         const existingPots = await Pot.filter({ user_id: currentUserId });
                         const hasPot = existingPots.some(p => p.name.toLowerCase() === expenseCategory.toLowerCase());
                         if (!hasPot) {
-                            const catInfo = costCategories.find(c => c.value === expenseCategory);
-                            const icon = catInfo ? catInfo.label.split(' ')[0] : '📦';
-                            const potName = catInfo ? catInfo.label.split(' ').slice(1).join(' ') : expenseCategory;
                             await Pot.create({
                                 user_id: currentUserId,
-                                name: potName,
-                                icon: icon,
+                                name: expenseCategory,
+                                icon: '📦',
                                 pot_type: 'expense',
                                 budget: 0,
                                 target_amount: 0,
                                 current_amount: 0
                             });
-                            toast({ title: '✅ Uitgave toegevoegd!', description: `Nieuw potje "${potName}" automatisch aangemaakt` });
+                            toast({ title: '✅ Uitgave toegevoegd!', description: `Nieuw potje "${expenseCategory}" automatisch aangemaakt` });
                         } else {
                             toast({ title: '✅ Uitgave toegevoegd!' });
                         }
@@ -481,9 +490,9 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                                         {pots.filter(p => !costCategories.some(c => c.value === p.name.toLowerCase())).map(pot => (
                                             <button
                                                 key={`pot-${pot.id}`}
-                                                onClick={() => setCategory(pot.name.toLowerCase())}
+                                                onClick={() => setCategory(pot.name)}
                                                 className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl text-[11px] font-medium transition-all border ${
-                                                    category === pot.name.toLowerCase()
+                                                    category === pot.name || category === pot.name.toLowerCase()
                                                         ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700'
                                                         : 'bg-white dark:bg-[#2a2a2a] text-gray-600 dark:text-[#a1a1a1] border-gray-200 dark:border-[#3a3a3a] hover:border-emerald-200 dark:hover:border-emerald-800'
                                                 }`}

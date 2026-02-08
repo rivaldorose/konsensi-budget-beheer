@@ -353,22 +353,29 @@ export default function BudgetPlan() {
             };
             
             // Calculate category breakdown
+            // First: seed categoryMap with ALL expense pots so they always appear
             const categoryMap = {};
-            allTransactions.filter(tx => tx && tx.type === 'expense').forEach(tx => {
-                const cat = tx.category || 'Overig';
-                if (!categoryMap[cat]) {
-                    categoryMap[cat] = { amount: 0, budget: 0 };
-                }
-                categoryMap[cat].amount += tx.amount;
-            });
-
-            // Match with pots for budgets (case-insensitive)
             expensePots.forEach(pot => {
                 const potName = pot.name || 'Overig';
-                // Find matching category key (case-insensitive)
-                const matchKey = Object.keys(categoryMap).find(k => k.toLowerCase() === potName.toLowerCase());
+                categoryMap[potName] = {
+                    amount: 0,
+                    budget: parseFloat(pot.budget || pot.monthly_budget || 0),
+                    icon: pot.icon
+                };
+            });
+
+            // Then: add transaction amounts, merging into pot categories (case-insensitive)
+            allTransactions.filter(tx => tx && tx.type === 'expense').forEach(tx => {
+                const cat = tx.category || 'Overig';
+                // Try to find a matching pot category (case-insensitive)
+                const matchKey = Object.keys(categoryMap).find(k => k.toLowerCase() === cat.toLowerCase());
                 if (matchKey) {
-                    categoryMap[matchKey].budget = parseFloat(pot.budget || pot.monthly_budget || 0);
+                    categoryMap[matchKey].amount += tx.amount;
+                } else {
+                    if (!categoryMap[cat]) {
+                        categoryMap[cat] = { amount: 0, budget: 0 };
+                    }
+                    categoryMap[cat].amount += tx.amount;
                 }
             });
 
