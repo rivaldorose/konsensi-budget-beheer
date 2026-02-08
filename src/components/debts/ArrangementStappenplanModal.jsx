@@ -26,7 +26,7 @@ import IncassokostenForm from './IncassokostenForm';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { incomeService, monthlyCostService, debtService, vtblService } from "@/components/services";
-import { formatCurrency } from "@/components/utils/formatters";
+import { formatCurrency, formatDateSafe } from "@/components/utils/formatters";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'; // Added from outline
 
 const StepHeader = ({ step, title, subtitle, isCompleted, isCurrent }) => (
@@ -139,10 +139,10 @@ export default function ArrangementStappenplanModal({ debt, isOpen, onClose }) {
         reasonText = "Ik heb deze dienst/product nooit afgenomen. Ik heb geen overeenkomst met u gesloten en herken deze vordering niet.";
         break;
       case 'already_paid':
-        reasonText = `Ik heb dit bedrag reeds volledig betaald op ${details.paymentDate ? new Date(details.paymentDate).toLocaleDateString('nl-NL') : '[datum]'} met betalingskenmerk ${details.paymentReference || '[betalingskenmerk]'}. Bijgevoegd vindt u een kopie van het betalingsbewijs.`;
+        reasonText = `Ik heb dit bedrag reeds volledig betaald op ${formatDateSafe(details.paymentDate) || '[datum]'} met betalingskenmerk ${details.paymentReference || '[betalingskenmerk]'}. Bijgevoegd vindt u een kopie van het betalingsbewijs.`;
         break;
       case 'cancelled':
-        reasonText = `Ik heb de overeenkomst tijdig opgezegd op ${details.cancelDate ? new Date(details.cancelDate).toLocaleDateString('nl-NL') : '[datum]'}. Er kunnen daarom geen kosten meer in rekening worden gebracht na deze opzegdatum.`;
+        reasonText = `Ik heb de overeenkomst tijdig opgezegd op ${formatDateSafe(details.cancelDate) || '[datum]'}. Er kunnen daarom geen kosten meer in rekening worden gebracht na deze opzegdatum.`;
         break;
       case 'amount_wrong':
         reasonText = `Het gevorderde bedrag van ${formatCurrency(debt.amount)} is onjuist. Het correcte bedrag bedraagt ${details.correctAmount ? formatCurrency(parseFloat(details.correctAmount)) : '[correct bedrag]'}.`;
@@ -411,19 +411,19 @@ ${userName}`;
 
     let optionalPaymentText = '';
     if (includeFirstPayment && firstPaymentAmount && firstPaymentDate) {
-      optionalPaymentText = `Op ${new Date(firstPaymentDate).toLocaleDateString('nl-NL')} zal ik het eerste bedrag van ${formatCurrency(parseFloat(firstPaymentAmount))} overmaken.`;
+      optionalPaymentText = `Op ${formatDateSafe(firstPaymentDate) || '[datum]'} zal ik het eerste bedrag van ${formatCurrency(parseFloat(firstPaymentAmount))} overmaken.`;
     } else if (includeFirstPayment && firstPaymentAmount) {
       optionalPaymentText = `Ik heb alvast ${formatCurrency(parseFloat(firstPaymentAmount))} aan u betaald.`;
     }
 
     // ✅ Officieel Juridisch Loket template
-    const formattedDate = new Date(receivedLetterDate).toLocaleDateString('nl-NL');
-    const todayFormatted = new Date().toLocaleDateString('nl-NL');
+    const formattedDate = formatDateSafe(receivedLetterDate) || '[datum]';
+    const todayFormatted = formatDateSafe(new Date()) || '[datum]';
     const monthlyFormatted = formatCurrency(parseFloat(monthlyAmount) || 0);
 
     let paymentSentence = '';
     if (includeFirstPayment && firstPaymentDate) {
-      const fpDate = new Date(firstPaymentDate).toLocaleDateString('nl-NL');
+      const fpDate = formatDateSafe(firstPaymentDate) || '[datum]';
       if (firstPaymentAmount) {
         paymentSentence = ` Op ${fpDate} zal ik de eerste termijn van ${formatCurrency(parseFloat(firstPaymentAmount))} overmaken.`;
       } else {

@@ -1,48 +1,58 @@
 import React, { useState, useEffect } from 'react';
-import { User, MonthlyCost, Debt } from "@/api/entities";
+import { User, MonthlyCost, Debt, Income } from "@/api/entities";
 import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
 import { useLocation, Link } from "react-router-dom";
-
-// Recofa normen 2024/2025 (bijstandsnormen als basis voor beslagvrije voet)
-const RECOFA_NORMEN = {
-  alleenstaand: 1255.67,
-  gehuwdSamenwonend: 1793.81,
-  alleenstaandeOuder: 1255.67,
-  kinderbijslagPerKind: 104.00,
-  maxWoonkostenComponent: 879.66,
-  zorgverzekeringsComponent: 135,
-};
+import { incomeService, debtService } from "@/components/services";
+import {
+  berekenVTLB,
+  vtlbSettingsToProfiel,
+  VTLB_NORMEN,
+  formatLeefsituatie,
+  formatWerksituatie,
+} from "@/services/vtlbService";
 
 export default function VTLBSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    householdType: 'Alleenstaand',
-    numberOfChildren: 0,
-    rentMortgage: 0,
-    healthInsurance: 135,
+    // Huishouden
+    leefsituatie: 'alleenstaand',
+    aantalKinderen: 0,
+
+    // Woonsituatie
+    typeWoning: 'huur_sociaal',
+    woonlasten: 0,
+
+    // Werk & Reizen
+    werksituatie: 'geen',
+    afstandWerk: 0,
+    werkdagen: 5,
+
+    // Zorg & Gezondheid
+    chronischeZiekte: false,
+    medicijnkosten: 0,
+
+    // Verplichtingen
+    alimentatie: 0,
+    studiekosten: 0,
+    kinderopvangKosten: 0,
+    gemeentebelasting: 0,
+    vakbond: 0,
   });
+
   const [baseData, setBaseData] = useState({
-    monthlyIncome: 0,
-    fixedCosts: 0,
-    currentArrangements: 0
+    nettoInkomen: 0,
+    bestaandeRegelingen: 0,
   });
-  const [calculation, setCalculation] = useState({
-    totalIncome: 0,
-    beslagvrijeVoet: 0,
-    afloscapaciteit: 0,
-    breakdown: {
-      basisnorm: 0,
-      woonkosten: 0,
-      zorgverzekering: 0,
-      kinderbijslag: 0
-    }
-  });
+
+  const [vtlbResult, setVtlbResult] = useState(null);
+  const [expandedSection, setExpandedSection] = useState('huishouden');
+
   const location = useLocation();
   const { toast } = useToast();
-
   const currentPath = location.pathname;
+
   const isActiveRoute = (path) => {
     if (path === 'Settings') return currentPath === createPageUrl('Settings');
     return currentPath === createPageUrl(path);
@@ -53,81 +63,60 @@ export default function VTLBSettings() {
   }, []);
 
   useEffect(() => {
-    calculateVTLB();
+    // Herbereken VTLB bij elke wijziging
+    const profiel = vtlbSettingsToProfiel(
+      formData,
+      baseData.nettoInkomen,
+      baseData.bestaandeRegelingen
+    );
+    const result = berekenVTLB(profiel);
+    setVtlbResult(result);
   }, [formData, baseData]);
-
-  const getBasisnorm = (householdType) => {
-    switch (householdType) {
-      case 'Gehuwd / Samenwonend':
-        return RECOFA_NORMEN.gehuwdSamenwonend;
-      case 'Alleenstaande ouder':
-        return RECOFA_NORMEN.alleenstaandeOuder;
-      case 'Alleenstaand':
-      default:
-        return RECOFA_NORMEN.alleenstaand;
-    }
-  };
-
-  const calculateVTLB = () => {
-    const totalIncome = baseData.monthlyIncome;
-    const basisnorm = getBasisnorm(formData.householdType);
-    const woonkosten = Math.min(formData.rentMortgage || 0, RECOFA_NORMEN.maxWoonkostenComponent);
-    const zorgverzekering = formData.healthInsurance || RECOFA_NORMEN.zorgverzekeringsComponent;
-    const kinderbijslag = (formData.numberOfChildren || 0) * RECOFA_NORMEN.kinderbijslagPerKind;
-    const beslagvrijeVoet = basisnorm + woonkosten + zorgverzekering + kinderbijslag;
-    const afloscapaciteit = Math.max(0, totalIncome - beslagvrijeVoet - baseData.currentArrangements);
-
-    setCalculation({
-      totalIncome,
-      beslagvrijeVoet,
-      afloscapaciteit,
-      breakdown: {
-        basisnorm,
-        woonkosten,
-        zorgverzekering,
-        kinderbijslag
-      }
-    });
-  };
 
   const loadData = async () => {
     try {
       const userData = await User.me();
-      const costs = await MonthlyCost.filter({ user_id: userData.id });
-      const debts = await Debt.filter({ user_id: userData.id });
+      const [incomes, costs, debts] = await Promise.all([
+        Income.filter({ user_id: userData.id }),
+        MonthlyCost.filter({ user_id: userData.id }),
+        Debt.filter({ user_id: userData.id }),
+      ]);
 
-      const monthlyIncome = parseFloat(userData.monthly_income || 0);
-      const totalFixedCosts = costs.reduce((sum, cost) => sum + parseFloat(cost.amount || 0), 0);
+      // Bereken inkomen
+      const incomeData = incomeService.processIncomeData(incomes, new Date());
+      const nettoInkomen = incomeData.total || parseFloat(userData.monthly_income) || 0;
 
-      const debtsWithArrangements = debts.filter(debt =>
-        debt.status === 'betalingsregeling' || debt.status === 'payment_arrangement'
+      // Bereken bestaande regelingen
+      const arrangementsResult = debtService.getActiveArrangementPayments(debts);
+      const bestaandeRegelingen = arrangementsResult.total;
+
+      // Laad opgeslagen VTLB settings
+      const savedSettings = userData.vtlb_settings || {};
+
+      // Probeer woonlasten uit costs te halen indien niet ingesteld
+      const huurCost = costs.find(c =>
+        c.category === 'huur' ||
+        c.category === 'hypotheek' ||
+        c.name?.toLowerCase().includes('huur') ||
+        c.name?.toLowerCase().includes('hypotheek')
       );
-      const currentArrangements = debtsWithArrangements.reduce((sum, debt) =>
-        sum + parseFloat(debt.monthly_payment || 0), 0
-      );
-
-      // Try to get rent/mortgage from costs
-      const huurCost = costs.find(c => c.category === 'huur' || c.category === 'hypotheek' || c.name?.toLowerCase().includes('huur') || c.name?.toLowerCase().includes('hypotheek'));
-      const zorgCost = costs.find(c => c.category === 'zorgverzekering' || c.name?.toLowerCase().includes('zorg'));
 
       setBaseData({
-        monthlyIncome,
-        fixedCosts: totalFixedCosts,
-        currentArrangements
+        nettoInkomen,
+        bestaandeRegelingen,
       });
 
-      // Pre-fill form with data from costs if available
       setFormData(prev => ({
         ...prev,
-        rentMortgage: huurCost ? parseFloat(huurCost.amount || 0) : prev.rentMortgage,
-        healthInsurance: zorgCost ? parseFloat(zorgCost.amount || 0) : prev.healthInsurance,
+        ...savedSettings,
+        woonlasten: savedSettings.woonlasten || (huurCost ? parseFloat(huurCost.amount) : 0),
       }));
 
     } catch (error) {
       console.error("Error loading VTLB data:", error);
       toast({
         variant: 'destructive',
-        title: 'Fout bij laden gegevens'
+        title: 'Fout bij laden gegevens',
       });
     } finally {
       setLoading(false);
@@ -137,15 +126,20 @@ export default function VTLBSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const userData = await User.me();
+      await User.update(userData.id, {
+        vtlb_settings: formData,
+      });
+
       toast({
-        title: 'Berekening opgeslagen',
-        description: 'Je VTLB gegevens zijn bijgewerkt.'
+        title: 'VTLB instellingen opgeslagen',
+        description: `Afloscapaciteit: €${vtlbResult?.afloscapaciteit?.toFixed(2) || 0}/maand`,
       });
     } catch (error) {
       console.error("Error saving:", error);
       toast({
         variant: 'destructive',
-        title: 'Fout bij opslaan'
+        title: 'Fout bij opslaan',
       });
     } finally {
       setSaving(false);
@@ -157,8 +151,12 @@ export default function VTLBSettings() {
       style: 'currency',
       currency: 'EUR',
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount);
+      maximumFractionDigits: 2,
+    }).format(amount || 0);
+  };
+
+  const toggleSection = (section) => {
+    setExpandedSection(expandedSection === section ? null : section);
   };
 
   if (loading) {
@@ -174,445 +172,597 @@ export default function VTLBSettings() {
 
   return (
     <div className="h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex flex-col overflow-hidden">
-      {/* Main Content */}
       <main className="flex-1 flex justify-center py-8 px-4 sm:px-6 md:px-8 overflow-hidden">
         <div className="w-full max-w-[1400px] flex flex-col gap-6 h-full">
-          {/* Page Header - Fixed */}
+          {/* Page Header */}
           <div className="flex flex-wrap items-center justify-between gap-4 flex-shrink-0">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary dark:text-primary text-3xl">settings</span>
-                <h1 className="text-[#0d1b17] dark:text-white text-3xl md:text-4xl font-black tracking-tight">Instellingen</h1>
+                <span className="material-symbols-outlined text-primary dark:text-primary text-3xl">calculate</span>
+                <h1 className="text-[#0d1b17] dark:text-white text-3xl md:text-4xl font-black tracking-tight">VTLB Berekening</h1>
               </div>
-              <p className="text-[#6B7280] dark:text-[#9CA3AF] text-base font-normal pl-11">Beheer je profiel, notificaties en app-voorkeuren</p>
+              <p className="text-[#6B7280] dark:text-[#9CA3AF] text-base font-normal pl-11">Bereken je Vrij Te Laten Bedrag volgens officiële WSNP-normen</p>
             </div>
-            <button
-              className="flex items-center gap-2 px-5 py-2 rounded-full border border-[#E5E7EB] dark:border-[#2a2a2a] bg-white dark:bg-[#1a1a1a] text-[#0d1b17] dark:text-white text-sm font-bold hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors shadow-sm"
-              onClick={() => window.location.href = createPageUrl('HelpSupport')}
-            >
-              <span className="material-symbols-outlined text-[20px]">help_outline</span>
-              <span>Hulp</span>
-            </button>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-6 items-start flex-1 min-h-0">
-            {/* Sidebar Navigation - Fixed */}
-            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] lg:rounded-[24px] shadow-soft dark:shadow-soft border border-[#E5E7EB] dark:border-[#2a2a2a] p-4 lg:p-6 flex flex-col flex-shrink-0 lg:max-h-full lg:overflow-y-auto">
+            {/* Sidebar Navigation */}
+            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] shadow-soft border border-[#E5E7EB] dark:border-[#2a2a2a] p-4 lg:p-6 flex flex-col flex-shrink-0 lg:max-h-full lg:overflow-y-auto">
               <nav className="flex flex-col gap-2">
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('Settings')
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary border border-primary/20'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a]'
                   }`}
                   to={createPageUrl('Settings')}
                 >
-                  <span className={`material-symbols-outlined ${isActiveRoute('Settings') ? 'fill-1' : ''}`} style={isActiveRoute('Settings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
-                    account_circle
-                  </span>
-                  <span className={`text-sm ${isActiveRoute('Settings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Mijn Profiel</span>
-                </Link>
-                <Link
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
-                    isActiveRoute('SecuritySettings')
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
-                  }`}
-                  to={createPageUrl('SecuritySettings')}
-                >
-                  <span className={`material-symbols-outlined ${isActiveRoute('SecuritySettings') ? 'fill-1' : ''}`} style={isActiveRoute('SecuritySettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
-                    shield
-                  </span>
-                  <span className={`text-sm ${isActiveRoute('SecuritySettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Account & Beveiliging</span>
-                </Link>
-                <Link
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
-                    isActiveRoute('NotificationSettings')
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
-                  }`}
-                  to={createPageUrl('NotificationSettings')}
-                >
-                  <span className={`material-symbols-outlined ${isActiveRoute('NotificationSettings') ? 'fill-1' : ''}`} style={isActiveRoute('NotificationSettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
-                    notifications
-                  </span>
-                  <span className={`text-sm ${isActiveRoute('NotificationSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Notificaties</span>
-                </Link>
-                <Link
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
-                    isActiveRoute('DisplaySettings')
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
-                  }`}
-                  to={createPageUrl('DisplaySettings')}
-                >
-                  <span className={`material-symbols-outlined ${isActiveRoute('DisplaySettings') ? 'fill-1' : ''}`} style={isActiveRoute('DisplaySettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
-                    tune
-                  </span>
-                  <span className={`text-sm ${isActiveRoute('DisplaySettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>App Voorkeuren</span>
+                  <span className="material-symbols-outlined">account_circle</span>
+                  <span className="text-sm font-medium">Mijn Profiel</span>
                 </Link>
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('VTLBSettings')
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary border border-primary/20'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a]'
                   }`}
                   to={createPageUrl('VTLBSettings')}
                 >
-                  <span className={`material-symbols-outlined ${isActiveRoute('VTLBSettings') ? 'fill-1' : ''}`} style={isActiveRoute('VTLBSettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
-                    calculate
-                  </span>
-                  <span className={`text-sm ${isActiveRoute('VTLBSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>VTLB Berekening</span>
+                  <span className="material-symbols-outlined">calculate</span>
+                  <span className="text-sm font-bold">VTLB Berekening</span>
                 </Link>
                 <Link
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
-                    isActiveRoute('GamificationSettings')
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
-                  }`}
-                  to={createPageUrl('GamificationSettings')}
+                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-all"
+                  to={createPageUrl('DisplaySettings')}
                 >
-                  <span className={`material-symbols-outlined ${isActiveRoute('GamificationSettings') ? 'fill-1' : ''}`} style={isActiveRoute('GamificationSettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
-                    emoji_events
-                  </span>
-                  <span className={`text-sm ${isActiveRoute('GamificationSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Gamification & XP</span>
-                </Link>
-                <div className="mt-4 pt-2 px-4 pb-1">
-                  <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Hulp & Support</h3>
-                </div>
-                <Link
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
-                    isActiveRoute('HelpSupport')
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
-                  }`}
-                  to={createPageUrl('HelpSupport')}
-                >
-                  <span className={`material-symbols-outlined ${isActiveRoute('HelpSupport') ? 'fill-1' : ''}`} style={isActiveRoute('HelpSupport') ? { fontVariationSettings: "'FILL' 1" } : {}}>
-                    help
-                  </span>
-                  <span className={`text-sm ${isActiveRoute('HelpSupport') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Help Center</span>
-                </Link>
-                <Link
-                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
-                    isActiveRoute('FAQSettings')
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
-                  }`}
-                  to={createPageUrl('FAQSettings')}
-                >
-                  <span className={`material-symbols-outlined ${isActiveRoute('FAQSettings') ? 'fill-1' : ''}`} style={isActiveRoute('FAQSettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
-                    help_outline
-                  </span>
-                  <span className={`text-sm ${isActiveRoute('FAQSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Veelgestelde Vragen</span>
-                </Link>
-                <Link
-                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white transition-all"
-                  to={createPageUrl('TermsOfService')}
-                >
-                  <span className="material-symbols-outlined">description</span>
-                  <span className="font-medium text-sm group-hover:font-semibold">Algemene Voorwaarden</span>
-                </Link>
-                <Link
-                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white transition-all"
-                  to={createPageUrl('PrivacyPolicy')}
-                >
-                  <span className="material-symbols-outlined">policy</span>
-                  <span className="font-medium text-sm group-hover:font-semibold">Privacybeleid</span>
+                  <span className="material-symbols-outlined">tune</span>
+                  <span className="text-sm font-medium">App Voorkeuren</span>
                 </Link>
               </nav>
             </aside>
 
-            {/* Main Content Section - Scrollable */}
-            <div className="flex-1 w-full overflow-y-auto lg:max-h-full">
-              <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] shadow-soft dark:shadow-soft border border-[#E5E7EB] dark:border-[#2a2a2a] p-6 md:p-8 lg:p-10 w-full">
-                <div className="flex flex-col border-b border-[#E5E7EB] dark:border-[#2a2a2a] pb-6 mb-8">
-                  <h2 className="text-[#0d1b17] dark:text-white text-2xl font-bold">VTLB Berekening</h2>
-                  <p className="text-[#6B7280] dark:text-[#9CA3AF] text-sm md:text-base mt-1">Bereken je Vrij Te Laten Bedrag op basis van de officiële Recofa-normen 2024</p>
-                </div>
-
-                {/* Section 1: Inkomen */}
-                <section className="mb-8">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-primary/10 rounded-full text-primary dark:text-green-400">
-                      <span className="material-symbols-outlined text-[20px]">account_balance_wallet</span>
-                    </div>
-                    <h3 className="text-gray-900 dark:text-white text-lg font-bold">Netto inkomen</h3>
-                  </div>
-                  <div className="w-full h-[56px] px-4 rounded-xl bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#2a2a2a] flex items-center justify-between">
-                    <span className="text-gray-600 dark:text-gray-400 font-medium">Maandelijks inkomen (uit je profiel)</span>
-                    <span className="text-primary dark:text-green-400 font-bold text-lg">
-                      {formatCurrency(baseData.monthlyIncome)}
-                    </span>
-                  </div>
-                  <button
-                    className="text-primary dark:text-green-400 text-sm font-medium hover:underline flex items-center gap-1 group mt-2"
-                    onClick={() => window.location.href = createPageUrl('Income')}
-                  >
-                    Inkomen aanpassen
-                    <span className="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
-                  </button>
-                </section>
-
-                <hr className="border-gray-100 dark:border-[#2a2a2a] mb-8" />
-
-                {/* Section 2: Huishouden */}
-                <section className="mb-8">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-blue-500/10 rounded-full text-blue-600 dark:text-blue-400">
-                      <span className="material-symbols-outlined text-[20px]">family_restroom</span>
-                    </div>
-                    <h3 className="text-gray-900 dark:text-white text-lg font-bold">Huishouden</h3>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold">Type huishouden</label>
-                      <select
-                        className="form-select block w-full h-[50px] px-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-medium focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer"
-                        value={formData.householdType}
-                        onChange={(e) => setFormData({...formData, householdType: e.target.value})}
-                      >
-                        <option>Alleenstaand</option>
-                        <option>Gehuwd / Samenwonend</option>
-                        <option>Alleenstaande ouder</option>
-                      </select>
-                      <p className="text-xs text-gray-500 dark:text-gray-500">
-                        Basisnorm: {formatCurrency(getBasisnorm(formData.householdType))}
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold">Aantal kinderen</label>
-                      <div className="flex items-center h-[50px] border border-gray-200 dark:border-[#2a2a2a] rounded-xl bg-gray-50 dark:bg-[#0a0a0a] overflow-hidden focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
-                        <button
-                          className="px-4 h-full text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-[#1a1a1a] transition-colors"
-                          onClick={() => setFormData({...formData, numberOfChildren: Math.max(0, formData.numberOfChildren - 1)})}
-                        >
-                          <span className="material-symbols-outlined text-sm">remove</span>
-                        </button>
-                        <input
-                          className="w-full h-full border-none bg-transparent text-center font-bold text-gray-900 dark:text-white focus:ring-0 p-0"
-                          min="0"
-                          type="number"
-                          value={formData.numberOfChildren}
-                          onChange={(e) => setFormData({...formData, numberOfChildren: parseInt(e.target.value) || 0})}
-                        />
-                        <button
-                          className="px-4 h-full text-gray-500 dark:text-gray-400 hover:text-primary hover:bg-gray-100 dark:hover:bg-[#1a1a1a] transition-colors"
-                          onClick={() => setFormData({...formData, numberOfChildren: formData.numberOfChildren + 1})}
-                        >
-                          <span className="material-symbols-outlined text-sm">add</span>
-                        </button>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-500">
-                        + {formatCurrency(RECOFA_NORMEN.kinderbijslagPerKind)} per kind
-                      </p>
-                    </div>
-                  </div>
-                </section>
-
-                <hr className="border-gray-100 dark:border-[#2a2a2a] mb-8" />
-
-                {/* Section 3: Vaste lasten voor beslagvrije voet */}
-                <section className="mb-8">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-orange-500/10 rounded-full text-orange-500">
-                      <span className="material-symbols-outlined text-[20px]">home</span>
-                    </div>
-                    <h3 className="text-gray-900 dark:text-white text-lg font-bold">Vaste lasten (voor beslagvrije voet)</h3>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold">Huur / Hypotheek</label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <span className="text-gray-400 dark:text-gray-500 font-bold">€</span>
-                        </div>
-                        <input
-                          className="form-input block w-full h-[50px] pl-10 pr-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                          placeholder="0.00"
-                          type="number"
-                          value={formData.rentMortgage || ''}
-                          onChange={(e) => setFormData({...formData, rentMortgage: parseFloat(e.target.value) || 0})}
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-500">
-                        Max. {formatCurrency(RECOFA_NORMEN.maxWoonkostenComponent)} (huurtoeslaggrens)
-                      </p>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold">Zorgverzekering (netto)</label>
-                      <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <span className="text-gray-400 dark:text-gray-500 font-bold">€</span>
-                        </div>
-                        <input
-                          className="form-input block w-full h-[50px] pl-10 pr-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                          placeholder="135.00"
-                          type="number"
-                          value={formData.healthInsurance || ''}
-                          onChange={(e) => setFormData({...formData, healthInsurance: parseFloat(e.target.value) || 0})}
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-500">
-                        Na aftrek zorgtoeslag
-                      </p>
-                    </div>
-                  </div>
-                </section>
-
-                {/* Lopende betalingsregelingen */}
-                {baseData.currentArrangements > 0 && (
-                  <>
-                    <hr className="border-gray-100 dark:border-[#2a2a2a] mb-8" />
-                    <section className="mb-8">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-purple-500/10 rounded-full text-purple-500">
-                          <span className="material-symbols-outlined text-[20px]">payments</span>
-                        </div>
-                        <h3 className="text-gray-900 dark:text-white text-lg font-bold">Lopende betalingsregelingen</h3>
-                      </div>
-                      <div className="w-full h-[56px] px-4 rounded-xl bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#2a2a2a] flex items-center justify-between">
-                        <span className="text-gray-600 dark:text-gray-400 font-medium">Maandelijkse aflossingen</span>
-                        <span className="text-purple-500 font-bold text-lg">
-                          - {formatCurrency(baseData.currentArrangements)}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                        Dit bedrag wordt afgetrokken van je beschikbare afloscapaciteit
-                      </p>
-                    </section>
-                  </>
-                )}
-
-                <hr className="border-gray-100 dark:border-[#2a2a2a] mb-8" />
-
-                {/* Section: Beslagvrije voet breakdown */}
-                <section className="mb-8">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-amber-500/10 rounded-full text-amber-500">
-                      <span className="material-symbols-outlined text-[20px]">calculate</span>
-                    </div>
-                    <h3 className="text-gray-900 dark:text-white text-lg font-bold">Beslagvrije voet berekening</h3>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-5 space-y-3 border border-gray-200 dark:border-[#2a2a2a]">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">Basisnorm ({formData.householdType})</span>
-                      <span className="text-gray-900 dark:text-white font-medium">{formatCurrency(calculation.breakdown.basisnorm)}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">+ Woonkosten</span>
-                      <span className="text-gray-900 dark:text-white font-medium">{formatCurrency(calculation.breakdown.woonkosten)}</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600 dark:text-gray-400">+ Zorgverzekering</span>
-                      <span className="text-gray-900 dark:text-white font-medium">{formatCurrency(calculation.breakdown.zorgverzekering)}</span>
-                    </div>
-                    {calculation.breakdown.kinderbijslag > 0 && (
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600 dark:text-gray-400">+ Kinderbijslag ({formData.numberOfChildren} kind{formData.numberOfChildren !== 1 ? 'eren' : ''})</span>
-                        <span className="text-gray-900 dark:text-white font-medium">{formatCurrency(calculation.breakdown.kinderbijslag)}</span>
-                      </div>
-                    )}
-                    <hr className="border-gray-200 dark:border-[#2a2a2a] my-2" />
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-900 dark:text-white font-bold">Beslagvrije voet</span>
-                      <span className="text-amber-500 font-bold text-lg">{formatCurrency(calculation.beslagvrijeVoet)}</span>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-3">
-                    De beslagvrije voet is het minimumbedrag dat je nodig hebt om van te leven. Dit bedrag is beschermd tegen beslag.
-                  </p>
-                </section>
-
-                {/* Calculation Result */}
-                <div className="bg-primary/5 dark:bg-primary/10 border border-primary/20 rounded-[24px] p-6 mb-8">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div className="text-center md:text-left">
-                      <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Netto inkomen</p>
-                      <p className="text-gray-900 dark:text-white font-bold text-lg">{formatCurrency(calculation.totalIncome)}</p>
+            {/* Main Content */}
+            <div className="flex-1 w-full overflow-y-auto lg:max-h-full space-y-6">
+              {/* VTLB Result Card */}
+              {vtlbResult && (
+                <div className={`rounded-[24px] p-6 border-2 ${
+                  vtlbResult.statusColor === 'green'
+                    ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30'
+                    : vtlbResult.statusColor === 'orange'
+                    ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30'
+                    : 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30'
+                }`}>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div className="text-center">
+                      <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Netto inkomen</p>
+                      <p className="text-gray-900 dark:text-white font-bold text-lg">{formatCurrency(vtlbResult.nettoInkomen)}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Beslagvrije voet</p>
-                      <p className="text-amber-500 font-bold text-lg">- {formatCurrency(calculation.beslagvrijeVoet)}</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">VTLB (Beslagvrije voet)</p>
+                      <p className="text-amber-600 dark:text-amber-400 font-bold text-lg">- {formatCurrency(vtlbResult.vtlbTotaal)}</p>
                     </div>
-                    {baseData.currentArrangements > 0 && (
-                      <div className="text-center md:text-right">
-                        <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Lopende regelingen</p>
-                        <p className="text-purple-500 font-bold text-lg">- {formatCurrency(baseData.currentArrangements)}</p>
-                      </div>
-                    )}
+                    <div className="text-center">
+                      <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Lopende regelingen</p>
+                      <p className="text-purple-600 dark:text-purple-400 font-bold text-lg">- {formatCurrency(vtlbResult.bestaandeRegelingen)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Afloscapaciteit</p>
+                      <p className={`font-extrabold text-2xl ${
+                        vtlbResult.statusColor === 'green'
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : vtlbResult.statusColor === 'orange'
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {formatCurrency(vtlbResult.afloscapaciteit)}
+                      </p>
+                    </div>
                   </div>
-                  <hr className="border-primary/20 mb-4" />
-                  <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div>
-                      <p className="text-gray-900 dark:text-white text-lg font-bold">Jouw Afloscapaciteit</p>
-                      <p className="text-gray-500 dark:text-gray-400 text-sm">
-                        Beschikbaar voor extra schuldaflossing per maand
-                      </p>
+
+                  <div className={`flex items-center justify-center gap-2 text-sm font-bold ${
+                    vtlbResult.statusColor === 'green'
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : vtlbResult.statusColor === 'orange'
+                      ? 'text-amber-600 dark:text-amber-400'
+                      : 'text-red-600 dark:text-red-400'
+                  }`}>
+                    <span className="material-symbols-outlined text-base">
+                      {vtlbResult.statusColor === 'green' ? 'check_circle' : vtlbResult.statusColor === 'orange' ? 'warning' : 'error'}
+                    </span>
+                    {vtlbResult.statusLabel}
+                  </div>
+
+                  {vtlbResult.is95ProcentRegel && (
+                    <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      ⚠️ 95% regel toegepast: VTLB is gemaximeerd op 95% van je inkomen
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Settings Form */}
+              <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] shadow-soft border border-[#E5E7EB] dark:border-[#2a2a2a] overflow-hidden">
+
+                {/* Section: Inkomen (read-only) */}
+                <div className="p-6 border-b border-gray-100 dark:border-[#2a2a2a]">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-primary/10 rounded-full text-primary">
+                      <span className="material-symbols-outlined text-[20px]">account_balance_wallet</span>
                     </div>
-                    <div className="text-right">
-                      <p className="text-primary dark:text-green-400 font-extrabold text-3xl tracking-tight">
-                        {formatCurrency(calculation.afloscapaciteit)}
-                      </p>
-                      {calculation.afloscapaciteit > 0 ? (
-                        <div className="flex items-center gap-1 mt-1 text-xs font-bold text-primary dark:text-green-400 uppercase tracking-wide justify-end">
-                          <span className="material-symbols-outlined text-base">check_circle</span>
-                          Beschikbaar
+                    <div>
+                      <h3 className="text-gray-900 dark:text-white text-lg font-bold">Netto Inkomen</h3>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs">Automatisch uit je inkomensgegevens</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-[#0a0a0a] rounded-xl">
+                    <span className="text-gray-600 dark:text-gray-400">Maandelijks inkomen</span>
+                    <span className="text-primary font-bold text-lg">{formatCurrency(baseData.nettoInkomen)}</span>
+                  </div>
+                  <button
+                    className="text-primary text-sm font-medium hover:underline flex items-center gap-1 mt-2"
+                    onClick={() => window.location.href = createPageUrl('Income')}
+                  >
+                    Inkomen aanpassen <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  </button>
+                </div>
+
+                {/* Section: Huishouden */}
+                <div className="border-b border-gray-100 dark:border-[#2a2a2a]">
+                  <button
+                    className="w-full p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-[#0a0a0a] transition-colors"
+                    onClick={() => toggleSection('huishouden')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-500/10 rounded-full text-blue-600 dark:text-blue-400">
+                        <span className="material-symbols-outlined text-[20px]">family_restroom</span>
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-gray-900 dark:text-white text-lg font-bold">Huishouden</h3>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs">
+                          {formatLeefsituatie(formData.leefsituatie)}
+                          {formData.aantalKinderen > 0 && `, ${formData.aantalKinderen} kind${formData.aantalKinderen > 1 ? 'eren' : ''}`}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`material-symbols-outlined text-gray-400 transition-transform ${expandedSection === 'huishouden' ? 'rotate-180' : ''}`}>
+                      expand_more
+                    </span>
+                  </button>
+
+                  {expandedSection === 'huishouden' && (
+                    <div className="px-6 pb-6 space-y-4">
+                      <div>
+                        <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold block mb-2">Leefsituatie</label>
+                        <select
+                          className="form-select w-full h-12 px-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-medium"
+                          value={formData.leefsituatie}
+                          onChange={(e) => setFormData({ ...formData, leefsituatie: e.target.value })}
+                        >
+                          <option value="alleenstaand">Alleenstaand</option>
+                          <option value="alleenstaande_ouder">Alleenstaande ouder</option>
+                          <option value="samenwonend_beiden">Samenwonend (beiden werken)</option>
+                          <option value="samenwonend_een">Samenwonend (1 inkomen)</option>
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Basis VTLB: {formatCurrency(VTLB_NORMEN.basis[formData.leefsituatie])}
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold block mb-2">Aantal thuiswonende kinderen</label>
+                        <div className="flex items-center h-12 border border-gray-200 dark:border-[#2a2a2a] rounded-xl bg-gray-50 dark:bg-[#0a0a0a] overflow-hidden">
+                          <button
+                            className="px-4 h-full text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-[#1a1a1a]"
+                            onClick={() => setFormData({ ...formData, aantalKinderen: Math.max(0, formData.aantalKinderen - 1) })}
+                          >
+                            <span className="material-symbols-outlined text-sm">remove</span>
+                          </button>
+                          <input
+                            className="w-full h-full border-none bg-transparent text-center font-bold text-gray-900 dark:text-white"
+                            type="number"
+                            min="0"
+                            max="10"
+                            value={formData.aantalKinderen}
+                            onChange={(e) => setFormData({ ...formData, aantalKinderen: parseInt(e.target.value) || 0 })}
+                          />
+                          <button
+                            className="px-4 h-full text-gray-500 hover:text-primary hover:bg-gray-100 dark:hover:bg-[#1a1a1a]"
+                            onClick={() => setFormData({ ...formData, aantalKinderen: Math.min(10, formData.aantalKinderen + 1) })}
+                          >
+                            <span className="material-symbols-outlined text-sm">add</span>
+                          </button>
                         </div>
-                      ) : (
-                        <div className="flex items-center gap-1 mt-1 text-xs font-bold text-red-500 uppercase tracking-wide justify-end">
-                          <span className="material-symbols-outlined text-base">info</span>
-                          Geen ruimte
+                        <p className="text-xs text-gray-500 mt-1">
+                          Kindertoeslag: +€315 (1e), +€280 (2e), +€245 (3e), +€210 (4e+)
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Section: Woonsituatie */}
+                <div className="border-b border-gray-100 dark:border-[#2a2a2a]">
+                  <button
+                    className="w-full p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-[#0a0a0a] transition-colors"
+                    onClick={() => toggleSection('wonen')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-orange-500/10 rounded-full text-orange-500">
+                        <span className="material-symbols-outlined text-[20px]">home</span>
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-gray-900 dark:text-white text-lg font-bold">Woonsituatie</h3>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs">
+                          Woonlasten: {formatCurrency(formData.woonlasten)}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`material-symbols-outlined text-gray-400 transition-transform ${expandedSection === 'wonen' ? 'rotate-180' : ''}`}>
+                      expand_more
+                    </span>
+                  </button>
+
+                  {expandedSection === 'wonen' && (
+                    <div className="px-6 pb-6 space-y-4">
+                      <div>
+                        <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold block mb-2">Maandelijkse woonlasten (huur/hypotheek)</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">€</span>
+                          <input
+                            className="form-input w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold"
+                            type="number"
+                            step="0.01"
+                            value={formData.woonlasten || ''}
+                            onChange={(e) => setFormData({ ...formData, woonlasten: parseFloat(e.target.value) || 0 })}
+                            placeholder="0.00"
+                          />
                         </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Woonkosten boven €{VTLB_NORMEN.woonkosten.huurtoeslag_grens.toFixed(2)} worden voor 90% meegenomen
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Section: Werk & Reizen */}
+                <div className="border-b border-gray-100 dark:border-[#2a2a2a]">
+                  <button
+                    className="w-full p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-[#0a0a0a] transition-colors"
+                    onClick={() => toggleSection('werk')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-500/10 rounded-full text-green-600 dark:text-green-400">
+                        <span className="material-symbols-outlined text-[20px]">work</span>
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-gray-900 dark:text-white text-lg font-bold">Werk & Reizen</h3>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs">
+                          {formatWerksituatie(formData.werksituatie)}
+                          {formData.afstandWerk > 0 && `, ${formData.afstandWerk}km woon-werk`}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`material-symbols-outlined text-gray-400 transition-transform ${expandedSection === 'werk' ? 'rotate-180' : ''}`}>
+                      expand_more
+                    </span>
+                  </button>
+
+                  {expandedSection === 'werk' && (
+                    <div className="px-6 pb-6 space-y-4">
+                      <div>
+                        <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold block mb-2">Werksituatie</label>
+                        <select
+                          className="form-select w-full h-12 px-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-medium"
+                          value={formData.werksituatie}
+                          onChange={(e) => setFormData({ ...formData, werksituatie: e.target.value })}
+                        >
+                          <option value="geen">Geen werk</option>
+                          <option value="vast">Vast contract</option>
+                          <option value="tijdelijk">Tijdelijk contract</option>
+                          <option value="zzp">ZZP / Zelfstandig</option>
+                          <option value="uitkering">Uitkering</option>
+                          <option value="student">Student</option>
+                        </select>
+                        {['vast', 'tijdelijk', 'zzp'].includes(formData.werksituatie) && (
+                          <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                            ✓ Arbeidstoeslag: +€{VTLB_NORMEN.correcties.arbeidstoeslag}/maand
+                          </p>
+                        )}
+                      </div>
+
+                      {['vast', 'tijdelijk', 'zzp'].includes(formData.werksituatie) && (
+                        <>
+                          <div>
+                            <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold block mb-2">Afstand woon-werk (enkele reis in km)</label>
+                            <input
+                              className="form-input w-full h-12 px-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold"
+                              type="number"
+                              step="0.5"
+                              value={formData.afstandWerk || ''}
+                              onChange={(e) => setFormData({ ...formData, afstandWerk: parseFloat(e.target.value) || 0 })}
+                              placeholder="0"
+                            />
+                            {formData.afstandWerk > VTLB_NORMEN.reiskosten.minimum_afstand && (
+                              <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                                ✓ Reiskosten worden meegenomen (afstand > 10km)
+                              </p>
+                            )}
+                          </div>
+
+                          <div>
+                            <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold block mb-2">Werkdagen per week</label>
+                            <input
+                              className="form-input w-full h-12 px-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold"
+                              type="number"
+                              min="1"
+                              max="7"
+                              value={formData.werkdagen}
+                              onChange={(e) => setFormData({ ...formData, werkdagen: parseInt(e.target.value) || 5 })}
+                            />
+                          </div>
+                        </>
                       )}
                     </div>
-                  </div>
+                  )}
                 </div>
+
+                {/* Section: Zorg & Gezondheid */}
+                <div className="border-b border-gray-100 dark:border-[#2a2a2a]">
+                  <button
+                    className="w-full p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-[#0a0a0a] transition-colors"
+                    onClick={() => toggleSection('zorg')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-pink-500/10 rounded-full text-pink-500">
+                        <span className="material-symbols-outlined text-[20px]">favorite</span>
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-gray-900 dark:text-white text-lg font-bold">Zorg & Gezondheid</h3>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs">
+                          {formData.chronischeZiekte ? `Chronische aandoening, €${formData.medicijnkosten}/maand` : 'Geen bijzonderheden'}
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`material-symbols-outlined text-gray-400 transition-transform ${expandedSection === 'zorg' ? 'rotate-180' : ''}`}>
+                      expand_more
+                    </span>
+                  </button>
+
+                  {expandedSection === 'zorg' && (
+                    <div className="px-6 pb-6 space-y-4">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          id="chronischeZiekte"
+                          checked={formData.chronischeZiekte}
+                          onChange={(e) => setFormData({ ...formData, chronischeZiekte: e.target.checked })}
+                          className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <label htmlFor="chronischeZiekte" className="text-gray-700 dark:text-gray-300 font-medium">
+                          Chronische ziekte of aandoening
+                        </label>
+                      </div>
+
+                      {formData.chronischeZiekte && (
+                        <div>
+                          <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold block mb-2">Structurele medicijnkosten per maand</label>
+                          <div className="relative">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">€</span>
+                            <input
+                              className="form-input w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold"
+                              type="number"
+                              step="0.01"
+                              value={formData.medicijnkosten || ''}
+                              onChange={(e) => setFormData({ ...formData, medicijnkosten: parseFloat(e.target.value) || 0 })}
+                              placeholder="0.00"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      <p className="text-xs text-gray-500">
+                        Eigen risico zorgverzekering (+€{VTLB_NORMEN.correcties.eigen_risico}/maand) wordt automatisch meegenomen
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Section: Verplichtingen */}
+                <div className="border-b border-gray-100 dark:border-[#2a2a2a]">
+                  <button
+                    className="w-full p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-[#0a0a0a] transition-colors"
+                    onClick={() => toggleSection('verplichtingen')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-500/10 rounded-full text-purple-500">
+                        <span className="material-symbols-outlined text-[20px]">receipt_long</span>
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-gray-900 dark:text-white text-lg font-bold">Overige Verplichtingen</h3>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs">
+                          Alimentatie, studiekosten, kinderopvang, etc.
+                        </p>
+                      </div>
+                    </div>
+                    <span className={`material-symbols-outlined text-gray-400 transition-transform ${expandedSection === 'verplichtingen' ? 'rotate-180' : ''}`}>
+                      expand_more
+                    </span>
+                  </button>
+
+                  {expandedSection === 'verplichtingen' && (
+                    <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold block mb-2">Alimentatie (betalen/maand)</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">€</span>
+                          <input
+                            className="form-input w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold"
+                            type="number"
+                            step="0.01"
+                            value={formData.alimentatie || ''}
+                            onChange={(e) => setFormData({ ...formData, alimentatie: parseFloat(e.target.value) || 0 })}
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold block mb-2">Studiekosten per maand</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">€</span>
+                          <input
+                            className="form-input w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold"
+                            type="number"
+                            step="0.01"
+                            value={formData.studiekosten || ''}
+                            onChange={(e) => setFormData({ ...formData, studiekosten: parseFloat(e.target.value) || 0 })}
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold block mb-2">Kinderopvang per maand</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">€</span>
+                          <input
+                            className="form-input w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold"
+                            type="number"
+                            step="0.01"
+                            value={formData.kinderopvangKosten || ''}
+                            onChange={(e) => setFormData({ ...formData, kinderopvangKosten: parseFloat(e.target.value) || 0 })}
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">70% wordt meegenomen in VTLB</p>
+                      </div>
+
+                      <div>
+                        <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold block mb-2">Gemeentebelasting per jaar</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">€</span>
+                          <input
+                            className="form-input w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold"
+                            type="number"
+                            step="0.01"
+                            value={formData.gemeentebelasting || ''}
+                            onChange={(e) => setFormData({ ...formData, gemeentebelasting: parseFloat(e.target.value) || 0 })}
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Wordt per maand berekend</p>
+                      </div>
+
+                      <div>
+                        <label className="text-gray-700 dark:text-gray-300 text-sm font-semibold block mb-2">Vakbondscontributie per maand</label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">€</span>
+                          <input
+                            className="form-input w-full h-12 pl-10 pr-4 rounded-xl border border-gray-200 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white font-semibold"
+                            type="number"
+                            step="0.01"
+                            value={formData.vakbond || ''}
+                            onChange={(e) => setFormData({ ...formData, vakbond: parseFloat(e.target.value) || 0 })}
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* VTLB Breakdown */}
+                {vtlbResult && (
+                  <div className="p-6 border-b border-gray-100 dark:border-[#2a2a2a]">
+                    <h3 className="text-gray-900 dark:text-white text-lg font-bold mb-4">VTLB Opbouw</h3>
+                    <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-4 space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">Basisbedrag ({formatLeefsituatie(vtlbResult.leefsituatie)})</span>
+                        <span className="font-medium">{formatCurrency(vtlbResult.breakdown.basisBedrag)}</span>
+                      </div>
+                      {vtlbResult.breakdown.kinderToeslag > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">+ Kindertoeslag ({vtlbResult.aantalKinderen} kind{vtlbResult.aantalKinderen > 1 ? 'eren' : ''})</span>
+                          <span className="font-medium text-green-600">{formatCurrency(vtlbResult.breakdown.kinderToeslag)}</span>
+                        </div>
+                      )}
+                      {vtlbResult.breakdown.woonkostenCorrectie > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">+ Woonkosten correctie</span>
+                          <span className="font-medium text-green-600">{formatCurrency(vtlbResult.breakdown.woonkostenCorrectie)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">+ Eigen risico zorgverzekering</span>
+                        <span className="font-medium">{formatCurrency(vtlbResult.breakdown.eigenRisico)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600 dark:text-gray-400">+ Reservering</span>
+                        <span className="font-medium">{formatCurrency(vtlbResult.breakdown.reservering)}</span>
+                      </div>
+                      {vtlbResult.breakdown.arbeidsToeslag > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">+ Arbeidstoeslag</span>
+                          <span className="font-medium text-green-600">{formatCurrency(vtlbResult.breakdown.arbeidsToeslag)}</span>
+                        </div>
+                      )}
+                      {vtlbResult.breakdown.individueleLasten > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600 dark:text-gray-400">+ Individuele lasten</span>
+                          <span className="font-medium text-green-600">{formatCurrency(vtlbResult.breakdown.individueleLasten)}</span>
+                        </div>
+                      )}
+                      <hr className="border-gray-200 dark:border-[#2a2a2a] my-2" />
+                      <div className="flex justify-between font-bold">
+                        <span className="text-gray-900 dark:text-white">Totaal VTLB</span>
+                        <span className="text-amber-600">{formatCurrency(vtlbResult.vtlbTotaal)}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Save Button */}
-                <button
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold text-base h-12 rounded-xl shadow-lg shadow-primary/20 transition-all transform active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={handleSave}
-                  disabled={saving}
-                >
-                  {saving ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Opslaan...
-                    </>
-                  ) : (
-                    <>
-                      <span className="material-symbols-outlined">save</span>
-                      Berekening opslaan
-                    </>
-                  )}
-                </button>
-
-                {/* Info Box */}
-                <div className="bg-blue-50 dark:bg-blue-500/10 rounded-[24px] p-5 flex flex-col sm:flex-row gap-4 items-start mt-8 border border-blue-200 dark:border-blue-500/20">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-500/20 rounded-full text-blue-500">
-                    <span className="material-symbols-outlined text-[20px] block">info</span>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-gray-900 dark:text-white font-semibold text-[15px] mb-1">Over deze berekening</h4>
-                    <p className="text-gray-600 dark:text-gray-400 text-[13px] leading-relaxed">
-                      Deze berekening is gebaseerd op de Recofa-normen 2024. De werkelijke beslagvrije voet kan afwijken op basis van je persoonlijke situatie. Raadpleeg een schuldhulpverlener voor een officiële berekening.
-                    </p>
-                  </div>
+                <div className="p-6">
+                  <button
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold text-base h-12 rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    onClick={handleSave}
+                    disabled={saving}
+                  >
+                    {saving ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Opslaan...
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined">save</span>
+                        Instellingen opslaan
+                      </>
+                    )}
+                  </button>
                 </div>
+              </div>
 
-                {/* Footer Note */}
-                <div className="mt-6 text-center">
-                  <p className="text-gray-400 dark:text-gray-500 text-xs">
+              {/* Disclaimer */}
+              <div className="bg-blue-50 dark:bg-blue-500/10 rounded-[24px] p-5 border border-blue-200 dark:border-blue-500/20">
+                <div className="flex gap-3">
+                  <span className="material-symbols-outlined text-blue-500 text-[20px] flex-shrink-0 mt-0.5">info</span>
+                  <div>
+                    <h4 className="text-gray-900 dark:text-white font-semibold text-sm mb-1">Disclaimer</h4>
+                    <p className="text-gray-600 dark:text-gray-400 text-xs leading-relaxed">
+                      Deze berekening is een indicatie op basis van de VTLB-normen. Voor officiële berekeningen, neem contact op met een schuldhulpverlener of je gemeente. De werkelijke beslagvrije voet kan afwijken op basis van je persoonlijke situatie.
+                    </p>
                     <a
-                      className="text-primary dark:text-green-400 hover:underline"
+                      className="text-primary text-xs font-medium hover:underline mt-2 inline-flex items-center gap-1"
                       href="https://www.rechtspraak.nl/Onderwerpen/Schulden/Paginas/Berekening-vtlb.aspx"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Officiële VTLB Calculator <span className="material-symbols-outlined text-[12px] align-middle">open_in_new</span>
+                      Officiële VTLB Calculator
+                      <span className="material-symbols-outlined text-[12px]">open_in_new</span>
                     </a>
-                  </p>
+                  </div>
                 </div>
               </div>
             </div>
