@@ -36,6 +36,7 @@ export default function BudgetPlan() {
     const [showBankStatementModal, setShowBankStatementModal] = useState(false);
     const [deleteConfirm, setDeleteConfirm] = useState({ show: false, transaction: null });
     const [deleting, setDeleting] = useState(false);
+    const [editTransaction, setEditTransaction] = useState(null);
 
     // Financial data
     const [totalIncome, setTotalIncome] = useState(0);
@@ -361,11 +362,13 @@ export default function BudgetPlan() {
                 categoryMap[cat].amount += tx.amount;
             });
 
-            // Match with pots for budgets
+            // Match with pots for budgets (case-insensitive)
             expensePots.forEach(pot => {
-                const catName = pot.name || 'Overig';
-                if (categoryMap[catName]) {
-                    categoryMap[catName].budget = parseFloat(pot.budget || pot.monthly_budget || 0);
+                const potName = pot.name || 'Overig';
+                // Find matching category key (case-insensitive)
+                const matchKey = Object.keys(categoryMap).find(k => k.toLowerCase() === potName.toLowerCase());
+                if (matchKey) {
+                    categoryMap[matchKey].budget = parseFloat(pot.budget || pot.monthly_budget || 0);
                 }
             });
 
@@ -968,6 +971,19 @@ export default function BudgetPlan() {
                                                     ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400'
                                                     : 'bg-gray-200 dark:bg-[#333] text-gray-600 dark:text-gray-300'
                                             }`}>Voltooid</span>
+                                            {!tx.id.startsWith('debt-') && !tx.id.startsWith('cost-') && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setEditTransaction(tx);
+                                                        setShowAddModal(true);
+                                                    }}
+                                                    className="opacity-0 group-hover:opacity-100 size-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 transition-all"
+                                                    title="Bewerken"
+                                                >
+                                                    <span className="material-symbols-outlined text-[20px]">edit</span>
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -1020,12 +1036,13 @@ export default function BudgetPlan() {
                 </button>
             </div>
 
-            {/* Add Transaction Modal */}
+            {/* Add/Edit Transaction Modal */}
             <AddTransactionModal
                 isOpen={showAddModal}
-                onClose={() => setShowAddModal(false)}
+                onClose={() => { setShowAddModal(false); setEditTransaction(null); }}
                 onSuccess={() => loadData()}
                 userEmail={user?.email}
+                editTransaction={editTransaction}
             />
 
             {/* Add Budget Category Modal */}

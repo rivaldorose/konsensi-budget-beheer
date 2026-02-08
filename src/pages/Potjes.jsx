@@ -185,7 +185,7 @@ export default function Potjes() {
 
                 const isInMonth = txDate >= monthStart && txDate <= monthEnd;
                 const isExpense = tx.type === 'expense';
-                const categoryMatches = tx.category === pot.name;
+                const categoryMatches = tx.category?.toLowerCase() === pot.name?.toLowerCase();
                 return isInMonth && isExpense && categoryMatches;
               } catch (err) {
                 return false;
@@ -226,8 +226,8 @@ export default function Potjes() {
         }
 
         const spent = spendingsMap[pot.id] || 0;
-        const remaining = (pot.monthly_budget || 0) - spent;
-        const percentage = (pot.monthly_budget || 0) > 0 ? (spent / pot.monthly_budget) * 100 : 0;
+        const remaining = ((pot.budget || pot.monthly_budget) || 0) - spent;
+        const percentage = ((pot.budget || pot.monthly_budget) || 0) > 0 ? (spent / (pot.budget || pot.monthly_budget)) * 100 : 0;
 
         if (percentage >= 90 && remaining > 0) {
           notifications.push({
@@ -260,7 +260,7 @@ export default function Potjes() {
     if (!Array.isArray(potjes)) return 0;
     return potjes.reduce((sum, pot) => {
       if (!pot || typeof pot !== 'object') return sum;
-      return sum + (parseFloat(pot.monthly_budget) || 0);
+      return sum + (parseFloat((pot.budget || pot.monthly_budget)) || 0);
     }, 0);
   }, [potjes]);
 
@@ -537,10 +537,10 @@ export default function Potjes() {
               const spent = potjeSpendings[pot.id] || 0;
               const progress = isSavingsType
                 ? (pot.target_amount ? Math.min(100, (pot.current_amount || 0) / pot.target_amount * 100) : 0)
-                : (pot.monthly_budget ? Math.min(100, spent / pot.monthly_budget * 100) : 0);
+                : ((pot.budget || pot.monthly_budget) ? Math.min(100, spent / (pot.budget || pot.monthly_budget) * 100) : 0);
               const remaining = isSavingsType
                 ? (pot.target_amount || 0) - (pot.current_amount || 0)
-                : (pot.monthly_budget || 0) - spent;
+                : ((pot.budget || pot.monthly_budget) || 0) - spent;
               const status = getPotStatus(pot);
               const isCompleted = isSavingsType && progress >= 100;
               const isReserved = pot.pot_type === 'btw_reserve';
@@ -573,7 +573,7 @@ export default function Potjes() {
                           strokeDasharray="100"
                           strokeDashoffset={getProgressOffset(
                             isSavingsType ? (pot.current_amount || 0) : spent,
-                            isSavingsType ? (pot.target_amount || 1) : (pot.monthly_budget || 1)
+                            isSavingsType ? (pot.target_amount || 1) : ((pot.budget || pot.monthly_budget) || 1)
                           )}
                           strokeWidth="2"
                           style={{
@@ -607,7 +607,7 @@ export default function Potjes() {
                   <p className="text-[#3D6456] dark:text-white text-lg font-extrabold mb-1">
                     {formatCurrency(isSavingsType ? (pot.current_amount || 0) : spent)}
                     <span className="text-gray-300 dark:text-gray-600 text-xs font-normal">
-                      {' '}/ {formatCurrency(isSavingsType ? (pot.target_amount || 0) : (pot.monthly_budget || 0))}
+                      {' '}/ {formatCurrency(isSavingsType ? (pot.target_amount || 0) : ((pot.budget || pot.monthly_budget) || 0))}
                     </span>
                   </p>
                   <p className={`text-[11px] font-bold flex items-center gap-1 ${

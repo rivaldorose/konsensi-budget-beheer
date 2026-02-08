@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Income, MonthlyCost, Transaction, Pot } from '@/api/entities';
 
-export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEmail }) {
+export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEmail, editTransaction = null }) {
     const { toast } = useToast();
     const [activeTab, setActiveTab] = useState('expense');
     const [saving, setSaving] = useState(false);
     const [pots, setPots] = useState([]);
-    
+    const [editId, setEditId] = useState(null);
+
     // Form state
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
@@ -16,7 +17,11 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
     const [selectedPot, setSelectedPot] = useState('');
     const [expenseType, setExpenseType] = useState('eenmalig'); // eenmalig, vast
     const [incomeType, setIncomeType] = useState('extra'); // extra, vast
-    
+    const [showNewPot, setShowNewPot] = useState(false);
+    const [newPotName, setNewPotName] = useState('');
+    const [newPotIcon, setNewPotIcon] = useState('📦');
+    const [newPotBudget, setNewPotBudget] = useState('');
+
     // Vaste lasten categorieën
     const costCategories = [
         { value: 'wonen', label: '🏠 Wonen' },
@@ -36,16 +41,34 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
 
     useEffect(() => {
         if (isOpen) {
-            // Reset form
-            setDescription('');
-            setAmount('');
-            setDate(new Date().toISOString().split('T')[0]);
-            setCategory('');
-            setSelectedPot('');
-            setExpenseType('eenmalig');
-            setIncomeType('extra');
+            if (editTransaction) {
+                // Pre-fill form with existing transaction data
+                setEditId(editTransaction.id);
+                setDescription(editTransaction.description || '');
+                setAmount(editTransaction.amount?.toString() || '');
+                setDate(editTransaction.date || new Date().toISOString().split('T')[0]);
+                setCategory(editTransaction.category || '');
+                setActiveTab(editTransaction.type === 'income' ? 'income' : 'expense');
+                setExpenseType('eenmalig');
+                setIncomeType(editTransaction.type === 'income' ? 'extra' : 'extra');
+                setSelectedPot('');
+            } else {
+                // Reset form
+                setEditId(null);
+                setDescription('');
+                setAmount('');
+                setDate(new Date().toISOString().split('T')[0]);
+                setCategory('');
+                setSelectedPot('');
+                setExpenseType('eenmalig');
+                setIncomeType('extra');
+            }
+            setShowNewPot(false);
+            setNewPotName('');
+            setNewPotIcon('📦');
+            setNewPotBudget('');
         }
-    }, [isOpen]);
+    }, [isOpen, editTransaction]);
 
     const [userId, setUserId] = useState(null);
 
@@ -59,6 +82,35 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
             setPots(potsData.filter(p => p.pot_type === 'expense'));
         } catch (error) {
             console.error('Error loading pots:', error);
+        }
+    };
+
+    const handleCreateNewPot = async () => {
+        if (!newPotName) {
+            toast({ title: '⚠️ Vul een naam in', variant: 'destructive' });
+            return;
+        }
+        if (!userId) return;
+        try {
+            await Pot.create({
+                user_id: userId,
+                name: newPotName,
+                icon: newPotIcon,
+                pot_type: 'expense',
+                budget: parseFloat(newPotBudget || 0),
+                target_amount: 0,
+                current_amount: 0,
+            });
+            toast({ title: `✅ Potje "${newPotName}" aangemaakt!` });
+            setCategory(newPotName.toLowerCase());
+            setShowNewPot(false);
+            setNewPotName('');
+            setNewPotIcon('📦');
+            setNewPotBudget('');
+            await loadPots();
+        } catch (error) {
+            console.error('Error creating pot:', error);
+            toast({ title: '❌ Fout bij aanmaken potje', variant: 'destructive' });
         }
     };
 
@@ -76,6 +128,21 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
         setSaving(true);
         try {
             const parsedAmount = parseFloat(amount);
+
+            // UPDATE existing transaction
+            if (editId) {
+                await Transaction.update(editId, {
+                    description,
+                    amount: parsedAmount,
+                    date,
+                    category: category || (activeTab === 'income' ? 'inkomen' : 'overig'),
+                    type: activeTab,
+                });
+                toast({ title: '✅ Transactie bijgewerkt!' });
+                onSuccess?.();
+                onClose();
+                return;
+            }
 
             if (activeTab === 'income') {
                 // Inkomen toevoegen
@@ -225,7 +292,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                             </span>
                         </div>
                         <h3 className="font-display font-bold text-lg text-[#131d0c] dark:text-white">
-                            Transactie toevoegen
+                            {editId ? 'Transactie bewerken' : 'Transactie toevoegen'}
                         </h3>
                     </div>
                     <button
@@ -377,7 +444,70 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                                                 <span className="truncate w-full text-center">{pot.name}</span>
                                             </button>
                                         ))}
+                                        {/* Nieuw potje aanmaken knop */}
+                                        <button
+                                            onClick={() => setShowNewPot(!showNewPot)}
+                                            className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl text-[11px] font-medium transition-all border border-dashed ${
+                                                showNewPot
+                                                    ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                                                    : 'border-gray-300 dark:border-[#3a3a3a] text-gray-500 dark:text-[#6b7280] hover:border-emerald-300 dark:hover:border-emerald-700'
+                                            }`}
+                                        >
+                                            <span className="material-symbols-outlined text-lg">add</span>
+                                            <span className="truncate w-full text-center">Nieuw</span>
+                                        </button>
                                     </div>
+
+                                    {/* Inline nieuw potje formulier */}
+                                    {showNewPot && (
+                                        <div className="mt-3 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-900/10 space-y-2">
+                                            <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">Nieuw potje aanmaken</p>
+                                            <div className="flex gap-2">
+                                                <div className="flex gap-1">
+                                                    {['🏠','🛒','🚗','📱','💡','🎮','🎁','✈️','📦','💊'].map(icon => (
+                                                        <button
+                                                            key={icon}
+                                                            type="button"
+                                                            onClick={() => setNewPotIcon(icon)}
+                                                            className={`size-8 rounded-lg flex items-center justify-center text-sm transition-all ${
+                                                                newPotIcon === icon
+                                                                    ? 'bg-emerald-200 dark:bg-emerald-700'
+                                                                    : 'bg-white dark:bg-[#2a2a2a] hover:bg-gray-100 dark:hover:bg-[#3a3a3a]'
+                                                            }`}
+                                                        >
+                                                            {icon}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Naam potje"
+                                                    value={newPotName}
+                                                    onChange={(e) => setNewPotName(e.target.value)}
+                                                    className="flex-1 px-3 py-2 border border-gray-200 dark:border-[#2a2a2a] rounded-lg bg-white dark:bg-[#2a2a2a] text-[#131d0c] dark:text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                                                />
+                                                <div className="relative w-24">
+                                                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">€</span>
+                                                    <input
+                                                        type="number"
+                                                        placeholder="Budget"
+                                                        value={newPotBudget}
+                                                        onChange={(e) => setNewPotBudget(e.target.value)}
+                                                        className="w-full pl-6 pr-2 py-2 border border-gray-200 dark:border-[#2a2a2a] rounded-lg bg-white dark:bg-[#2a2a2a] text-[#131d0c] dark:text-white text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={handleCreateNewPot}
+                                                className="w-full px-3 py-2 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-all flex items-center justify-center gap-1"
+                                            >
+                                                <span className="material-symbols-outlined text-[16px]">add</span>
+                                                Potje Aanmaken
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
