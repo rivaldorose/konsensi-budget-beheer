@@ -228,14 +228,9 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                     toast({ title: '✅ Vaste last toegevoegd!' });
 
                 } else if (selectedPot) {
-                    // Aan potje koppelen
+                    // Aan potje koppelen — transactie registreren met pot naam als categorie
                     const pot = pots.find(p => p.id === selectedPot);
-                    if (pot) {
-                        const newSpent = (parseFloat(pot.spent) || 0) + parsedAmount;
-                        await Pot.update(pot.id, { spent: newSpent });
-                    }
 
-                    // Transactie registreren
                     await Transaction.create({
                         user_id: currentUserId,
                         type: 'expense',
@@ -568,7 +563,6 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                                     <div className="space-y-2 max-h-60 overflow-y-auto">
                                         {pots.map(pot => {
                                             const budgetAmount = parseFloat(pot.budget || pot.monthly_budget || 0);
-                                            const remaining = budgetAmount - (parseFloat(pot.spent) || 0);
                                             return (
                                                 <button
                                                     key={pot.id}
@@ -583,7 +577,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                                                     <div className="flex-1 text-left">
                                                         <p className="text-sm font-bold text-[#131d0c] dark:text-white">{pot.name}</p>
                                                         <p className="text-xs text-gray-500 dark:text-[#6b7280]">
-                                                            {budgetAmount > 0 ? `€${remaining.toFixed(0)} over` : 'Geen budget'}
+                                                            {budgetAmount > 0 ? `Budget: €${budgetAmount.toFixed(0)}` : 'Geen budget'}
                                                         </p>
                                                     </div>
                                                     {selectedPot === pot.id && (
