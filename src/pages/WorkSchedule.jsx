@@ -388,7 +388,7 @@ export default function WorkSchedule() {
         </div>
 
         {/* Betaaldatum Instellen */}
-        {incomesWithPaymentDates.length > 0 && (
+        {(incomesWithPaymentDates.length > 0 || employers.length > 0) && (
           <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl border border-gray-100 dark:border-[#2a2a2a] shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] overflow-hidden p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="size-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
@@ -398,30 +398,53 @@ export default function WorkSchedule() {
             </div>
 
             <div className="space-y-2">
-              {incomesWithPaymentDates.map((income) => {
-                const hasPaymentDate = income.nextPaymentDate || income.last_payment_date;
+              {employers.map((employer) => {
+                // Zoek een bestaand vast inkomen voor deze werkgever
+                const matchedIncome = incomesWithPaymentDates.find(income => {
+                  const desc = (income.description || '').toLowerCase();
+                  return desc.includes(employer.toLowerCase());
+                });
 
-                // Strip "Loon " prefix en " - maand jaar" suffix voor nettere weergave
-                const displayName = (income.description || 'Inkomen')
-                  .replace(/^Loon\s+/i, '')
-                  .replace(/\s*-\s*(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\s+\d{4}$/i, '');
+                const hasPaymentDate = matchedIncome && (matchedIncome.nextPaymentDate || matchedIncome.last_payment_date);
 
                 return (
                   <div
-                    key={income.id}
-                    onClick={() => {
-                      setSelectedIncomeForPayment(income);
-                      setShowPaymentDateModal(true);
+                    key={employer}
+                    onClick={async () => {
+                      if (matchedIncome) {
+                        setSelectedIncomeForPayment(matchedIncome);
+                        setShowPaymentDateModal(true);
+                      } else {
+                        // Maak automatisch een vast inkomen aan voor deze werkgever
+                        try {
+                          const newIncome = await Income.create({
+                            user_id: user.id,
+                            name: employer,
+                            description: employer,
+                            amount: 0,
+                            income_type: 'vast',
+                            is_active: true,
+                            frequency: 'monthly',
+                            is_from_work_schedule: true,
+                          });
+                          setSelectedIncomeForPayment(newIncome);
+                          setShowPaymentDateModal(true);
+                          await loadData();
+                        } catch (error) {
+                          console.error('Error creating income for employer:', error);
+                          toast({ title: 'Fout', description: 'Kon inkomen niet aanmaken', variant: 'destructive' });
+                        }
+                      }
                     }}
                     className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#2a2a2a]/50 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 cursor-pointer transition-all"
                   >
                     <span className="font-medium text-[#131d0c] dark:text-white text-sm">
-                      {displayName}
+                      {employer}
                     </span>
                     {hasPaymentDate ? (
                       <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
                         <span className="text-xs font-medium">
-                          {formatDateNL(income.nextPaymentDate)}
+                          {formatDateNL(matchedIncome.nextPaymentDate)}
                         </span>
                         <span className="material-symbols-outlined text-[16px]">edit_calendar</span>
                       </div>
