@@ -6,7 +6,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday
 import { nl } from 'date-fns/locale';
 import WorkDayModal from '@/components/workdays/WorkDayModal';
 import PayslipScanModal from '@/components/workdays/PayslipScanModal';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
   calculateNextPaymentDate,
@@ -28,6 +28,7 @@ export default function WorkSchedule() {
   const [showEmployersModal, setShowEmployersModal] = useState(false);
   const [fixedIncomes, setFixedIncomes] = useState([]);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Check dark mode from localStorage (managed by Layout component)
   useEffect(() => {
@@ -400,10 +401,11 @@ export default function WorkSchedule() {
                 return (
                   <div
                     key={income.id}
-                    className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border transition-all ${
+                    onClick={() => navigate(createPageUrl('Income') + `?edit=${income.id}`)}
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer hover:shadow-md ${
                       isUpcoming
-                        ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800/30'
-                        : 'bg-gray-50 dark:bg-[#2a2a2a]/50 border-gray-100 dark:border-[#2a2a2a]'
+                        ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800/30 hover:border-emerald-300 dark:hover:border-emerald-700/50'
+                        : 'bg-gray-50 dark:bg-[#2a2a2a]/50 border-gray-100 dark:border-[#2a2a2a] hover:border-gray-200 dark:hover:border-[#3a3a3a]'
                     }`}
                   >
                     <div className="flex items-center gap-4 mb-3 sm:mb-0">

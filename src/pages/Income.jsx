@@ -17,13 +17,14 @@ import IncomeInfoModal from '@/components/income/IncomeInfoModal';
 import InvoiceScanModal from '@/components/income/InvoiceScanModal';
 import { formatCurrency } from '@/components/utils/formatters';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { getWeeklyIncomeTip } from '@/utils/weeklyIncomeTips';
 
 export default function IncomePage() {
     const { t } = useTranslation();
     const { toast } = useToast();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [user, setUser] = useState(null);
     const [incomes, setIncomes] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -72,6 +73,20 @@ export default function IncomePage() {
     useEffect(() => {
         loadData();
     }, []);
+
+    // Handle edit query parameter from WorkSchedule page
+    useEffect(() => {
+        const editId = searchParams.get('edit');
+        if (editId && incomes.length > 0) {
+            const incomeToEdit = incomes.find(i => i.id === editId);
+            if (incomeToEdit) {
+                setEditingIncome(incomeToEdit);
+                setShowFormModal(true);
+                // Clear the query parameter
+                setSearchParams({});
+            }
+        }
+    }, [searchParams, incomes]);
 
     const loadData = async () => {
         try {
