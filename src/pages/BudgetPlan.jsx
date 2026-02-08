@@ -365,7 +365,7 @@ export default function BudgetPlan() {
             expensePots.forEach(pot => {
                 const catName = pot.name || 'Overig';
                 if (categoryMap[catName]) {
-                    categoryMap[catName].budget = parseFloat(pot.budget || 0);
+                    categoryMap[catName].budget = parseFloat(pot.budget || pot.monthly_budget || 0);
                 }
             });
 
@@ -868,7 +868,16 @@ export default function BudgetPlan() {
                 {/* Transactions Section */}
                 <section className="bg-white dark:bg-[#1a1a1a] rounded-[16px] sm:rounded-[24px] p-4 sm:p-6 md:p-8 shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] mb-20">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                        <h3 className="text-xl sm:text-2xl font-bold text-[#1F2937] dark:text-white">Transacties</h3>
+                        <div className="flex items-center gap-3">
+                            <h3 className="text-xl sm:text-2xl font-bold text-[#1F2937] dark:text-white">Transacties</h3>
+                            <button
+                                onClick={() => setShowAddModal(true)}
+                                className="flex items-center gap-1 bg-primary/10 dark:bg-[#10b981]/10 text-primary dark:text-[#10b981] px-3 py-1.5 rounded-full text-xs font-bold hover:bg-primary/20 dark:hover:bg-[#10b981]/20 transition-colors"
+                            >
+                                <span className="material-symbols-outlined text-[16px]">add</span>
+                                Toevoegen
+                            </button>
+                        </div>
                         <div className="flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
                             <div className="relative flex-1 md:flex-none">
                                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#a1a1a1] text-[18px] sm:text-[20px]">search</span>
@@ -994,9 +1003,20 @@ export default function BudgetPlan() {
             </main>
 
             {/* Floating Action Button */}
-            <div className="fixed bottom-8 right-8 z-40">
-                <button className="size-16 rounded-full bg-gradient-to-br from-primary to-[#059669] text-white shadow-lg hover:shadow-[0_8px_24px_rgba(16,185,129,0.3)] hover:scale-110 active:scale-95 transition-all flex items-center justify-center group" title="Leencapaciteit Calculator">
-                    <span className="material-symbols-outlined text-3xl group-hover:rotate-12 transition-transform">calculate</span>
+            <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3 items-end">
+                <button
+                    onClick={() => setShowBankStatementModal(true)}
+                    className="size-12 rounded-full bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-[#2a2a2a] text-gray-600 dark:text-white shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 transition-all flex items-center justify-center group"
+                    title="Bank afschrift uploaden"
+                >
+                    <span className="material-symbols-outlined text-xl">upload_file</span>
+                </button>
+                <button
+                    onClick={() => setShowAddModal(true)}
+                    className="size-16 rounded-full bg-gradient-to-br from-primary to-[#059669] text-white shadow-lg hover:shadow-[0_8px_24px_rgba(16,185,129,0.3)] hover:scale-110 active:scale-95 transition-all flex items-center justify-center group"
+                    title="Uitgave toevoegen"
+                >
+                    <span className="material-symbols-outlined text-3xl group-hover:rotate-12 transition-transform">add</span>
                 </button>
             </div>
 
