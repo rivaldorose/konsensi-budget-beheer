@@ -6,6 +6,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday
 import { nl } from 'date-fns/locale';
 import WorkDayModal from '@/components/workdays/WorkDayModal';
 import PayslipScanModal from '@/components/workdays/PayslipScanModal';
+import PaymentDateModal from '@/components/workdays/PaymentDateModal';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
@@ -27,6 +28,8 @@ export default function WorkSchedule() {
   const [showPayslipModal, setShowPayslipModal] = useState(false);
   const [showEmployersModal, setShowEmployersModal] = useState(false);
   const [fixedIncomes, setFixedIncomes] = useState([]);
+  const [showPaymentDateModal, setShowPaymentDateModal] = useState(false);
+  const [selectedIncomeForPayment, setSelectedIncomeForPayment] = useState(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -238,6 +241,12 @@ export default function WorkSchedule() {
     return workDays.find(wd => isSameDay(new Date(wd.date), date));
   };
 
+  // Check if a date is a payment day for any fixed income
+  const getPaymentDayIncomes = (date) => {
+    const dayOfMonth = date.getDate();
+    return fixedIncomes.filter(income => income.day_of_month === dayOfMonth);
+  };
+
   const getStatusColor = (status) => {
     switch(status) {
       case 'gewerkt': return 'bg-[#10b981]/10 dark:bg-[#10b981]/10 border border-[#10b981]/20';
@@ -401,7 +410,10 @@ export default function WorkSchedule() {
                 return (
                   <div
                     key={income.id}
-                    onClick={() => navigate(createPageUrl('Income') + `?edit=${income.id}`)}
+                    onClick={() => {
+                      setSelectedIncomeForPayment(income);
+                      setShowPaymentDateModal(true);
+                    }}
                     className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer hover:shadow-md ${
                       isUpcoming
                         ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800/30 hover:border-emerald-300 dark:hover:border-emerald-700/50'
@@ -452,11 +464,15 @@ export default function WorkSchedule() {
                           <span className="text-xs font-medium">
                             Volgende: {formatDateNL(income.nextPaymentDate)}
                           </span>
+                          <span className="material-symbols-outlined text-[14px] ml-1 opacity-60 hover:opacity-100">edit_calendar</span>
                         </div>
                       ) : (
-                        <span className="text-xs text-gray-400 dark:text-[#6b7280]">
-                          Betaaldatum niet ingesteld
-                        </span>
+                        <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                          <span className="material-symbols-outlined text-[14px]">event</span>
+                          <span className="text-xs font-medium">
+                            Klik om betaaldatum in te stellen
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -469,9 +485,8 @@ export default function WorkSchedule() {
               <div className="flex items-start gap-2">
                 <span className="material-symbols-outlined text-blue-500 dark:text-blue-400 text-[18px] mt-0.5">info</span>
                 <p className="text-xs text-blue-700 dark:text-blue-400">
-                  Je kunt de betaaldatum instellen bij het bewerken van je vast inkomen.
-                  Voor wekelijks/tweewekelijks inkomen: geef je laatste betaaldatum op.
-                  Voor maandelijks inkomen: geef de dag van de maand op.
+                  Klik op een inkomen om de betaaldatum in te stellen.
+                  Betaaldagen worden in de kalender getoond met een 💰 icoon.
                 </p>
               </div>
             </div>
@@ -539,9 +554,11 @@ export default function WorkSchedule() {
           <div className="grid grid-cols-7 auto-rows-[minmax(140px,auto)] gap-2">
             {calendarDays.map((day, idx) => {
               const workDay = getWorkDayForDate(day);
+              const paymentDayIncomes = getPaymentDayIncomes(day);
               const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
               const isTodayDate = isToday(day);
               const isWeekend = getDay(day) === 0 || getDay(day) === 6;
+              const isPayDay = paymentDayIncomes.length > 0;
 
               if (!isCurrentMonth) {
                 return (
@@ -557,21 +574,40 @@ export default function WorkSchedule() {
                   onClick={() => workDay ? handleEditWorkDay(workDay) : handleAddWorkDay(day)}
                   className={`rounded-xl p-3 hover:bg-gray-50 dark:hover:bg-[#2a2a2a]/50 transition-colors cursor-pointer group border border-transparent hover:border-gray-200 dark:hover:border-[#2a2a2a] ${
                     isTodayDate ? 'bg-primary/5 dark:bg-[#10b981]/10 border-primary/20 dark:border-[#10b981]/20' : ''
-                  }`}
+                  } ${isPayDay ? 'ring-2 ring-emerald-400 dark:ring-emerald-500 ring-offset-1' : ''}`}
                 >
                   <div className="flex justify-between items-start">
-                    <span className={`text-sm font-bold ${
-                      isTodayDate ? 'text-primary dark:text-[#10b981]' :
-                      isWeekend ? 'text-gray-400 dark:text-[#6b7280]' :
-                      'text-[#131d0c] dark:text-white'
-                    }`}>
-                      {format(day, 'd')}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className={`text-sm font-bold ${
+                        isTodayDate ? 'text-primary dark:text-[#10b981]' :
+                        isWeekend ? 'text-gray-400 dark:text-[#6b7280]' :
+                        'text-[#131d0c] dark:text-white'
+                      }`}>
+                        {format(day, 'd')}
+                      </span>
+                      {isPayDay && (
+                        <span className="text-sm" title={paymentDayIncomes.map(i => i.description).join(', ')}>💰</span>
+                      )}
+                    </div>
                     {workDay && (
                       <span className="material-symbols-outlined text-[16px] text-gray-400 dark:text-[#a1a1a1] opacity-0 group-hover:opacity-100 transition-opacity">edit</span>
                     )}
                   </div>
-                  
+
+                  {/* Payment day indicator */}
+                  {isPayDay && (
+                    <div className="mt-1.5 w-full p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800/30">
+                      <div className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-[12px]">payments</span>
+                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 truncate">
+                          {paymentDayIncomes.length === 1
+                            ? paymentDayIncomes[0].description || 'Betaaldag'
+                            : `${paymentDayIncomes.length} inkomsten`}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   {workDay && (
                     <div className={`mt-2 w-full p-2 rounded-lg ${getStatusColor(workDay.status)} flex flex-col gap-1`}>
                       {workDay.employer && (
@@ -641,6 +677,19 @@ export default function WorkSchedule() {
           }
           loadData();
           setShowPayslipModal(false);
+        }}
+      />
+
+      <PaymentDateModal
+        isOpen={showPaymentDateModal}
+        onClose={() => {
+          setShowPaymentDateModal(false);
+          setSelectedIncomeForPayment(null);
+        }}
+        income={selectedIncomeForPayment}
+        onSaved={() => {
+          loadData();
+          toast({ title: '✅ Betaaldatum opgeslagen' });
         }}
       />
 
