@@ -425,7 +425,6 @@ export default function WorkSchedule() {
                             income_type: 'vast',
                             is_active: true,
                             frequency: 'monthly',
-                            is_from_work_schedule: true,
                           });
                           setSelectedIncomeForPayment(newIncome);
                           setShowPaymentDateModal(true);
