@@ -201,6 +201,8 @@ export default function MaandelijkseLastenPage() {
 
     const categoryLabels = {
         wonen: 'Wonen',
+        huur: 'Huur',
+        hypotheek: 'Hypotheek',
         boodschappen: 'Boodschappen',
         utilities: 'Nutsvoorzieningen',
         verzekeringen: 'Verzekeringen',
@@ -209,11 +211,19 @@ export default function MaandelijkseLastenPage() {
         bankkosten: 'Bankkosten',
         vervoer: 'Vervoer',
         leningen: 'Leningen',
+        kinderopvang: 'Kinderopvang',
+        alimentatie: 'Alimentatie',
+        vakbond: 'Vakbond',
+        studiekosten: 'Studiekosten',
+        gemeentebelasting: 'Gemeentebelasting',
+        zorgkosten: 'Zorgkosten',
         other: 'Overig'
     };
 
     const categoryEmojis = {
         wonen: '🏠',
+        huur: '🏠',
+        hypotheek: '🏡',
         boodschappen: '🛒',
         utilities: '⚡',
         verzekeringen: '🛡️',
@@ -222,6 +232,12 @@ export default function MaandelijkseLastenPage() {
         bankkosten: '🏦',
         vervoer: '🚗',
         leningen: '💳',
+        kinderopvang: '👶',
+        alimentatie: '💸',
+        vakbond: '🤝',
+        studiekosten: '📚',
+        gemeentebelasting: '🏛️',
+        zorgkosten: '💊',
         other: '🧩'
     };
 

@@ -158,14 +158,20 @@ class VTBLService {
         // Get basic financial data
         const fixedIncome = incomeService.getFixedIncome(allIncomes);
 
-        // Bereken vaste lasten EXCLUSIEF huur/hypotheek (die zit al in VTLB woonkosten)
+        // Bereken vaste lasten EXCLUSIEF VTLB-specifieke categorieën
+        // Deze worden apart meegenomen in de VTLB berekening via vtlb_settings
+        const vtlbSpecifiekeCategorieen = ['huur', 'hypotheek', 'kinderopvang', 'alimentatie', 'vakbond', 'studiekosten', 'gemeentebelasting', 'zorgkosten'];
         const vasteLastenExclWonen = allCosts
             .filter(c => c.status === 'actief')
             .filter(c =>
-                c.category !== 'huur' &&
-                c.category !== 'hypotheek' &&
+                !vtlbSpecifiekeCategorieen.includes(c.category) &&
                 !c.name?.toLowerCase().includes('huur') &&
-                !c.name?.toLowerCase().includes('hypotheek')
+                !c.name?.toLowerCase().includes('hypotheek') &&
+                !c.name?.toLowerCase().includes('kinderopvang') &&
+                !c.name?.toLowerCase().includes('alimentatie') &&
+                !c.name?.toLowerCase().includes('vakbond') &&
+                !c.name?.toLowerCase().includes('studie') &&
+                !c.name?.toLowerCase().includes('gemeentebelasting')
             )
             .reduce((sum, cost) => sum + parseFloat(cost.amount || 0), 0);
 

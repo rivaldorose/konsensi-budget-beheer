@@ -93,39 +93,86 @@ export default function VTLBSettings() {
       const arrangementsResult = debtService.getActiveArrangementPayments(debts);
       const bestaandeRegelingen = arrangementsResult.total;
 
-      // Bereken totale vaste lasten (exclusief huur/hypotheek want dat zit al in VTLB woonlasten)
-      const vasteLasten = costs
-        .filter(c => c.status === 'actief')
+      // ============================================
+      // VTLB-SPECIFIEKE KOSTEN UIT VASTE LASTEN HALEN
+      // ============================================
+      const activeCosts = costs.filter(c => c.status === 'actief');
+
+      // Helper functie om kosten te vinden op categorie of naam
+      const findCostByCategory = (category, ...namePatterns) => {
+        return activeCosts.find(c =>
+          c.category === category ||
+          namePatterns.some(pattern => c.name?.toLowerCase().includes(pattern.toLowerCase()))
+        );
+      };
+
+      const sumCostsByCategory = (category, ...namePatterns) => {
+        return activeCosts
+          .filter(c =>
+            c.category === category ||
+            namePatterns.some(pattern => c.name?.toLowerCase().includes(pattern.toLowerCase()))
+          )
+          .reduce((sum, c) => sum + parseFloat(c.amount || 0), 0);
+      };
+
+      // Haal VTLB-specifieke kosten uit vaste lasten
+      const huurCost = findCostByCategory('huur', 'huur');
+      const hypotheekCost = findCostByCategory('hypotheek', 'hypotheek');
+      const woonkostenUitLasten = (huurCost ? parseFloat(huurCost.amount) : 0) +
+                                   (hypotheekCost ? parseFloat(hypotheekCost.amount) : 0);
+
+      const kinderopvangUitLasten = sumCostsByCategory('kinderopvang', 'kinderopvang', 'creche', 'bso', 'gastouder');
+      const alimentatieUitLasten = sumCostsByCategory('alimentatie', 'alimentatie', 'partneralimentatie', 'kinderalimentatie');
+      const vakbondUitLasten = sumCostsByCategory('vakbond', 'vakbond', 'fnv', 'cnv', 'contributie');
+      const studiekostenUitLasten = sumCostsByCategory('studiekosten', 'studie', 'opleiding', 'cursus', 'collegegeld');
+      const gemeentebelastingUitLasten = sumCostsByCategory('gemeentebelasting', 'gemeentebelasting', 'ozb', 'rioolheffing', 'afvalstoffenheffing') * 12; // Naar jaar
+      const zorgkostenUitLasten = sumCostsByCategory('zorgkosten', 'medicijn', 'apotheek', 'eigen bijdrage');
+
+      // Bereken totale vaste lasten EXCLUSIEF wat al in VTLB zit
+      // Dit zijn de "overige" vaste lasten die niet specifiek in VTLB worden meegenomen
+      const vtlbSpecifiekeCategorieen = ['huur', 'hypotheek', 'kinderopvang', 'alimentatie', 'vakbond', 'studiekosten', 'gemeentebelasting', 'zorgkosten'];
+      const vasteLasten = activeCosts
         .filter(c =>
-          // Exclude huur/hypotheek - die worden apart als woonlasten meegenomen in VTLB
-          c.category !== 'huur' &&
-          c.category !== 'hypotheek' &&
+          // Exclude VTLB-specifieke categorieën (die worden apart meegenomen)
+          !vtlbSpecifiekeCategorieen.includes(c.category) &&
+          // Exclude op naam-basis
           !c.name?.toLowerCase().includes('huur') &&
-          !c.name?.toLowerCase().includes('hypotheek')
+          !c.name?.toLowerCase().includes('hypotheek') &&
+          !c.name?.toLowerCase().includes('kinderopvang') &&
+          !c.name?.toLowerCase().includes('alimentatie') &&
+          !c.name?.toLowerCase().includes('vakbond') &&
+          !c.name?.toLowerCase().includes('studie') &&
+          !c.name?.toLowerCase().includes('gemeentebelasting')
         )
         .reduce((sum, cost) => sum + parseFloat(cost.amount || 0), 0);
 
       // Laad opgeslagen VTLB settings
       const savedSettings = userData.vtlb_settings || {};
 
-      // Probeer woonlasten uit costs te halen indien niet ingesteld
-      const huurCost = costs.find(c =>
-        c.category === 'huur' ||
-        c.category === 'hypotheek' ||
-        c.name?.toLowerCase().includes('huur') ||
-        c.name?.toLowerCase().includes('hypotheek')
-      );
-
       setBaseData({
         nettoInkomen,
         bestaandeRegelingen,
-        vasteLasten,  // Vaste maandlasten (energie, verzekeringen, abonnementen, etc.)
+        vasteLasten,  // Vaste maandlasten (energie, verzekeringen, abonnementen, etc.) EXCLUSIEF VTLB-specifieke
       });
 
+      // Vul formData in met saved settings OF automatisch uit vaste lasten
       setFormData(prev => ({
         ...prev,
         ...savedSettings,
-        woonlasten: savedSettings.woonlasten || (huurCost ? parseFloat(huurCost.amount) : 0),
+        // Woonlasten: saved OF uit vaste lasten
+        woonlasten: savedSettings.woonlasten || woonkostenUitLasten || 0,
+        // Kinderopvang: saved OF uit vaste lasten
+        kinderopvangKosten: savedSettings.kinderopvangKosten || kinderopvangUitLasten || 0,
+        // Alimentatie: saved OF uit vaste lasten
+        alimentatie: savedSettings.alimentatie || alimentatieUitLasten || 0,
+        // Vakbond: saved OF uit vaste lasten
+        vakbond: savedSettings.vakbond || vakbondUitLasten || 0,
+        // Studiekosten: saved OF uit vaste lasten
+        studiekosten: savedSettings.studiekosten || studiekostenUitLasten || 0,
+        // Gemeentebelasting (per jaar): saved OF uit vaste lasten
+        gemeentebelasting: savedSettings.gemeentebelasting || gemeentebelastingUitLasten || 0,
+        // Medicijnkosten: saved OF uit vaste lasten
+        medicijnkosten: savedSettings.medicijnkosten || zorgkostenUitLasten || 0,
       }));
 
     } catch (error) {
