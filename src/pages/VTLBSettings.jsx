@@ -44,6 +44,7 @@ export default function VTLBSettings() {
   const [baseData, setBaseData] = useState({
     nettoInkomen: 0,
     bestaandeRegelingen: 0,
+    vasteLasten: 0,  // Totaal maandelijkse vaste lasten
   });
 
   const [vtlbResult, setVtlbResult] = useState(null);
@@ -64,10 +65,12 @@ export default function VTLBSettings() {
 
   useEffect(() => {
     // Herbereken VTLB bij elke wijziging
+    // Let op: vasteLasten worden nu ook meegegeven aan de berekening!
     const profiel = vtlbSettingsToProfiel(
       formData,
       baseData.nettoInkomen,
-      baseData.bestaandeRegelingen
+      baseData.bestaandeRegelingen,
+      baseData.vasteLasten  // Vaste maandlasten meenemen!
     );
     const result = berekenVTLB(profiel);
     setVtlbResult(result);
@@ -90,6 +93,18 @@ export default function VTLBSettings() {
       const arrangementsResult = debtService.getActiveArrangementPayments(debts);
       const bestaandeRegelingen = arrangementsResult.total;
 
+      // Bereken totale vaste lasten (exclusief huur/hypotheek want dat zit al in VTLB woonlasten)
+      const vasteLasten = costs
+        .filter(c => c.status === 'actief')
+        .filter(c =>
+          // Exclude huur/hypotheek - die worden apart als woonlasten meegenomen in VTLB
+          c.category !== 'huur' &&
+          c.category !== 'hypotheek' &&
+          !c.name?.toLowerCase().includes('huur') &&
+          !c.name?.toLowerCase().includes('hypotheek')
+        )
+        .reduce((sum, cost) => sum + parseFloat(cost.amount || 0), 0);
+
       // Laad opgeslagen VTLB settings
       const savedSettings = userData.vtlb_settings || {};
 
@@ -104,6 +119,7 @@ export default function VTLBSettings() {
       setBaseData({
         nettoInkomen,
         bestaandeRegelingen,
+        vasteLasten,  // Vaste maandlasten (energie, verzekeringen, abonnementen, etc.)
       });
 
       setFormData(prev => ({
@@ -240,6 +256,10 @@ export default function VTLBSettings() {
                     <div className="text-center">
                       <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">VTLB (Beslagvrije voet)</p>
                       <p className="text-amber-600 dark:text-amber-400 font-bold text-lg">- {formatCurrency(vtlbResult.vtlbTotaal)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Vaste lasten</p>
+                      <p className="text-orange-600 dark:text-orange-400 font-bold text-lg">- {formatCurrency(vtlbResult.vasteLasten || 0)}</p>
                     </div>
                     <div className="text-center">
                       <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Lopende regelingen</p>
@@ -718,6 +738,20 @@ export default function VTLBSettings() {
                         <span className="text-gray-900 dark:text-white">Totaal VTLB</span>
                         <span className="text-amber-600">{formatCurrency(vtlbResult.vtlbTotaal)}</span>
                       </div>
+
+                      {/* Vaste lasten sectie */}
+                      {(vtlbResult.vasteLasten || 0) > 0 && (
+                        <>
+                          <hr className="border-gray-200 dark:border-[#2a2a2a] my-2" />
+                          <div className="flex justify-between">
+                            <span className="text-gray-600 dark:text-gray-400">Vaste maandlasten</span>
+                            <span className="font-medium text-orange-600">- {formatCurrency(vtlbResult.vasteLasten)}</span>
+                          </div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Energie, verzekeringen, abonnementen, etc. (excl. huur)
+                          </p>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
