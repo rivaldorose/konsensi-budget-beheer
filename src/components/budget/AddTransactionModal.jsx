@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Income, MonthlyCost, Transaction, Pot } from '@/api/entities';
 
+// Helper: render pot icon (emoji of Material Symbol)
+const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+function PotIcon({ icon, className = "text-xl" }) {
+    if (!icon) return <span className={className}>📦</span>;
+    if (emojiRegex.test(icon)) return <span className={className}>{icon}</span>;
+    return <span className={`material-symbols-outlined ${className}`}>{icon}</span>;
+}
+
 export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEmail, editTransaction = null }) {
     const { toast } = useToast();
     const [activeTab, setActiveTab] = useState('expense');
@@ -446,7 +454,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                                                         : 'bg-white dark:bg-[#2a2a2a] text-gray-600 dark:text-[#a1a1a1] border-gray-200 dark:border-[#3a3a3a] hover:border-emerald-200 dark:hover:border-emerald-800'
                                                 }`}
                                             >
-                                                <span className="text-lg">{pot.icon || '📦'}</span>
+                                                <PotIcon icon={pot.icon} className="text-lg" />
                                                 <span className="truncate w-full text-center">{pot.name}</span>
                                             </button>
                                         ))}
@@ -537,7 +545,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                                                             : 'bg-white dark:bg-[#2a2a2a] border-gray-200 dark:border-[#3a3a3a] hover:border-emerald-200 dark:hover:border-emerald-800'
                                                     }`}
                                                 >
-                                                    <span className="text-xl">{pot.icon || '📦'}</span>
+                                                    <PotIcon icon={pot.icon} className="text-xl" />
                                                     <div className="flex-1 text-left">
                                                         <p className="text-sm font-bold text-[#131d0c] dark:text-white">{pot.name}</p>
                                                         <p className="text-xs text-gray-500 dark:text-[#6b7280]">
