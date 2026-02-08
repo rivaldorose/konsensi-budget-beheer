@@ -384,34 +384,34 @@ export default function Dashboard() {
         let upcomingDebtPayments = [];
 
         debtsWithArrangement.forEach(debt => {
-          // Check if debt has a start_date and if it's in the future
-          const startDate = debt.start_date ? new Date(debt.start_date) : null;
-          if (startDate) {
-            startDate.setHours(0, 0, 0, 0);
+          // CRITICAL: payment_plan_date is the START of the payment plan
+          // The first payment should be ON or AFTER this date, not before!
+          if (!debt.payment_plan_date) return;
+
+          const planStartDate = new Date(debt.payment_plan_date);
+          planStartDate.setHours(0, 0, 0, 0);
+
+          // Get the day of month from payment_plan_date
+          const paymentDay = planStartDate.getDate();
+
+          // If the plan starts in the future, don't show it in upcoming payments
+          // (the user explicitly set a future start date)
+          if (planStartDate > today) {
+            // The first payment is on planStartDate itself
+            upcomingDebtPayments.push({
+              name: debt.creditor_name || 'Schuld',
+              amount: Number(debt.monthly_payment) || 0,
+              next_due_date: planStartDate
+            });
+            return;
           }
 
-          // Use payment_plan_date day of month, or default to 1st
-          const paymentDay = debt.payment_plan_date
-            ? new Date(debt.payment_plan_date).getDate()
-            : 1;
-
+          // Plan has started - calculate next payment based on monthly cycle
           let nextDebtDate = new Date(today.getFullYear(), today.getMonth(), paymentDay);
 
           // If date already passed this month, move to next month
           if (nextDebtDate < today) {
             nextDebtDate.setMonth(nextDebtDate.getMonth() + 1);
-          }
-
-          // If the debt has a start_date that's in the future,
-          // the first payment should be based on that start date
-          if (startDate && startDate > today) {
-            // Calculate first payment date based on start_date
-            nextDebtDate = new Date(startDate.getFullYear(), startDate.getMonth(), paymentDay);
-
-            // If the payment day is before the start date in that month, move to next month
-            if (nextDebtDate < startDate) {
-              nextDebtDate.setMonth(nextDebtDate.getMonth() + 1);
-            }
           }
 
           upcomingDebtPayments.push({
