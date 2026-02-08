@@ -60,11 +60,6 @@ export default function PotjeModal({ pot, isOpen, onClose, onSave }) {
       return;
     }
 
-    if (formData.pot_type === 'expense' && (!formData.budget || formData.budget === '')) {
-      toast({ title: "Vul een maandelijks budget in", variant: "destructive" });
-      return;
-    }
-
     if (formData.pot_type === 'savings' && (!formData.target_amount || formData.target_amount === '')) {
       toast({ title: "Vul een doelbedrag in", variant: "destructive" });
       return;
@@ -200,7 +195,7 @@ export default function PotjeModal({ pot, isOpen, onClose, onSave }) {
           {formData.pot_type === 'expense' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a1] mb-1.5">
-                Maandelijks budget
+                Maandelijks budget <span className="text-gray-400 dark:text-[#6b7280] font-normal">(optioneel)</span>
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] font-bold text-sm">€</span>
