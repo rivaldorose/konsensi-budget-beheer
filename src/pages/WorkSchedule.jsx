@@ -401,6 +401,11 @@ export default function WorkSchedule() {
               {incomesWithPaymentDates.map((income) => {
                 const hasPaymentDate = income.nextPaymentDate || income.last_payment_date;
 
+                // Strip "Loon " prefix en " - maand jaar" suffix voor nettere weergave
+                const displayName = (income.description || 'Inkomen')
+                  .replace(/^Loon\s+/i, '')
+                  .replace(/\s*-\s*(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\s+\d{4}$/i, '');
+
                 return (
                   <div
                     key={income.id}
@@ -411,7 +416,7 @@ export default function WorkSchedule() {
                     className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#2a2a2a]/50 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 cursor-pointer transition-all"
                   >
                     <span className="font-medium text-[#131d0c] dark:text-white text-sm">
-                      {income.description || 'Inkomen'}
+                      {displayName}
                     </span>
                     {hasPaymentDate ? (
                       <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
@@ -541,7 +546,9 @@ export default function WorkSchedule() {
                         <span className="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-[12px]">payments</span>
                         <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 truncate">
                           {paymentDayIncomes.length === 1
-                            ? paymentDayIncomes[0].description || 'Betaaldag'
+                            ? (paymentDayIncomes[0].description || 'Betaaldag')
+                                .replace(/^Loon\s+/i, '')
+                                .replace(/\s*-\s*(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\s+\d{4}$/i, '')
                             : `${paymentDayIncomes.length} inkomsten`}
                         </span>
                       </div>

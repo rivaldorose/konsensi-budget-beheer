@@ -148,7 +148,11 @@ export default function PaymentDateModal({ isOpen, onClose, income, onSaved }) {
           {/* Inkomen info */}
           <div className="p-3 bg-gray-50 dark:bg-[#0a0a0a] rounded-xl">
             <p className="text-xs text-gray-500 dark:text-[#a1a1a1] mb-0.5">Inkomen:</p>
-            <p className="font-bold text-[#131d0c] dark:text-white">{income.description || 'Inkomen'}</p>
+            <p className="font-bold text-[#131d0c] dark:text-white">
+              {(income.description || 'Inkomen')
+                .replace(/^Loon\s+/i, '')
+                .replace(/\s*-\s*(januari|februari|maart|april|mei|juni|juli|augustus|september|oktober|november|december)\s+\d{4}$/i, '')}
+            </p>
           </div>
 
           {/* Frequentie */}
