@@ -381,6 +381,9 @@ export default function Dashboard() {
       if (debtsWithArrangement.length > 0) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        const endOfCurrentMonth = getEndOfMonth(today);
         let upcomingDebtPayments = [];
 
         debtsWithArrangement.forEach(debt => {
@@ -394,10 +397,18 @@ export default function Dashboard() {
           // Get the day of month from payment_plan_date
           const paymentDay = planStartDate.getDate();
 
-          // If the plan starts in the future, don't show it in upcoming payments
-          // (the user explicitly set a future start date)
-          if (planStartDate > today) {
-            // The first payment is on planStartDate itself
+          // If the plan starts in a FUTURE MONTH, don't show it at all
+          // We only want to show payments that fall in the CURRENT month
+          if (planStartDate.getMonth() !== currentMonth || planStartDate.getFullYear() !== currentYear) {
+            // Plan starts in a different month - check if it would have a payment this month
+            if (planStartDate > endOfCurrentMonth) {
+              // Plan hasn't started yet and won't start this month - skip it
+              return;
+            }
+          }
+
+          // If the plan starts in the future but within this month, show it
+          if (planStartDate > today && planStartDate <= endOfCurrentMonth) {
             upcomingDebtPayments.push({
               name: debt.creditor_name || 'Schuld',
               amount: Number(debt.monthly_payment) || 0,
@@ -409,11 +420,14 @@ export default function Dashboard() {
           // Plan has started - calculate next payment based on monthly cycle
           let nextDebtDate = new Date(today.getFullYear(), today.getMonth(), paymentDay);
 
-          // If date already passed this month, move to next month
+          // If date already passed this month, this month's payment is done
+          // Don't show next month's payment
           if (nextDebtDate < today) {
-            nextDebtDate.setMonth(nextDebtDate.getMonth() + 1);
+            // Payment already done this month - don't show next month's
+            return;
           }
 
+          // Payment is still upcoming THIS month
           upcomingDebtPayments.push({
             name: debt.creditor_name || 'Schuld',
             amount: Number(debt.monthly_payment) || 0,
@@ -445,10 +459,13 @@ export default function Dashboard() {
 
               let nextPaymentDate = new Date(today.getFullYear(), today.getMonth(), paymentDay);
 
+              // Only show if payment is still upcoming THIS month
+              // If payment date already passed this month, don't show next month's payment
               if (nextPaymentDate < today) {
-                  nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
+                  // Payment already done this month - skip it
+                  return;
               }
-              
+
               upcomingCosts.push({
                   ...cost,
                   next_due_date: nextPaymentDate
@@ -463,7 +480,7 @@ export default function Dashboard() {
               return 0;
             }
           });
-          
+
           const nextUpcomingCostItem = upcomingCosts[0];
 
           if (nextUpcomingCostItem) {
@@ -626,7 +643,19 @@ export default function Dashboard() {
     const payments = [];
     const nextCost = dashboardData.nextCost;
     const nextPayment = dashboardData.nextPayment;
-    if (nextCost) {
+
+    // Filter: alleen betalingen van de huidige maand tonen
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const isInCurrentMonth = (dateStr) => {
+      if (!dateStr) return false;
+      const date = new Date(dateStr);
+      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    };
+
+    if (nextCost && isInCurrentMonth(nextCost.date)) {
       payments.push({
         type: "fixed_cost",
         name: nextCost.name,
@@ -634,7 +663,7 @@ export default function Dashboard() {
         date: nextCost.date,
       });
     }
-    if (nextPayment) {
+    if (nextPayment && isInCurrentMonth(nextPayment.date)) {
       payments.push({
         type: "debt",
         name: nextPayment.name,
