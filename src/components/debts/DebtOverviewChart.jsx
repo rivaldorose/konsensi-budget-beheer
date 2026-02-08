@@ -38,7 +38,7 @@ const colors = [
 export default function DebtOverviewChart({ debts = [], viewMode = 'type', embedded = false }) {
   const [activeView, setActiveView] = React.useState(viewMode);
 
-  // Calculate distribution data
+  // Calculate distribution data — based on count (aantal schulden)
   const distributionData = useMemo(() => {
     if (!debts || debts.length === 0) return [];
 
@@ -63,11 +63,11 @@ export default function DebtOverviewChart({ debts = [], viewMode = 'type', embed
       groupedData[key].count += 1;
     });
 
-    return Object.values(groupedData).sort((a, b) => b.amount - a.amount);
+    return Object.values(groupedData).sort((a, b) => b.count - a.count);
   }, [debts, activeView]);
 
-  const totalAmount = useMemo(() =>
-    distributionData.reduce((sum, d) => sum + d.amount, 0),
+  const totalCount = useMemo(() =>
+    distributionData.reduce((sum, d) => sum + d.count, 0),
     [distributionData]
   );
 
@@ -82,7 +82,7 @@ export default function DebtOverviewChart({ debts = [], viewMode = 'type', embed
     const centerY = 100;
 
     distributionData.forEach((item, index) => {
-      const percentage = totalAmount > 0 ? (item.amount / totalAmount) * 100 : 0;
+      const percentage = totalCount > 0 ? (item.count / totalCount) * 100 : 0;
       const angle = (percentage / 100) * 360;
 
       // Calculate arc
@@ -221,25 +221,33 @@ export default function DebtOverviewChart({ debts = [], viewMode = 'type', embed
         {/* Legend - only category and percentage */}
         <div className="flex-1 w-full">
           <div className="space-y-2">
-            {segments.slice(0, 5).map((segment, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className="size-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: segment.color }}
-                  />
-                  <span className="text-sm text-[#1F2937] dark:text-white font-medium truncate">
-                    {segment.label}
+            {segments.slice(0, 5).map((segment, index) => {
+              // Fix rounding: largest group gets the rounding difference
+              let displayPercentage = Math.round(segment.percentage);
+              if (index === 0 && segments.length > 0) {
+                const otherRounded = segments.slice(1, 5).reduce((sum, s) => sum + Math.round(s.percentage), 0);
+                displayPercentage = 100 - otherRounded;
+              }
+              return (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className="size-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: segment.color }}
+                    />
+                    <span className="text-sm text-[#1F2937] dark:text-white font-medium truncate">
+                      {segment.label} ({segment.count})
+                    </span>
+                  </div>
+                  <span className="text-sm font-bold text-[#1F2937] dark:text-white flex-shrink-0 ml-2">
+                    {displayPercentage}%
                   </span>
                 </div>
-                <span className="text-sm font-bold text-[#1F2937] dark:text-white flex-shrink-0 ml-2">
-                  {segment.percentage.toFixed(0)}%
-                </span>
-              </div>
-            ))}
+              );
+            })}
             {segments.length > 5 && (
               <div className="text-xs text-gray-400 dark:text-[#6B7280] text-center pt-2">
                 +{segments.length - 5} meer
