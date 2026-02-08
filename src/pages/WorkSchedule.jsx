@@ -241,13 +241,64 @@ export default function WorkSchedule() {
     return workDays.find(wd => isSameDay(new Date(wd.date), date));
   };
 
-  // Check if a date is a payment day for any fixed income
-  // Gebruikt de berekende nextPaymentDate uit incomesWithPaymentDates
-  const getPaymentDayIncomes = (date) => {
-    return incomesWithPaymentDates.filter(income => {
-      if (!income.nextPaymentDate) return false;
-      return isSameDay(income.nextPaymentDate, date);
+  // Bereken alle betaaldagen per inkomen voor de huidige maand
+  const allPaymentDays = useMemo(() => {
+    const monthStart = startOfMonth(currentMonth);
+    const monthEnd = endOfMonth(currentMonth);
+    const paymentMap = new Map(); // date string -> [income, income, ...]
+
+    fixedIncomes.forEach(income => {
+      if (!income.last_payment_date && !income.day_of_month) return;
+
+      const frequency = income.frequency;
+      const frequencyDays = {
+        'weekly': 7,
+        'biweekly': 14,
+        'four_weekly': 28,
+      };
+
+      const days = frequencyDays[frequency];
+
+      if (days && income.last_payment_date) {
+        // Voor week-gebaseerde frequenties: bereken alle betaaldagen in de maand
+        let checkDate = new Date(income.last_payment_date);
+        checkDate.setHours(12, 0, 0, 0);
+
+        // Ga terug tot voor de maand
+        while (checkDate > monthStart) {
+          checkDate = new Date(checkDate.getTime() - days * 24 * 60 * 60 * 1000);
+        }
+        // Ga vooruit en verzamel alle datums in de maand
+        while (checkDate <= monthEnd) {
+          if (checkDate >= monthStart && checkDate <= monthEnd) {
+            const key = format(checkDate, 'yyyy-MM-dd');
+            if (!paymentMap.has(key)) paymentMap.set(key, []);
+            paymentMap.get(key).push(income);
+          }
+          checkDate = new Date(checkDate.getTime() + days * 24 * 60 * 60 * 1000);
+        }
+      } else if (frequency === 'monthly' || !frequency) {
+        // Maandelijks: één betaaldag per maand
+        const dayOfMonth = income.day_of_month || (income.last_payment_date ? new Date(income.last_payment_date).getDate() : null);
+        if (dayOfMonth) {
+          const payDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), dayOfMonth);
+          payDate.setHours(12, 0, 0, 0);
+          if (payDate >= monthStart && payDate <= monthEnd) {
+            const key = format(payDate, 'yyyy-MM-dd');
+            if (!paymentMap.has(key)) paymentMap.set(key, []);
+            paymentMap.get(key).push(income);
+          }
+        }
+      }
     });
+
+    return paymentMap;
+  }, [fixedIncomes, currentMonth]);
+
+  // Check if a date is a payment day for any fixed income
+  const getPaymentDayIncomes = (date) => {
+    const key = format(date, 'yyyy-MM-dd');
+    return allPaymentDays.get(key) || [];
   };
 
   const getStatusColor = (status) => {
