@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Income } from '@/api/entities';
 import { MonthlyCost } from '@/api/entities';
@@ -20,9 +20,6 @@ import {
     calculateNextPaymentDate,
     formatDateNL
 } from '@/components/utils/frequencyHelpers';
-
-// Polling interval voor live updates (5 seconden)
-const LIVE_POLL_INTERVAL = 5000;
 
 export default function BudgetPlan() {
     const { toast } = useToast();
@@ -55,11 +52,6 @@ export default function BudgetPlan() {
     const [debts, setDebts] = useState([]);
     const [budgetCategories, setBudgetCategories] = useState([]);
 
-    // Live data tracking refs
-    const previousDataRef = useRef({ incomes: [], costs: [], debts: [], pots: [] });
-    const isInitialLoadRef = useRef(true);
-    const pollIntervalRef = useRef(null);
-
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme');
         const isDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -70,23 +62,11 @@ export default function BudgetPlan() {
             document.documentElement.classList.remove('dark');
         }
         loadData();
-
-        // Start live polling voor real-time updates
-        pollIntervalRef.current = setInterval(() => {
-            loadData(true); // Met notificaties
-        }, LIVE_POLL_INTERVAL);
-
-        // Cleanup bij unmount
-        return () => {
-            if (pollIntervalRef.current) {
-                clearInterval(pollIntervalRef.current);
-            }
-        };
     }, []);
 
     useEffect(() => {
         if (user) {
-            loadData(false); // Zonder notificaties bij periode wijziging
+            loadData(); // Zonder notificaties bij periode wijziging
         }
     }, [selectedMonth, period]);
 
@@ -134,41 +114,7 @@ export default function BudgetPlan() {
         return { startDate, endDate, today };
     };
 
-    // Detecteer wijzigingen en toon notificaties
-    const detectChanges = useCallback((newData, prevData, type) => {
-        if (isInitialLoadRef.current) return;
-
-        const newIds = new Set(newData.map(item => item.id));
-        const prevIds = new Set(prevData.map(item => item.id));
-
-        // Nieuwe items
-        const addedItems = newData.filter(item => !prevIds.has(item.id));
-        // Verwijderde items
-        const removedItems = prevData.filter(item => !newIds.has(item.id));
-
-        // Toon notificaties voor nieuwe items
-        addedItems.forEach(item => {
-            const name = item.description || item.name || item.creditor || item.creditor_name || 'Item';
-            const amount = item.amount || item.monthly_payment || item.monthly_budget || 0;
-
-            toast({
-                title: `✅ ${type} toegevoegd`,
-                description: `${name}: €${parseFloat(amount).toFixed(2)}`,
-            });
-        });
-
-        // Toon notificaties voor verwijderde items
-        removedItems.forEach(item => {
-            const name = item.description || item.name || item.creditor || item.creditor_name || 'Item';
-
-            toast({
-                title: `🗑️ ${type} verwijderd`,
-                description: name,
-            });
-        });
-    }, [toast]);
-
-    const loadData = async (showNotifications = true) => {
+    const loadData = async () => {
         try {
             if (!user) {
                 setLoading(true);
@@ -442,24 +388,6 @@ export default function BudgetPlan() {
             setAllPots(expensePots);
             setBudgetCategories(breakdown);
 
-            // Detecteer wijzigingen voor live updates (alleen na eerste load)
-            if (showNotifications && !isInitialLoadRef.current) {
-                detectChanges(incomeData, previousDataRef.current.incomes, 'Inkomen');
-                detectChanges(monthlyCostsData, previousDataRef.current.costs, 'Vaste last');
-                detectChanges(debtsData.filter(d => d.status === 'betalingsregeling'), previousDataRef.current.debts, 'Betalingsregeling');
-                detectChanges(potsData, previousDataRef.current.pots, 'Potje');
-            }
-
-            // Update previous data refs
-            previousDataRef.current = {
-                incomes: incomeData,
-                costs: monthlyCostsData,
-                debts: debtsData.filter(d => d.status === 'betalingsregeling'),
-                pots: potsData
-            };
-
-            isInitialLoadRef.current = false;
-
         } catch (error) {
             console.error('Error loading budget data:', error);
         } finally {
@@ -548,7 +476,7 @@ export default function BudgetPlan() {
             }
 
             // Herlaad data (zonder notificaties, want we hebben net zelf iets verwijderd)
-            await loadData(false);
+            await loadData();
         } catch (error) {
             console.error('Error deleting transaction:', error);
             toast({
