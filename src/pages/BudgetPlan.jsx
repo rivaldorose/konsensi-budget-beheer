@@ -37,6 +37,8 @@ export default function BudgetPlan() {
     const [deleteConfirm, setDeleteConfirm] = useState({ show: false, transaction: null });
     const [deleting, setDeleting] = useState(false);
     const [editTransaction, setEditTransaction] = useState(null);
+    const [breakdownOpen, setBreakdownOpen] = useState(true);
+    const [categoriesOpen, setCategoriesOpen] = useState(true);
 
     // Financial data
     const [totalIncome, setTotalIncome] = useState(0);
@@ -733,39 +735,46 @@ export default function BudgetPlan() {
                     <div className="lg:col-span-5 flex flex-col gap-6">
                         {/* Breakdown Card */}
                         <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 md:p-8 shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a]">
-                            <div className="flex justify-between items-center mb-6">
+                            <button
+                                onClick={() => setBreakdownOpen(!breakdownOpen)}
+                                className="w-full flex justify-between items-center mb-6 cursor-pointer"
+                            >
                                 <div className="flex items-center gap-3">
                                     <span className="material-symbols-outlined text-purple-500">pie_chart</span>
                                     <h3 className="text-xl font-bold text-[#1F2937] dark:text-white">Uitsplitsing</h3>
                                 </div>
-                                <button className="text-gray-400 dark:text-[#a1a1a1] hover:text-gray-600 dark:hover:text-white">
-                                    <span className="material-symbols-outlined">expand_less</span>
-                                        </button>
-                            </div>
-                            {/* Donut Chart Area */}
-                            <div className="flex flex-col items-center justify-center py-4 relative">
-                                <div className="relative size-56 rounded-full" style={{
-                                    background: `conic-gradient(${donutData.map((d, i) => `${d.color} ${d.startPercent}% ${d.endPercent}%`).join(', ')})`
-                                }}>
-                                    <div className="absolute inset-0 m-auto size-40 bg-white dark:bg-[#1a1a1a] rounded-full flex flex-col items-center justify-center shadow-inner">
-                                        <span className="text-[11px] font-bold text-gray-400 dark:text-[#a1a1a1] uppercase tracking-wide">Uitgegeven</span>
-                                        <span className="text-2xl font-extrabold text-[#1F2937] dark:text-white">{formatCurrency(totalExpenses)}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            {/* Legend */}
-                            <div className="mt-6 flex flex-col gap-3">
-                                {potBreakdown.slice(0, 5).map((category) => (
-                                    <div key={category.name} className="flex justify-between items-center text-sm font-medium">
-                                        <div className="flex items-center gap-2">
-                                            <span className="size-3 rounded-full" style={{ backgroundColor: category.color }}></span>
-                                            <span className="text-gray-600 dark:text-gray-300">{category.name}</span>
+                                <span className="text-gray-400 dark:text-[#a1a1a1] hover:text-gray-600 dark:hover:text-white">
+                                    <span className={`material-symbols-outlined transition-transform duration-300 ${breakdownOpen ? '' : 'rotate-180'}`}>expand_less</span>
+                                </span>
+                            </button>
+                            {breakdownOpen && (
+                                <>
+                                    {/* Donut Chart Area */}
+                                    <div className="flex flex-col items-center justify-center py-4 relative">
+                                        <div className="relative size-56 rounded-full" style={{
+                                            background: `conic-gradient(${donutData.map((d, i) => `${d.color} ${d.startPercent}% ${d.endPercent}%`).join(', ')})`
+                                        }}>
+                                            <div className="absolute inset-0 m-auto size-40 bg-white dark:bg-[#1a1a1a] rounded-full flex flex-col items-center justify-center shadow-inner">
+                                                <span className="text-[11px] font-bold text-gray-400 dark:text-[#a1a1a1] uppercase tracking-wide">Uitgegeven</span>
+                                                <span className="text-2xl font-extrabold text-[#1F2937] dark:text-white">{formatCurrency(totalExpenses)}</span>
+                                            </div>
                                         </div>
-                                        <span className="font-bold text-[#1F2937] dark:text-white">{category.percentage}%</span>
                                     </div>
-                                    ))}
-                                </div>
-                                                    </div>
+                                    {/* Legend */}
+                                    <div className="mt-6 flex flex-col gap-3">
+                                        {potBreakdown.slice(0, 5).map((category) => (
+                                            <div key={category.name} className="flex justify-between items-center text-sm font-medium">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="size-3 rounded-full" style={{ backgroundColor: category.color }}></span>
+                                                    <span className="text-gray-600 dark:text-gray-300">{category.name}</span>
+                                                </div>
+                                                <span className="font-bold text-[#1F2937] dark:text-white">{category.percentage}%</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
 
                         {/* Timeline Chart Placeholder */}
                         <div className="bg-white dark:bg-[#1a1a1a] rounded-[24px] p-6 md:p-8 shadow-[0_8px_24px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-[#2a2a2a] flex-1">
@@ -799,19 +808,23 @@ export default function BudgetPlan() {
                     {/* RIGHT COLUMN (55%) */}
                     <div className="lg:col-span-7 flex flex-col gap-6">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setCategoriesOpen(!categoriesOpen)}
+                                className="flex items-center gap-3 cursor-pointer"
+                            >
                                 <span className="material-symbols-outlined text-[#1F2937] dark:text-white">home_app_logo</span>
                                 <h2 className="text-2xl font-bold text-[#1F2937] dark:text-white">Mijn Budget Categorieën</h2>
-                            </div>
-                            <button 
+                                <span className={`material-symbols-outlined text-gray-400 dark:text-[#a1a1a1] transition-transform duration-300 ${categoriesOpen ? '' : 'rotate-180'}`}>expand_less</span>
+                            </button>
+                            <button
                                 className="flex items-center gap-1 bg-primary text-white px-4 py-2 rounded-[24px] text-sm font-bold hover:bg-[#059669] transition-colors shadow-sm"
                                 onClick={() => setShowCategoryModal(true)}
                             >
                                 <span className="material-symbols-outlined text-[18px]">add</span>
                                 <span>Categorie</span>
                             </button>
-                            </div>
-                        <div className="flex flex-col gap-4">
+                        </div>
+                        {categoriesOpen && <div className="flex flex-col gap-4">
                             {budgetCategories.map((category) => {
                                 const percentage = category.budget > 0 ? Math.round((category.amount / category.budget) * 100) : 0;
                                 const icon = getCategoryIcon(category.name);
@@ -871,7 +884,7 @@ export default function BudgetPlan() {
                         </div>
                                 );
                             })}
-                    </div>
+                    </div>}
                         </div>
                     </div>
 
