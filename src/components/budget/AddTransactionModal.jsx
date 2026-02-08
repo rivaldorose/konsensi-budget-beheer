@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
-import { Income } from '@/api/entities';
-import { MonthlyCost } from '@/api/entities';
-import { Transaction } from '@/api/entities';
-import { Pot } from '@/api/entities';
-import { TrendingUp, TrendingDown, Loader2 } from 'lucide-react';
+import { Income, MonthlyCost, Transaction, Pot } from '@/api/entities';
 
 export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEmail }) {
     const { toast } = useToast();
@@ -207,179 +197,291 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
         }
     };
 
+    if (!isOpen) return null;
+
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Transactie Toevoegen</DialogTitle>
-                </DialogHeader>
-
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="expense" className="flex items-center gap-2">
-                            <TrendingDown className="w-4 h-4" />
-                            Uitgave
-                        </TabsTrigger>
-                        <TabsTrigger value="income" className="flex items-center gap-2">
-                            <TrendingUp className="w-4 h-4" />
-                            Inkomen
-                        </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="expense" className="space-y-4 mt-4">
-                        <div>
-                            <Label>Beschrijving</Label>
-                            <Input
-                                placeholder="Bijv. Boodschappen Albert Heijn"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
+        <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 dark:bg-black/80 backdrop-blur-sm p-4"
+            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        >
+            <div
+                className="bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl w-full max-w-[480px] overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="p-5 border-b border-gray-100 dark:border-[#2a2a2a] flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className={`size-10 rounded-xl flex items-center justify-center ${
+                            activeTab === 'expense'
+                                ? 'bg-red-50 dark:bg-red-900/20'
+                                : 'bg-emerald-50 dark:bg-emerald-900/20'
+                        }`}>
+                            <span className={`material-symbols-outlined text-[20px] ${
+                                activeTab === 'expense'
+                                    ? 'text-red-500 dark:text-red-400'
+                                    : 'text-emerald-600 dark:text-emerald-400'
+                            }`}>
+                                {activeTab === 'expense' ? 'shopping_cart' : 'account_balance_wallet'}
+                            </span>
                         </div>
+                        <h3 className="font-display font-bold text-lg text-[#131d0c] dark:text-white">
+                            Transactie toevoegen
+                        </h3>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-400 dark:text-[#a1a1a1] hover:text-gray-600 dark:hover:text-white transition-colors"
+                    >
+                        <span className="material-symbols-outlined">close</span>
+                    </button>
+                </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label>Bedrag (€)</Label>
-                                <Input
+                {/* Tab Switcher */}
+                <div className="px-5 pt-5">
+                    <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 dark:bg-[#0a0a0a] rounded-xl">
+                        <button
+                            onClick={() => setActiveTab('expense')}
+                            className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                                activeTab === 'expense'
+                                    ? 'bg-white dark:bg-[#2a2a2a] text-red-500 dark:text-red-400 shadow-sm'
+                                    : 'text-gray-500 dark:text-[#6b7280] hover:text-gray-700 dark:hover:text-[#a1a1a1]'
+                            }`}
+                        >
+                            <span className="material-symbols-outlined text-[18px]">trending_down</span>
+                            Uitgave
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('income')}
+                            className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                                activeTab === 'income'
+                                    ? 'bg-white dark:bg-[#2a2a2a] text-emerald-500 dark:text-emerald-400 shadow-sm'
+                                    : 'text-gray-500 dark:text-[#6b7280] hover:text-gray-700 dark:hover:text-[#a1a1a1]'
+                            }`}
+                        >
+                            <span className="material-symbols-outlined text-[18px]">trending_up</span>
+                            Inkomen
+                        </button>
+                    </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-5 space-y-4">
+                    {/* Beschrijving */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a1] mb-1.5">
+                            Beschrijving
+                        </label>
+                        <input
+                            type="text"
+                            placeholder={activeTab === 'expense' ? 'Bijv. Boodschappen Albert Heijn' : 'Bijv. Salaris januari'}
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-200 dark:border-[#2a2a2a] rounded-xl bg-white dark:bg-[#2a2a2a] text-[#131d0c] dark:text-white font-medium placeholder:text-gray-400 dark:placeholder:text-[#6b7280] focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                        />
+                    </div>
+
+                    {/* Bedrag + Datum */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a1] mb-1.5">
+                                Bedrag
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] font-bold text-sm">€</span>
+                                <input
                                     type="number"
                                     step="0.01"
                                     placeholder="0,00"
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <Label>Datum</Label>
-                                <Input
-                                    type="date"
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
+                                    className="w-full pl-8 pr-4 py-3 border border-gray-200 dark:border-[#2a2a2a] rounded-xl bg-white dark:bg-[#2a2a2a] text-[#131d0c] dark:text-white font-medium placeholder:text-gray-400 dark:placeholder:text-[#6b7280] focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
                                 />
                             </div>
                         </div>
-
                         <div>
-                            <Label>Type uitgave</Label>
-                            <Select value={expenseType} onValueChange={setExpenseType}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="eenmalig">💸 Eenmalige uitgave</SelectItem>
-                                    <SelectItem value="vast">🔄 Vaste last (maandelijks)</SelectItem>
-                                    <SelectItem value="potje">🏺 Koppel aan potje</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a1] mb-1.5">
+                                Datum
+                            </label>
+                            <input
+                                type="date"
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
+                                className="w-full px-4 py-3 border border-gray-200 dark:border-[#2a2a2a] rounded-xl bg-white dark:bg-[#2a2a2a] text-[#131d0c] dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                            />
                         </div>
+                    </div>
 
-                        {(expenseType === 'vast' || expenseType === 'eenmalig') && (
+                    {/* Expense-specific fields */}
+                    {activeTab === 'expense' && (
+                        <>
+                            {/* Type uitgave */}
                             <div>
-                                <Label>{expenseType === 'vast' ? 'Categorie vaste last' : 'Categorie'}</Label>
-                                <Select value={category} onValueChange={setCategory}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Kies categorie" />
-                                    </SelectTrigger>
-                                    <SelectContent>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a1] mb-2">
+                                    Type uitgave
+                                </label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {[
+                                        { value: 'eenmalig', label: 'Eenmalig', icon: 'receipt_long' },
+                                        { value: 'vast', label: 'Vaste last', icon: 'sync' },
+                                        { value: 'potje', label: 'Potje', icon: 'savings' },
+                                    ].map(type => (
+                                        <button
+                                            key={type.value}
+                                            onClick={() => setExpenseType(type.value)}
+                                            className={`flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl text-xs font-bold transition-all border ${
+                                                expenseType === type.value
+                                                    ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20'
+                                                    : 'bg-white dark:bg-[#2a2a2a] text-gray-600 dark:text-[#a1a1a1] border-gray-200 dark:border-[#3a3a3a] hover:border-emerald-300 dark:hover:border-emerald-700'
+                                            }`}
+                                        >
+                                            <span className="material-symbols-outlined text-[20px]">{type.icon}</span>
+                                            {type.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Categorie selector */}
+                            {(expenseType === 'vast' || expenseType === 'eenmalig') && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a1] mb-2">
+                                        {expenseType === 'vast' ? 'Categorie vaste last' : 'Categorie'}
+                                    </label>
+                                    <div className="grid grid-cols-4 gap-2">
                                         {costCategories.map(cat => (
-                                            <SelectItem key={cat.value} value={cat.value}>
-                                                {cat.label}
-                                            </SelectItem>
+                                            <button
+                                                key={cat.value}
+                                                onClick={() => setCategory(cat.value)}
+                                                className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl text-[11px] font-medium transition-all border ${
+                                                    category === cat.value
+                                                        ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700'
+                                                        : 'bg-white dark:bg-[#2a2a2a] text-gray-600 dark:text-[#a1a1a1] border-gray-200 dark:border-[#3a3a3a] hover:border-emerald-200 dark:hover:border-emerald-800'
+                                                }`}
+                                            >
+                                                <span className="text-lg">{cat.label.split(' ')[0]}</span>
+                                                <span className="truncate w-full text-center">{cat.label.split(' ').slice(1).join(' ')}</span>
+                                            </button>
                                         ))}
                                         {/* Bestaande potjes als extra categorieën */}
                                         {pots.filter(p => !costCategories.some(c => c.value === p.name.toLowerCase())).map(pot => (
-                                            <SelectItem key={`pot-${pot.id}`} value={pot.name.toLowerCase()}>
-                                                {pot.icon || '📦'} {pot.name}
-                                            </SelectItem>
+                                            <button
+                                                key={`pot-${pot.id}`}
+                                                onClick={() => setCategory(pot.name.toLowerCase())}
+                                                className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl text-[11px] font-medium transition-all border ${
+                                                    category === pot.name.toLowerCase()
+                                                        ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700'
+                                                        : 'bg-white dark:bg-[#2a2a2a] text-gray-600 dark:text-[#a1a1a1] border-gray-200 dark:border-[#3a3a3a] hover:border-emerald-200 dark:hover:border-emerald-800'
+                                                }`}
+                                            >
+                                                <span className="text-lg">{pot.icon || '📦'}</span>
+                                                <span className="truncate w-full text-center">{pot.name}</span>
+                                            </button>
                                         ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
+                                    </div>
+                                </div>
+                            )}
 
-                        {expenseType === 'potje' && (
-                            <div>
-                                <Label>Kies potje</Label>
-                                <Select value={selectedPot} onValueChange={setSelectedPot}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecteer een potje" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {pots.map(pot => (
-                                            <SelectItem key={pot.id} value={pot.id}>
-                                                {pot.icon} {pot.name} (€{(pot.budget - (pot.spent || 0)).toFixed(0)} over)
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-                    </TabsContent>
+                            {/* Potje selector */}
+                            {expenseType === 'potje' && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a1] mb-2">
+                                        Kies potje
+                                    </label>
+                                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                                        {pots.map(pot => {
+                                            const remaining = (parseFloat(pot.budget || pot.monthly_budget || 0) - (parseFloat(pot.spent) || 0));
+                                            return (
+                                                <button
+                                                    key={pot.id}
+                                                    onClick={() => setSelectedPot(pot.id)}
+                                                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all border ${
+                                                        selectedPot === pot.id
+                                                            ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700'
+                                                            : 'bg-white dark:bg-[#2a2a2a] border-gray-200 dark:border-[#3a3a3a] hover:border-emerald-200 dark:hover:border-emerald-800'
+                                                    }`}
+                                                >
+                                                    <span className="text-xl">{pot.icon || '📦'}</span>
+                                                    <div className="flex-1 text-left">
+                                                        <p className="text-sm font-bold text-[#131d0c] dark:text-white">{pot.name}</p>
+                                                        <p className="text-xs text-gray-500 dark:text-[#6b7280]">
+                                                            €{remaining.toFixed(0)} over
+                                                        </p>
+                                                    </div>
+                                                    {selectedPot === pot.id && (
+                                                        <span className="material-symbols-outlined text-emerald-500 text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                                                            check_circle
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            );
+                                        })}
+                                        {pots.length === 0 && (
+                                            <p className="text-sm text-gray-400 dark:text-[#6b7280] text-center py-4">
+                                                Geen potjes gevonden
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
 
-                    <TabsContent value="income" className="space-y-4 mt-4">
+                    {/* Income-specific fields */}
+                    {activeTab === 'income' && (
                         <div>
-                            <Label>Beschrijving</Label>
-                            <Input
-                                placeholder="Bijv. Salaris januari"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label>Bedrag (€)</Label>
-                                <Input
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="0,00"
-                                    value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <Label>Datum</Label>
-                                <Input
-                                    type="date"
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
-                                />
+                            <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a1] mb-2">
+                                Type inkomen
+                            </label>
+                            <div className="grid grid-cols-2 gap-2">
+                                {[
+                                    { value: 'extra', label: 'Eenmalig', icon: 'payments' },
+                                    { value: 'vast', label: 'Vast (maandelijks)', icon: 'sync' },
+                                ].map(type => (
+                                    <button
+                                        key={type.value}
+                                        onClick={() => setIncomeType(type.value)}
+                                        className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-bold transition-all border ${
+                                            incomeType === type.value
+                                                ? 'bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20'
+                                                : 'bg-white dark:bg-[#2a2a2a] text-gray-600 dark:text-[#a1a1a1] border-gray-200 dark:border-[#3a3a3a] hover:border-emerald-300 dark:hover:border-emerald-700'
+                                        }`}
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">{type.icon}</span>
+                                        {type.label}
+                                    </button>
+                                ))}
                             </div>
                         </div>
+                    )}
+                </div>
 
-                        <div>
-                            <Label>Type inkomen</Label>
-                            <Select value={incomeType} onValueChange={setIncomeType}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="extra">💰 Eenmalig inkomen</SelectItem>
-                                    <SelectItem value="vast">🔄 Vast inkomen (maandelijks)</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </TabsContent>
-                </Tabs>
-
-                <div className="flex gap-3 mt-6">
-                    <Button variant="outline" onClick={onClose} className="flex-1">
+                {/* Footer */}
+                <div className="p-5 border-t border-gray-100 dark:border-[#2a2a2a] bg-gray-50/50 dark:bg-[#0a0a0a]/50 flex items-center justify-end gap-3">
+                    <button
+                        onClick={onClose}
+                        className="px-5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2a2a2a] text-gray-600 dark:text-[#a1a1a1] font-medium text-sm hover:bg-gray-100 dark:hover:bg-[#2a2a2a] transition-all"
+                    >
                         Annuleren
-                    </Button>
-                    <Button 
-                        onClick={handleSave} 
+                    </button>
+                    <button
+                        onClick={handleSave}
                         disabled={saving}
-                        className="flex-1 bg-green-600 hover:bg-green-700"
+                        className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-emerald-500/20"
                     >
                         {saving ? (
                             <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
                                 Opslaan...
                             </>
                         ) : (
-                            '✅ Opslaan'
+                            <>
+                                <span className="material-symbols-outlined text-[18px]">check</span>
+                                Opslaan
+                            </>
                         )}
-                    </Button>
+                    </button>
                 </div>
-            </DialogContent>
-        </Dialog>
+            </div>
+        </div>
     );
 }
