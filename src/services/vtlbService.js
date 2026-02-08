@@ -166,9 +166,14 @@ export function berekenVTLB(profiel) {
   breakdown.maxVTLB = maxVTLB;
   breakdown.is95ProcentRegel = is95ProcentRegel;
 
-  // STAP 7: Afloscapaciteit berekenen
+  // STAP 7: Vaste lasten (MonthlyCosts) meenemen
+  const vasteLasten = parseFloat(profiel.vasteLasten) || 0;
+  breakdown.vasteLasten = vasteLasten;
+
+  // STAP 8: Afloscapaciteit berekenen
+  // Formule: Netto Inkomen - VTLB - Vaste Lasten - Bestaande Regelingen
   const bestaandeRegelingen = parseFloat(profiel.bestaandeRegelingen) || 0;
-  const afloscapaciteit = Math.max(0, nettoInkomen - vtlb - bestaandeRegelingen);
+  const afloscapaciteit = Math.max(0, nettoInkomen - vtlb - vasteLasten - bestaandeRegelingen);
 
   // Status bepaling
   let status;
@@ -193,6 +198,7 @@ export function berekenVTLB(profiel) {
     // Samenvatting
     vtlbTotaal: Math.round(vtlb * 100) / 100,
     nettoInkomen: nettoInkomen,
+    vasteLasten: vasteLasten,
     bestaandeRegelingen: bestaandeRegelingen,
     afloscapaciteit: Math.round(afloscapaciteit * 100) / 100,
 
@@ -217,6 +223,7 @@ export function berekenVTLB(profiel) {
       vakbond: breakdown.vakbond,
       medicijnkosten: breakdown.medicijnkosten,
       individueleLasten: Math.round(breakdown.individueleLasten * 100) / 100,
+      vasteLasten: breakdown.vasteLasten,
     },
 
     // 95% regel info
@@ -239,9 +246,10 @@ export function berekenVTLB(profiel) {
  * @param {Object} vtlbSettings - Opgeslagen JSONB data uit database
  * @param {number} nettoInkomen - Netto maandinkomen
  * @param {number} bestaandeRegelingen - Som van bestaande betalingsregelingen
+ * @param {number} vasteLasten - Som van maandelijkse vaste lasten (MonthlyCosts)
  * @returns {Object} Profiel voor berekenVTLB functie
  */
-export function vtlbSettingsToProfiel(vtlbSettings, nettoInkomen = 0, bestaandeRegelingen = 0) {
+export function vtlbSettingsToProfiel(vtlbSettings, nettoInkomen = 0, bestaandeRegelingen = 0, vasteLasten = 0) {
   const settings = vtlbSettings || {};
 
   return {
@@ -271,6 +279,9 @@ export function vtlbSettingsToProfiel(vtlbSettings, nettoInkomen = 0, bestaandeR
     // Inkomen (uit andere bron)
     nettoInkomen: nettoInkomen,
     bestaandeRegelingen: bestaandeRegelingen,
+
+    // Vaste maandelijkse lasten (MonthlyCosts - energie, verzekeringen, abonnementen, etc.)
+    vasteLasten: vasteLasten,
   };
 }
 

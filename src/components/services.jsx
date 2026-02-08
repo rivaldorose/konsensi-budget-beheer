@@ -174,10 +174,12 @@ class VTBLService {
         // If user has VTLB settings, use the official WSNP calculation
         if (vtlbSettings && Object.keys(vtlbSettings).length > 0) {
             // Convert saved settings to profile format for calculation
+            // Include vaste lasten (monthly costs) in the calculation
             const profiel = vtlbSettingsToProfiel(
                 vtlbSettings,
                 fixedIncome,
-                activeDebtPayments
+                activeDebtPayments,
+                totalMonthlyCosts  // Vaste lasten meenemen!
             );
 
             // Calculate VTLB using official WSNP formulas
@@ -194,6 +196,9 @@ class VTBLService {
                 vtlbTotaal: vtlbResult.vtlbTotaal,
                 afloscapaciteit: vtlbResult.afloscapaciteit,
                 aflosCapaciteit: vtlbResult.afloscapaciteit, // Legacy alias
+
+                // Vaste lasten nu meegenomen in berekening
+                vasteLastenMeegenomen: true,
 
                 // Status info
                 status: vtlbResult.status,
