@@ -157,7 +157,19 @@ class VTBLService {
 
         // Get basic financial data
         const fixedIncome = incomeService.getFixedIncome(allIncomes);
-        const totalMonthlyCosts = monthlyCostService.getTotal(allCosts);
+
+        // Bereken vaste lasten EXCLUSIEF huur/hypotheek (die zit al in VTLB woonkosten)
+        const vasteLastenExclWonen = allCosts
+            .filter(c => c.status === 'actief')
+            .filter(c =>
+                c.category !== 'huur' &&
+                c.category !== 'hypotheek' &&
+                !c.name?.toLowerCase().includes('huur') &&
+                !c.name?.toLowerCase().includes('hypotheek')
+            )
+            .reduce((sum, cost) => sum + parseFloat(cost.amount || 0), 0);
+
+        const totalMonthlyCosts = monthlyCostService.getTotal(allCosts); // Voor legacy compatibility
         const activeDebtPaymentsResult = debtService.getActiveArrangementPayments(allDebts);
         const activeDebtPayments = activeDebtPaymentsResult.total;
 
@@ -175,11 +187,12 @@ class VTBLService {
         if (vtlbSettings && Object.keys(vtlbSettings).length > 0) {
             // Convert saved settings to profile format for calculation
             // Include vaste lasten (monthly costs) in the calculation
+            // Let op: EXCLUSIEF huur/hypotheek want die zit al in vtlbSettings.woonlasten
             const profiel = vtlbSettingsToProfiel(
                 vtlbSettings,
                 fixedIncome,
                 activeDebtPayments,
-                totalMonthlyCosts  // Vaste lasten meenemen!
+                vasteLastenExclWonen  // Vaste lasten ZONDER huur/hypotheek!
             );
 
             // Calculate VTLB using official WSNP formulas
