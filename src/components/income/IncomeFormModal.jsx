@@ -31,22 +31,35 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
   const [incomeType, setIncomeType] = useState(incomeData?.income_type || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [formData, setFormData] = useState(incomeData || {
-    description: '',
-    name: '',
-    category: 'salaris',
-    amount: '',
-    frequency: 'monthly',
-    start_date: new Date().toISOString().split('T')[0],
-    end_date: '',
-    day_of_week: null,
-    day_of_month: 25,
-    is_active: true,
-    is_variable: false,
-    notes: '',
-    income_type: 'vast',
-    date: new Date().toISOString().split('T')[0],
-    last_payment_date: null
+  const [formData, setFormData] = useState(() => {
+    if (incomeData) {
+      return {
+        ...incomeData,
+        amount: incomeData.amount?.toString() || '',
+        day_of_week: incomeData.day_of_week || null,
+        day_of_month: incomeData.day_of_month || 25,
+        end_date: incomeData.end_date || '',
+        notes: incomeData.notes || '',
+        last_payment_date: incomeData.last_payment_date || incomeData.start_date || null
+      };
+    }
+    return {
+      description: '',
+      name: '',
+      category: 'salaris',
+      amount: '',
+      frequency: 'monthly',
+      start_date: new Date().toISOString().split('T')[0],
+      end_date: '',
+      day_of_week: null,
+      day_of_month: 25,
+      is_active: true,
+      is_variable: false,
+      notes: '',
+      income_type: 'vast',
+      date: new Date().toISOString().split('T')[0],
+      last_payment_date: null
+    };
   });
 
   // Bereken de volgende betaaldatum live
@@ -97,7 +110,7 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
         day_of_month: incomeData.day_of_month || 25,
         end_date: incomeData.end_date || '',
         notes: incomeData.notes || '',
-        last_payment_date: incomeData.last_payment_date || null
+        last_payment_date: incomeData.last_payment_date || incomeData.start_date || null
       });
     }
   }, [incomeData]);
