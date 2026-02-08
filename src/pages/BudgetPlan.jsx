@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Income } from '@/api/entities';
 import { MonthlyCost } from '@/api/entities';
 import { Debt } from '@/api/entities';
+import { DebtPayment } from '@/api/entities';
 import { Transaction } from '@/api/entities';
 import { User } from '@/api/entities';
 import { Pot } from '@/api/entities';
@@ -267,17 +268,34 @@ export default function BudgetPlan() {
                 return inPeriod;
             });
 
-            const debtPaymentsTotal = filteredDebts.reduce((sum, debt) =>
+            // Load ACTUAL debt payments (geregistreerde betalingen)
+            const allDebtPayments = await DebtPayment.filter({ user_id: userData.id });
+            const filteredDebtPayments = allDebtPayments.filter(payment => {
+                if (!payment || !payment.payment_date) return false;
+                const paymentDate = new Date(payment.payment_date);
+                return paymentDate >= startDate && paymentDate <= endDate;
+            });
+
+            // Calculate actual payments made this period
+            const actualDebtPaymentsTotal = filteredDebtPayments.reduce((sum, payment) =>
+                sum + (parseFloat(payment.amount) || 0), 0
+            );
+
+            // Also calculate expected payments for comparison
+            const expectedDebtPaymentsTotal = filteredDebts.reduce((sum, debt) =>
                 sum + (parseFloat(debt.monthly_payment) || 0), 0
             );
+
+            // Use ACTUAL payments for totals, but still show expected in UI
+            const debtPaymentsForDisplay = actualDebtPaymentsTotal;
             setDebts(filteredDebts);
 
-            // Load transactions (exclude debt_payments to avoid double counting)
+            // Load transactions (exclude debt_payments to avoid double counting - they're in DebtPayment)
             const transactionsData = await Transaction.filter({ user_id: userData.id });
             const filteredTransactions = transactionsData.filter(tx => {
                 if (!tx || !tx.date) return false;
                 const txDate = new Date(tx.date);
-                // Exclude debt_payments category - these are already counted via Debt betalingsregeling
+                // Exclude debt_payments category - these are counted via DebtPayment
                 if (tx.category === 'debt_payments') return false;
                 return txDate >= startDate && txDate <= endDate;
             });
@@ -286,25 +304,26 @@ export default function BudgetPlan() {
                 .filter(tx => tx && tx.type === 'expense')
                 .reduce((sum, tx) => sum + (parseFloat(tx.amount) || 0), 0);
 
-            const expensesTotal = monthlyCostsTotal + debtPaymentsTotal + periodExpenses;
+            // Use actual debt payments in total
+            const expensesTotal = monthlyCostsTotal + actualDebtPaymentsTotal + periodExpenses;
             const saldoTotal = incomeTotal - expensesTotal;
-            const fixedTotal = monthlyCostsTotal + debtPaymentsTotal;
+            const fixedTotal = monthlyCostsTotal + actualDebtPaymentsTotal;
             const available = incomeTotal - expensesTotal;
 
             setTotalIncome(incomeTotal);
             setTotalExpenses(expensesTotal);
             setFixedCosts(fixedTotal);
-            setDebtPayments(debtPaymentsTotal);
+            setDebtPayments(actualDebtPaymentsTotal);
             setSaldo(saldoTotal);
             setAvailableBudget(available);
 
-            // Build transactions list
+            // Build transactions list - now includes ACTUAL debt payments
             const allTransactions = [
                 ...filteredIncome.map(income => ({
                     id: `income-${income.id}`,
                     type: 'income',
                     description: income.description,
-                    amount: income.income_type === 'vast' 
+                    amount: income.income_type === 'vast'
                         ? (parseFloat(income.monthly_equivalent) || parseFloat(income.amount))
                         : parseFloat(income.amount),
                     date: income.date || income.start_date,
@@ -316,18 +335,24 @@ export default function BudgetPlan() {
                     description: cost.name,
                     amount: parseFloat(cost.amount),
                     date: cost.start_date || new Date().toISOString().split('T')[0],
-                    category: cost.category === 'wonen' ? 'Wonen' : 
+                    category: cost.category === 'wonen' ? 'Wonen' :
                               cost.category === 'abonnementen' || cost.category === 'streaming_diensten' ? 'Abonnementen' :
                               cost.category || 'Overig'
                 })),
-                ...filteredDebts.map(debt => ({
-                    id: `debt-${debt.id}`,
-                    type: 'expense',
-                    description: `${debt.creditor_name} (Regeling)`,
-                    amount: parseFloat(debt.monthly_payment),
-                    date: debt.payment_plan_date,
-                    category: 'Betalingsregeling'
-                })),
+                // Show ACTUAL debt payments (geregistreerde betalingen)
+                ...filteredDebtPayments.map(payment => {
+                    // Find the debt this payment belongs to
+                    const debtInfo = debtsData.find(d => d.id === payment.debt_id);
+                    return {
+                        id: `debtpayment-${payment.id}`,
+                        type: 'expense',
+                        description: `Aflossing ${debtInfo?.creditor_name || debtInfo?.creditor || 'Schuld'}`,
+                        amount: parseFloat(payment.amount),
+                        date: payment.payment_date,
+                        category: 'Betalingsregeling',
+                        debtId: payment.debt_id
+                    };
+                }),
                 ...filteredTransactions.filter(tx => tx && tx.type === 'expense' && tx.category !== 'debt_payments').map(tx => ({
                     id: `tx-${tx.id}`,
                     type: 'expense',
@@ -452,6 +477,33 @@ export default function BudgetPlan() {
                     await Transaction.delete(id);
                     successMessage = '✅ Transactie verwijderd';
                     successDescription = `${transaction.description} is verwijderd uit je overzicht.`;
+                    break;
+
+                case 'debtpayment':
+                    // Delete a registered debt payment - this also updates the debt's amount_paid
+                    const paymentToDelete = await DebtPayment.get(id);
+                    if (paymentToDelete) {
+                        // Delete the payment
+                        await DebtPayment.delete(id);
+
+                        // Recalculate amount_paid for the debt
+                        const remainingPayments = await DebtPayment.filter({ debt_id: paymentToDelete.debt_id });
+                        const newAmountPaid = remainingPayments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+                        await Debt.update(paymentToDelete.debt_id, { amount_paid: newAmountPaid });
+
+                        // Also delete the corresponding transaction if it exists
+                        const relatedTransactions = await Transaction.filter({ user_id: user.id });
+                        const matchingTx = relatedTransactions.find(tx =>
+                            tx.category === 'debt_payments' &&
+                            tx.date === paymentToDelete.payment_date &&
+                            parseFloat(tx.amount) === parseFloat(paymentToDelete.amount)
+                        );
+                        if (matchingTx) {
+                            await Transaction.delete(matchingTx.id);
+                        }
+                    }
+                    successMessage = '✅ Betaling verwijderd';
+                    successDescription = `${transaction.description} is verwijderd. Het schuldbedrag is bijgewerkt op de Schulden pagina.`;
                     break;
 
                 default:
