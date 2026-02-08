@@ -13,6 +13,13 @@ import AddTransactionModal from '@/components/budget/AddTransactionModal';
 import AddBudgetCategoryModal from '@/components/budget/AddBudgetCategoryModal';
 import BankStatementScanModal from '@/components/income/BankStatementScanModal';
 import { useToast } from '@/components/ui/use-toast';
+import {
+    needsLastPaymentDate,
+    hasPaymentInPeriod,
+    countPaymentsInPeriod,
+    calculateNextPaymentDate,
+    formatDateNL
+} from '@/components/utils/frequencyHelpers';
 
 // Polling interval voor live updates (5 seconden)
 const LIVE_POLL_INTERVAL = 5000;
@@ -185,6 +192,13 @@ export default function BudgetPlan() {
                         const incomeEndDate = new Date(income.end_date);
                         if (incomeEndDate < startDate) return false;
                     }
+
+                    // SMART PAYMENT SCHEDULE CHECK
+                    // Voor wekelijks/tweewekelijks/vierwekelijks: check of er daadwerkelijk een betaling in de periode valt
+                    if (needsLastPaymentDate(income.frequency) && income.last_payment_date) {
+                        return hasPaymentInPeriod(income, startDate, endDate);
+                    }
+
                     return true;
                 } else {
                     if (!income.date) return false;
@@ -192,9 +206,17 @@ export default function BudgetPlan() {
                     return incomeDate >= startDate && incomeDate <= endDate;
                 }
             });
-            
+
+            // Bereken totaal inkomen, rekening houdend met meerdere betalingen per periode
             const incomeTotal = filteredIncome.reduce((sum, income) => {
                 if (income.income_type === 'vast') {
+                    // Voor wekelijks/tweewekelijks/vierwekelijks: tel het aantal betalingen in de periode
+                    if (needsLastPaymentDate(income.frequency) && income.last_payment_date) {
+                        const paymentsCount = countPaymentsInPeriod(income, startDate, endDate);
+                        const perPaymentAmount = parseFloat(income.amount) || 0;
+                        return sum + (perPaymentAmount * paymentsCount);
+                    }
+                    // Voor maandelijks en andere: gebruik monthly_equivalent
                     return sum + (parseFloat(income.monthly_equivalent) || parseFloat(income.amount) || 0);
                 } else {
                     return sum + (parseFloat(income.amount) || 0);

@@ -5,7 +5,10 @@ import {
   paymentFrequencies,
   calculateMonthlyEquivalent,
   needsDayOfWeek,
-  needsDayOfMonth
+  needsDayOfMonth,
+  needsLastPaymentDate,
+  calculateNextPaymentDate,
+  formatDateNL
 } from "../utils/frequencyHelpers";
 import { Debt, User } from "@/api/entities";
 
@@ -40,8 +43,22 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
     is_variable: false,
     notes: '',
     income_type: 'vast',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    last_payment_date: null
   });
+
+  // Bereken de volgende betaaldatum live
+  const calculatedNextPaymentDate = React.useMemo(() => {
+    if (!needsLastPaymentDate(formData.frequency) || !formData.last_payment_date) {
+      return null;
+    }
+    return calculateNextPaymentDate(
+      formData.last_payment_date,
+      formData.frequency,
+      formData.day_of_week,
+      formData.day_of_month
+    );
+  }, [formData.last_payment_date, formData.frequency, formData.day_of_week, formData.day_of_month]);
 
   // Lening-specifieke velden
   const [loanData, setLoanData] = useState({
@@ -77,7 +94,8 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
         day_of_week: incomeData.day_of_week || null,
         day_of_month: incomeData.day_of_month || 25,
         end_date: incomeData.end_date || '',
-        notes: incomeData.notes || ''
+        notes: incomeData.notes || '',
+        last_payment_date: incomeData.last_payment_date || null
       });
     }
   }, [incomeData]);
@@ -93,6 +111,18 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
       // Voor lening: behandel als extra inkomen maar maak ook schuld aan
       const effectiveType = type === 'lening' ? 'extra' : type;
 
+      // Bereken next_payment_date als we een last_payment_date hebben
+      let nextPaymentDate = null;
+      if (effectiveType === 'vast' && needsLastPaymentDate(formData.frequency) && formData.last_payment_date) {
+        const nextDate = calculateNextPaymentDate(
+          formData.last_payment_date,
+          formData.frequency,
+          formData.day_of_week,
+          formData.day_of_month
+        );
+        nextPaymentDate = nextDate ? nextDate.toISOString().split('T')[0] : null;
+      }
+
       const data = {
         name: formData.description || formData.name || 'Inkomen',
         description: formData.description || '',
@@ -107,7 +137,9 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
         is_variable: effectiveType === 'vast' ? formData.is_variable : false,
         is_active: true,
         category: type === 'lening' ? 'lening' : (formData.category || 'salaris'),
-        start_date: formData.start_date || new Date().toISOString().split('T')[0]
+        start_date: formData.start_date || new Date().toISOString().split('T')[0],
+        last_payment_date: effectiveType === 'vast' && needsLastPaymentDate(formData.frequency) ? formData.last_payment_date : null,
+        next_payment_date: nextPaymentDate
       };
 
       console.log('[IncomeFormModal] Submitting data:', data);
@@ -163,7 +195,8 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
       is_variable: false,
       notes: '',
       income_type: 'vast',
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split('T')[0],
+      last_payment_date: null
     });
     setLoanData({
       creditor_name: '',
@@ -515,6 +548,45 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
                           <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] pointer-events-none">expand_more</span>
                         </div>
                       </div>
+                    )}
+
+                    {/* Laatste betaaldatum - voor wekelijks/tweewekelijks/vierwekelijks */}
+                    {needsLastPaymentDate(formData.frequency) && (
+                      <>
+                        <div className="flex flex-col gap-2">
+                          <label className="text-[14px] font-bold text-gray-700 dark:text-[#a1a1a1] ml-1">Wanneer was je laatste betaling? *</label>
+                          <div className="relative">
+                            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] text-[20px] pointer-events-none z-10">event</span>
+                            <input
+                              type="date"
+                              value={formData.last_payment_date || ''}
+                              onChange={(e) => setFormData(prev => ({ ...prev, last_payment_date: e.target.value }))}
+                              onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                              required={needsLastPaymentDate(formData.frequency)}
+                              max={new Date().toISOString().split('T')[0]}
+                              className="w-full bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl py-4 pl-12 pr-4 text-gray-900 dark:text-white focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 transition-all outline-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 dark:text-[#6b7280] ml-1">
+                            We berekenen automatisch wanneer je volgende betaling valt
+                          </p>
+                        </div>
+
+                        {/* Toon berekende volgende betaaldatum */}
+                        {calculatedNextPaymentDate && (
+                          <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-4 flex items-start gap-3">
+                            <span className="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-[20px]">event_available</span>
+                            <div>
+                              <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                                Volgende betaling
+                              </p>
+                              <p className="text-base font-bold text-emerald-800 dark:text-emerald-200">
+                                {formatDateNL(calculatedNextPaymentDate)}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )}
 
                     {/* Variabel inkomen toggle */}
