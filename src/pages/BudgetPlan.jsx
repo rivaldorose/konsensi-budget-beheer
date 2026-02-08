@@ -374,7 +374,7 @@ export default function BudgetPlan() {
 
             // Set budget for Betalingsregeling based on total monthly debt payments
             if (categoryMap['Betalingsregeling']) {
-                categoryMap['Betalingsregeling'].budget = debtPaymentsTotal;
+                categoryMap['Betalingsregeling'].budget = expectedDebtPaymentsTotal;
             }
 
             const breakdown = Object.entries(categoryMap).map(([name, data]) => ({
