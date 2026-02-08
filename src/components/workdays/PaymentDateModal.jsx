@@ -12,14 +12,14 @@ import { nl } from 'date-fns/locale';
  */
 export default function PaymentDateModal({ isOpen, onClose, income, onSaved }) {
   const [lastPaymentDate, setLastPaymentDate] = useState('');
-  const [frequency, setFrequency] = useState('maandelijks');
+  const [frequency, setFrequency] = useState('monthly');
   const [calculatedNextDate, setCalculatedNextDate] = useState(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (income) {
       // Pre-fill met bestaande data
-      setFrequency(income.frequency || 'maandelijks');
+      setFrequency(income.frequency || 'monthly');
 
       // Als er al een last_payment_date is, gebruik die
       if (income.last_payment_date) {
@@ -42,16 +42,16 @@ export default function PaymentDateModal({ isOpen, onClose, income, onSaved }) {
       let nextDate;
 
       switch (frequency) {
-        case 'wekelijks':
+        case 'weekly':
           nextDate = addWeeks(lastDate, 1);
           break;
-        case 'tweewekelijks':
+        case 'biweekly':
           nextDate = addWeeks(lastDate, 2);
           break;
-        case '4wekelijks':
+        case 'four_weekly':
           nextDate = addWeeks(lastDate, 4);
           break;
-        case 'maandelijks':
+        case 'monthly':
         default:
           nextDate = addMonths(lastDate, 1);
           break;
@@ -63,16 +63,16 @@ export default function PaymentDateModal({ isOpen, onClose, income, onSaved }) {
 
       while (nextDate < today) {
         switch (frequency) {
-          case 'wekelijks':
+          case 'weekly':
             nextDate = addWeeks(nextDate, 1);
             break;
-          case 'tweewekelijks':
+          case 'biweekly':
             nextDate = addWeeks(nextDate, 2);
             break;
-          case '4wekelijks':
+          case 'four_weekly':
             nextDate = addWeeks(nextDate, 4);
             break;
-          case 'maandelijks':
+          case 'monthly':
           default:
             nextDate = addMonths(nextDate, 1);
             break;
@@ -97,7 +97,7 @@ export default function PaymentDateModal({ isOpen, onClose, income, onSaved }) {
         frequency: frequency,
         last_payment_date: lastPaymentDate,
         // Voor maandelijks: ook day_of_month zetten
-        day_of_month: frequency === 'maandelijks' ? new Date(lastPaymentDate).getDate() : null,
+        day_of_month: frequency === 'monthly' ? new Date(lastPaymentDate).getDate() : null,
       };
 
       await Income.update(income.id, updateData);
@@ -114,15 +114,6 @@ export default function PaymentDateModal({ isOpen, onClose, income, onSaved }) {
     return format(date, "EEEE d MMMM yyyy", { locale: nl });
   };
 
-  const getFrequencyLabel = (freq) => {
-    const labels = {
-      'wekelijks': 'Wekelijks',
-      'tweewekelijks': 'Tweewekelijks',
-      '4wekelijks': '4-wekelijks',
-      'maandelijks': 'Maandelijks',
-    };
-    return labels[freq] || freq;
-  };
 
   return (
     <div
@@ -166,17 +157,22 @@ export default function PaymentDateModal({ isOpen, onClose, income, onSaved }) {
               Hoe vaak word je betaald?
             </label>
             <div className="grid grid-cols-2 gap-2">
-              {['wekelijks', 'tweewekelijks', '4wekelijks', 'maandelijks'].map(freq => (
+              {[
+                { value: 'weekly', label: 'Wekelijks' },
+                { value: 'biweekly', label: 'Tweewekelijks' },
+                { value: 'four_weekly', label: '4-wekelijks' },
+                { value: 'monthly', label: 'Maandelijks' },
+              ].map(freq => (
                 <button
-                  key={freq}
-                  onClick={() => setFrequency(freq)}
+                  key={freq.value}
+                  onClick={() => setFrequency(freq.value)}
                   className={`px-4 py-3 rounded-xl text-sm font-medium transition-all border ${
-                    frequency === freq
+                    frequency === freq.value
                       ? 'bg-emerald-500 text-white border-emerald-500'
                       : 'bg-white dark:bg-[#2a2a2a] text-gray-700 dark:text-[#a1a1a1] border-gray-200 dark:border-[#3a3a3a] hover:border-emerald-300 dark:hover:border-emerald-700'
                   }`}
                 >
-                  {getFrequencyLabel(freq)}
+                  {freq.label}
                 </button>
               ))}
             </div>

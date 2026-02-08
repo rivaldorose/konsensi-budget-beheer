@@ -17,10 +17,12 @@ export default function WorkDayModal({ isOpen, onClose, onSave, onDelete, workDa
   const [showNewEmployerInput, setShowNewEmployerInput] = useState(false);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (workDay && workDay.id) {
       setFormData({
         date: workDay.date || '',
-        employer: workDay.employer || defaultEmployer || '',
+        employer: workDay.employer || '',
         hours_worked: workDay.hours_worked || '',
         hourly_rate: workDay.hourly_rate || defaultHourlyRate || '',
         status: workDay.status || 'gepland',
@@ -55,7 +57,7 @@ export default function WorkDayModal({ isOpen, onClose, onSave, onDelete, workDa
       setShowNewEmployerInput(employers.length === 0);
     }
     setNewEmployer('');
-  }, [workDay, defaultHourlyRate, defaultEmployer, isOpen, employers.length]);
+  }, [workDay, defaultHourlyRate, isOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
