@@ -25,6 +25,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
     const [selectedPot, setSelectedPot] = useState('');
     const [expenseType, setExpenseType] = useState('eenmalig'); // eenmalig, vast
     const [incomeType, setIncomeType] = useState('extra'); // extra, vast
+    const [endDate, setEndDate] = useState('');
     const [showNewPot, setShowNewPot] = useState(false);
     const [newPotName, setNewPotName] = useState('');
     const [newPotIcon, setNewPotIcon] = useState('📦');
@@ -66,6 +67,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                 setDescription('');
                 setAmount('');
                 setDate(new Date().toISOString().split('T')[0]);
+                setEndDate('');
                 setCategory('');
                 setSelectedPot('');
                 setExpenseType('eenmalig');
@@ -220,7 +222,8 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                         payment_date: dayOfMonth,
                         category: category || 'other',
                         status: 'actief',
-                        start_date: date
+                        start_date: date,
+                        end_date: endDate || null
                     });
                     toast({ title: '✅ Vaste last toegevoegd!' });
 
@@ -380,7 +383,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a1] mb-1.5">
-                                Bedrag
+                                Bedrag {activeTab === 'expense' && expenseType === 'vast' && <span className="text-xs text-gray-400 dark:text-[#6b7280]">/maand</span>}
                             </label>
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] font-bold text-sm">€</span>
@@ -396,7 +399,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a1] mb-1.5">
-                                Datum
+                                {activeTab === 'expense' && expenseType === 'vast' ? 'Startdatum' : 'Datum'}
                             </label>
                             <input
                                 type="date"
@@ -406,6 +409,22 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                             />
                         </div>
                     </div>
+
+                    {/* Einddatum voor vaste lasten */}
+                    {activeTab === 'expense' && expenseType === 'vast' && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-[#a1a1a1] mb-1.5">
+                                Einddatum <span className="text-xs text-gray-400 dark:text-[#6b7280]">(optioneel)</span>
+                            </label>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                min={date}
+                                className="w-full px-4 py-3 border border-gray-200 dark:border-[#2a2a2a] rounded-xl bg-white dark:bg-[#2a2a2a] text-[#131d0c] dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+                            />
+                        </div>
+                    )}
 
                     {/* Expense-specific fields */}
                     {activeTab === 'expense' && (
