@@ -159,15 +159,40 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
 
                 } else {
                     // Losse uitgave
+                    const expenseCategory = category || 'overig';
                     await Transaction.create({
                         user_id: userId,
                         type: 'expense',
                         amount: parsedAmount,
                         description,
-                        category: category || 'overig',
+                        category: expenseCategory,
                         date
                     });
-                    toast({ title: '✅ Uitgave toegevoegd!' });
+
+                    // Auto-pot aanmaken als er geen pot bestaat voor deze categorie
+                    if (expenseCategory !== 'other' && expenseCategory !== 'overig') {
+                        const existingPots = await Pot.filter({ user_id: userId });
+                        const hasPot = existingPots.some(p => p.name.toLowerCase() === expenseCategory.toLowerCase());
+                        if (!hasPot) {
+                            const catInfo = costCategories.find(c => c.value === expenseCategory);
+                            const icon = catInfo ? catInfo.label.split(' ')[0] : '📦';
+                            const potName = catInfo ? catInfo.label.split(' ').slice(1).join(' ') : expenseCategory;
+                            await Pot.create({
+                                user_id: userId,
+                                name: potName,
+                                icon: icon,
+                                pot_type: 'expense',
+                                budget: 0,
+                                target_amount: 0,
+                                current_amount: 0
+                            });
+                            toast({ title: '✅ Uitgave toegevoegd!', description: `Nieuw potje "${potName}" automatisch aangemaakt` });
+                        } else {
+                            toast({ title: '✅ Uitgave toegevoegd!' });
+                        }
+                    } else {
+                        toast({ title: '✅ Uitgave toegevoegd!' });
+                    }
                 }
             }
 
@@ -246,9 +271,9 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                             </Select>
                         </div>
 
-                        {expenseType === 'vast' && (
+                        {(expenseType === 'vast' || expenseType === 'eenmalig') && (
                             <div>
-                                <Label>Categorie vaste last</Label>
+                                <Label>{expenseType === 'vast' ? 'Categorie vaste last' : 'Categorie'}</Label>
                                 <Select value={category} onValueChange={setCategory}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Kies categorie" />
@@ -257,6 +282,12 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                                         {costCategories.map(cat => (
                                             <SelectItem key={cat.value} value={cat.value}>
                                                 {cat.label}
+                                            </SelectItem>
+                                        ))}
+                                        {/* Bestaande potjes als extra categorieën */}
+                                        {pots.filter(p => !costCategories.some(c => c.value === p.name.toLowerCase())).map(pot => (
+                                            <SelectItem key={`pot-${pot.id}`} value={pot.name.toLowerCase()}>
+                                                {pot.icon || '📦'} {pot.name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

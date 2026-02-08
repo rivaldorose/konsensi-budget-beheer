@@ -69,10 +69,13 @@ export default function BankStatementScanModal({ isOpen, onClose, onSuccess }) {
       const user = await User.me();
       if (!user) return;
 
-      // Create new pot
+      // Create new expense pot
       await Pot.create({
         user_id: user.id,
         name: newCategoryName.trim(),
+        icon: '📦',
+        pot_type: 'expense',
+        budget: 0,
         target_amount: 0,
         current_amount: 0
       });
@@ -350,6 +353,33 @@ export default function BankStatementScanModal({ isOpen, onClose, onSuccess }) {
           category: category,
           date: t.date
         });
+      }
+
+      // Auto-pot creatie: maak expense potjes aan voor categorieën die nog geen pot hebben
+      const expenseCategories = [...new Set(
+        transactions
+          .filter(t => t.type === 'expense')
+          .map(t => t.category || 'Overig')
+          .filter(c => c !== 'Overig')
+      )];
+
+      if (expenseCategories.length > 0) {
+        const existingPots = await Pot.filter({ user_id: user.id });
+        const existingPotNames = existingPots.map(p => p.name.toLowerCase());
+
+        for (const catName of expenseCategories) {
+          if (!existingPotNames.includes(catName.toLowerCase())) {
+            await Pot.create({
+              user_id: user.id,
+              name: catName,
+              icon: '📦',
+              pot_type: 'expense',
+              budget: 0,
+              target_amount: 0,
+              current_amount: 0
+            });
+          }
+        }
       }
 
       onSuccess?.();
