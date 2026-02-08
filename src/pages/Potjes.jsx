@@ -306,14 +306,9 @@ export default function Potjes() {
   }, [potjes]);
 
   const handleSelectPot = useCallback((pot) => {
-    // Open detail modal for savings pots, edit modal for expense pots
-    if (pot.pot_type === 'savings' || pot.pot_type === 'btw_reserve') {
-      setDetailPot(pot);
-      setShowDetailModal(true);
-    } else {
-      setSelectedPot(pot);
-      setShowModal(true);
-    }
+    // Open detail modal for all pot types
+    setDetailPot(pot);
+    setShowDetailModal(true);
   }, []);
 
   const handleCloseModal = useCallback(() => {
@@ -704,6 +699,19 @@ export default function Potjes() {
           fetchData();
           setShowDetailModal(false);
           setDetailPot(null);
+        }}
+        spent={detailPot ? (potjeSpendings[detailPot.id] || 0) : 0}
+        onEdit={(pot) => {
+          setShowDetailModal(false);
+          setDetailPot(null);
+          setSelectedPot(pot);
+          setShowModal(true);
+        }}
+        onViewActivity={(pot) => {
+          setShowDetailModal(false);
+          setDetailPot(null);
+          setActivityPot(pot);
+          setShowActivityModal(true);
         }}
       />
     </div>
