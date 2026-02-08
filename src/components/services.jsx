@@ -131,8 +131,12 @@ class PotService {
 }
 
 // --- VTBL SERVICE ---
+// Uses official WSNP/VTLB calculation from vtlbService
 class VTBLService {
     async calculateVtbl(allIncomes, allCosts, allDebts) {
+        // Import the official VTLB calculator
+        const { berekenVTLB, vtlbSettingsToProfiel } = await import('@/services/vtlbService');
+
         // If no data is passed, fetch it automatically
         if (!allIncomes || !allCosts || !allDebts) {
             try {
@@ -140,10 +144,8 @@ class VTBLService {
                 const { MonthlyCost } = await import('@/api/entities');
                 const { Debt } = await import('@/api/entities');
                 const { User } = await import('@/api/entities');
-                
-                const user = await User.me();
-                const email = user.email;
 
+                const user = await User.me();
                 allIncomes = await Income.filter({ user_id: user.id });
                 allCosts = await MonthlyCost.filter({ user_id: user.id });
                 allDebts = await Debt.filter({ user_id: user.id });
@@ -152,14 +154,14 @@ class VTBLService {
                 return null;
             }
         }
-        
+
+        // Get basic financial data
         const fixedIncome = incomeService.getFixedIncome(allIncomes);
         const totalMonthlyCosts = monthlyCostService.getTotal(allCosts);
         const activeDebtPaymentsResult = debtService.getActiveArrangementPayments(allDebts);
         const activeDebtPayments = activeDebtPaymentsResult.total;
 
-        const availableSpace = Math.max(0, fixedIncome - totalMonthlyCosts - activeDebtPayments);
-        
+        // Get VTLB settings from user profile
         let vtlbSettings = null;
         try {
             const { User } = await import('@/api/entities');
@@ -169,81 +171,70 @@ class VTBLService {
             console.log('No VTLB settings found, using basic calculation');
         }
 
-        let adjustedSpace = availableSpace;
-        let adjustments = [];
+        // If user has VTLB settings, use the official WSNP calculation
+        if (vtlbSettings && Object.keys(vtlbSettings).length > 0) {
+            // Convert saved settings to profile format for calculation
+            const profiel = vtlbSettingsToProfiel(
+                vtlbSettings,
+                fixedIncome,
+                activeDebtPayments
+            );
 
-        if (vtlbSettings) {
-            const aantalKinderen = vtlbSettings.persoonlijkeSituatie?.aantalKinderen || 0;
-            if (aantalKinderen > 0) {
-                const kinderToeslag = aantalKinderen * 50;
-                adjustedSpace += kinderToeslag;
-                adjustments.push({ reason: `${aantalKinderen} kinderen`, amount: kinderToeslag });
-            }
+            // Calculate VTLB using official WSNP formulas
+            const vtlbResult = berekenVTLB(profiel);
 
-            const afstand = parseFloat(vtlbSettings.werkReizen?.afstandWoonWerk || 0);
-            if (afstand > 30) {
-                const reiskosten = Math.min(200, (afstand - 30) * 3);
-                adjustedSpace += reiskosten;
-                adjustments.push({ reason: 'Lange reisafstand', amount: reiskosten });
-            }
+            // Return result in compatible format with legacy code
+            return {
+                vastInkomen: fixedIncome,
+                vasteLasten: totalMonthlyCosts,
+                huidigeRegelingen: activeDebtPayments,
+                beschikbaar: vtlbResult.afloscapaciteit,
 
-            if (vtlbSettings.zorg?.chronischeAandoening) {
-                const medicijnkosten = parseFloat(vtlbSettings.zorg.maandelijkseMedicijnkosten || 0);
-                if (medicijnkosten > 0) {
-                    adjustedSpace += medicijnkosten;
-                    adjustments.push({ reason: 'Medicijnkosten', amount: medicijnkosten });
-                }
-            }
+                // Official VTLB data
+                vtlbTotaal: vtlbResult.vtlbTotaal,
+                afloscapaciteit: vtlbResult.afloscapaciteit,
+                aflosCapaciteit: vtlbResult.afloscapaciteit, // Legacy alias
 
-            const toeslagen = vtlbSettings.toeslagen || {};
-            ['zorgtoeslag', 'huurtoeslag', 'kinderopvangtoeslag', 'kindgebondenBudget'].forEach(type => {
-                if (toeslagen[type]?.actief) {
-                    const bedrag = parseFloat(toeslagen[type].bedrag || 0);
-                    if (bedrag > 0) {
-                        adjustedSpace += bedrag;
-                        adjustments.push({ reason: type.replace(/([A-Z])/g, ' $1').toLowerCase(), amount: bedrag });
-                    }
-                }
-            });
+                // Status info
+                status: vtlbResult.status,
+                statusLabel: vtlbResult.statusLabel,
+                statusColor: vtlbResult.statusColor,
 
-            if (vtlbSettings.schulden?.alimentatieBetalen?.actief) {
-                const alimentatie = parseFloat(vtlbSettings.schulden.alimentatieBetalen.bedrag || 0);
-                adjustedSpace -= alimentatie;
-                adjustments.push({ reason: 'Alimentatie betalen', amount: -alimentatie });
-            }
+                // Breakdown for display
+                breakdown: vtlbResult.breakdown,
+                is95ProcentRegel: vtlbResult.is95ProcentRegel,
 
-            if (vtlbSettings.schulden?.alimentatieOntvangen?.actief) {
-                const alimentatie = parseFloat(vtlbSettings.schulden.alimentatieOntvangen.bedrag || 0);
-                adjustedSpace += alimentatie;
-                adjustments.push({ reason: 'Alimentatie ontvangen', amount: alimentatie });
-            }
+                // Profile info
+                leefsituatie: vtlbResult.leefsituatie,
+                aantalKinderen: vtlbResult.aantalKinderen,
+                isWerkend: vtlbResult.isWerkend,
 
-            const overigeLasten = vtlbSettings.overigeLasten || {};
-            ['studiekosten', 'vakbondscontributie', 'verplichteBeroepskosten'].forEach(type => {
-                const bedrag = parseFloat(overigeLasten[type] || 0);
-                if (bedrag > 0) {
-                    adjustedSpace -= bedrag;
-                    adjustments.push({ reason: type.replace(/([A-Z])/g, ' $1').toLowerCase(), amount: -bedrag });
-                }
-            });
+                // Flag indicating we used official calculation
+                hasVtlbSettings: true,
+                usedOfficialCalculation: true,
+            };
         }
 
-        const budgetDistribution = {
-            tussenlasten: adjustedSpace * 0.60,
-            buffer: adjustedSpace * 0.25,
-            aflosCapaciteit: adjustedSpace * 0.15,
-        };
+        // Fallback: Basic calculation without VTLB settings
+        // Simply calculate available space from income - costs - arrangements
+        const availableSpace = Math.max(0, fixedIncome - totalMonthlyCosts - activeDebtPayments);
 
         return {
             vastInkomen: fixedIncome,
             vasteLasten: totalMonthlyCosts,
             huidigeRegelingen: activeDebtPayments,
             beschikbaar: availableSpace,
-            basisBeschikbaar: availableSpace,
-            aangepastBeschikbaar: adjustedSpace,
-            adjustments: adjustments,
-            hasVtlbSettings: !!vtlbSettings,
-            ...budgetDistribution
+            afloscapaciteit: availableSpace,
+            aflosCapaciteit: availableSpace, // Legacy alias
+
+            // No official VTLB calculation
+            vtlbTotaal: 0,
+            status: availableSpace > 50 ? 'haalbaar' : availableSpace > 25 ? 'grensgevallen' : 'niet_haalbaar',
+            statusLabel: availableSpace > 50 ? 'Afloscapaciteit beschikbaar' : availableSpace > 25 ? 'Beperkte afloscapaciteit' : 'Geen ruimte voor aflosing',
+            statusColor: availableSpace > 50 ? 'green' : availableSpace > 25 ? 'orange' : 'red',
+
+            hasVtlbSettings: false,
+            usedOfficialCalculation: false,
         };
     }
 }
