@@ -6,6 +6,8 @@ import { DebtPayment } from "@/api/entities";
 import { User } from "@/api/entities";
 import { useToast } from "@/components/ui/toast";
 import { vtblService } from "@/components/services";
+import { genereerBatchVoorstellen, formatVoorstelVoorUI } from "@/services/arrangementEngine";
+import IntelligentProposalCard, { IntelligentProposalSummary, IntelligentProposalBadge } from "../components/debts/IntelligentProposalCard";
 import DebtForm from "../components/debts/DebtForm";
 import DebtDetailsModal from "../components/debts/DebtDetailsModal";
 import StrategyChoiceModal from "../components/debts/StrategyChoiceModal";
@@ -83,6 +85,8 @@ export default function Debts() {
   const [showStappenplan, setShowStappenplan] = useState(false);
   const [stappenplanDebt, setStappenplanDebt] = useState(null);
   const [showPaidDebts, setShowPaidDebts] = useState(false);
+  const [intelligentProposals, setIntelligentProposals] = useState(null);
+  const [showIntelligentSection, setShowIntelligentSection] = useState(true);
     const [filters, setFilters] = useState({
         status: 'all',
         creditorType: 'all',
@@ -142,6 +146,25 @@ export default function Debts() {
         const vtblResult = await vtblService.calculateVtbl();
         console.log('[Debts] VTBL loaded');
         setVtblData(vtblResult);
+
+        // Genereer intelligente betalingsvoorstellen op de achtergrond
+        if (vtblResult && data.length > 0) {
+          console.log('[Debts] Generating intelligent proposals...');
+          const userProfiel = {
+            werksituatie: userData.vtlb_settings?.werksituatie || 'standaard',
+            leefsituatie: userData.vtlb_settings?.leefsituatie || 'alleenstaand'
+          };
+          const batchResult = genereerBatchVoorstellen(data, vtblResult, userProfiel, 'standaard');
+          if (batchResult.success) {
+            // Format voor UI
+            const formattedProposals = batchResult.voorstellen.map(v => formatVoorstelVoorUI(v));
+            setIntelligentProposals({
+              ...batchResult,
+              uiVoorstellen: formattedProposals.filter(Boolean)
+            });
+            console.log('[Debts] Intelligent proposals generated:', batchResult.voorstellen.length);
+          }
+        }
       } catch (error) {
         console.error("Error loading VTBL data:", error);
       }
@@ -715,6 +738,68 @@ export default function Debts() {
             </div>
       </div>
 
+          {/* Intelligente Betalingsregelingen Section */}
+          {intelligentProposals && intelligentProposals.uiVoorstellen?.length > 0 && (
+            <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl shadow-soft overflow-hidden">
+              <div
+                className="p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-colors group"
+                onClick={() => setShowIntelligentSection(!showIntelligentSection)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-primary/20 to-primary/10 dark:from-primary/30 dark:to-primary/20 rounded-full">
+                    <span className="material-symbols-outlined text-primary text-xl">auto_awesome</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-[#131d0c] dark:text-white font-display">Intelligente Regelingen</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {intelligentProposals.totaal?.aantalSchulden || 0} voorstellen • €{intelligentProposals.totaal?.maandBedrag?.toFixed(2) || '0.00'}/mnd totaal
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {intelligentProposals.totaal?.gemiddeldeSuccessKans >= 60 && (
+                    <span className="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400">
+                      {intelligentProposals.totaal?.gemiddeldeSuccessKans}% kans
+                    </span>
+                  )}
+                  <span className={`material-symbols-outlined text-gray-400 dark:text-[#a1a1a1] group-hover:text-gray-600 dark:group-hover:text-white transition-all ${showIntelligentSection ? 'rotate-180' : ''}`}>
+                    expand_more
+                  </span>
+                </div>
+              </div>
+
+              {showIntelligentSection && (
+                <div className="px-6 pb-6 space-y-4">
+                  {/* Summary */}
+                  <IntelligentProposalSummary batchResult={intelligentProposals} />
+
+                  {/* Individual Proposals Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {intelligentProposals.uiVoorstellen.map((voorstel) => (
+                      <IntelligentProposalCard
+                        key={voorstel.id}
+                        voorstel={voorstel}
+                        onSelectProposal={(v) => {
+                          // Vind de bijbehorende schuld en open het stappenplan
+                          const matchingDebt = debts.find(d => d.id === v.id);
+                          if (matchingDebt) {
+                            setStappenplanDebt(matchingDebt);
+                            setShowStappenplan(true);
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Info text */}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center pt-2">
+                    💡 Deze voorstellen zijn berekend op basis van je VTLB en incassobureau acceptatie criteria
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Voortgang & Uitdagingen Section (Collapsible) */}
           <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl shadow-soft overflow-hidden">
             <div
@@ -799,6 +884,12 @@ export default function Debts() {
                         <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                           {formatCurrency(debt.monthly_payment)}/mnd • {Math.ceil(((debt.amount || 0) - (debt.amount_paid || 0)) / debt.monthly_payment)} mnd
                         </p>
+                      )}
+                      {/* Intelligent Proposal Badge (mobile) */}
+                      {status !== 'betalingsregeling' && status !== 'afbetaald' && intelligentProposals?.uiVoorstellen?.find(v => v.id === debt.id) && (
+                        <div className="mt-2">
+                          <IntelligentProposalBadge voorstel={intelligentProposals.uiVoorstellen.find(v => v.id === debt.id)} />
+                        </div>
                       )}
                     </div>
                   </div>
@@ -896,6 +987,10 @@ export default function Debts() {
                               <span className="text-[10px] text-gray-500 dark:text-[#9CA3AF] font-medium ml-1">
                                 {formatCurrency(debt.monthly_payment)}/mnd ({Math.ceil(((debt.amount || 0) - (debt.amount_paid || 0)) / debt.monthly_payment)} mnd)
                                 </span>
+                          )}
+                          {/* Intelligent Proposal Badge (desktop) */}
+                          {status !== 'betalingsregeling' && status !== 'afbetaald' && intelligentProposals?.uiVoorstellen?.find(v => v.id === debt.id) && (
+                            <IntelligentProposalBadge voorstel={intelligentProposals.uiVoorstellen.find(v => v.id === debt.id)} />
                           )}
                         </div>
                       </td>
