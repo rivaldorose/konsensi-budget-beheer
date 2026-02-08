@@ -52,7 +52,12 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
         if (isOpen) {
             if (editTransaction) {
                 // Pre-fill form with existing transaction data
-                setEditId(editTransaction.id);
+                // Strip prefix (tx-, income-, cost-) to get real database ID
+                const rawId = editTransaction.id || '';
+                const realId = rawId.includes('-') && ['tx-', 'income-', 'cost-', 'debt-', 'debtpayment-'].some(p => rawId.startsWith(p))
+                    ? rawId.replace(/^(tx|income|cost|debt|debtpayment)-/, '')
+                    : rawId;
+                setEditId(realId);
                 setDescription(editTransaction.description || '');
                 setAmount(editTransaction.amount?.toString() || '');
                 setDate(editTransaction.date || new Date().toISOString().split('T')[0]);
