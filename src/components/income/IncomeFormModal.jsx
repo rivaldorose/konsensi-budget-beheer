@@ -383,13 +383,15 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
                     <div className="flex flex-col gap-2">
                       <label className="text-[14px] font-bold text-gray-700 dark:text-[#a1a1a1] ml-1">Datum ontvangen *</label>
                       <div className="relative">
-                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] text-[20px]">calendar_today</span>
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-[#6b7280] text-[20px] pointer-events-none z-10">calendar_today</span>
                         <input
                           type="date"
                           value={formData.date}
                           onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                          onClick={(e) => e.target.showPicker && e.target.showPicker()}
                           required
-                          className="w-full bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl py-4 pl-12 pr-4 text-gray-900 dark:text-white focus:border-[#10B981] focus:ring-2 focus:ring-[#10B981]/20 transition-all outline-none"
+                          className="w-full bg-gray-50 dark:bg-[#0a0a0a] border border-gray-200 dark:border-[#3a3a3a] rounded-xl py-4 pl-12 pr-4 text-gray-900 dark:text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all outline-none cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
+                          style={{ WebkitAppearance: 'none' }}
                         />
                       </div>
                     </div>
