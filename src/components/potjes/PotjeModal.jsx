@@ -23,11 +23,11 @@ const iconOptions = [
 const initialFormData = {
   name: '',
   icon: 'flight_takeoff',
-  pot_type: 'savings',
+  pot_type: 'expense',
+  budget: '',
   target_amount: '',
   current_amount: 0,
   target_date: '',
-  monthly_budget: '',
 };
 
 export default function PotjeModal({ pot, isOpen, onClose, onSave }) {
@@ -42,11 +42,11 @@ export default function PotjeModal({ pot, isOpen, onClose, onSave }) {
           id: pot.id,
           name: pot.name || '',
           icon: pot.icon || 'flight_takeoff',
-          pot_type: pot.pot_type || 'savings',
+          pot_type: pot.pot_type || 'expense',
+          budget: pot.budget || pot.monthly_budget || '',
           target_amount: pot.target_amount || '',
           current_amount: pot.current_amount || 0,
           target_date: pot.target_date || '',
-          monthly_budget: pot.monthly_budget || '',
         });
       } else {
         setFormData(initialFormData);
@@ -64,7 +64,12 @@ export default function PotjeModal({ pot, isOpen, onClose, onSave }) {
       return;
     }
 
-    if (!formData.target_amount || formData.target_amount === '') {
+    if (formData.pot_type === 'expense' && (!formData.budget || formData.budget === '')) {
+      toast({ title: "Vul een maandelijks budget in", variant: "destructive" });
+      return;
+    }
+
+    if (formData.pot_type === 'savings' && (!formData.target_amount || formData.target_amount === '')) {
       toast({ title: "Vul een doelbedrag in", variant: "destructive" });
       return;
     }
@@ -74,10 +79,10 @@ export default function PotjeModal({ pot, isOpen, onClose, onSave }) {
     try {
       const dataToSave = {
         ...formData,
-        pot_type: 'savings',
+        pot_type: formData.pot_type,
+        budget: parseFloat(formData.budget || 0),
         target_amount: parseFloat(formData.target_amount || 0),
         current_amount: parseFloat(formData.current_amount || 0),
-        monthly_budget: parseFloat(formData.monthly_budget || 0),
       };
 
       if (formData.id) {
@@ -141,23 +146,78 @@ export default function PotjeModal({ pot, isOpen, onClose, onSave }) {
             />
           </div>
 
-          {/* Doelbedrag */}
+          {/* Type potje */}
           <div className="space-y-2">
             <label className="text-[11px] font-bold text-gray-400 dark:text-text-secondary uppercase tracking-widest block ml-1">
-              Doelbedrag
+              Type potje
             </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-text-secondary font-bold">€</span>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.target_amount}
-                onChange={(e) => setFormData({ ...formData, target_amount: e.target.value })}
-                className="w-full border border-gray-200 dark:border-border-main dark:bg-card-elevated rounded-xl pl-9 pr-4 py-3 text-sm focus:ring-[#3D6456] focus:border-[#3D6456] dark:focus:ring-konsensi-primary dark:focus:border-konsensi-primary font-lato transition-all dark:text-white"
-                placeholder="0,00"
-              />
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, pot_type: 'expense' })}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
+                  formData.pot_type === 'expense'
+                    ? 'border-[#b2ff78] bg-[#b2ff78]/10 dark:border-konsensi-primary dark:bg-konsensi-primary/10'
+                    : 'border-gray-100 dark:border-border-main bg-gray-50 dark:bg-card-elevated'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px] text-red-500">receipt_long</span>
+                <span className={`text-sm font-bold ${formData.pot_type === 'expense' ? 'text-[#3D6456] dark:text-konsensi-primary' : 'text-gray-500 dark:text-text-secondary'}`}>Enveloppe</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, pot_type: 'savings' })}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-all ${
+                  formData.pot_type === 'savings'
+                    ? 'border-[#b2ff78] bg-[#b2ff78]/10 dark:border-konsensi-primary dark:bg-konsensi-primary/10'
+                    : 'border-gray-100 dark:border-border-main bg-gray-50 dark:bg-card-elevated'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px] text-emerald-500">savings</span>
+                <span className={`text-sm font-bold ${formData.pot_type === 'savings' ? 'text-[#3D6456] dark:text-konsensi-primary' : 'text-gray-500 dark:text-text-secondary'}`}>Spaarpot</span>
+              </button>
             </div>
           </div>
+
+          {/* Maandelijks budget (voor enveloppe/expense) */}
+          {formData.pot_type === 'expense' && (
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-gray-400 dark:text-text-secondary uppercase tracking-widest block ml-1">
+                Maandelijks budget
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-text-secondary font-bold">€</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.budget}
+                  onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+                  className="w-full border border-gray-200 dark:border-border-main dark:bg-card-elevated rounded-xl pl-9 pr-4 py-3 text-sm focus:ring-[#3D6456] focus:border-[#3D6456] dark:focus:ring-konsensi-primary dark:focus:border-konsensi-primary font-lato transition-all dark:text-white"
+                  placeholder="0,00"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Doelbedrag (voor spaarpot) */}
+          {formData.pot_type === 'savings' && (
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-gray-400 dark:text-text-secondary uppercase tracking-widest block ml-1">
+                Doelbedrag
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-text-secondary font-bold">€</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={formData.target_amount}
+                  onChange={(e) => setFormData({ ...formData, target_amount: e.target.value })}
+                  className="w-full border border-gray-200 dark:border-border-main dark:bg-card-elevated rounded-xl pl-9 pr-4 py-3 text-sm focus:ring-[#3D6456] focus:border-[#3D6456] dark:focus:ring-konsensi-primary dark:focus:border-konsensi-primary font-lato transition-all dark:text-white"
+                  placeholder="0,00"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Categorie & Icoon */}
           <div className="space-y-2">
@@ -210,21 +270,23 @@ export default function PotjeModal({ pot, isOpen, onClose, onSave }) {
             </div>
           </div>
 
-          {/* Streefdatum */}
-          <div className="space-y-2">
-            <label className="text-[11px] font-bold text-gray-400 dark:text-text-secondary uppercase tracking-widest block ml-1">
-              Streefdatum (optioneel)
-            </label>
-            <input
-              type="date"
-              value={formData.target_date}
-              onChange={(e) => setFormData({ ...formData, target_date: e.target.value })}
-              className="w-full border border-gray-200 dark:border-border-main dark:bg-card-elevated rounded-xl px-4 py-3 text-sm focus:ring-[#3D6456] focus:border-[#3D6456] dark:focus:ring-konsensi-primary dark:focus:border-konsensi-primary text-gray-600 dark:text-white font-lato transition-all"
-            />
-          </div>
+          {/* Streefdatum (alleen bij spaarpot) */}
+          {formData.pot_type === 'savings' && (
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-gray-400 dark:text-text-secondary uppercase tracking-widest block ml-1">
+                Streefdatum (optioneel)
+              </label>
+              <input
+                type="date"
+                value={formData.target_date}
+                onChange={(e) => setFormData({ ...formData, target_date: e.target.value })}
+                className="w-full border border-gray-200 dark:border-border-main dark:bg-card-elevated rounded-xl px-4 py-3 text-sm focus:ring-[#3D6456] focus:border-[#3D6456] dark:focus:ring-konsensi-primary dark:focus:border-konsensi-primary text-gray-600 dark:text-white font-lato transition-all"
+              />
+            </div>
+          )}
 
-          {/* Huidig bedrag (alleen bij bewerken) */}
-          {formData.id && (
+          {/* Huidig bedrag (alleen bij bewerken van spaarpot) */}
+          {formData.id && formData.pot_type === 'savings' && (
             <div className="space-y-2">
               <label className="text-[11px] font-bold text-gray-400 dark:text-text-secondary uppercase tracking-widest block ml-1">
                 Huidig gespaard
