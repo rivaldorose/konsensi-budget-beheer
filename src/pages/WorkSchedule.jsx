@@ -242,9 +242,12 @@ export default function WorkSchedule() {
   };
 
   // Check if a date is a payment day for any fixed income
+  // Gebruikt de berekende nextPaymentDate uit incomesWithPaymentDates
   const getPaymentDayIncomes = (date) => {
-    const dayOfMonth = date.getDate();
-    return fixedIncomes.filter(income => income.day_of_month === dayOfMonth);
+    return incomesWithPaymentDates.filter(income => {
+      if (!income.nextPaymentDate) return false;
+      return isSameDay(income.nextPaymentDate, date);
+    });
   };
 
   const getStatusColor = (status) => {
@@ -384,28 +387,19 @@ export default function WorkSchedule() {
           </div>
         </div>
 
-        {/* Fixed Income Payment Schedule */}
+        {/* Betaaldatum Instellen */}
         {incomesWithPaymentDates.length > 0 && (
           <div className="bg-white dark:bg-[#1a1a1a] rounded-3xl border border-gray-100 dark:border-[#2a2a2a] shadow-sm dark:shadow-[0_4px_12px_rgba(0,0,0,0.5)] overflow-hidden p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="size-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-[20px]">payments</span>
-                </div>
-                <div>
-                  <h3 className="font-display font-bold text-lg text-[#131d0c] dark:text-white">Vast Inkomen & Betaaldata</h3>
-                  <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">Overzicht van je vaste inkomsten en betaaldata</p>
-                </div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="size-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                <span className="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-[20px]">event</span>
               </div>
-              <Link to={createPageUrl('Income')}>
-                <span className="material-symbols-outlined text-gray-400 dark:text-[#a1a1a1] hover:text-emerald-600 dark:hover:text-emerald-400 text-[20px] cursor-pointer transition-colors">open_in_new</span>
-              </Link>
+              <h3 className="font-display font-bold text-lg text-[#131d0c] dark:text-white">Betaaldatum instellen</h3>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {incomesWithPaymentDates.map((income) => {
-                const isUpcoming = income.nextPaymentDate &&
-                  income.nextPaymentDate <= new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // Within 7 days
+                const hasPaymentDate = income.nextPaymentDate || income.last_payment_date;
 
                 return (
                   <div
@@ -414,81 +408,27 @@ export default function WorkSchedule() {
                       setSelectedIncomeForPayment(income);
                       setShowPaymentDateModal(true);
                     }}
-                    className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer hover:shadow-md ${
-                      isUpcoming
-                        ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800/30 hover:border-emerald-300 dark:hover:border-emerald-700/50'
-                        : 'bg-gray-50 dark:bg-[#2a2a2a]/50 border-gray-100 dark:border-[#2a2a2a] hover:border-gray-200 dark:hover:border-[#3a3a3a]'
-                    }`}
+                    className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-[#2a2a2a] bg-gray-50 dark:bg-[#2a2a2a]/50 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 cursor-pointer transition-all"
                   >
-                    <div className="flex items-center gap-4 mb-3 sm:mb-0">
-                      <div className={`size-12 rounded-full flex items-center justify-center ${
-                        isUpcoming
-                          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
-                          : 'bg-gray-100 dark:bg-[#2a2a2a] text-gray-500 dark:text-[#a1a1a1]'
-                      }`}>
-                        <span className="material-symbols-outlined text-[24px]">
-                          {income.is_from_work_schedule ? 'work' : 'account_balance'}
+                    <span className="font-medium text-[#131d0c] dark:text-white text-sm">
+                      {income.description || 'Inkomen'}
+                    </span>
+                    {hasPaymentDate ? (
+                      <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                        <span className="text-xs font-medium">
+                          {formatDateNL(income.nextPaymentDate)}
                         </span>
+                        <span className="material-symbols-outlined text-[16px]">edit_calendar</span>
                       </div>
-                      <div>
-                        <h4 className="font-bold text-[#131d0c] dark:text-white text-base">
-                          {income.description || 'Vast inkomen'}
-                        </h4>
-                        <div className="flex flex-wrap items-center gap-2 mt-1">
-                          <span className="text-xs text-gray-500 dark:text-[#a1a1a1]">
-                            {income.frequencyLabel}
-                          </span>
-                          {income.day_of_month && (
-                            <span className="text-xs text-gray-400 dark:text-[#6b7280]">
-                              • Dag {income.day_of_month}
-                            </span>
-                          )}
-                        </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                        <span className="text-xs font-medium">Instellen</span>
+                        <span className="material-symbols-outlined text-[16px]">add</span>
                       </div>
-                    </div>
-
-                    <div className="flex flex-col sm:items-end gap-1 pl-16 sm:pl-0">
-                      <span className="font-display font-bold text-xl text-[#131d0c] dark:text-white">
-                        {income.is_from_work_schedule && '~'}
-                        {(income.monthlyAmount || income.amount || 0).toLocaleString('nl-NL', {
-                          style: 'currency',
-                          currency: 'EUR',
-                          minimumFractionDigits: 2
-                        })}
-                      </span>
-                      {income.nextPaymentDate ? (
-                        <div className={`flex items-center gap-1.5 ${
-                          isUpcoming ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-[#a1a1a1]'
-                        }`}>
-                          <span className="material-symbols-outlined text-[14px]">event</span>
-                          <span className="text-xs font-medium">
-                            Volgende: {formatDateNL(income.nextPaymentDate)}
-                          </span>
-                          <span className="material-symbols-outlined text-[14px] ml-1 opacity-60 hover:opacity-100">edit_calendar</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-                          <span className="material-symbols-outlined text-[14px]">event</span>
-                          <span className="text-xs font-medium">
-                            Klik om betaaldatum in te stellen
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    )}
                   </div>
                 );
               })}
-            </div>
-
-            {/* Info message */}
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-800/20">
-              <div className="flex items-start gap-2">
-                <span className="material-symbols-outlined text-blue-500 dark:text-blue-400 text-[18px] mt-0.5">info</span>
-                <p className="text-xs text-blue-700 dark:text-blue-400">
-                  Klik op een inkomen om de betaaldatum in te stellen.
-                  Betaaldagen worden in de kalender getoond met een 💰 icoon.
-                </p>
-              </div>
             </div>
           </div>
         )}
