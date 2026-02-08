@@ -134,7 +134,22 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
             return;
         }
 
-        if (!userId) {
+        // Altijd vers user ophalen voor geldig auth token
+        let currentUserId = userId;
+        if (!currentUserId) {
+            try {
+                const { User } = await import('@/api/entities');
+                const user = await User.me();
+                if (user?.id) {
+                    currentUserId = user.id;
+                    setUserId(user.id);
+                }
+            } catch (e) {
+                console.error('Error fetching user:', e);
+            }
+        }
+
+        if (!currentUserId) {
             toast({ title: '⚠️ Niet ingelogd', variant: 'destructive' });
             return;
         }
@@ -162,7 +177,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                 // Inkomen toevoegen
                 if (incomeType === 'vast') {
                     await Income.create({
-                        user_id: userId,
+                        user_id: currentUserId,
                         description,
                         amount: parsedAmount,
                         income_type: 'vast',
@@ -173,7 +188,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                     });
                 } else {
                     await Income.create({
-                        user_id: userId,
+                        user_id: currentUserId,
                         description,
                         amount: parsedAmount,
                         income_type: 'extra',
@@ -183,7 +198,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
 
                 // Ook als transactie registreren
                 await Transaction.create({
-                    user_id: userId,
+                    user_id: currentUserId,
                     type: 'income',
                     amount: parsedAmount,
                     description,
@@ -199,7 +214,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                     // Vaste last toevoegen
                     const dayOfMonth = new Date(date).getDate();
                     await MonthlyCost.create({
-                        user_id: userId,
+                        user_id: currentUserId,
                         name: description,
                         amount: parsedAmount,
                         payment_date: dayOfMonth,
@@ -219,7 +234,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
 
                     // Transactie registreren
                     await Transaction.create({
-                        user_id: userId,
+                        user_id: currentUserId,
                         type: 'expense',
                         amount: parsedAmount,
                         description,
@@ -232,7 +247,7 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
                     // Losse uitgave
                     const expenseCategory = category || 'overig';
                     await Transaction.create({
-                        user_id: userId,
+                        user_id: currentUserId,
                         type: 'expense',
                         amount: parsedAmount,
                         description,
@@ -242,14 +257,14 @@ export default function AddTransactionModal({ isOpen, onClose, onSuccess, userEm
 
                     // Auto-pot aanmaken als er geen pot bestaat voor deze categorie
                     if (expenseCategory !== 'other' && expenseCategory !== 'overig') {
-                        const existingPots = await Pot.filter({ user_id: userId });
+                        const existingPots = await Pot.filter({ user_id: currentUserId });
                         const hasPot = existingPots.some(p => p.name.toLowerCase() === expenseCategory.toLowerCase());
                         if (!hasPot) {
                             const catInfo = costCategories.find(c => c.value === expenseCategory);
                             const icon = catInfo ? catInfo.label.split(' ')[0] : '📦';
                             const potName = catInfo ? catInfo.label.split(' ').slice(1).join(' ') : expenseCategory;
                             await Pot.create({
-                                user_id: userId,
+                                user_id: currentUserId,
                                 name: potName,
                                 icon: icon,
                                 pot_type: 'expense',
