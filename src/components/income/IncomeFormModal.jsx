@@ -11,6 +11,7 @@ import {
   formatDateNL
 } from "../utils/frequencyHelpers";
 import { Debt, User } from "@/api/entities";
+import { useToast } from "@/components/ui/toast";
 
 const daysOfWeek = [
   { value: 1, label: 'Maandag' },
@@ -24,6 +25,7 @@ const daysOfWeek = [
 
 export default function IncomeFormModal({ income, isOpen, onClose, onSave, editingIncome }) {
   const incomeData = editingIncome || income;
+  const { toast } = useToast();
 
   const [step, setStep] = useState(incomeData ? 2 : 1);
   const [incomeType, setIncomeType] = useState(incomeData?.income_type || null);
@@ -148,21 +150,34 @@ export default function IncomeFormModal({ income, isOpen, onClose, onSave, editi
             name: `Lening van ${loanData.creditor_name}`,
             creditor_name: loanData.creditor_name,
             creditor_type: 'anders',
+            is_personal_loan: true,
+            loan_relationship: 'anders',
+            principal_amount: parseFloat(formData.amount) || 0,
             amount: parseFloat(formData.amount) || 0,
             amount_paid: 0,
-            status: 'open',
-            category: 'lening_particulier',
-            interest_rate: loanData.has_interest ? loanData.interest_rate : 0,
+            status: 'actief',
+            interest_rate: loanData.has_interest ? (parseFloat(loanData.interest_rate) || 0) : 0,
+            interest_amount: 0,
+            collection_costs: 0,
             notes: `Geleend geld ontvangen op ${formData.date || new Date().toISOString().split('T')[0]}`,
-            origin_date: formData.date || new Date().toISOString().split('T')[0],
-            created_at: new Date().toISOString()
+            origin_date: formData.date || new Date().toISOString().split('T')[0]
           };
 
           console.log('[IncomeFormModal] Creating debt for loan:', debtData);
           await Debt.create(debtData);
           console.log('[IncomeFormModal] Debt created successfully');
+          toast({
+            title: "Schuld geregistreerd! 📝",
+            description: `Lening van ${loanData.creditor_name} toegevoegd aan je schulden.`
+          });
         } catch (debtError) {
           console.error('[IncomeFormModal] Error creating debt:', debtError);
+          console.error('[IncomeFormModal] Error details:', debtError.message, debtError.hint, debtError.details, debtError.code);
+          toast({
+            title: "Schuld kon niet worden aangemaakt",
+            description: debtError.message || "Er is iets misgegaan bij het registreren van de schuld.",
+            variant: "destructive"
+          });
           // Ga door met het opslaan van het inkomen, zelfs als de schuld niet kon worden aangemaakt
         }
       }
