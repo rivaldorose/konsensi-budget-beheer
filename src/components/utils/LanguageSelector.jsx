@@ -28,7 +28,7 @@ export default function LanguageSelector({ variant = 'default' }) {
     try {
         const user = await User.me();
         if (user && user.id) { // Ensure user and user.id exist before attempting to update
-            await User.update(user.id, { language_preference: newLang });
+            await User.updateMe({ language_preference: newLang });
             toast({
                 title: t('settings.languageUpdated'),
                 description: t('settings.languageRefresh'),

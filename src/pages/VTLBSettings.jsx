@@ -189,8 +189,7 @@ export default function VTLBSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const userData = await User.me();
-      await User.update(userData.id, {
+      await User.updateMe({
         vtlb_settings: formData,
       });
 
