@@ -1206,112 +1206,214 @@ export default function Debts() {
       {/* VTLB Info Modal */}
       {showVtlbInfo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 dark:bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-100 dark:border-[#2a2a2a] flex items-center justify-between sticky top-0 bg-white dark:bg-[#1a1a1a]">
+          <div className="bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-[#2a2a2a] rounded-3xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-100 dark:border-[#2a2a2a] flex items-center justify-between sticky top-0 bg-white dark:bg-[#1a1a1a] rounded-t-3xl z-10">
               <h3 className="text-lg font-bold text-[#131d0c] dark:text-white font-display flex items-center gap-2">
                 <span className="material-symbols-outlined text-blue-600 dark:text-blue-400">calculate</span>
-              Wat is VTLB?
+                VTLB & Afloscapaciteit
               </h3>
               <button onClick={() => setShowVtlbInfo(false)} className="text-gray-400 dark:text-[#a1a1a1] hover:text-gray-600 dark:hover:text-white">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-5">
+              {/* Uitleg */}
               <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl p-4">
                 <p className="text-sm text-blue-800 dark:text-blue-400">
-                <strong>VTLB</strong> = Vrij Te Laten Bedrag
-              </p>
-            </div>
-              <p className="text-gray-700 dark:text-[#a1a1a1]">
-              Dit is het bedrag dat je <strong>minimaal nodig hebt om van te leven</strong>. De rest kun je gebruiken om schulden af te lossen.
-            </p>
-
-              {/* Berekening sectie */}
-              <div className="bg-gray-50 dark:bg-[#2a2a2a] rounded-xl p-4 space-y-3">
-                <h4 className="font-bold text-[#131d0c] dark:text-white text-sm flex items-center gap-2">
-                  <span className="material-symbols-outlined text-blue-500 !text-[18px]">functions</span>
-                  Jouw berekening
-                </h4>
-
-                {vtblData ? (
-                  <>
-                    {/* VTLB berekening breakdown */}
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-[#a1a1a1]">Vast inkomen</span>
-                        <span className="font-medium text-[#131d0c] dark:text-white">{formatCurrency(vtblData.vastInkomen || 0)}</span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <span className="text-gray-600 dark:text-[#a1a1a1]">Vaste lasten</span>
-                        <span className="font-medium text-red-600 dark:text-red-400">- {formatCurrency(vtblData.vasteLasten || 0)}</span>
-                      </div>
-
-                      {vtblData.huidigeRegelingen > 0 && (
-                        <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-[#a1a1a1]">Lopende regelingen</span>
-                          <span className="font-medium text-purple-600 dark:text-purple-400">- {formatCurrency(vtblData.huidigeRegelingen)}</span>
-                        </div>
-                      )}
-
-                      <div className="border-t border-gray-200 dark:border-[#3a3a3a] pt-2 flex justify-between">
-                        <span className="font-medium text-[#131d0c] dark:text-white">= Beschikbaar</span>
-                        <span className="font-medium text-[#131d0c] dark:text-white">{formatCurrency(vtblData.beschikbaar || 0)}</span>
-                      </div>
-                    </div>
-
-                    {/* Aanpassingen indien aanwezig */}
-                    {vtblData.adjustments && vtblData.adjustments.length > 0 && (
-                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-[#3a3a3a]">
-                        <p className="text-xs font-semibold text-gray-500 dark:text-[#a1a1a1] mb-2 uppercase tracking-wide">VTLB Aanpassingen:</p>
-                        <div className="space-y-1 text-xs">
-                          {vtblData.adjustments.map((adj, idx) => (
-                            <div key={idx} className="flex justify-between text-gray-600 dark:text-[#a1a1a1]">
-                              <span className="capitalize">{adj.reason}</span>
-                              <span className={adj.amount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
-                                {adj.amount >= 0 ? '+' : ''}{formatCurrency(adj.amount)}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                  </>
-                ) : (
-                  /* Fallback naar simpele berekening */
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-[#a1a1a1]">Je inkomen</span>
-                      <span className="font-medium text-[#131d0c] dark:text-white">{formatCurrency(user?.monthly_income || 0)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-[#a1a1a1]">Min: VTLB (levensonderhoud)</span>
-                      <span className="font-medium text-red-600 dark:text-red-400">- {formatCurrency((user?.monthly_income || 0) - availableBudget)}</span>
-                    </div>
-                    <div className="border-t border-gray-200 dark:border-[#3a3a3a] pt-2 flex justify-between">
-                      <span className="font-bold text-[#131d0c] dark:text-white">= Afloscapaciteit</span>
-                      <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(availableBudget)}</span>
-                    </div>
-                  </div>
-                )}
+                  <strong>VTLB</strong> = Vrij Te Laten Bedrag — het bedrag dat je <strong>minimaal nodig hebt om van te leven</strong>. De rest kun je gebruiken om schulden af te lossen.
+                </p>
               </div>
 
-              <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">
-              💡 Dit bedrag kun je maandelijks gebruiken voor betalingsregelingen met schuldeisers.
-            </p>
+              {/* VTLB Result Card */}
+              {vtblData && (
+                <div className={`rounded-2xl p-5 border-2 ${
+                  vtblData.statusColor === 'green'
+                    ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30'
+                    : vtblData.statusColor === 'orange'
+                    ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30'
+                    : 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/30'
+                }`}>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="text-center">
+                      <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Netto inkomen</p>
+                      <p className="text-gray-900 dark:text-white font-bold text-base">{formatCurrency(vtblData.vastInkomen || 0)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">VTLB (Beslagvrije voet)</p>
+                      <p className="text-amber-600 dark:text-amber-400 font-bold text-base">- {formatCurrency(vtblData.vtlbTotaal || 0)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Vaste lasten</p>
+                      <p className="text-orange-600 dark:text-orange-400 font-bold text-base">- {formatCurrency(vtblData.vasteLasten || 0)}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Lopende regelingen</p>
+                      <p className="text-purple-600 dark:text-purple-400 font-bold text-base">- {formatCurrency(vtblData.huidigeRegelingen || 0)}</p>
+                    </div>
+                  </div>
+                  <div className="border-t border-gray-200 dark:border-white/10 pt-3">
+                    <div className="text-center">
+                      <p className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Afloscapaciteit</p>
+                      <p className={`font-extrabold text-2xl ${
+                        vtblData.statusColor === 'green'
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : vtblData.statusColor === 'orange'
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {formatCurrency(vtblData.afloscapaciteit || vtblData.aflosCapaciteit || 0)}
+                      </p>
+                    </div>
+                    <div className={`flex items-center justify-center gap-2 text-sm font-bold mt-2 ${
+                      vtblData.statusColor === 'green'
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : vtblData.statusColor === 'orange'
+                        ? 'text-amber-600 dark:text-amber-400'
+                        : 'text-red-600 dark:text-red-400'
+                    }`}>
+                      <span className="material-symbols-outlined text-base">
+                        {vtblData.statusColor === 'green' ? 'check_circle' : vtblData.statusColor === 'orange' ? 'warning' : 'error'}
+                      </span>
+                      {vtblData.statusLabel || 'Berekend'}
+                    </div>
+                  </div>
+                </div>
+              )}
 
-              <button
-                onClick={() => {
-                  setShowVtlbInfo(false);
-                  window.location.href = createPageUrl('VTLBCalculator');
-                }}
-                className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
-              >
-                <span className="material-symbols-outlined !text-[20px]">edit</span>
-                VTLB aanpassen
-              </button>
-          </div>
+              {/* VTLB Breakdown */}
+              {vtblData?.breakdown && vtblData.hasVtlbSettings && (
+                <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-4 space-y-2 text-sm">
+                  <h4 className="font-bold text-[#131d0c] dark:text-white text-sm flex items-center gap-2 mb-3">
+                    <span className="material-symbols-outlined text-blue-500 !text-[18px]">functions</span>
+                    VTLB Opbouw
+                  </h4>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Basisbedrag ({vtblData.leefsituatie ? vtblData.leefsituatie.replace(/_/g, ' ') : 'Alleenstaand'})</span>
+                    <span className="font-medium">{formatCurrency(vtblData.breakdown.basisBedrag || 0)}</span>
+                  </div>
+                  {(vtblData.breakdown.kinderToeslag || 0) > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">+ Kindertoeslag ({vtblData.aantalKinderen} kind{vtblData.aantalKinderen > 1 ? 'eren' : ''})</span>
+                      <span className="font-medium text-green-600 dark:text-green-400">{formatCurrency(vtblData.breakdown.kinderToeslag)}</span>
+                    </div>
+                  )}
+                  {(vtblData.breakdown.woonkostenCorrectie || 0) > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">+ Woonkosten correctie</span>
+                      <span className="font-medium text-green-600 dark:text-green-400">{formatCurrency(vtblData.breakdown.woonkostenCorrectie)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">+ Eigen risico zorgverzekering</span>
+                    <span className="font-medium">{formatCurrency(vtblData.breakdown.eigenRisico || 0)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">+ Reservering</span>
+                    <span className="font-medium">{formatCurrency(vtblData.breakdown.reservering || 0)}</span>
+                  </div>
+                  {(vtblData.breakdown.arbeidsToeslag || 0) > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">+ Arbeidstoeslag</span>
+                      <span className="font-medium text-green-600 dark:text-green-400">{formatCurrency(vtblData.breakdown.arbeidsToeslag)}</span>
+                    </div>
+                  )}
+                  {(vtblData.breakdown.individueleLasten || 0) > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">+ Individuele lasten</span>
+                      <span className="font-medium text-green-600 dark:text-green-400">{formatCurrency(vtblData.breakdown.individueleLasten)}</span>
+                    </div>
+                  )}
+                  <hr className="border-gray-200 dark:border-[#2a2a2a] my-2" />
+                  <div className="flex justify-between font-bold">
+                    <span className="text-gray-900 dark:text-white">Totaal VTLB</span>
+                    <span className="text-amber-600 dark:text-amber-400">{formatCurrency(vtblData.vtlbTotaal || 0)}</span>
+                  </div>
+                  {vtblData.is95ProcentRegel && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      ⚠️ 95% regel toegepast: VTLB is gemaximeerd op 95% van je inkomen
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Fallback als geen VTLB settings */}
+              {vtblData && !vtblData.hasVtlbSettings && (
+                <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-4 space-y-2 text-sm">
+                  <h4 className="font-bold text-[#131d0c] dark:text-white text-sm flex items-center gap-2 mb-3">
+                    <span className="material-symbols-outlined text-blue-500 !text-[18px]">functions</span>
+                    Simpele berekening
+                  </h4>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-[#a1a1a1]">Vast inkomen</span>
+                    <span className="font-medium text-[#131d0c] dark:text-white">{formatCurrency(vtblData.vastInkomen || 0)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-[#a1a1a1]">Vaste lasten</span>
+                    <span className="font-medium text-red-600 dark:text-red-400">- {formatCurrency(vtblData.vasteLasten || 0)}</span>
+                  </div>
+                  {(vtblData.huidigeRegelingen || 0) > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-[#a1a1a1]">Lopende regelingen</span>
+                      <span className="font-medium text-purple-600 dark:text-purple-400">- {formatCurrency(vtblData.huidigeRegelingen)}</span>
+                    </div>
+                  )}
+                  <div className="border-t border-gray-200 dark:border-[#3a3a3a] pt-2 flex justify-between">
+                    <span className="font-bold text-[#131d0c] dark:text-white">= Afloscapaciteit</span>
+                    <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(vtblData.afloscapaciteit || vtblData.aflosCapaciteit || 0)}</span>
+                  </div>
+                  <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg p-3 mt-3">
+                    <p className="text-xs text-amber-800 dark:text-amber-400">
+                      💡 Stel je VTLB in voor een nauwkeurigere berekening op basis van officiële WSNP-normen.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Geen data */}
+              {!vtblData && (
+                <div className="bg-gray-50 dark:bg-[#0a0a0a] rounded-xl p-4 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-[#a1a1a1]">Je inkomen</span>
+                    <span className="font-medium text-[#131d0c] dark:text-white">{formatCurrency(user?.monthly_income || 0)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-[#a1a1a1]">Min: vaste lasten</span>
+                    <span className="font-medium text-red-600 dark:text-red-400">- {formatCurrency(user?.monthly_fixed_costs || 0)}</span>
+                  </div>
+                  <div className="border-t border-gray-200 dark:border-[#3a3a3a] pt-2 flex justify-between">
+                    <span className="font-bold text-[#131d0c] dark:text-white">= Beschikbaar</span>
+                    <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(availableBudget)}</span>
+                  </div>
+                </div>
+              )}
+
+              <p className="text-sm text-gray-500 dark:text-[#a1a1a1]">
+                💡 Dit bedrag kun je maandelijks gebruiken voor betalingsregelingen met schuldeisers.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowVtlbInfo(false);
+                    window.location.href = createPageUrl('VTLBSettings');
+                  }}
+                  className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined !text-[20px]">settings</span>
+                  VTLB Instellingen
+                </button>
+                <button
+                  onClick={() => {
+                    setShowVtlbInfo(false);
+                    window.location.href = createPageUrl('VTLBCalculator');
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined !text-[20px]">calculate</span>
+                  Calculator
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
