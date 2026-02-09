@@ -25,8 +25,11 @@ export default function DebtJourneyWidget({
     const months = [];
     const monthNames = ['Jan', 'Feb', 'Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
 
-    // Get last 6 months
-    for (let i = 5; i >= 0; i--) {
+    // Get months in current year only (max 6)
+    const currentMonth = now.getMonth(); // 0-based
+    const monthsThisYear = currentMonth + 1;
+    const monthCount = Math.min(monthsThisYear, 6);
+    for (let i = monthCount - 1; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       months.push({

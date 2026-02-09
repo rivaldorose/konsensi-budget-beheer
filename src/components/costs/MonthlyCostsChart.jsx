@@ -41,11 +41,14 @@ const formatMonthYearFull = (date) => {
 };
 
 const MonthlyCostsChart = ({ allMonthlyCosts = [], allUnexpectedCosts = [] }) => {
-  // Bereken data voor de laatste 12 maanden
+  // Bereken data voor huidige jaar (max 12 maanden)
   const chartData = useMemo(() => {
     const now = new Date();
-    const last12Months = Array.from({ length: 12 }, (_, i) => {
-      const monthDate = subMonths(now, 11 - i);
+    const currentMonth = now.getMonth(); // 0-based
+    const monthsThisYear = currentMonth + 1; // jan=1, feb=2
+    const monthCount = Math.min(monthsThisYear, 12);
+    const last12Months = Array.from({ length: monthCount }, (_, i) => {
+      const monthDate = subMonths(now, monthCount - 1 - i);
       return getStartOfMonth(monthDate);
     });
 
@@ -103,10 +106,11 @@ const MonthlyCostsChart = ({ allMonthlyCosts = [], allUnexpectedCosts = [] }) =>
       totaal: acc.totaal + month.totaal
     }), { vast: 0, onverwacht: 0, totaal: 0 });
 
+    const count = chartData.length || 1;
     return {
-      avgVast: totals.vast / 12,
-      avgOnverwacht: totals.onverwacht / 12,
-      avgTotaal: totals.totaal / 12,
+      avgVast: totals.vast / count,
+      avgOnverwacht: totals.onverwacht / count,
+      avgTotaal: totals.totaal / count,
       totalYear: totals.totaal
     };
   }, [chartData]);
@@ -195,7 +199,7 @@ const MonthlyCostsChart = ({ allMonthlyCosts = [], allUnexpectedCosts = [] }) =>
       </div>
 
       <p className="text-xs text-gray-500 dark:text-[#a1a1a1] text-center mt-4">
-        Gebaseerd op de laatste 12 maanden
+        Gebaseerd op dit jaar
       </p>
     </div>
   );
