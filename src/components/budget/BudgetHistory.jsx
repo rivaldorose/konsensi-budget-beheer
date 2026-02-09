@@ -26,7 +26,7 @@ export default function BudgetHistory({ userEmail }) {
       const [transactions, incomes, costs] = await Promise.all([
         Transaction.filter({ user_id: user.id, type: 'expense' }),
         Income.filter({ user_id: user.id }),
-        MonthlyCost.filter({ user_id: user.id, status: 'actief' })
+        MonthlyCost.filter({ user_id: user.id })
       ]);
 
       const months = parseInt(selectedMonths);
@@ -58,9 +58,17 @@ export default function BudgetHistory({ userEmail }) {
 
         // Calculate fixed costs for month
         const monthCosts = costs.reduce((sum, cost) => {
-          if (cost.start_date && new Date(cost.start_date) > monthEnd) return sum;
-          if (cost.end_date && new Date(cost.end_date) < monthDate) return sum;
-          return sum + (parseFloat(cost.amount) || 0);
+          // Check if cost is active during this specific month
+          if (cost.start_date) {
+            if (new Date(cost.start_date) > monthEnd) return sum;
+            if (cost.end_date && new Date(cost.end_date) < monthDate) return sum;
+            return sum + (parseFloat(cost.amount) || 0);
+          }
+          // Legacy: no start_date, use status
+          if (cost.status === 'actief' || cost.status === 'active' || cost.is_active === true) {
+            return sum + (parseFloat(cost.amount) || 0);
+          }
+          return sum;
         }, 0);
 
         // Calculate variable expenses for month

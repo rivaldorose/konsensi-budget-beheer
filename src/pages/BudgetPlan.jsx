@@ -178,17 +178,25 @@ export default function BudgetPlan() {
                 }
             }, 0);
 
-            // Load monthly costs
+            // Load monthly costs (all for user, filter in JS for multi-status + date support)
             const monthlyCostsData = await MonthlyCost.filter({
-                status: 'actief',
                 user_id: userData.id
             });
-            
+
             const today = new Date(selectedMonth);
             const filteredCosts = monthlyCostsData.filter(cost => {
-                const paymentDay = cost.payment_date || 1;
-                const paymentDate = new Date(today.getFullYear(), today.getMonth(), paymentDay);
-                return paymentDate >= startDate && paymentDate <= endDate;
+                // Check if cost is active using start_date/end_date OR status
+                if (cost.start_date) {
+                    const costStartDate = new Date(cost.start_date);
+                    const costEndDate = cost.end_date ? new Date(cost.end_date) : null;
+                    // Cost must have started before period ends
+                    if (costStartDate > endDate) return false;
+                    // If there's an end date, it must be after period starts
+                    if (costEndDate && costEndDate < startDate) return false;
+                    return true;
+                }
+                // Legacy: no start_date, use status
+                return cost.status === 'actief' || cost.status === 'active' || cost.is_active === true;
             });
             
             const monthlyCostsTotal = filteredCosts.reduce((sum, cost) => 
@@ -422,10 +430,16 @@ export default function BudgetPlan() {
                 // Sum monthly costs that fall in this month
                 const monthCostExpenses = monthlyCostsData
                     .filter(cost => {
-                        if (cost.status !== 'actief') return false;
-                        const paymentDay = cost.payment_date || 1;
-                        const paymentDate = new Date(mDate.getFullYear(), mDate.getMonth(), paymentDay);
-                        return paymentDate >= mDate && paymentDate <= mEnd;
+                        // Check if cost is active during this specific month
+                        if (cost.start_date) {
+                            const costStartDate = new Date(cost.start_date);
+                            const costEndDate = cost.end_date ? new Date(cost.end_date) : null;
+                            if (costStartDate > mEnd) return false;
+                            if (costEndDate && costEndDate < mDate) return false;
+                            return true;
+                        }
+                        // Legacy: no start_date, use status
+                        return cost.status === 'actief' || cost.status === 'active' || cost.is_active === true;
                     })
                     .reduce((sum, cost) => sum + (parseFloat(cost.amount) || 0), 0);
 
