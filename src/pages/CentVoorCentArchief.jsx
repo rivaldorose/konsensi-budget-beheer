@@ -181,11 +181,7 @@ export default function CentVoorCentArchief() {
   };
 
   const availableYears = useMemo(() => {
-    const years = [];
-    for (let y = currentYear; y >= currentYear - 3; y--) {
-      years.push(y);
-    }
-    return years;
+    return [currentYear];
   }, [currentYear]);
 
   const totalYearIncome = Object.values(monthData).reduce((sum, d) => sum + (d?.totalIncome || 0), 0);
@@ -221,34 +217,11 @@ export default function CentVoorCentArchief() {
         {/* Year Selector */}
         <div className="flex mb-8">
           <div className="flex h-12 items-center gap-1 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-xl p-1 shadow-sm">
-            <button
-              onClick={() => setSelectedYear(y => y - 1)}
-              className="p-2 text-text-muted dark:text-text-secondary hover:text-primary dark:hover:text-primary-green transition-colors rounded-lg hover:bg-gray-50 dark:hover:bg-dark-card-elevated"
-            >
-              <span className="material-symbols-outlined">chevron_left</span>
-            </button>
             <div className="flex items-center gap-2 px-4">
-              {availableYears.map(year => (
-                <button
-                  key={year}
-                  onClick={() => setSelectedYear(year)}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
-                    selectedYear === year
-                      ? 'bg-primary dark:bg-primary-green text-white dark:text-dark-bg'
-                      : 'text-text-muted dark:text-text-secondary hover:text-text-main dark:hover:text-text-primary hover:bg-gray-50 dark:hover:bg-dark-card-elevated'
-                  }`}
-                >
-                  {year}
-                </button>
-              ))}
+              <span className="px-4 py-1.5 rounded-lg text-sm font-bold bg-primary dark:bg-primary-green text-white dark:text-dark-bg">
+                {currentYear}
+              </span>
             </div>
-            <button
-              onClick={() => setSelectedYear(y => Math.min(y + 1, currentYear))}
-              disabled={selectedYear >= currentYear}
-              className="p-2 text-text-muted dark:text-text-secondary hover:text-primary dark:hover:text-primary-green transition-colors rounded-lg hover:bg-gray-50 dark:hover:bg-dark-card-elevated disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <span className="material-symbols-outlined">chevron_right</span>
-            </button>
           </div>
         </div>
 
