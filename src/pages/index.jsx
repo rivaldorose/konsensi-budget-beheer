@@ -1,7 +1,7 @@
 import React, { Suspense } from "react";
 import Layout from "./Layout.jsx";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 
 // Loading fallback component - minimal branded loader to prevent flash
 const LoadingFallback = () => {
@@ -70,7 +70,7 @@ const Dashboard = lazyWithRetry(() => import("./Dashboard"));
 const Debts = lazyWithRetry(() => import("./Debts"));
 const CentVoorCent = lazyWithRetry(() => import("./CentVoorCent"));
 const CentVoorCentArchief = lazyWithRetry(() => import("./CentVoorCentArchief"));
-const VTLBCalculator = lazyWithRetry(() => import("./VTLBCalculator"));
+// VTLBCalculator verwijderd — redirect naar VTLBSettings
 const OnboardingNew = lazyWithRetry(() => import("./OnboardingNew"));
 const Potjes = lazyWithRetry(() => import("./Potjes"));
 const BudgetPlan = lazyWithRetry(() => import("./BudgetPlan"));
@@ -192,7 +192,7 @@ function PagesContent() {
                 <Route path="/CentVoorCent" element={<LazyRoute component={CentVoorCentArchief} />} />
                 <Route path="/CentVoorCent/samenvatting" element={<LazyRoute component={CentVoorCent} />} />
                 <Route path="/CentVoorCentArchief" element={<LazyRoute component={CentVoorCentArchief} />} />
-                <Route path="/VTLBCalculator" element={<LazyRoute component={VTLBCalculator} />} />
+                <Route path="/VTLBCalculator" element={<Navigate to="/VTLBSettings" replace />} />
                 <Route path="/onboarding" element={<LazyRoute component={OnboardingNew} />} />
                 <Route path="/onboarding-new" element={<LazyRoute component={OnboardingNew} />} />
                 <Route path="/Potjes" element={<LazyRoute component={Potjes} />} />

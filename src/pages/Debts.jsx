@@ -667,7 +667,7 @@ export default function Debts() {
             </p>
                 <a
                   className="text-blue-600 dark:text-blue-400 text-sm font-semibold hover:text-green-500 dark:hover:text-green-400 mt-2 inline-flex items-center gap-1 group-hover:translate-x-1 transition-all cursor-pointer"
-              onClick={() => window.location.href = createPageUrl('VTLBCalculator')}
+              onClick={() => window.location.href = createPageUrl('VTLBSettings')}
             >
                   VTLB berekenen <span className="material-symbols-outlined !text-[16px]">arrow_forward</span>
                 </a>
@@ -1399,18 +1399,8 @@ export default function Debts() {
                   }}
                   className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
-                  <span className="material-symbols-outlined !text-[20px]">settings</span>
-                  VTLB Instellingen
-                </button>
-                <button
-                  onClick={() => {
-                    setShowVtlbInfo(false);
-                    window.location.href = createPageUrl('VTLBCalculator');
-                  }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
-                >
                   <span className="material-symbols-outlined !text-[20px]">calculate</span>
-                  Calculator
+                  VTLB Berekening
                 </button>
               </div>
             </div>
