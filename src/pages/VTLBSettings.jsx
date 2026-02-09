@@ -234,9 +234,9 @@ export default function VTLBSettings() {
   }
 
   return (
-    <div className="h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex flex-col overflow-hidden">
-      <main className="flex-1 flex justify-center py-8 px-4 sm:px-6 md:px-8 overflow-hidden">
-        <div className="w-full max-w-[1400px] flex flex-col gap-6 h-full">
+    <div className="min-h-screen bg-[#F8F8F8] dark:bg-[#0a0a0a] flex flex-col">
+      <main className="flex-1 flex justify-center py-8 px-4 sm:px-6 md:px-8">
+        <div className="w-full max-w-[1400px] flex flex-col gap-6">
           {/* Page Header */}
           <div className="flex flex-wrap items-center justify-between gap-4 flex-shrink-0">
             <div className="flex flex-col gap-1">
@@ -248,9 +248,9 @@ export default function VTLBSettings() {
             </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-6 items-start flex-1 min-h-0">
+          <div className="flex flex-col lg:flex-row gap-6 items-start flex-1">
             {/* Sidebar Navigation */}
-            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] shadow-soft border border-[#E5E7EB] dark:border-[#2a2a2a] p-4 lg:p-6 flex flex-col flex-shrink-0 lg:max-h-full lg:overflow-y-auto">
+            <aside className="w-full lg:w-1/4 bg-white dark:bg-[#1a1a1a] rounded-[24px] shadow-soft border border-[#E5E7EB] dark:border-[#2a2a2a] p-4 lg:p-6 flex flex-col flex-shrink-0 lg:sticky lg:top-8">
               <nav className="flex flex-col gap-2">
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
@@ -285,7 +285,7 @@ export default function VTLBSettings() {
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1 w-full overflow-y-auto lg:max-h-full space-y-6">
+            <div className="flex-1 w-full space-y-6">
               {/* VTLB Result Card */}
               {vtlbResult && (
                 <div className={`rounded-[24px] p-6 border-2 ${
