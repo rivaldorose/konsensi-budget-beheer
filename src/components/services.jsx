@@ -246,23 +246,53 @@ class VTBLService {
             };
         }
 
-        // Fallback: Basic calculation without VTLB settings
-        // Simply calculate available space from income - costs - arrangements
-        const availableSpace = Math.max(0, fixedIncome - totalMonthlyCosts - activeDebtPayments);
+        // Fallback: Standaard VTLB berekening met default profiel (alleenstaand)
+        // Zo krijgt elke gebruiker altijd een VTLB schatting, ook zonder settings
+        const defaultSettings = {
+            leefsituatie: 'alleenstaand',
+            aantalKinderen: 0,
+            typeWoning: 'huur_sociaal',
+            woonlasten: 0,
+            werksituatie: 'geen',
+            afstandWerk: 0,
+            werkdagen: 5,
+            chronischeZiekte: false,
+            medicijnkosten: 0,
+            alimentatie: 0,
+            studiekosten: 0,
+            kinderopvangKosten: 0,
+            gemeentebelasting: 0,
+            vakbond: 0,
+        };
+
+        const defaultProfiel = vtlbSettingsToProfiel(
+            defaultSettings,
+            fixedIncome,
+            activeDebtPayments,
+            vasteLastenExclWonen
+        );
+        const defaultVtlbResult = berekenVTLB(defaultProfiel);
 
         return {
             vastInkomen: fixedIncome,
             vasteLasten: totalMonthlyCosts,
             huidigeRegelingen: activeDebtPayments,
-            beschikbaar: availableSpace,
-            afloscapaciteit: availableSpace,
-            aflosCapaciteit: availableSpace, // Legacy alias
+            beschikbaar: defaultVtlbResult.afloscapaciteit,
+            afloscapaciteit: defaultVtlbResult.afloscapaciteit,
+            aflosCapaciteit: defaultVtlbResult.afloscapaciteit, // Legacy alias
 
-            // No official VTLB calculation
-            vtlbTotaal: 0,
-            status: availableSpace > 50 ? 'haalbaar' : availableSpace > 25 ? 'grensgevallen' : 'niet_haalbaar',
-            statusLabel: availableSpace > 50 ? 'Afloscapaciteit beschikbaar' : availableSpace > 25 ? 'Beperkte afloscapaciteit' : 'Geen ruimte voor aflosing',
-            statusColor: availableSpace > 50 ? 'green' : availableSpace > 25 ? 'orange' : 'red',
+            // Standaard VTLB berekening (alleenstaand profiel)
+            vtlbTotaal: defaultVtlbResult.vtlbTotaal,
+            status: defaultVtlbResult.status,
+            statusLabel: defaultVtlbResult.statusLabel,
+            statusColor: defaultVtlbResult.statusColor,
+
+            // Breakdown voor display
+            breakdown: defaultVtlbResult.breakdown,
+            is95ProcentRegel: defaultVtlbResult.is95ProcentRegel,
+            leefsituatie: defaultVtlbResult.leefsituatie,
+            aantalKinderen: defaultVtlbResult.aantalKinderen,
+            isWerkend: defaultVtlbResult.isWerkend,
 
             hasVtlbSettings: false,
             usedOfficialCalculation: false,
