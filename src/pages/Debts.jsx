@@ -381,7 +381,7 @@ export default function Debts() {
           return filteredAndSortedDebts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
         }, [filteredAndSortedDebts, currentPage]);
 
-  const activeDebts = debts.filter(d => d.status === 'actief' || d.status === 'betalingsregeling').length;
+  const activeDebts = debts.filter(d => d.status === 'actief' || d.status === 'active' || d.status === 'betalingsregeling').length;
   const paidOffDebts = debts.filter(d => d.status === 'afbetaald').length;
   const totalDebtAmount = debts
     .filter(d => d.status !== 'afbetaald')

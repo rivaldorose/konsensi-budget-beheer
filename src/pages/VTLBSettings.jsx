@@ -96,7 +96,7 @@ export default function VTLBSettings() {
       // ============================================
       // VTLB-SPECIFIEKE KOSTEN UIT VASTE LASTEN HALEN
       // ============================================
-      const activeCosts = costs.filter(c => c.status === 'actief');
+      const activeCosts = costs.filter(c => c.status === 'actief' || c.status === 'active' || c.is_active === true);
 
       // Helper functie om kosten te vinden op categorie of naam
       const findCostByCategory = (category, ...namePatterns) => {

@@ -72,9 +72,9 @@ class IncomeService {
 // --- MONTHLY COST SERVICE ---
 class MonthlyCostService {
     processMonthlyCostsData(allCosts) {
-        const activeCosts = allCosts.filter(cost => cost.status === 'actief');
+        const activeCosts = allCosts.filter(cost => cost.status === 'actief' || cost.status === 'active' || cost.is_active === true);
         const total = activeCosts.reduce((sum, cost) => sum + parseFloat(cost.amount || 0), 0);
-        
+
         return { total, items: activeCosts };
     }
 
@@ -89,9 +89,16 @@ class DebtService {
     getActiveArrangementPayments(allDebts, forMonth = new Date()) {
         const targetMonthStart = getStartOfMonth(forMonth);
 
-        // Filter debts that are in betalingsregeling AND have started (start_date is not in the future)
+        // Filter debts that have active payment arrangements:
+        // 1. Status is 'betalingsregeling' (explicit arrangement)
+        // 2. OR status is 'actief'/'active' AND has monthly_payment > 0 (implicit arrangement)
         const activeDebts = allDebts.filter(d => {
-            if (d.status !== 'betalingsregeling') return false;
+            const hasMonthlyPayment = parseFloat(d.monthly_payment || 0) > 0;
+            const isBetalingsregeling = d.status === 'betalingsregeling';
+            const isActief = d.status === 'actief' || d.status === 'active';
+
+            // Must be either betalingsregeling OR actief with monthly_payment
+            if (!isBetalingsregeling && !(isActief && hasMonthlyPayment)) return false;
 
             // If there's a start_date, check if it's before or within the target month
             if (d.start_date) {
@@ -162,7 +169,7 @@ class VTBLService {
         // Deze worden apart meegenomen in de VTLB berekening via vtlb_settings
         const vtlbSpecifiekeCategorieen = ['huur', 'hypotheek', 'kinderopvang', 'alimentatie', 'vakbond', 'studiekosten', 'gemeentebelasting', 'zorgkosten'];
         const vasteLastenExclWonen = allCosts
-            .filter(c => c.status === 'actief')
+            .filter(c => c.status === 'actief' || c.status === 'active' || c.is_active === true)
             .filter(c =>
                 !vtlbSpecifiekeCategorieen.includes(c.category) &&
                 !c.name?.toLowerCase().includes('huur') &&

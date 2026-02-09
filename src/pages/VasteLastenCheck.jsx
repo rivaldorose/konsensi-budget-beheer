@@ -110,7 +110,7 @@ export default function VasteLastenCheck() {
       // Calculate other expenses (excluding the current payment)
       const currentPaymentId = mappedPayments[0]?.id;
       const otherExpenses = costs
-        .filter(c => c.id !== currentPaymentId && c.status === 'actief')
+        .filter(c => c.id !== currentPaymentId && (c.status === 'actief' || c.status === 'active' || c.is_active === true))
         .reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
 
       const currentPaymentAmount = mappedPayments[0]?.amount || 0;

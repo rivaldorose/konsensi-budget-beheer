@@ -149,15 +149,15 @@ export function useLiveBudgetData(selectedMonth, period) {
 
       // Detect changes before updating state
       detectChanges(incomeData, previousDataRef.current.incomes, 'Inkomen');
-      detectChanges(monthlyCostsData.filter(c => c.status === 'actief'), previousDataRef.current.monthlyCosts, 'Vaste last');
-      detectChanges(debtsData.filter(d => d.status === 'betalingsregeling'), previousDataRef.current.debts, 'Betalingsregeling');
+      detectChanges(monthlyCostsData.filter(c => c.status === 'actief' || c.status === 'active' || c.is_active === true), previousDataRef.current.monthlyCosts, 'Vaste last');
+      detectChanges(debtsData.filter(d => d.status === 'betalingsregeling' || ((d.status === 'actief' || d.status === 'active') && parseFloat(d.monthly_payment || 0) > 0)), previousDataRef.current.debts, 'Betalingsregeling');
       detectChanges(potsData, previousDataRef.current.pots, 'Potje');
 
       // Update previous data reference
       previousDataRef.current = {
         incomes: incomeData,
-        monthlyCosts: monthlyCostsData.filter(c => c.status === 'actief'),
-        debts: debtsData.filter(d => d.status === 'betalingsregeling'),
+        monthlyCosts: monthlyCostsData.filter(c => c.status === 'actief' || c.status === 'active' || c.is_active === true),
+        debts: debtsData.filter(d => d.status === 'betalingsregeling' || ((d.status === 'actief' || d.status === 'active') && parseFloat(d.monthly_payment || 0) > 0)),
         pots: potsData
       };
 
@@ -184,7 +184,7 @@ export function useLiveBudgetData(selectedMonth, period) {
       // Filter monthly costs for current period
       const today = new Date(selectedMonth);
       const filteredCosts = monthlyCostsData
-        .filter(cost => cost.status === 'actief')
+        .filter(cost => cost.status === 'actief' || cost.status === 'active' || cost.is_active === true)
         .filter(cost => {
           const paymentDay = cost.payment_date || 1;
           const paymentDate = new Date(today.getFullYear(), today.getMonth(), paymentDay);
@@ -193,7 +193,7 @@ export function useLiveBudgetData(selectedMonth, period) {
 
       // Filter debts with active payment plans
       const filteredDebts = debtsData
-        .filter(d => d.status === 'betalingsregeling')
+        .filter(d => d.status === 'betalingsregeling' || ((d.status === 'actief' || d.status === 'active') && parseFloat(d.monthly_payment || 0) > 0))
         .filter(debt => {
           if (!debt.payment_plan_date) return false;
 

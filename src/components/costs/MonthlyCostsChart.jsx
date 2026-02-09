@@ -67,7 +67,7 @@ const MonthlyCostsChart = ({ allMonthlyCosts = [], allUnexpectedCosts = [] }) =>
         }
         
         // Legacy: als geen start_date, gebruik status
-        return cost.status === 'actief';
+        return cost.status === 'actief' || cost.status === 'active' || cost.is_active === true;
       });
 
       const fixedTotal = activeCostsForMonth.reduce((sum, cost) => 
