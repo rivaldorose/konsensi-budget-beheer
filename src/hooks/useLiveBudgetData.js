@@ -9,8 +9,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Income, MonthlyCost, Debt, Transaction, User, Pot, Expense } from '@/api/entities';
 import { useToast } from '@/components/ui/use-toast';
 
-// Polling interval in ms (elke 5 seconden checken voor updates)
-const POLL_INTERVAL = 5000;
+// Polling interval in ms (elke 30 seconden checken voor updates)
+const POLL_INTERVAL = 30000;
 
 export function useLiveBudgetData(selectedMonth, period) {
   const { toast } = useToast();
