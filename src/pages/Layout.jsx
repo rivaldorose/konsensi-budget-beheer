@@ -336,6 +336,12 @@ function LayoutWithProvider({ children, currentPageName }) {
         return;
       }
 
+      // Skip refetch if user is already loaded (performance: prevent User.me() on every route change)
+      if (user && user.id && user.id !== 'bypass-user') {
+        setCheckingOnboarding(false);
+        return;
+      }
+
       try {
 
         const userData = await User.me();
