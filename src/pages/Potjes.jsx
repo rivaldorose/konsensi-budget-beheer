@@ -138,12 +138,12 @@ export default function Potjes() {
           const isBeforeEnd = !endDate || today <= endDate;
           return isAfterStart && isBeforeEnd;
         }
-        return cost.status === 'actief';
+        return cost.status === 'actief' || cost.status === 'active' || cost.is_active === true;
       });
 
       const totalFixedCosts = activeCosts.reduce((sum, cost) => sum + (cost.amount || 0), 0);
       const activeDebtPayments = allDebts
-        .filter(d => d && d.status === 'betalingsregeling' && d.monthly_payment)
+        .filter(d => d && (d.status === 'betalingsregeling' || ((d.status === 'actief' || d.status === 'active') && parseFloat(d.monthly_payment || 0) > 0)) && d.monthly_payment)
         .reduce((sum, debt) => sum + (debt.monthly_payment || 0), 0);
 
       try {

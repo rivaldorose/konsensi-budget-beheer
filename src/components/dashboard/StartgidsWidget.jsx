@@ -54,7 +54,7 @@ const StartgidsWidget = ({
       description: 'Huur, energie, verzekeringen, abonnementen',
       icon: FileText,
       link: '/maandelijkselasten',
-      isCompleted: allMonthlyCosts.filter(c => c.status === 'actief').length >= 3,
+      isCompleted: allMonthlyCosts.filter(c => c.status === 'actief' || c.status === 'active' || c.is_active === true).length >= 3,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50'
     },
