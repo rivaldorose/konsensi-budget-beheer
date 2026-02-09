@@ -33,7 +33,12 @@ export default function BudgetHistory({ userEmail }) {
       const data = [];
       const now = new Date();
 
-      for (let i = months - 1; i >= 0; i--) {
+      // Limit to current year only
+      const currentMonth = now.getMonth(); // 0-based
+      const monthsThisYear = currentMonth + 1; // jan=1, feb=2
+      const monthCount = Math.min(months, monthsThisYear);
+
+      for (let i = monthCount - 1; i >= 0; i--) {
         const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
         const monthLabel = monthDate.toLocaleDateString('nl-NL', { month: 'short' });

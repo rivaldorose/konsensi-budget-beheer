@@ -409,10 +409,14 @@ export default function BudgetPlan() {
             setAllPots(expensePots);
             setBudgetCategories(breakdown);
 
-            // Calculate monthly history (last 6 months) for Budget Overzicht chart
+            // Calculate monthly history (current year only) for Budget Overzicht chart
             const now = new Date(selectedMonth);
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth(); // 0-based
+            const monthsThisYear = currentMonth + 1; // jan=1, feb=2
+            const historyMonthCount = Math.min(monthsThisYear, 6);
             const historyData = [];
-            for (let i = 5; i >= 0; i--) {
+            for (let i = historyMonthCount - 1; i >= 0; i--) {
                 const mDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
                 const mEnd = new Date(mDate.getFullYear(), mDate.getMonth() + 1, 0, 23, 59, 59, 999);
                 const monthLabel = mDate.toLocaleDateString('nl-NL', { month: 'short' });

@@ -311,8 +311,12 @@ export default function Dashboard() {
           progressPercentage = isNaN(rawPercentage) ? 0 : rawPercentage;
       }
 
-      // Monthly graph
-      const last6Months = Array.from({ length: 6 }, (_, i) => getStartOfMonth(subMonths(now, i))).reverse();
+      // Monthly graph - only show months in current year
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      const monthsThisYear = currentMonth + 1; // jan=1, feb=2, etc.
+      const monthCount = Math.min(monthsThisYear, 6);
+      const last6Months = Array.from({ length: monthCount }, (_, i) => getStartOfMonth(subMonths(now, monthCount - 1 - i))).filter(d => d.getFullYear() === currentYear);
       const paidPerMonthKey = t('dashboard.paidPerMonth');
       const monthlyGraphData = last6Months.map(monthStart => {
         const monthEnd = getEndOfMonth(monthStart);
@@ -573,8 +577,14 @@ export default function Dashboard() {
 
   // Prepare data for components - useMemo hooks must be before early returns
   const monthlyChartData = useMemo(() => {
-    const last6Months = Array.from({ length: 6 }, (_, i) => {
-      const monthDate = subMonths(new Date(), 5 - i);
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); // 0-based
+    const monthsThisYear = currentMonth + 1; // jan=1, feb=2, etc.
+    const monthCount = Math.min(monthsThisYear, 6);
+
+    const months = Array.from({ length: monthCount }, (_, i) => {
+      const monthDate = subMonths(now, monthCount - 1 - i);
       const monthEnd = getEndOfMonth(monthDate);
       const monthStart = getStartOfMonth(monthDate);
 
@@ -595,8 +605,8 @@ export default function Dashboard() {
         month: new Intl.DateTimeFormat("nl-NL", { month: "short" }).format(monthDate),
         amount: monthlyTotal,
       };
-    });
-    return last6Months;
+    }).filter(d => true); // already limited to current year months
+    return months;
   }, [dashboardData.allPayments]);
 
   // Weekly chart data for last 6 weeks
