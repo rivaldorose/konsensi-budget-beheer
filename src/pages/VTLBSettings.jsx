@@ -255,31 +255,123 @@ export default function VTLBSettings() {
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('Settings')
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary border border-primary/20'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a]'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   to={createPageUrl('Settings')}
                 >
-                  <span className="material-symbols-outlined">account_circle</span>
-                  <span className="text-sm font-medium">Mijn Profiel</span>
+                  <span className={`material-symbols-outlined ${isActiveRoute('Settings') ? 'fill-1' : ''}`} style={isActiveRoute('Settings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    account_circle
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('Settings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Mijn Profiel</span>
+                </Link>
+                <Link
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
+                    isActiveRoute('SecuritySettings')
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
+                  }`}
+                  to={createPageUrl('SecuritySettings')}
+                >
+                  <span className={`material-symbols-outlined ${isActiveRoute('SecuritySettings') ? 'fill-1' : ''}`} style={isActiveRoute('SecuritySettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    shield
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('SecuritySettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Account & Beveiliging</span>
+                </Link>
+                <Link
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
+                    isActiveRoute('NotificationSettings')
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
+                  }`}
+                  to={createPageUrl('NotificationSettings')}
+                >
+                  <span className={`material-symbols-outlined ${isActiveRoute('NotificationSettings') ? 'fill-1' : ''}`} style={isActiveRoute('NotificationSettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    notifications
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('NotificationSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Notificaties</span>
+                </Link>
+                <Link
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
+                    isActiveRoute('DisplaySettings')
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
+                  }`}
+                  to={createPageUrl('DisplaySettings')}
+                >
+                  <span className={`material-symbols-outlined ${isActiveRoute('DisplaySettings') ? 'fill-1' : ''}`} style={isActiveRoute('DisplaySettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    tune
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('DisplaySettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>App Voorkeuren</span>
                 </Link>
                 <Link
                   className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
                     isActiveRoute('VTLBSettings')
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary border border-primary/20'
-                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a]'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
                   }`}
                   to={createPageUrl('VTLBSettings')}
                 >
-                  <span className="material-symbols-outlined">calculate</span>
-                  <span className="text-sm font-bold">VTLB Berekening</span>
+                  <span className={`material-symbols-outlined ${isActiveRoute('VTLBSettings') ? 'fill-1' : ''}`} style={isActiveRoute('VTLBSettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    calculate
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('VTLBSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>VTLB Berekening</span>
                 </Link>
                 <Link
-                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] transition-all"
-                  to={createPageUrl('DisplaySettings')}
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
+                    isActiveRoute('GamificationSettings')
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
+                  }`}
+                  to={createPageUrl('GamificationSettings')}
                 >
-                  <span className="material-symbols-outlined">tune</span>
-                  <span className="text-sm font-medium">App Voorkeuren</span>
+                  <span className={`material-symbols-outlined ${isActiveRoute('GamificationSettings') ? 'fill-1' : ''}`} style={isActiveRoute('GamificationSettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    emoji_events
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('GamificationSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Gamification & XP</span>
+                </Link>
+                <div className="mt-4 pt-2 px-4 pb-1">
+                  <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Hulp & Support</h3>
+                </div>
+                <Link
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
+                    isActiveRoute('HelpSupport')
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
+                  }`}
+                  to={createPageUrl('HelpSupport')}
+                >
+                  <span className={`material-symbols-outlined ${isActiveRoute('HelpSupport') ? 'fill-1' : ''}`} style={isActiveRoute('HelpSupport') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    help
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('HelpSupport') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Help Center</span>
+                </Link>
+                <Link
+                  className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all ${
+                    isActiveRoute('FAQSettings')
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/20 dark:border-primary/30'
+                      : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white'
+                  }`}
+                  to={createPageUrl('FAQSettings')}
+                >
+                  <span className={`material-symbols-outlined ${isActiveRoute('FAQSettings') ? 'fill-1' : ''}`} style={isActiveRoute('FAQSettings') ? { fontVariationSettings: "'FILL' 1" } : {}}>
+                    help_outline
+                  </span>
+                  <span className={`text-sm ${isActiveRoute('FAQSettings') ? 'font-bold' : 'font-medium group-hover:font-semibold'}`}>Veelgestelde Vragen</span>
+                </Link>
+                <Link
+                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white transition-all"
+                  to={createPageUrl('TermsOfService')}
+                >
+                  <span className="material-symbols-outlined">description</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Algemene Voorwaarden</span>
+                </Link>
+                <Link
+                  className="group flex items-center gap-4 px-4 py-3 rounded-[24px] text-[#6B7280] dark:text-[#9CA3AF] hover:bg-gray-50 dark:hover:bg-[#2a2a2a] hover:text-primary dark:hover:text-white transition-all"
+                  to={createPageUrl('PrivacyPolicy')}
+                >
+                  <span className="material-symbols-outlined">policy</span>
+                  <span className="font-medium text-sm group-hover:font-semibold">Privacybeleid</span>
                 </Link>
               </nav>
             </aside>
