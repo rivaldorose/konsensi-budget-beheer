@@ -271,7 +271,7 @@ export default function DebtOverviewChart({ debts = [], viewMode = 'type', embed
         </div>
         <div className="text-center">
           <p className="text-2xl font-bold text-amber-500">
-            {debts.filter(d => d.status === 'betalingsregeling').length}
+            {debts.filter(d => d.status === 'betalingsregeling' || ((d.status === 'actief' || d.status === 'active') && parseFloat(d.monthly_payment || 0) > 0)).length}
           </p>
           <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">Met regeling</p>
         </div>

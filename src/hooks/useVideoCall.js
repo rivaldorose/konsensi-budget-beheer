@@ -181,7 +181,7 @@ export function useClientVideoCalls(userId) {
 
       if (!upcomingError) {
         // Separate active from upcoming
-        const active = (upcoming || []).filter((c) => c.status === "actief");
+        const active = (upcoming || []).filter((c) => c.status === "actief" || c.status === "active");
         const scheduled = (upcoming || []).filter((c) => c.status === "gepland");
         setActiveCalls(active);
         setUpcomingCalls(scheduled);

@@ -66,17 +66,23 @@ export default function UnpaidItemModal({ isOpen, onClose, item, onPlanCreated }
         try {
             const [recurringIncomes, otherMonthlyCosts, otherActiveDebts, allPots] = await Promise.all([
                 Income.filter({ frequency: 'monthly' }),
-                MonthlyCost.filter({ status: 'actief' }),
-                Debt.filter({ status: 'actief' }),
+                MonthlyCost.filter({}),
+                Debt.filter({}),
                 Pot.list()
             ]);
             setPots(allPots);
 
             const futureIncomeEvents = generateFutureIncomeEvents(recurringIncomes, 90);
 
+            const activeMonthlyCosts = otherMonthlyCosts.filter(c =>
+                c.status === 'actief' || c.status === 'active' || c.is_active === true
+            );
+            const activeDebts = otherActiveDebts.filter(d =>
+                d.status === 'actief' || d.status === 'active' || d.status === 'betalingsregeling'
+            );
             const otherCosts = [
-                ...otherMonthlyCosts.filter(c => c.id !== item.id).map(c => ({...c, dueDate: new Date(new Date().getFullYear(), new Date().getMonth(), c.payment_date)})),
-                ...otherActiveDebts.filter(d => d.id !== item.id).map(d => ({...d, name: d.creditor_name, amount: d.monthly_payment, dueDate: new Date(d.payment_plan_date) }))
+                ...activeMonthlyCosts.filter(c => c.id !== item.id).map(c => ({...c, dueDate: new Date(new Date().getFullYear(), new Date().getMonth(), c.payment_date)})),
+                ...activeDebts.filter(d => d.id !== item.id).map(d => ({...d, name: d.creditor_name, amount: d.monthly_payment, dueDate: new Date(d.payment_plan_date) }))
             ].filter(c => c.amount > 0);
 
             let runningBalance = 0;
