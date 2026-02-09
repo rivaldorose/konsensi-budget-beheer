@@ -43,7 +43,7 @@ export default function PaymentAnalysisModal({ isOpen, onClose, unpaidItem, curr
 
   const { data: costs = [] } = useQuery({
     queryKey: ['monthlyCosts', user?.id],
-    queryFn: () => MonthlyCost.filter({ user_id: user.id, status: 'actief' }),
+    queryFn: () => MonthlyCost.filter({ user_id: user.id }),
     enabled: !!user,
   });
 

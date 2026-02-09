@@ -27,7 +27,7 @@ export default function SmartSuggestions({ userEmail, totalIncome }) {
             const user = await User.me();
             if (!user) return;
             const [costs, transactions, pots, debts] = await Promise.all([
-                MonthlyCost.filter({ user_id: user.id, status: 'actief' }),
+                MonthlyCost.filter({ user_id: user.id }),
                 Transaction.filter({ user_id: user.id }),
                 Pot.filter({ user_id: user.id }),
                 Debt.filter({ user_id: user.id })
@@ -162,9 +162,10 @@ export default function SmartSuggestions({ userEmail, totalIncome }) {
             }
 
             // 5. Analyseer schulden
-            const activeDebts = debts.filter(d => 
-                d.status === 'betalingsregeling' || 
-                d.status === 'wachtend'
+            const activeDebts = debts.filter(d =>
+                d.status === 'betalingsregeling' ||
+                d.status === 'wachtend' ||
+                ((d.status === 'actief' || d.status === 'active') && parseFloat(d.monthly_payment || 0) > 0)
             );
             
             if (activeDebts.length > 0) {

@@ -420,7 +420,7 @@ function LayoutWithProvider({ children, currentPageName }) {
             const [monthlyCosts, debts] = await Promise.all([
               (async () => {
                 try {
-                  const result = await MonthlyCost.filter({ status: 'actief', user_id: user.id });
+                  const result = await MonthlyCost.filter({ user_id: user.id });
                   return result;
                 } catch (error) {
                   console.error('Error loading monthly costs:', error);
@@ -438,7 +438,10 @@ function LayoutWithProvider({ children, currentPageName }) {
               })()
             ]);
 
-            const pastDueCosts = monthlyCosts.filter(c => c.payment_date <= currentDay);
+            const pastDueCosts = monthlyCosts.filter(c => {
+              const isActive = c.status === 'actief' || c.status === 'active' || c.is_active === true;
+              return isActive && c.payment_date <= currentDay;
+            });
             const pastDueDebts = debts.filter(debt => {
                 if (!debt.payment_plan_date) return false;
                 try {
