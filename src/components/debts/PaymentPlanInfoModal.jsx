@@ -1,5 +1,6 @@
 
 import React from 'react';
+import DOMPurify from 'dompurify';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -68,7 +69,7 @@ export default function PaymentPlanInfoModal({ isOpen, onClose, onStartPlan }) {
                         <AccordionItem value="vtbl">
                             <AccordionTrigger>{t('paymentInfoModal.accordionVtblTitle')}</AccordionTrigger>
                             <AccordionContent>
-                                <p dangerouslySetInnerHTML={{ __html: t('paymentInfoModal.accordionVtblContent') }} />
+                                <p dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(t('paymentInfoModal.accordionVtblContent')) }} />
                             </AccordionContent>
                         </AccordionItem>
                         <AccordionItem value="letters">
