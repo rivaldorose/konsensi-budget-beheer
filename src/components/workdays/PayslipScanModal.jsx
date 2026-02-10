@@ -124,13 +124,6 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
         const periodStart = normalizeDate(parsed.period_start);
         const periodEnd = normalizeDate(parsed.period_end);
 
-        console.log('Parsed dates:', {
-          original_start: parsed.period_start,
-          original_end: parsed.period_end,
-          normalized_start: periodStart,
-          normalized_end: periodEnd
-        });
-
         const mapped = {
           employer_name: parsed.employer_name,
           period_start: periodStart,
@@ -181,15 +174,6 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
         const newEmployers = [...(user.employers || []), extractedData.employer_name];
         await User.updateMe({ employers: newEmployers });
       }
-
-      // Log what we're about to save
-      console.log('Saving payslip with data:', {
-        period_start: extractedData.period_start,
-        period_end: extractedData.period_end,
-        payment_date: extractedData.payment_date,
-        employer: extractedData.employer_name,
-        netto_loon: extractedData.netto_loon
-      });
 
       // Save payslip with all extracted data
       const payslip = await Payslip.create({
@@ -287,12 +271,6 @@ export default function PayslipScanModal({ isOpen, onClose, employers = [], onPa
         end_date: extractedData.period_end,
         is_active: true,
         monthly_equivalent: extractedData.netto_loon || 0
-      });
-
-      console.log('Income record created for payslip:', {
-        description: incomeDescription,
-        amount: extractedData.netto_loon,
-        period: `${extractedData.period_start} - ${extractedData.period_end}`
       });
 
       // Update workdays in this period to "gewerkt" and mark as paid

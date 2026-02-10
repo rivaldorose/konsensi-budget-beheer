@@ -285,11 +285,43 @@ export const supabaseService = {
     return true
   },
 
-  // File upload to Supabase Storage
+  // File upload to Supabase Storage with validation
   async uploadFile(bucket, path, file) {
+    // Validate file size (max 10MB)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error('Bestand is te groot. Maximum 10MB toegestaan.')
+    }
+
+    // Validate file type
+    const ALLOWED_MIME_TYPES = [
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'application/pdf',
+      'text/csv',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'message/rfc822',  // .eml
+    ]
+    if (file.type && !ALLOWED_MIME_TYPES.includes(file.type)) {
+      throw new Error('Bestandstype niet toegestaan.')
+    }
+
+    // Validate file extension
+    const ALLOWED_EXTENSIONS = [
+      '.jpg', '.jpeg', '.png', '.gif', '.webp',
+      '.pdf', '.csv', '.doc', '.docx', '.eml', '.msg'
+    ]
+    const ext = '.' + (file.name || '').split('.').pop().toLowerCase()
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      throw new Error('Bestandsextensie niet toegestaan.')
+    }
+
+    // Sanitize the upload path (prevent directory traversal)
+    const sanitizedPath = path.replace(/\.\./g, '').replace(/\/\//g, '/')
+
     const { data, error } = await supabase.storage
       .from(bucket)
-      .upload(path, file, {
+      .upload(sanitizedPath, file, {
         cacheControl: '3600',
         upsert: true
       })
@@ -298,7 +330,7 @@ export const supabaseService = {
 
     const { data: { publicUrl } } = supabase.storage
       .from(bucket)
-      .getPublicUrl(path)
+      .getPublicUrl(sanitizedPath)
 
     return { file_url: publicUrl }
   },

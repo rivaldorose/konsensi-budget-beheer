@@ -220,7 +220,6 @@ export default function BudgetPlan() {
                 // CRITICAL: Don't show if the plan starts AFTER this period ends
                 // Example: Plan starts 12 maart, viewing februari → don't show
                 if (planStartDate > endDate) {
-                    console.log(`[BudgetPlan] Skipping ${debt.creditor_name}: plan starts ${planStartDate.toISOString()} after period end ${endDate.toISOString()}`);
                     return false;
                 }
 
@@ -237,7 +236,6 @@ export default function BudgetPlan() {
                 // If selected month is before plan start month (same year) or before plan start year
                 if (selectedYear < planStartYear ||
                     (selectedYear === planStartYear && selectedMonth < planStartMonth)) {
-                    console.log(`[BudgetPlan] Skipping ${debt.creditor_name}: selected month ${selectedMonth}/${selectedYear} is before plan start ${planStartMonth}/${planStartYear}`);
                     return false;
                 }
 
@@ -247,8 +245,6 @@ export default function BudgetPlan() {
 
                 // Check if this payment date falls within the selected period
                 const inPeriod = paymentDateThisMonth >= startDate && paymentDateThisMonth <= endDate;
-
-                console.log(`[BudgetPlan] ${debt.creditor_name}: payment ${paymentDateThisMonth.toISOString()} in period ${startDate.toISOString()} - ${endDate.toISOString()}: ${inPeriod}`);
 
                 return inPeriod;
             });
