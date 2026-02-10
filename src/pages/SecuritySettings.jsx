@@ -164,20 +164,15 @@ export default function SecuritySettings() {
       const currentTime = Math.floor(Date.now() / 1000);
       const counter = Math.floor(currentTime / timeStep);
 
-      console.log('[2FA Setup Debug] Verifying code:', code);
-      console.log('[2FA Setup Debug] Counter:', counter);
-
       // Check current time window and adjacent windows (for clock drift)
       for (let i = -2; i <= 2; i++) {
         const expectedCode = await generateTOTPCode(secret, counter + i);
-        console.log(`[2FA Setup Debug] Window ${i}: expected=${expectedCode}, matches=${expectedCode === code}`);
         if (expectedCode === code) {
           return true;
         }
       }
       return false;
     } catch (e) {
-      console.error('TOTP verification error:', e);
       return false;
     }
   };

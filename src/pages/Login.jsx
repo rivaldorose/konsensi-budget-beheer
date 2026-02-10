@@ -145,10 +145,8 @@ export default function Login() {
       }
 
       const storedSecret = securitySettings[0].totp_secret;
-      console.log('[2FA Debug] Stored secret from DB:', storedSecret);
 
-      // Verify the TOTP code
-      // Note: In a production environment, this should be done server-side
+      // Verify the TOTP code client-side
       const isValid = await verifyTOTP(storedSecret, twoFactorCode);
 
       if (!isValid) {
@@ -174,25 +172,15 @@ export default function Login() {
       const currentTime = Math.floor(Date.now() / 1000);
       const counter = Math.floor(currentTime / timeStep);
 
-      console.log('[2FA Debug] Current time:', new Date().toISOString());
-      console.log('[2FA Debug] Unix timestamp:', currentTime);
-      console.log('[2FA Debug] Counter:', counter);
-      console.log('[2FA Debug] Secret:', secret);
-      console.log('[2FA Debug] Input code:', code);
-
       // Check current time window and adjacent windows (for clock drift)
       for (let i = -2; i <= 2; i++) {
         const expectedCode = await generateTOTPCode(secret, counter + i);
-        console.log(`[2FA Debug] Window ${i}: expected=${expectedCode}, matches=${expectedCode === code}`);
         if (expectedCode === code) {
-          console.log('[2FA Debug] Code verified successfully!');
           return true;
         }
       }
-      console.log('[2FA Debug] No matching code found');
       return false;
     } catch (e) {
-      console.error('TOTP verification error:', e);
       return false;
     }
   };
@@ -202,7 +190,6 @@ export default function Login() {
     try {
       // Decode base32 secret
       const secretBytes = base32Decode(secret);
-      console.log('[2FA Debug] Secret bytes:', Array.from(secretBytes).map(b => b.toString(16).padStart(2, '0')).join(' '));
 
       // Convert counter to 8-byte array (big-endian) using DataView for accuracy
       const counterBuffer = new ArrayBuffer(8);
@@ -211,7 +198,6 @@ export default function Login() {
       counterView.setUint32(0, Math.floor(counter / 0x100000000), false); // high 32 bits
       counterView.setUint32(4, counter >>> 0, false); // low 32 bits
       const counterBytes = new Uint8Array(counterBuffer);
-      console.log('[2FA Debug] Counter bytes:', Array.from(counterBytes).map(b => b.toString(16).padStart(2, '0')).join(' '));
 
       // Import key for HMAC-SHA1
       const key = await crypto.subtle.importKey(
@@ -225,7 +211,6 @@ export default function Login() {
       // Generate HMAC
       const signature = await crypto.subtle.sign('HMAC', key, counterBytes);
       const hmac = new Uint8Array(signature);
-      console.log('[2FA Debug] HMAC:', Array.from(hmac).map(b => b.toString(16).padStart(2, '0')).join(' '));
 
       // Dynamic truncation (RFC 4226)
       const offset = hmac[19] & 0x0f;
@@ -238,10 +223,8 @@ export default function Login() {
       // Generate 6-digit code
       const otp = binary % 1000000;
       const otpString = otp.toString().padStart(6, '0');
-      console.log('[2FA Debug] Binary:', binary, 'OTP:', otpString);
       return otpString;
     } catch (e) {
-      console.error('Error generating TOTP:', e);
       return null;
     }
   };
@@ -259,7 +242,6 @@ export default function Login() {
     for (const char of unpadded) {
       const val = alphabet.indexOf(char);
       if (val === -1) {
-        console.warn('[2FA Debug] Invalid base32 character:', char);
         continue;
       }
       bits += val.toString(2).padStart(5, '0');
@@ -270,7 +252,6 @@ export default function Login() {
       bytes.push(parseInt(bits.substring(i, i + 8), 2));
     }
 
-    console.log('[2FA Debug] Base32 decoded:', cleanedInput, '-> bytes length:', bytes.length);
     return new Uint8Array(bytes);
   };
 

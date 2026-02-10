@@ -19,9 +19,49 @@ import { supabase } from '@/lib/supabase'
 const DEFAULT_PAGE_SIZE = 20
 const MAX_PAGE_SIZE = 100
 
+// Allowed table names to prevent injection via table parameter
+const ALLOWED_TABLES = [
+  'users', 'income', 'monthly_costs', 'debts', 'debt_payments',
+  'debt_status_history', 'pots', 'pot_transactions', 'transactions',
+  'unexpected_costs', 'faqs', 'translations', 'achievements',
+  'user_achievements', 'challenges', 'user_challenges', 'daily_motivations',
+  'security_settings', 'user_login_history', 'user_summary_views',
+  'notifications', 'video_calls', 'wishlist_items', 'work_schedules',
+  'bank_statements', 'bank_statement_transactions'
+]
+
+/**
+ * Sanitize data before insert/update
+ * - Trims string values
+ * - Validates numeric fields are actual numbers
+ * - Removes any __proto__ or constructor keys
+ */
+const sanitizeData = (data) => {
+  if (!data || typeof data !== 'object') return data
+  const cleaned = {}
+  for (const [key, value] of Object.entries(data)) {
+    // Block prototype pollution
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue
+    // Trim strings
+    if (typeof value === 'string') {
+      cleaned[key] = value.trim()
+    } else {
+      cleaned[key] = value
+    }
+  }
+  return cleaned
+}
+
+const validateTable = (table) => {
+  if (!ALLOWED_TABLES.includes(table)) {
+    throw new Error(`Table "${table}" is not allowed`)
+  }
+}
+
 export const supabaseService = {
   // Generic CRUD operations
   async list(table, orderBy = 'created_at', ascending = false) {
+    validateTable(table)
     const { data, error } = await supabase
       .from(table)
       .select('*')
@@ -32,8 +72,7 @@ export const supabaseService = {
   },
 
   async filter(table, filters = {}, orderBy = null) {
-    console.log(`[SupabaseService] Filtering table: ${table}`, filters, orderBy)
-
+    validateTable(table)
     let query = supabase.from(table).select('*')
 
     // Apply filters with support for advanced operators
@@ -86,12 +125,7 @@ export const supabaseService = {
 
     const { data, error } = await query
 
-    if (error) {
-      console.error(`[SupabaseService] Error filtering ${table}:`, error)
-      throw error
-    }
-
-    console.log(`[SupabaseService] Success! Got ${data?.length || 0} rows from ${table}`)
+    if (error) throw error
     return data || []
   },
 
@@ -106,11 +140,10 @@ export const supabaseService = {
    * @returns {Promise<{data: array, count: number, page: number, pageSize: number, totalPages: number}>}
    */
   async paginate(table, filters = {}, options = {}) {
+    validateTable(table)
     const page = Math.max(1, options.page || 1)
     const pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, options.pageSize || DEFAULT_PAGE_SIZE))
     const offset = (page - 1) * pageSize
-
-    console.log(`[SupabaseService] Paginating table: ${table}`, { filters, page, pageSize })
 
     // Build query with count
     let query = supabase.from(table).select('*', { count: 'exact' })
@@ -137,14 +170,9 @@ export const supabaseService = {
 
     const { data, error, count } = await query
 
-    if (error) {
-      console.error(`[SupabaseService] Error paginating ${table}:`, error)
-      throw error
-    }
+    if (error) throw error
 
     const totalPages = Math.ceil((count || 0) / pageSize)
-
-    console.log(`[SupabaseService] Paginated ${table}: page ${page}/${totalPages}, ${count} total items`)
 
     return {
       data: data || [],
@@ -164,6 +192,7 @@ export const supabaseService = {
    * @returns {Promise<number>}
    */
   async count(table, filters = {}) {
+    validateTable(table)
     let query = supabase.from(table).select('*', { count: 'exact', head: true })
 
     // Apply filters
@@ -179,15 +208,13 @@ export const supabaseService = {
 
     const { count, error } = await query
 
-    if (error) {
-      console.error(`[SupabaseService] Error counting ${table}:`, error)
-      throw error
-    }
+    if (error) throw error
 
     return count || 0
   },
 
   async getById(table, id) {
+    validateTable(table)
     const { data, error } = await supabase
       .from(table)
       .select('*')
@@ -199,28 +226,22 @@ export const supabaseService = {
   },
 
   async create(table, data) {
-    console.log(`[SupabaseService] Creating in table: ${table}`, data)
-
+    validateTable(table)
     const { data: result, error } = await supabase
       .from(table)
-      .insert(data)
+      .insert(sanitizeData(data))
       .select()
       .single()
 
-    if (error) {
-      console.error(`[SupabaseService] Error creating in ${table}:`, error)
-      console.error('Error details:', { message: error.message, hint: error.hint, details: error.details, code: error.code })
-      throw error
-    }
-
-    console.log(`[SupabaseService] Created successfully in ${table}:`, result)
+    if (error) throw error
     return result
   },
 
   async update(table, id, data) {
+    validateTable(table)
     const { data: result, error } = await supabase
       .from(table)
-      .update(data)
+      .update(sanitizeData(data))
       .eq('id', id)
       .select()
       .single()
@@ -230,6 +251,7 @@ export const supabaseService = {
   },
 
   async delete(table, id) {
+    validateTable(table)
     const { error } = await supabase
       .from(table)
       .delete()

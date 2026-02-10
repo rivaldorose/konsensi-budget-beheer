@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { useTranslation } from '@/components/utils/LanguageContext';
 import { FAQ as FAQEntity } from '@/api/entities';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -137,7 +138,7 @@ export default function FAQPage() {
                       <AccordionContent className="px-4 pb-4 text-gray-600 leading-relaxed">
                         <div 
                           className="prose prose-sm max-w-none"
-                          dangerouslySetInnerHTML={{ __html: answer }} 
+                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(answer) }} 
                         />
                       </AccordionContent>
                     </AccordionItem>
