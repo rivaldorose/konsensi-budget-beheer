@@ -21,13 +21,37 @@ const MAX_PAGE_SIZE = 100
 
 // Allowed table names to prevent injection via table parameter
 const ALLOWED_TABLES = [
-  'users', 'income', 'monthly_costs', 'debts', 'debt_payments',
-  'debt_status_history', 'pots', 'pot_transactions', 'transactions',
-  'unexpected_costs', 'faqs', 'translations', 'achievements',
-  'user_achievements', 'challenges', 'user_challenges', 'daily_motivations',
-  'security_settings', 'user_login_history', 'user_summary_views',
-  'notifications', 'video_calls', 'wishlist_items', 'work_schedules',
-  'bank_statements', 'bank_statement_transactions'
+  // Core user & finance
+  'users', 'income', 'expenses', 'monthly_costs', 'transactions', 'pots',
+  // Debts & payments
+  'debts', 'debt_payments', 'debt_status_history', 'debt_strategies',
+  'debt_payoff_schedules', 'debt_correspondences', 'debt_notes',
+  'payment_plans', 'payment_plan_proposals', 'payment_agreements',
+  'payment_documents', 'payment_settings', 'payment_statuses',
+  'creditors', 'loans', 'arrangement_progress', 'adempauze_actions',
+  // Bank & documents
+  'bank_connections', 'bank_transactions', 'bank_statement_transactions',
+  'scanned_bank_statements', 'invoices', 'payslips',
+  // VTLB & reports
+  'vtbl_settings', 'vtbl_calculations', 'monthly_checks', 'monthly_reports',
+  // Gamification
+  'achievements', 'user_achievements', 'challenges', 'user_progress',
+  'user_levels', 'user_badges',
+  // Settings & security
+  'security_settings', 'privacy_settings', 'notification_preferences',
+  'notification_rules', 'notifications',
+  // Support & content
+  'faqs', 'translations', 'daily_motivations', 'help_requests',
+  'support_messages', 'research_questions', 'user_responses',
+  // Activity & sessions
+  'user_login_history', 'user_summary_views',
+  // Features
+  'goals', 'windfall_events', 'wishlist_items', 'work_days',
+  'variable_income_entries',
+  // Coach & chat
+  'coach_video_calls', 'coach_client_relations', 'coach_client_notes',
+  'coach_activity_log', 'coaches',
+  'chat_conversations', 'chat_messages',
 ]
 
 /**
