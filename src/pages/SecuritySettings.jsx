@@ -157,81 +157,6 @@ export default function SecuritySettings() {
     return secret;
   };
 
-  // TOTP verification functions
-  const verifyTOTP = async (secret, code) => {
-    try {
-      const timeStep = 30;
-      const currentTime = Math.floor(Date.now() / 1000);
-      const counter = Math.floor(currentTime / timeStep);
-
-      // Check current time window and adjacent windows (for clock drift)
-      for (let i = -2; i <= 2; i++) {
-        const expectedCode = await generateTOTPCode(secret, counter + i);
-        if (expectedCode === code) {
-          return true;
-        }
-      }
-      return false;
-    } catch (e) {
-      return false;
-    }
-  };
-
-  const generateTOTPCode = async (secret, counter) => {
-    try {
-      const secretBytes = base32Decode(secret);
-
-      // Convert counter to 8-byte array (big-endian) using DataView for accuracy
-      const counterBuffer = new ArrayBuffer(8);
-      const counterView = new DataView(counterBuffer);
-      counterView.setUint32(0, Math.floor(counter / 0x100000000), false);
-      counterView.setUint32(4, counter >>> 0, false);
-      const counterBytes = new Uint8Array(counterBuffer);
-
-      const key = await crypto.subtle.importKey(
-        'raw',
-        secretBytes,
-        { name: 'HMAC', hash: 'SHA-1' },
-        false,
-        ['sign']
-      );
-
-      const signature = await crypto.subtle.sign('HMAC', key, counterBytes);
-      const hmac = new Uint8Array(signature);
-
-      // Dynamic truncation (RFC 4226) - use hmac[19] for SHA-1
-      const offset = hmac[19] & 0x0f;
-      const binary =
-        ((hmac[offset] & 0x7f) << 24) |
-        ((hmac[offset + 1] & 0xff) << 16) |
-        ((hmac[offset + 2] & 0xff) << 8) |
-        (hmac[offset + 3] & 0xff);
-
-      const otp = binary % 1000000;
-      return otp.toString().padStart(6, '0');
-    } catch (e) {
-      console.error('Error generating TOTP:', e);
-      return null;
-    }
-  };
-
-  const base32Decode = (encoded) => {
-    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    const cleanedInput = encoded.toUpperCase().replace(/[\s-]/g, '');
-    const unpadded = cleanedInput.replace(/=+$/, '');
-    let bits = '';
-    for (const char of unpadded) {
-      const val = alphabet.indexOf(char);
-      if (val === -1) continue;
-      bits += val.toString(2).padStart(5, '0');
-    }
-    const bytes = [];
-    for (let i = 0; i + 8 <= bits.length; i += 8) {
-      bytes.push(parseInt(bits.substring(i, i + 8), 2));
-    }
-    return new Uint8Array(bytes);
-  };
-
   const handleVerify2FA = async () => {
     if (verificationCode.length !== 6) {
       toast({ title: 'Voer een 6-cijferige code in', variant: 'destructive' });
@@ -240,10 +165,16 @@ export default function SecuritySettings() {
 
     setIsVerifying(true);
     try {
-      // Verify the TOTP code before saving
-      const isValid = await verifyTOTP(totpSecret, verificationCode);
+      // Verify the TOTP code server-side via Edge Function (setup mode: pass secret directly)
+      const { data: verifyResult, error: fnError } = await supabase.functions.invoke('verify-totp', {
+        body: { secret: totpSecret, code: verificationCode },
+      });
 
-      if (!isValid) {
+      if (fnError) {
+        throw new Error('Verificatie mislukt');
+      }
+
+      if (!verifyResult?.valid) {
         toast({
           title: 'Ongeldige code',
           description: 'De ingevoerde code is onjuist. Controleer de code in je authenticator app.',
@@ -271,7 +202,6 @@ export default function SecuritySettings() {
       setVerificationCode('');
       toast({ title: 'Twee-factor authenticatie ingeschakeld!' });
     } catch (error) {
-      console.error('Error verifying 2FA:', error);
       toast({ title: 'Verificatie mislukt', variant: 'destructive' });
     } finally {
       setIsVerifying(false);

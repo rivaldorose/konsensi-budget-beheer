@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
-import { SecuritySettings as SecuritySettingsEntity } from '@/api/entities';
+
 
 export default function Login() {
 
@@ -71,12 +71,15 @@ export default function Login() {
         throw error;
       }
 
-      // Check if user has 2FA enabled
+      // Check if user has 2FA enabled (using safe view that excludes totp_secret)
       const userId = data.user?.id;
       if (userId) {
         try {
-          const securitySettings = await SecuritySettingsEntity.filter({ user_id: userId });
-          if (securitySettings.length > 0 && securitySettings[0].two_factor_enabled) {
+          const { data: securitySettings } = await supabase
+            .from('security_settings_view')
+            .select('two_factor_enabled')
+            .eq('user_id', userId);
+          if (securitySettings?.length > 0 && securitySettings[0].two_factor_enabled) {
             // User has 2FA enabled, show 2FA step
             setPendingSession(data.session);
             setPendingUserId(userId);
@@ -137,19 +140,16 @@ export default function Login() {
     }
 
     try {
-      // Get the stored TOTP secret for verification
-      const securitySettings = await SecuritySettingsEntity.filter({ user_id: pendingUserId });
+      // Verify the TOTP code server-side via Edge Function
+      const { data, error: fnError } = await supabase.functions.invoke('verify-totp', {
+        body: { user_id: pendingUserId, code: twoFactorCode },
+      });
 
-      if (securitySettings.length === 0 || !securitySettings[0].totp_secret) {
-        throw new Error('2FA configuratie niet gevonden.');
+      if (fnError) {
+        throw new Error('Verificatie mislukt. Probeer opnieuw.');
       }
 
-      const storedSecret = securitySettings[0].totp_secret;
-
-      // Verify the TOTP code client-side
-      const isValid = await verifyTOTP(storedSecret, twoFactorCode);
-
-      if (!isValid) {
+      if (!data?.valid) {
         setError('Ongeldige verificatiecode. Probeer opnieuw.');
         setLoading(false);
         return;
@@ -158,101 +158,9 @@ export default function Login() {
       // Code is valid, complete login
       await completeLogin();
     } catch (error) {
-      console.error('2FA verification error:', error);
       setError(error.message || 'Verificatie mislukt. Probeer opnieuw.');
       setLoading(false);
     }
-  };
-
-  // TOTP verification using Web Crypto API
-  // Based on RFC 6238 - TOTP: Time-Based One-Time Password Algorithm
-  const verifyTOTP = async (secret, code) => {
-    try {
-      const timeStep = 30;
-      const currentTime = Math.floor(Date.now() / 1000);
-      const counter = Math.floor(currentTime / timeStep);
-
-      // Check current time window and adjacent windows (for clock drift)
-      for (let i = -2; i <= 2; i++) {
-        const expectedCode = await generateTOTPCode(secret, counter + i);
-        if (expectedCode === code) {
-          return true;
-        }
-      }
-      return false;
-    } catch (e) {
-      return false;
-    }
-  };
-
-  // Generate TOTP code from secret and counter using HMAC-SHA1
-  const generateTOTPCode = async (secret, counter) => {
-    try {
-      // Decode base32 secret
-      const secretBytes = base32Decode(secret);
-
-      // Convert counter to 8-byte array (big-endian) using DataView for accuracy
-      const counterBuffer = new ArrayBuffer(8);
-      const counterView = new DataView(counterBuffer);
-      // Split counter into high and low 32-bit parts
-      counterView.setUint32(0, Math.floor(counter / 0x100000000), false); // high 32 bits
-      counterView.setUint32(4, counter >>> 0, false); // low 32 bits
-      const counterBytes = new Uint8Array(counterBuffer);
-
-      // Import key for HMAC-SHA1
-      const key = await crypto.subtle.importKey(
-        'raw',
-        secretBytes,
-        { name: 'HMAC', hash: 'SHA-1' },
-        false,
-        ['sign']
-      );
-
-      // Generate HMAC
-      const signature = await crypto.subtle.sign('HMAC', key, counterBytes);
-      const hmac = new Uint8Array(signature);
-
-      // Dynamic truncation (RFC 4226)
-      const offset = hmac[19] & 0x0f;
-      const binary =
-        ((hmac[offset] & 0x7f) << 24) |
-        ((hmac[offset + 1] & 0xff) << 16) |
-        ((hmac[offset + 2] & 0xff) << 8) |
-        (hmac[offset + 3] & 0xff);
-
-      // Generate 6-digit code
-      const otp = binary % 1000000;
-      const otpString = otp.toString().padStart(6, '0');
-      return otpString;
-    } catch (e) {
-      return null;
-    }
-  };
-
-  // Base32 decoder (RFC 4648)
-  const base32Decode = (encoded) => {
-    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    // Remove spaces, dashes and convert to uppercase
-    const cleanedInput = encoded.toUpperCase().replace(/[\s-]/g, '');
-
-    // Remove padding
-    const unpadded = cleanedInput.replace(/=+$/, '');
-
-    let bits = '';
-    for (const char of unpadded) {
-      const val = alphabet.indexOf(char);
-      if (val === -1) {
-        continue;
-      }
-      bits += val.toString(2).padStart(5, '0');
-    }
-
-    const bytes = [];
-    for (let i = 0; i + 8 <= bits.length; i += 8) {
-      bytes.push(parseInt(bits.substring(i, i + 8), 2));
-    }
-
-    return new Uint8Array(bytes);
   };
 
   const completeLogin = async () => {
