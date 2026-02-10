@@ -19,14 +19,10 @@ import { supabase } from "@/lib/supabase";
 
 // Parse payment document using Claude AI via Edge Function
 async function parsePaymentWithClaude(file) {
-  console.log('[Claude Parser] Starting Claude AI parsing for:', file.name);
-
   try {
     // Convert file to base64
     const arrayBuffer = await file.arrayBuffer();
     const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-
-    console.log('[Claude Parser] File converted to base64, size:', base64.length);
 
     // Call the Edge Function
     const { data, error } = await supabase.functions.invoke('parse-payment-document', {
@@ -38,16 +34,12 @@ async function parsePaymentWithClaude(file) {
     });
 
     if (error) {
-      console.error('[Claude Parser] Edge Function error:', error);
       throw new Error(error.message || 'Fout bij het verwerken van document');
     }
 
     if (data?.status === 'error') {
-      console.error('[Claude Parser] API returned error:', data.details);
       throw new Error(data.details || 'Fout bij het analyseren van document');
     }
-
-    console.log('[Claude Parser] Claude response:', data);
 
     // Return the extracted data
     return {
@@ -126,11 +118,9 @@ export default function PaymentRegistrationModal({ isOpen, onClose, debt, onPaym
   // Extract payment data using Claude AI via Edge Function
   const extractWithClaude = async (file) => {
     setExtracting(true);
-    console.log('[PaymentModal] Starting Claude AI extraction for:', file.name, 'type:', file.type, 'size:', file.size);
 
     try {
       const data = await parsePaymentWithClaude(file);
-      console.log('[PaymentModal] Claude extraction result:', data);
       setExtractionResult(data);
 
       let filled = 0;

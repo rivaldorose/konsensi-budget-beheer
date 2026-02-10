@@ -125,10 +125,7 @@ export default function OnboardingNew() {
       if (!user) {
         throw new Error('No authenticated user found');
       }
-      console.log('[Onboarding] User ID:', user.id);
-
       // Save incomes
-      console.log('[Onboarding] Saving incomes:', formData.incomes);
       for (const income of formData.incomes) {
         if (income.description && income.amount) {
           const incomeData = {
@@ -143,13 +140,11 @@ export default function OnboardingNew() {
             is_active: true,
             start_date: new Date().toISOString().split('T')[0]
           };
-          console.log('[Onboarding] Creating income:', incomeData);
           await Income.create(incomeData);
         }
       }
 
       // Save monthly costs
-      console.log('[Onboarding] Saving monthly costs:', formData.monthlyCosts);
       for (const cost of formData.monthlyCosts) {
         if (cost.name && cost.amount) {
           const costData = {
@@ -161,14 +156,12 @@ export default function OnboardingNew() {
             status: 'active',
             start_date: new Date().toISOString().split('T')[0]
           };
-          console.log('[Onboarding] Creating cost:', costData);
           await MonthlyCost.create(costData);
         }
       }
 
       // Save debts if user has debts
       if (formData.hasDebts === true) {
-        console.log('[Onboarding] Saving debts:', formData.debts);
         for (const debt of formData.debts) {
           if (debt.creditor && debt.total_amount) {
             const debtData = {
@@ -180,7 +173,6 @@ export default function OnboardingNew() {
               status: 'actief',
               notes: `Schuld aan ${debt.creditor}`
             };
-            console.log('[Onboarding] Creating debt:', debtData);
             await Debt.create(debtData);
           }
         }

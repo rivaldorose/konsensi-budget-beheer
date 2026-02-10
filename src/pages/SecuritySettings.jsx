@@ -6,6 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { createPageUrl } from '@/utils';
 import { useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import QRCodeLib from 'qrcode';
 
 export default function SecuritySettings() {
   const [user, setUser] = useState(null);
@@ -17,6 +18,9 @@ export default function SecuritySettings() {
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [copiedSecret, setCopiedSecret] = useState(false);
+  const [showDisableConfirm, setShowDisableConfirm] = useState(false);
+  const [disableCode, setDisableCode] = useState('');
+  const [isDisabling, setIsDisabling] = useState(false);
   const [sessions, setSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
@@ -128,7 +132,7 @@ export default function SecuritySettings() {
 
   const handleSetup2FA = async () => {
     try {
-      // Generate a TOTP secret
+      // Generate a TOTP secret using crypto.getRandomValues()
       const secret = generateTOTPSecret();
       setTotpSecret(secret);
 
@@ -137,22 +141,27 @@ export default function SecuritySettings() {
       const issuer = 'Konsensi';
       const otpauthUrl = `otpauth://totp/${issuer}:${email}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`;
 
-      // Use QR code API to generate image
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpauthUrl)}`;
-      setQrCodeUrl(qrUrl);
+      // Generate QR code locally (no third-party service)
+      const qrDataUrl = await QRCodeLib.toDataURL(otpauthUrl, {
+        width: 200,
+        margin: 2,
+        color: { dark: '#000000', light: '#ffffff' }
+      });
+      setQrCodeUrl(qrDataUrl);
       setShowSetup2FA(true);
     } catch (error) {
-      console.error('Error setting up 2FA:', error);
       toast({ title: 'Fout bij instellen 2FA', variant: 'destructive' });
     }
   };
 
   const generateTOTPSecret = () => {
-    // Generate a random base32 secret (16 characters)
+    // Generate a cryptographically secure random base32 secret (20 bytes = 32 base32 chars)
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    const randomValues = new Uint8Array(32);
+    crypto.getRandomValues(randomValues);
     let secret = '';
-    for (let i = 0; i < 16; i++) {
-      secret += chars.charAt(Math.floor(Math.random() * chars.length));
+    for (let i = 0; i < 32; i++) {
+      secret += chars[randomValues[i] % 32];
     }
     return secret;
   };
@@ -209,10 +218,30 @@ export default function SecuritySettings() {
   };
 
   const handleDisable2FA = async () => {
-    const confirmed = window.confirm('Weet je zeker dat je twee-factor authenticatie wilt uitschakelen? Dit maakt je account minder veilig.');
-    if (!confirmed) return;
+    // Require TOTP code verification before disabling 2FA
+    if (!disableCode || disableCode.length !== 6) {
+      toast({ title: 'Voer een 6-cijferige code in uit je authenticator app', variant: 'destructive' });
+      return;
+    }
 
+    setIsDisabling(true);
     try {
+      // Verify TOTP code server-side before allowing disable
+      const { data: verifyResult, error: fnError } = await supabase.functions.invoke('verify-totp', {
+        body: { user_id: user.id, code: disableCode },
+      });
+
+      if (fnError || !verifyResult?.valid) {
+        toast({
+          title: 'Ongeldige code',
+          description: 'De ingevoerde code is onjuist. 2FA blijft ingeschakeld.',
+          variant: 'destructive'
+        });
+        setIsDisabling(false);
+        return;
+      }
+
+      // Code verified - now disable 2FA
       const data = {
         two_factor_enabled: false,
         totp_secret: null
@@ -224,10 +253,13 @@ export default function SecuritySettings() {
 
       setTwoFactorEnabled(false);
       setTotpSecret('');
+      setShowDisableConfirm(false);
+      setDisableCode('');
       toast({ title: 'Twee-factor authenticatie uitgeschakeld' });
     } catch (error) {
-      console.error('Error disabling 2FA:', error);
       toast({ title: 'Fout bij uitschakelen', variant: 'destructive' });
+    } finally {
+      setIsDisabling(false);
     }
   };
 
@@ -464,12 +496,44 @@ export default function SecuritySettings() {
                             <p className="text-green-600 dark:text-green-500 text-sm">Je account is extra beveiligd</p>
                           </div>
                         </div>
-                        <button
-                          onClick={handleDisable2FA}
-                          className="self-start text-red-500 hover:text-red-600 text-sm font-medium hover:underline"
-                        >
-                          2FA uitschakelen
-                        </button>
+
+                        {!showDisableConfirm ? (
+                          <button
+                            onClick={() => setShowDisableConfirm(true)}
+                            className="self-start text-red-500 hover:text-red-600 text-sm font-medium hover:underline"
+                          >
+                            2FA uitschakelen
+                          </button>
+                        ) : (
+                          <div className="p-4 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-200 dark:border-red-500/20">
+                            <p className="text-red-700 dark:text-red-400 text-sm font-medium mb-3">
+                              Voer je 2FA code in om te bevestigen:
+                            </p>
+                            <div className="flex gap-3">
+                              <input
+                                type="text"
+                                value={disableCode}
+                                onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                placeholder="000000"
+                                className="flex-1 max-w-[160px] px-4 py-2 bg-white dark:bg-[#1a1a1a] border border-red-200 dark:border-red-500/30 rounded-xl text-center text-lg font-mono tracking-widest focus:ring-2 focus:ring-red-500/50 focus:border-red-500"
+                                maxLength={6}
+                              />
+                              <button
+                                onClick={handleDisable2FA}
+                                disabled={disableCode.length !== 6 || isDisabling}
+                                className="px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 text-white font-medium rounded-xl transition-colors text-sm"
+                              >
+                                {isDisabling ? 'Bezig...' : 'Uitschakelen'}
+                              </button>
+                              <button
+                                onClick={() => { setShowDisableConfirm(false); setDisableCode(''); }}
+                                className="px-4 py-2 bg-gray-100 dark:bg-[#2a2a2a] text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-[#333] transition-colors text-sm"
+                              >
+                                Annuleren
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 

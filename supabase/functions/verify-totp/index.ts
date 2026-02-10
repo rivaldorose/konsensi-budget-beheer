@@ -15,6 +15,28 @@ const getCorsHeaders = (req: Request) => {
   };
 };
 
+// In-memory rate limiter (per Edge Function instance)
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_MAX = 5; // Max 5 attempts
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // Per 60 seconds
+
+function checkRateLimit(key: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(key);
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+
+  entry.count++;
+  return true;
+}
+
 // Base32 decoder (RFC 4648)
 function base32Decode(encoded: string): Uint8Array {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -82,8 +104,8 @@ async function verifyTOTP(secret: string, code: string): Promise<boolean> {
   const currentTime = Math.floor(Date.now() / 1000);
   const counter = Math.floor(currentTime / timeStep);
 
-  // Check current time window and adjacent windows (for clock drift)
-  for (let i = -2; i <= 2; i++) {
+  // Check current time window and ±1 adjacent windows (for clock drift)
+  for (let i = -1; i <= 1; i++) {
     const expectedCode = await generateTOTPCode(secret, counter + i);
     if (expectedCode === code) {
       return true;
@@ -99,6 +121,12 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    // Create Supabase admin client
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
     const { user_id, code, secret } = await req.json();
 
     if (!code) {
@@ -122,7 +150,45 @@ Deno.serve(async (req: Request) => {
     }
 
     // Mode 1: Setup verification - secret provided directly (for initial 2FA setup)
+    // Requires valid JWT - only authenticated users can set up 2FA
     if (secret) {
+      // Validate JWT auth for setup mode
+      const authHeader = req.headers.get('authorization');
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ error: 'Authenticatie vereist' }),
+          {
+            status: 401,
+            headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+          }
+        );
+      }
+
+      const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.getUser(
+        authHeader.replace('Bearer ', '')
+      );
+
+      if (authError || !authUser) {
+        return new Response(
+          JSON.stringify({ error: 'Ongeldige sessie' }),
+          {
+            status: 401,
+            headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+          }
+        );
+      }
+
+      // Rate limit setup attempts by user ID
+      if (!checkRateLimit(`setup:${authUser.id}`)) {
+        return new Response(
+          JSON.stringify({ error: 'Te veel pogingen. Probeer het over een minuut opnieuw.' }),
+          {
+            status: 429,
+            headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+          }
+        );
+      }
+
       if (typeof secret !== 'string' || secret.length < 16) {
         return new Response(
           JSON.stringify({ error: 'Ongeldig secret' }),
@@ -154,11 +220,47 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Create Supabase admin client to read totp_secret (bypasses RLS)
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
+    // Validate user_id is a UUID to prevent injection
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(user_id)) {
+      return new Response(
+        JSON.stringify({ error: 'Ongeldig user_id formaat' }),
+        {
+          status: 400,
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // Rate limit login attempts by user_id
+    if (!checkRateLimit(`login:${user_id}`)) {
+      return new Response(
+        JSON.stringify({ error: 'Te veel pogingen. Probeer het over een minuut opnieuw.' }),
+        {
+          status: 429,
+          headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // For login mode, JWT auth is optional since user hasn't completed login yet.
+    // But if JWT is present (e.g., disabling 2FA), validate that user_id matches the JWT.
+    const authHeader = req.headers.get('authorization');
+    if (authHeader) {
+      const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.getUser(
+        authHeader.replace('Bearer ', '')
+      );
+
+      if (!authError && authUser && authUser.id !== user_id) {
+        return new Response(
+          JSON.stringify({ error: 'Geen toegang' }),
+          {
+            status: 403,
+            headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
+          }
+        );
+      }
+    }
 
     // Fetch the TOTP secret server-side
     const { data: settings, error: dbError } = await supabaseAdmin

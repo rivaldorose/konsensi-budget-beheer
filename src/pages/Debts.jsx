@@ -120,18 +120,13 @@ export default function Debts() {
 
   const loadDebts = React.useCallback(async () => {
     try {
-      console.log('[Debts] Starting loadDebts...');
       const userData = await User.me();
-      console.log('[Debts] User loaded:', userData?.email, 'ID:', userData?.id);
       setUser(userData);
 
-      console.log('[Debts] Fetching debts with user_id:', userData.id);
       const data = await Debt.filter({ user_id: userData.id }, '-created_date');
-      console.log('[Debts] Debts loaded:', data?.length);
       setDebts(data);
 
       const strategies = await DebtStrategy.filter({ user_id: userData.id });
-      console.log('[Debts] Strategies loaded:', strategies?.length);
       if (strategies.length > 0) {
         setActiveStrategy(strategies[0]);
         const schedule = await DebtPayoffSchedule.filter({ strategy_id: strategies[0].id });

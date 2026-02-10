@@ -94,9 +94,6 @@ export default function YOLChatButton() {
 
   const initConversation = async () => {
     try {
-      console.log('🚀 YO-L: Starting conversation...');
-      console.log('👤 User:', user);
-      
       const conversation = await base44.agents.createConversation({
         agent_name: 'YOL',
         metadata: {
@@ -105,7 +102,6 @@ export default function YOLChatButton() {
         }
       });
       
-      console.log('✅ YO-L: Conversation created:', conversation);
       setConversationId(conversation.id);
       
       // Welkomstbericht
