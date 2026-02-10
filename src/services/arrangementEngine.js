@@ -366,7 +366,7 @@ function verdeelAfloscapaciteitOverSchulden(schulden, totaalBeschikbaar) {
   });
 
   return {
-    totaalSchuld,
+    totaalSchuld: totaleSchuld,
     totaalBeschikbaar,
     perSchuld
   };
