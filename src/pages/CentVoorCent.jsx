@@ -454,7 +454,9 @@ export default function CentVoorCent() {
   };
 
   // Check if we should show the "waiting" state
-  const showWaitingState = !summaryStatus.isFirstWeekOfMonth && !summaryStatus.hasViewedThisMonth;
+  // Only show waiting state when navigating directly (no URL params), not from archive
+  const hasUrlParams = searchParams.get('year') !== null && searchParams.get('month') !== null;
+  const showWaitingState = !hasUrlParams && !summaryStatus.isFirstWeekOfMonth && !summaryStatus.hasViewedThisMonth;
 
   // If we're outside the first week and haven't viewed, show waiting state
   if (showWaitingState && !loading) {
