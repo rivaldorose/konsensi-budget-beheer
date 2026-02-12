@@ -67,6 +67,7 @@ export default function CommonCostsSelector({ onSelect, existingCosts = [] }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedCosts, setSelectedCosts] = useState([]);
   const [customAmounts, setCustomAmounts] = useState({});
+  const [customPaymentDates, setCustomPaymentDates] = useState({});
 
   const existingNames = existingCosts.map(c => c.name?.toLowerCase());
   
@@ -75,17 +76,26 @@ export default function CommonCostsSelector({ onSelect, existingCosts = [] }) {
     if (isSelected) {
       setSelectedCosts(prev => prev.filter(c => c.name !== cost.name));
     } else {
-      setSelectedCosts(prev => [...prev, { 
-        ...cost, 
-        amount: customAmounts[cost.name] || cost.avgAmount 
+      setSelectedCosts(prev => [...prev, {
+        ...cost,
+        amount: customAmounts[cost.name] || cost.avgAmount,
+        payment_date: customPaymentDates[cost.name] || 1
       }]);
     }
   };
 
   const updateAmount = (costName, amount) => {
     setCustomAmounts(prev => ({ ...prev, [costName]: parseFloat(amount) || 0 }));
-    setSelectedCosts(prev => prev.map(c => 
+    setSelectedCosts(prev => prev.map(c =>
       c.name === costName ? { ...c, amount: parseFloat(amount) || 0 } : c
+    ));
+  };
+
+  const updatePaymentDate = (costName, day) => {
+    const parsed = Math.min(31, Math.max(1, parseInt(day) || 1));
+    setCustomPaymentDates(prev => ({ ...prev, [costName]: parsed }));
+    setSelectedCosts(prev => prev.map(c =>
+      c.name === costName ? { ...c, payment_date: parsed } : c
     ));
   };
 
@@ -93,6 +103,7 @@ export default function CommonCostsSelector({ onSelect, existingCosts = [] }) {
     onSelect(selectedCosts);
     setSelectedCosts([]);
     setCustomAmounts({});
+    setCustomPaymentDates({});
     setSelectedCategory(null);
   };
 
@@ -154,16 +165,33 @@ export default function CommonCostsSelector({ onSelect, existingCosts = [] }) {
                     <p className="text-xs text-gray-500 dark:text-[#a1a1a1]">Gemiddeld: {cost.avgAmount}€/maand</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   {isSelected && !alreadyExists && (
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={customAmounts[cost.name] ?? cost.avgAmount}
-                      onChange={(e) => updateAmount(cost.name, e.target.value)}
-                      className="w-24 h-10 text-right bg-white dark:bg-[#0a0a0a] border-gray-200 dark:border-[#2a2a2a] text-gray-900 dark:text-white"
-                      placeholder={cost.avgAmount.toString()}
-                    />
+                    <>
+                      <div className="flex flex-col items-end gap-0.5">
+                        <span className="text-[10px] text-gray-400 dark:text-[#6B7280] font-medium">Bedrag</span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={customAmounts[cost.name] ?? cost.avgAmount}
+                          onChange={(e) => updateAmount(cost.name, e.target.value)}
+                          className="w-24 h-10 text-right bg-white dark:bg-[#0a0a0a] border-gray-200 dark:border-[#2a2a2a] text-gray-900 dark:text-white"
+                          placeholder={cost.avgAmount.toString()}
+                        />
+                      </div>
+                      <div className="flex flex-col items-end gap-0.5">
+                        <span className="text-[10px] text-gray-400 dark:text-[#6B7280] font-medium">Dag</span>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="31"
+                          value={customPaymentDates[cost.name] ?? 1}
+                          onChange={(e) => updatePaymentDate(cost.name, e.target.value)}
+                          className="w-16 h-10 text-center bg-white dark:bg-[#0a0a0a] border-gray-200 dark:border-[#2a2a2a] text-gray-900 dark:text-white"
+                          placeholder="1"
+                        />
+                      </div>
+                    </>
                   )}
                   <button
                     onClick={() => !alreadyExists && toggleCost(cost)}

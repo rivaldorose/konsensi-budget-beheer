@@ -126,6 +126,7 @@ export default function MaandelijkseLastenPage() {
         
         try {
             const data = {
+                user_id: user?.id,
                 name: formData.name,
                 amount: parseFloat(formData.amount),
                 payment_date: parseInt(formData.payment_date),
@@ -624,9 +625,10 @@ export default function MaandelijkseLastenPage() {
                             try {
                                 for (const cost of selectedCosts) {
                                     await MonthlyCost.create({
+                                        user_id: user?.id,
                                         name: cost.name,
                                         amount: cost.amount,
-                                                payment_date: cost.payment_date || 1,
+                                        payment_date: cost.payment_date || 1,
                                         category: cost.category,
                                         start_date: new Date().toISOString().split('T')[0],
                                         status: 'actief'
