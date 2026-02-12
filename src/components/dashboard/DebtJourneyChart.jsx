@@ -1,6 +1,34 @@
 import React, { useState, useMemo } from "react";
 import { formatCurrency } from "@/components/utils/formatters";
 
+// Calculate nice Y-axis tick values based on the actual data max
+function calculateYAxisTicks(dataMax) {
+  if (dataMax <= 0) return [0];
+
+  // Find a nice step size: 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000...
+  const niceSteps = [50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 25000, 50000];
+  const idealStep = dataMax / 4; // aim for ~4-5 grid lines
+  let step = niceSteps.find(s => s >= idealStep) || Math.ceil(idealStep / 10000) * 10000;
+
+  const ticks = [];
+  for (let v = 0; v <= dataMax; v += step) {
+    ticks.push(v);
+  }
+  // Always include a tick above the max so bars don't touch top
+  if (ticks[ticks.length - 1] < dataMax) {
+    ticks.push(ticks[ticks.length - 1] + step);
+  }
+  return ticks;
+}
+
+// Format Y-axis label: €200, €1k, €2.5k, etc.
+function formatYLabel(value) {
+  if (value === 0) return '€0';
+  if (value < 1000) return `€${value}`;
+  const k = value / 1000;
+  return k % 1 === 0 ? `€${k}k` : `€${k}k`;
+}
+
 export default function DebtJourneyChart({ monthlyData = [], weeklyData = [], totalPaid = 0, progressPercentage = 0 }) {
   const [viewMode, setViewMode] = useState("month");
 
@@ -41,12 +69,15 @@ export default function DebtJourneyChart({ monthlyData = [], weeklyData = [], to
     ? (monthlyData.length > 0 ? monthlyData : defaultMonthlyData)
     : (weeklyData.length > 0 ? weeklyData : defaultWeeklyData);
 
-  const maxAmount = Math.max(...chartData.map((d) => d.amount), 4000);
+  // Dynamic Y-axis: scale to actual data instead of hardcoded 4000
+  const dataMax = Math.max(...chartData.map((d) => d.amount));
+  const yTicks = useMemo(() => calculateYAxisTicks(dataMax), [dataMax]);
+  const yMax = yTicks[yTicks.length - 1] || 1; // top of chart
 
-  // Calculate bar heights as percentages
+  // Calculate bar heights as percentages of the dynamic max
   const bars = chartData.map((item) => ({
     ...item,
-    height: (item.amount / maxAmount) * 100,
+    height: yMax > 0 ? (item.amount / yMax) * 100 : 0,
   }));
 
   return (
@@ -102,20 +133,20 @@ export default function DebtJourneyChart({ monthlyData = [], weeklyData = [], to
       </div>
 
       {/* Chart */}
-      <div className="w-full h-80 relative flex items-end justify-between px-2 pt-8">
-        {/* Y-axis labels */}
-        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8 pr-4">
-          {[4000, 3000, 2000, 1000, 0].map((value) => (
+      <div className="w-full h-80 relative flex items-end justify-between pt-8">
+        {/* Y-axis labels + grid lines */}
+        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8" style={{ paddingLeft: '52px' }}>
+          {[...yTicks].reverse().map((value) => (
             <div key={value} className="border-t border-gray-100 dark:border-border-main w-full relative h-0">
-              <span className="absolute -top-3 -left-8 text-xs text-gray-400 dark:text-text-tertiary w-6 text-right">
-                €{value / 1000}k
+              <span className="absolute -top-3 right-full mr-2 text-xs text-gray-400 dark:text-text-tertiary whitespace-nowrap">
+                {formatYLabel(value)}
               </span>
             </div>
           ))}
         </div>
 
         {/* Bars */}
-        <div className="w-full flex justify-between items-end h-full z-10 pl-8 pb-8 gap-6">
+        <div className="w-full flex justify-between items-end h-full z-10 pb-8 gap-6" style={{ paddingLeft: '52px' }}>
           {bars.map((bar, index) => (
             <div key={index} className="flex-1 flex flex-col items-center group h-full justify-end">
               <div className="relative w-full max-w-[70px] bg-[#E5E7EB] dark:bg-card-elevated rounded-[40px] h-full overflow-hidden border border-transparent dark:border-border-main/50">
