@@ -36,5 +36,13 @@ export default defineConfig({
     },
     // Increase chunk size warning limit slightly (still want to be aware of large chunks)
     chunkSizeWarningLimit: 600,
+    // Strip console.log/warn/error in production to prevent information leakage
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
   },
 }) 
