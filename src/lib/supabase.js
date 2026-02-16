@@ -5,29 +5,28 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 // Better error handling for missing environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ Missing Supabase environment variables!')
-  console.error('VITE_SUPABASE_URL:', supabaseUrl ? '✅ Set' : '❌ Missing')
-  console.error('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✅ Set' : '❌ Missing')
-  
-  // Show user-friendly error in production
+  // Show user-friendly error in production (using safe DOM methods, no innerHTML)
   if (import.meta.env.PROD) {
-    document.body.innerHTML = `
-      <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #F8F8F8; font-family: system-ui, -apple-system, sans-serif;">
-        <div style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 500px; text-align: center;">
-          <h1 style="color: #3D6456; font-size: 1.5rem; margin-bottom: 1rem;">⚠️ Configuratie Fout</h1>
-          <p style="color: #666; margin-bottom: 1.5rem;">
-            De Supabase environment variables ontbreken. Neem contact op met de beheerder.
-          </p>
-          <p style="color: #999; font-size: 0.875rem;">
-            VITE_SUPABASE_URL: ${supabaseUrl ? '✅' : '❌'}<br>
-            VITE_SUPABASE_ANON_KEY: ${supabaseAnonKey ? '✅' : '❌'}
-          </p>
-        </div>
-      </div>
-    `
+    const root = document.getElementById('root')
+    if (root) {
+      while (root.firstChild) root.removeChild(root.firstChild)
+      const wrapper = document.createElement('div')
+      wrapper.style.cssText = 'display:flex;align-items:center;justify-content:center;min-height:100vh;background:#F8F8F8;font-family:system-ui,-apple-system,sans-serif;'
+      const card = document.createElement('div')
+      card.style.cssText = 'background:white;padding:2rem;border-radius:1rem;box-shadow:0 4px 20px rgba(0,0,0,0.1);max-width:500px;text-align:center;'
+      const h1 = document.createElement('h1')
+      h1.style.cssText = 'color:#3D6456;font-size:1.5rem;margin-bottom:1rem;'
+      h1.textContent = 'Configuratie Fout'
+      const p = document.createElement('p')
+      p.style.cssText = 'color:#666;margin-bottom:1.5rem;'
+      p.textContent = 'De applicatie kon niet worden geladen. Neem contact op met de beheerder.'
+      card.appendChild(h1)
+      card.appendChild(p)
+      wrapper.appendChild(card)
+      root.appendChild(wrapper)
+    }
   }
-  
-  // Still throw in development for better debugging
+
   throw new Error('Missing Supabase environment variables. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file')
 }
 

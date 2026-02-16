@@ -317,7 +317,12 @@ export const supabaseService = {
     }
 
     // Sanitize the upload path (prevent directory traversal)
-    const sanitizedPath = path.replace(/\.\./g, '').replace(/\/\//g, '/')
+    let sanitizedPath = path
+      .replace(/\.\./g, '')       // Remove ..
+      .replace(/\.\//g, '')       // Remove ./
+      .replace(/\/+/g, '/')       // Collapse multiple slashes
+      .replace(/^\//, '')         // Remove leading slash
+      .replace(/[^\w\-./]/g, '_') // Replace special chars with underscore
 
     const { data, error } = await supabase.storage
       .from(bucket)

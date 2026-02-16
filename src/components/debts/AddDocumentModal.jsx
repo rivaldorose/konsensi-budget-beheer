@@ -57,7 +57,8 @@ export default function AddDocumentModal({ isOpen, onClose, onSave }) {
 
     setUploading(true);
     try {
-      const fileName = `documents/${Date.now()}-${selectedFile.name}`;
+      const safeName = selectedFile.name.replace(/[^\w\-. ]/g, '_').replace(/\s+/g, '_');
+      const fileName = `documents/${Date.now()}-${safeName}`;
       const { data, error } = await supabase.storage
         .from('attachments')
         .upload(fileName, selectedFile);
